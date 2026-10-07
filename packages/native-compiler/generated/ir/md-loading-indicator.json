@@ -1,0 +1,711 @@
+{
+  "tag": "md-loading-indicator",
+  "className": "MdLoadingIndicator",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "'uncontained' | 'contained'",
+      "default": "'uncontained'",
+      "defaultValue": "uncontained",
+      "options": [
+        "uncontained",
+        "contained"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Visual style: uncontained (default) or contained (with background container)"
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "'Loading'",
+      "defaultValue": "Loading",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Accessible label for screen readers"
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [],
+  "events": [],
+  "methods": [],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "shape",
+      "description": "The morphing indicator shape"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-loading-indicator-color",
+      "description": "Indicator shape color"
+    },
+    {
+      "name": "--md-loading-indicator-size",
+      "description": "Overall component size (default 48px)"
+    },
+    {
+      "name": "--md-loading-indicator-shape-size",
+      "description": "Morphing shape size (default 38px)"
+    },
+    {
+      "name": "--md-loading-indicator-container-color",
+      "description": "Container background (contained variant)"
+    },
+    {
+      "name": "--md-loading-indicator-container-shape",
+      "description": "Container border radius"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-loading-indicator': true,\n          [`md-loading-indicator--${this.variant}`]: true,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "progressbar"
+      },
+      {
+        "name": "aria-label",
+        "value": "this.label"
+      },
+      {
+        "name": "aria-live",
+        "value": "polite"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-loading-indicator__shape"
+          },
+          {
+            "name": "part",
+            "value": "shape"
+          },
+          {
+            "name": "aria-hidden",
+            "value": "true"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-loading-indicator__sr-only"
+          },
+          {
+            "name": "role",
+            "value": "status"
+          }
+        ],
+        "children": [
+          {
+            "kind": "expression",
+            "source": "this.label"
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [],
+  "source": {
+    "file": "packages/core/src/components/md-loading-indicator/md-loading-indicator.tsx",
+    "styleUrl": "md-loading-indicator.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "cf1fd87bdb89c6bb46ebbc4d620f46072c5f1c3370e033918c80d84a67dd0c20"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-loading-indicator-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_size",
+          "value": "var(--md-loading-indicator-size, max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_shape-size",
+          "value": "var(--md-loading-indicator-shape-size, calc(var(--_size) * 0.792))",
+          "important": false
+        },
+        {
+          "property": "--_container-color",
+          "value": "var(--md-loading-indicator-container-color, var(--md-sys-color-primary-container, #EADDFF))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-loading-indicator-container-shape, var(--md-sys-shape-corner-full, 50%))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_size)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-loading-indicator--contained)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-loading-indicator-color, var(--md-sys-color-on-primary-container, #21005D))",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-loading-indicator__shape",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_shape-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_shape-size)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_color)",
+          "important": false
+        },
+        {
+          "property": "will-change",
+          "value": "clip-path, transform",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-loading-morph 4.55s infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-loading-morph",
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "polygon(\n      50% 5.3%, 55.4% 9.1%, 59.3% 15.3%, 64% 16.1%, 71.2% 13.3%, 77.1% 14.7%,\n      78.3% 21.7%, 78.1% 28.4%, 82.6% 31.2%, 90% 33.4%, 92.6% 38.6%, 88.4% 44.9%,\n      85.3% 50%, 88.4% 55.1%, 92.6% 61.4%, 90% 66.6%, 82.6% 68.8%, 78.1% 71.6%,\n      78.3% 78.3%, 77.1% 85.3%, 71.2% 86.7%, 64% 83.9%, 59.3% 84.7%, 55.4% 90.9%,\n      50% 94.7%, 44.6% 90.9%, 40.7% 84.7%, 36% 83.9%, 28.8% 86.7%, 22.9% 85.3%,\n      21.7% 78.3%, 21.9% 71.6%, 17.4% 68.8%, 10% 66.6%, 7.4% 61.4%, 11.6% 55.1%,\n      14.7% 50%, 11.6% 44.9%, 7.4% 38.6%, 10% 33.4%, 17.4% 31.2%, 21.9% 28.4%,\n      21.7% 21.7%, 22.9% 14.7%, 28.8% 13.3%, 36% 16.1%, 40.7% 15.3%, 44.6% 9.1%\n    )",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "rotate(0deg)",
+          "important": false
+        },
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.34, 1.45, 0.4, 1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "14.3%",
+      "context": "@keyframes md-loading-morph",
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "polygon(\n      50% 6.8%, 55.4% 9.1%, 59.8% 13.6%, 64.2% 15.8%, 70% 15.4%, 76.2% 15.9%,\n      79.9% 20.1%, 80.8% 26.4%, 81.8% 31.6%, 85.8% 35.2%, 90.8% 39.1%, 92.6% 44.4%,\n      90% 50%, 86.7% 54.8%, 86.4% 59.8%, 88.1% 65.8%, 87.4% 71.6%, 82.7% 75.1%,\n      76.7% 76.7%, 72.5% 79.4%, 70% 84.6%, 66.4% 89.7%, 60.9% 90.8%, 55.1% 88.4%,\n      50% 86.8%, 44.9% 88.4%, 39.1% 90.8%, 33.6% 89.7%, 30% 84.6%, 27.5% 79.4%,\n      23.3% 76.7%, 17.3% 75.1%, 12.6% 71.6%, 11.9% 65.8%, 13.6% 59.8%, 13.3% 54.8%,\n      10% 50%, 7.4% 44.4%, 9.2% 39.1%, 14.2% 35.2%, 18.2% 31.6%, 19.2% 26.4%,\n      20.1% 20.1%, 23.8% 15.9%, 30% 15.4%, 35.8% 15.8%, 40.2% 13.6%, 44.6% 9.1%\n    )",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "rotate(154deg)",
+          "important": false
+        },
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.34, 1.45, 0.4, 1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "28.6%",
+      "context": "@keyframes md-loading-morph",
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "polygon(\n      50% 6.8%, 55.4% 8.9%, 60% 12.7%, 63.9% 16.4%, 67.5% 19.7%, 71.1% 22.5%,\n      75% 25%, 79.5% 27.4%, 84.4% 30.1%, 89.3% 33.7%, 91.4% 38.9%, 90% 44.7%,\n      87.6% 50%, 85.4% 54.7%, 83.5% 59%, 82.1% 63.3%, 81.2% 68%, 80.2% 73.2%,\n      78.9% 78.9%, 76.3% 84.2%, 71% 86.4%, 65% 86.2%, 59.5% 85.5%, 54.6% 84.8%,\n      50% 84.6%, 45.4% 84.8%, 40.5% 85.5%, 35% 86.2%, 29% 86.4%, 23.7% 84.2%,\n      21.1% 78.9%, 19.8% 73.2%, 18.8% 68%, 17.9% 63.3%, 16.5% 59%, 14.6% 54.7%,\n      12.4% 50%, 10% 44.7%, 8.6% 38.9%, 10.7% 33.7%, 15.6% 30.1%, 20.5% 27.4%,\n      25% 25%, 28.9% 22.5%, 32.5% 19.7%, 36.1% 16.4%, 40% 12.7%, 44.6% 8.9%\n    )",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "rotate(309deg)",
+          "important": false
+        },
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.34, 1.45, 0.4, 1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "42.9%",
+      "context": "@keyframes md-loading-morph",
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "polygon(\n      50% 5.1%, 55.8% 5.6%, 61.5% 7.3%, 66.6% 9.9%, 71.1% 13.4%, 74.8% 17.6%,\n      77.6% 22.4%, 79.5% 27.4%, 80.3% 32.5%, 80.1% 37.5%, 79.1% 42.2%, 77.5% 46.4%,\n      76.4% 50%, 77.5% 53.6%, 79.1% 57.8%, 80.1% 62.5%, 80.3% 67.5%, 79.5% 72.6%,\n      77.6% 77.6%, 74.8% 82.4%, 71.1% 86.6%, 66.6% 90.1%, 61.5% 92.7%, 55.8% 94.4%,\n      50% 94.9%, 44.2% 94.4%, 38.5% 92.7%, 33.4% 90.1%, 28.9% 86.6%, 25.2% 82.4%,\n      22.4% 77.6%, 20.5% 72.6%, 19.7% 67.5%, 19.9% 62.5%, 20.9% 57.8%, 22.5% 53.6%,\n      23.6% 50%, 22.5% 46.4%, 20.9% 42.2%, 19.9% 37.5%, 19.7% 32.5%, 20.5% 27.4%,\n      22.4% 22.4%, 25.2% 17.6%, 28.9% 13.4%, 33.4% 9.9%, 38.5% 7.3%, 44.2% 5.6%\n    )",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "rotate(463deg)",
+          "important": false
+        },
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.34, 1.45, 0.4, 1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "57.1%",
+      "context": "@keyframes md-loading-morph",
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "polygon(\n      50% 3.4%, 55.7% 7.1%, 59.5% 14.5%, 62.8% 19.1%, 68.4% 18.2%, 76.4% 15.7%,\n      82.9% 17.1%, 84.3% 23.6%, 81.8% 31.6%, 80.9% 37.2%, 85.5% 40.5%, 92.9% 44.3%,\n      96.6% 50%, 92.9% 55.7%, 85.5% 59.5%, 80.9% 62.8%, 81.8% 68.4%, 84.3% 76.4%,\n      82.9% 82.9%, 76.4% 84.3%, 68.4% 81.8%, 62.8% 80.9%, 59.5% 85.5%, 55.7% 92.9%,\n      50% 96.6%, 44.3% 92.9%, 40.5% 85.5%, 37.2% 80.9%, 31.6% 81.8%, 23.6% 84.3%,\n      17.1% 82.9%, 15.7% 76.4%, 18.2% 68.4%, 19.1% 62.8%, 14.5% 59.5%, 7.1% 55.7%,\n      3.4% 50%, 7.1% 44.3%, 14.5% 40.5%, 19.1% 37.2%, 18.2% 31.6%, 15.7% 23.6%,\n      17.1% 17.1%, 23.6% 15.7%, 31.6% 18.2%, 37.2% 19.1%, 40.5% 14.5%, 44.3% 7.1%\n    )",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "rotate(617deg)",
+          "important": false
+        },
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.34, 1.45, 0.4, 1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "71.4%",
+      "context": "@keyframes md-loading-morph",
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "polygon(\n      50% 18.1%, 54.2% 17.7%, 58.9% 16.8%, 64.3% 15.5%, 70.5% 14.5%, 77% 14.8%,\n      82.4% 17.6%, 85.2% 23%, 85.5% 29.5%, 84.5% 35.7%, 83.2% 41.1%, 82.3% 45.8%,\n      81.9% 50%, 82.3% 54.2%, 83.2% 58.9%, 84.5% 64.3%, 85.5% 70.5%, 85.2% 77%,\n      82.4% 82.4%, 77% 85.2%, 70.5% 85.5%, 64.3% 84.5%, 58.9% 83.2%, 54.2% 82.3%,\n      50% 81.9%, 45.8% 82.3%, 41.1% 83.2%, 35.7% 84.5%, 29.5% 85.5%, 23% 85.2%,\n      17.6% 82.4%, 14.8% 77%, 14.5% 70.5%, 15.5% 64.3%, 16.8% 58.9%, 17.7% 54.2%,\n      18.1% 50%, 17.7% 45.8%, 16.8% 41.1%, 15.5% 35.7%, 14.5% 29.5%, 14.8% 23%,\n      17.6% 17.6%, 23% 14.8%, 29.5% 14.5%, 35.7% 15.5%, 41.1% 16.8%, 45.8% 17.7%\n    )",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "rotate(771deg)",
+          "important": false
+        },
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.34, 1.45, 0.4, 1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "85.7%",
+      "context": "@keyframes md-loading-morph",
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "polygon(\n      50% 14.5%, 54.9% 12.8%, 60.3% 11.6%, 66.1% 11.2%, 72% 11.9%, 77.7% 13.9%,\n      82.5% 17.5%, 86.1% 22.3%, 88.1% 28%, 88.8% 33.9%, 88.4% 39.7%, 87.2% 45.1%,\n      85.5% 50%, 83.5% 54.4%, 81.3% 58.4%, 79% 62%, 76.5% 65.3%, 73.9% 68.4%,\n      71.2% 71.2%, 68.4% 73.9%, 65.3% 76.5%, 62% 79%, 58.4% 81.3%, 54.4% 83.5%,\n      50% 85.5%, 45.1% 87.2%, 39.7% 88.4%, 33.9% 88.8%, 28% 88.1%, 22.3% 86.1%,\n      17.5% 82.5%, 13.9% 77.7%, 11.9% 72%, 11.2% 66.1%, 11.6% 60.3%, 12.8% 54.9%,\n      14.5% 50%, 16.5% 45.6%, 18.7% 41.6%, 21% 38%, 23.5% 34.7%, 26.1% 31.6%,\n      28.8% 28.8%, 31.6% 26.1%, 34.7% 23.5%, 38% 21%, 41.6% 18.7%, 45.6% 16.5%\n    )",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "rotate(926deg)",
+          "important": false
+        },
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.34, 1.45, 0.4, 1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-loading-morph",
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "polygon(\n      50% 5.3%, 55.4% 9.1%, 59.3% 15.3%, 64% 16.1%, 71.2% 13.3%, 77.1% 14.7%,\n      78.3% 21.7%, 78.1% 28.4%, 82.6% 31.2%, 90% 33.4%, 92.6% 38.6%, 88.4% 44.9%,\n      85.3% 50%, 88.4% 55.1%, 92.6% 61.4%, 90% 66.6%, 82.6% 68.8%, 78.1% 71.6%,\n      78.3% 78.3%, 77.1% 85.3%, 71.2% 86.7%, 64% 83.9%, 59.3% 84.7%, 55.4% 90.9%,\n      50% 94.7%, 44.6% 90.9%, 40.7% 84.7%, 36% 83.9%, 28.8% 86.7%, 22.9% 85.3%,\n      21.7% 78.3%, 21.9% 71.6%, 17.4% 68.8%, 10% 66.6%, 7.4% 61.4%, 11.6% 55.1%,\n      14.7% 50%, 11.6% 44.9%, 7.4% 38.6%, 10% 33.4%, 17.4% 31.2%, 21.9% 28.4%,\n      21.7% 21.7%, 22.9% 14.7%, 28.8% 13.3%, 36% 16.1%, 40.7% 15.3%, 44.6% 9.1%\n    )",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "rotate(1080deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-loading-indicator__sr-only",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "-1px",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "inset(50%)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-loading-indicator__shape",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-loading-pulse 2s ease-in-out infinite",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%, 100%",
+      "context": "@keyframes md-loading-pulse",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "50%",
+      "context": "@keyframes md-loading-pulse",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0.4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-loading-indicator__shape",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-loading-indicator--contained)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "Canvas",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "1px solid CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Loading Indicator",
+  "category": "Communication",
+  "parent": null,
+  "description": "The M3 Expressive loading moment. A morphing-shape indicator for indeterminate waits — distinct from a progress indicator, which reports how far along something is.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-loading-indicator.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-loading-indicator/md-loading-indicator.tsx",
+    "css": "packages/core/src/components/md-loading-indicator/md-loading-indicator.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "label"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "variant",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "label"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "variant",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

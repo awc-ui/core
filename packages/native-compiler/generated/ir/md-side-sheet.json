@@ -1,0 +1,1743 @@
+{
+  "tag": "md-side-sheet",
+  "className": "MdSideSheet",
+  "properties": [
+    {
+      "name": "open",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "open",
+      "optional": false,
+      "description": "Whether the sheet is visible"
+    },
+    {
+      "name": "variant",
+      "type": "'standard' | 'modal'",
+      "default": "'standard'",
+      "defaultValue": "standard",
+      "options": [
+        "standard",
+        "modal"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "`standard` coexists with page content; `modal` overlays with scrim"
+    },
+    {
+      "name": "side",
+      "type": "'start' | 'end'",
+      "default": "'end'",
+      "defaultValue": "end",
+      "options": [
+        "start",
+        "end"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "side",
+      "optional": false,
+      "description": "Which edge the sheet is anchored to"
+    },
+    {
+      "name": "headline",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "headline",
+      "optional": false,
+      "description": "Headline text (or use the headline slot)"
+    },
+    {
+      "name": "closeable",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "closeable",
+      "optional": false,
+      "description": "Show close icon button"
+    },
+    {
+      "name": "showBack",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "show-back",
+      "optional": false,
+      "description": "Show optional back navigation icon (modal only)"
+    },
+    {
+      "name": "scrimDismissible",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "scrim-dismissible",
+      "optional": false,
+      "description": "Whether clicking the scrim closes the sheet (modal only)"
+    },
+    {
+      "name": "topDivider",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "top-divider",
+      "optional": false,
+      "description": "Show divider between header and content"
+    },
+    {
+      "name": "bottomDivider",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "bottom-divider",
+      "optional": false,
+      "description": "Show divider between content and actions"
+    },
+    {
+      "name": "detached",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "detached",
+      "optional": false,
+      "description": "Detached style with rounded corners and margin"
+    },
+    {
+      "name": "sheetAriaLabel",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "aria-label",
+      "optional": false,
+      "description": "Custom aria-label for the container"
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "hasActions",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdOpen",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdClose",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdBack",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "whenClosed",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "close",
+      "parameters": [],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "back",
+      "description": "Custom back icon element (modal only)"
+    },
+    {
+      "name": "headline",
+      "description": "Custom headline content"
+    },
+    {
+      "name": "close",
+      "description": "Custom close element"
+    },
+    {
+      "name": "actions",
+      "description": "Bottom action buttons"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "scrim",
+      "description": "Modal scrim overlay"
+    },
+    {
+      "name": "container",
+      "description": "Sheet surface"
+    },
+    {
+      "name": "header",
+      "description": "Header row"
+    },
+    {
+      "name": "headline",
+      "description": "Headline text"
+    },
+    {
+      "name": "close",
+      "description": "Close button wrapper"
+    },
+    {
+      "name": "divider-top",
+      "description": "Divider between header and content"
+    },
+    {
+      "name": "content",
+      "description": "Scrollable content area"
+    },
+    {
+      "name": "divider-bottom",
+      "description": "Divider between content and actions"
+    },
+    {
+      "name": "actions",
+      "description": "Bottom action bar"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-side-sheet-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-side-sheet-container-shape",
+      "description": "Container corner radius (detached)"
+    },
+    {
+      "name": "--md-side-sheet-headline-color",
+      "description": "Headline text color"
+    },
+    {
+      "name": "--md-side-sheet-content-color",
+      "description": "Content text color"
+    },
+    {
+      "name": "--md-side-sheet-scrim-color",
+      "description": "Modal scrim overlay color"
+    },
+    {
+      "name": "--md-side-sheet-divider-color",
+      "description": "Divider color"
+    },
+    {
+      "name": "--md-side-sheet-width",
+      "description": "Sheet inline size"
+    },
+    {
+      "name": "--md-side-sheet-max-width",
+      "description": "Maximum inline size"
+    },
+    {
+      "name": "--md-side-sheet-icon-color",
+      "description": "Close / back icon color"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-side-sheet': true,\n          [`md-side-sheet--${this.variant}`]: true,\n          [`md-side-sheet--${this.side}`]: true,\n          'md-side-sheet--open': this.open,\n          'md-side-sheet--detached': this.detached,\n        }"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "isModal && (\n          <div\n            class=\"md-side-sheet__scrim\"\n            part=\"scrim\"\n            aria-hidden=\"true\"\n            onClick={this.handleScrimClick}\n          ></div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-side-sheet__container"
+          },
+          {
+            "name": "part",
+            "value": "container"
+          },
+          {
+            "name": "role",
+            "value": "isModal ? 'dialog' : 'region'"
+          },
+          {
+            "name": "aria-modal",
+            "value": "isModal ? 'true' : undefined"
+          },
+          {
+            "name": "aria-labelledby",
+            "value": "hasHeadline ? this.headlineId : undefined"
+          },
+          {
+            "name": "aria-label",
+            "value": "this.sheetAriaLabel || (!hasHeadline ? 'Side sheet' : undefined)"
+          },
+          {
+            "name": "aria-hidden",
+            "value": "!this.open ? 'true' : undefined"
+          },
+          {
+            "name": "inert",
+            "value": "!this.open"
+          },
+          {
+            "name": "tabindex",
+            "value": "-1"
+          },
+          {
+            "name": "ref",
+            "value": "(el) => (this.containerEl = el!)"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "isModal && (\n            <span\n              class=\"md-side-sheet__focus-guard\"\n              tabindex={0}\n              aria-hidden=\"true\"\n              onFocus={this.handleEndGuardFocus}\n            ></span>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "div",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-side-sheet__header"
+              },
+              {
+                "name": "part",
+                "value": "header"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "expression",
+                "source": "showBackBtn && (\n              <div class=\"md-side-sheet__back\">\n                <slot name=\"back\">\n                  <md-icon-button\n                    variant=\"standard\"\n                    icon=\"arrow_back\"\n                    aria-label=\"Back\"\n                    onClick={this.handleBackClick}\n                  ></md-icon-button>\n                </slot>\n              </div>\n            )"
+              },
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "span",
+                "attributes": [
+                  {
+                    "name": "id",
+                    "value": "this.headlineId"
+                  },
+                  {
+                    "name": "class",
+                    "value": "md-side-sheet__headline"
+                  },
+                  {
+                    "name": "part",
+                    "value": "headline"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "slot",
+                    "attributes": [
+                      {
+                        "name": "name",
+                        "value": "headline"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "kind": "expression",
+                        "source": "this.headline"
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "expression",
+                "source": "this.closeable && (\n              <div class=\"md-side-sheet__close\" part=\"close\">\n                <slot name=\"close\">\n                  <md-icon-button\n                    variant=\"standard\"\n                    icon=\"close\"\n                    aria-label=\"Close side sheet\"\n                    onClick={this.handleCloseClick}\n                  ></md-icon-button>\n                </slot>\n              </div>\n            )"
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.topDivider && (\n            <div class=\"md-side-sheet__divider\" part=\"divider-top\" aria-hidden=\"true\"></div>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "div",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-side-sheet__content"
+              },
+              {
+                "name": "part",
+                "value": "content"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "slot",
+                "attributes": [],
+                "children": []
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.hasActions && this.bottomDivider && (\n            <div class=\"md-side-sheet__divider md-side-sheet__divider--bottom\" part=\"divider-bottom\" aria-hidden=\"true\"></div>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.hasActions && (\n            <div class=\"md-side-sheet__actions\" part=\"actions\">\n              <slot name=\"actions\"></slot>\n            </div>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "isModal && (\n            <span\n              class=\"md-side-sheet__focus-guard\"\n              tabindex={0}\n              aria-hidden=\"true\"\n              onFocus={this.handleStartGuardFocus}\n            ></span>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 92
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Document access requires a native adapter.",
+      "line": 142
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 162
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
+      "line": 316
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 322
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 24
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-side-sheet/md-side-sheet.tsx",
+    "styleUrl": "md-side-sheet.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "34c5c48a16ac0a6ffe8d03bb1eb426509dc087959f387c995a153ecdcb8c8fe8"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-side-sheet-container-color, var(--md-sys-color-surface, #FFFBFE))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-side-sheet-container-shape, 0px)",
+          "important": false
+        },
+        {
+          "property": "--_headline-color",
+          "value": "var(--md-side-sheet-headline-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_content-color",
+          "value": "var(--md-side-sheet-content-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        },
+        {
+          "property": "--_scrim-color",
+          "value": "var(--md-side-sheet-scrim-color, rgba(0, 0, 0, 0.32))",
+          "important": false
+        },
+        {
+          "property": "--_divider-color",
+          "value": "var(--md-side-sheet-divider-color, var(--md-sys-color-outline-variant, #CAC4D0))",
+          "important": false
+        },
+        {
+          "property": "--_width",
+          "value": "var(--md-side-sheet-width, max(280px, calc(360px + var(--md-sys-density-scale, 0) * 16px)))",
+          "important": false
+        },
+        {
+          "property": "--_max-width",
+          "value": "var(--md-side-sheet-max-width, max(320px, calc(400px + var(--md-sys-density-scale, 0) * 16px)))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-side-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--standard)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "min(var(--_width), 100%)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "min(var(--_max-width), 100%)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--standard:not(.md-side-sheet--open))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--standard) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_content-color)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--standard.md-side-sheet--end) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-inline-start",
+          "value": "1px solid var(--_divider-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--standard.md-side-sheet--start) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-inline-end",
+          "value": "1px solid var(--_divider-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--modal)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "contents",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--modal:not(.md-side-sheet--open))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "contents",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__scrim",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "fixed",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_scrim-color)",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "var(--md-sys-z-index-popup, 1000)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--modal.md-side-sheet--open) .md-side-sheet__scrim",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--modal) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "fixed",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "var(--md-sys-z-index-dialog-scrim, 1001)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "min(var(--_width), 100%)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "min(var(--_max-width), 100%)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-surface-container-low, #F7F2FA)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_content-color)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-1)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),\n    opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--modal.md-side-sheet--end) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(100%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--modal.md-side-sheet--start) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(-100%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--modal.md-side-sheet--open) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(0)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context([dir=\"rtl\"]):host(.md-side-sheet--modal.md-side-sheet--end) .md-side-sheet__container,\n:host([dir=\"rtl\"].md-side-sheet--modal.md-side-sheet--end) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(-100%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context([dir=\"rtl\"]):host(.md-side-sheet--modal.md-side-sheet--start) .md-side-sheet__container,\n:host([dir=\"rtl\"].md-side-sheet--modal.md-side-sheet--start) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(100%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context([dir=\"rtl\"]):host(.md-side-sheet--modal.md-side-sheet--open) .md-side-sheet__container,\n:host([dir=\"rtl\"].md-side-sheet--modal.md-side-sheet--open) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--detached) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-side-sheet-container-shape, var(--md-sys-shape-corner-large, 16px))",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--modal.md-side-sheet--detached) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block",
+          "value": "max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "calc(100% - max(16px, calc(32px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-3)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--modal.md-side-sheet--detached.md-side-sheet--end) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-end",
+          "value": "16px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--modal.md-side-sheet--detached.md-side-sheet--start) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "16px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-side-sheet--standard.md-side-sheet--detached) .md-side-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "16px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "calc(100% - 32px)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__header",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)) max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__back",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "calc(-12px - var(--md-sys-density-scale, 0) * 1px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__headline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-title-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(16px, calc(22px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-title-large-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(22px, calc(28px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-title-large-letter-spacing, 0px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_headline-color)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__close",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "calc(-12px - var(--md-sys-density-scale, 0) * 1px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__close md-icon-button,\n.md-side-sheet__back md-icon-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__divider",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_divider-color)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow-y",
+          "value": "scroll",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-medium-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-medium-letter-spacing, 0.25px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_content-color)",
+          "important": false
+        },
+        {
+          "property": "scrollbar-width",
+          "value": "thin",
+          "important": false
+        },
+        {
+          "property": "scrollbar-color",
+          "value": "var(--md-sys-color-outline-variant, #CAC4D0) transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__content::-webkit-scrollbar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "8px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__content::-webkit-scrollbar-thumb",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-outline-variant, #CAC4D0)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "4px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__content::-webkit-scrollbar-track",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__actions",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "max(40px, calc(72px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot=\"back\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot=\"close\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__focus-guard",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "fixed",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "inset(50%)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "-1px",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__scrim,\n  :host(.md-side-sheet--modal) .md-side-sheet__container",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__container",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border",
+          "value": "2px solid CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__divider",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Side Sheet",
+  "category": "Containment",
+  "parent": null,
+  "description": "Supplementary content along the side of the screen. Standard (an inline, non-modal region that sits beside your content) or modal (a fixed overlay with a scrim and a focus trap), anchored to either logical edge, with an optional back affordance for nested flows.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-side-sheet.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-side-sheet/md-side-sheet.tsx",
+    "css": "packages/core/src/components/md-side-sheet/md-side-sheet.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "open",
+        "headline",
+        "closeable",
+        "showBack",
+        "scrimDismissible",
+        "topDivider",
+        "bottomDivider"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose",
+        "mdCancel",
+        "mdBack"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "headline",
+        "actions"
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "side",
+        "detached",
+        "sheetAriaLabel",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "whenClosed",
+        "close"
+      ],
+      "unsupportedSlots": [
+        "back",
+        "close"
+      ],
+      "notes": [
+        "System sheet replaces desktop side edge positioning."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "closeable",
+        "headline",
+        "open",
+        "scrimDismissible",
+        "showBack",
+        "side"
+      ],
+      "events": [
+        "mdBack",
+        "mdCancel",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "actions"
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "topDivider",
+        "bottomDivider",
+        "detached",
+        "sheetAriaLabel",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "whenClosed",
+        "close"
+      ],
+      "unsupportedSlots": [
+        "back",
+        "headline",
+        "close"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

@@ -1,0 +1,658 @@
+{
+  "tag": "md-status-dot",
+  "className": "MdStatusDot",
+  "properties": [
+    {
+      "name": "state",
+      "type": "MdStatusDotState",
+      "default": "'neutral'",
+      "defaultValue": "neutral",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "state",
+      "optional": false,
+      "description": "Presence state. Drives the dot's fill color and its corresponding\npulse-halo color (when `live` is `true`)."
+    },
+    {
+      "name": "size",
+      "type": "MdStatusDotSize",
+      "default": "'medium'",
+      "defaultValue": "medium",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "size",
+      "optional": false,
+      "description": "Diameter preset:\n- `small`  — 8 px (pairs with `md-avatar size=\"small\"`)\n- `medium` — 12 px (pairs with `md-avatar size=\"medium\"` — default)\n- `large`  — 16 px (pairs with `md-avatar size=\"large\"`)\n\nCustom diameters are exposed via the `--md-status-dot-size` CSS\ncustom property on the host."
+    },
+    {
+      "name": "inline",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "inline",
+      "optional": false,
+      "description": "Lay the dot out in normal flow instead of as an absolutely-positioned\ncorner badge.\n\nThe default mode is the avatar badge: `position: absolute` pinned 2px\noutside its positioned parent's inline/block end, with a surface-toned\nhalo separating it from the tile beneath. That is wrong wherever the dot\nsits BESIDE something — a legend swatch, a \"Market open\" line, a status\nlabel in a table cell — where it needs to flow with the text. Without\nthis prop each such use had to wrap the dot in a `position: relative`\nspan of an explicit size AND null out both inset custom properties; miss\none and the dot hangs low and to the right, overlapping its own label.\n\n`inline` makes the host an `inline-block` in normal flow, vertically\ncentred on the text, with no halo (the halo exists to separate the dot\nfrom an avatar tile; over ordinary text it reads as a stray ring). Set\n`--md-status-dot-outline-width` to bring it back."
+    },
+    {
+      "name": "shape",
+      "type": "'rect' | 'circle'",
+      "default": "'rect'",
+      "defaultValue": "rect",
+      "options": [
+        "rect",
+        "circle"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "shape",
+      "optional": false,
+      "description": "The SHAPE of the thing the dot is anchored to.\n\nThe dot anchors to the bottom-inline-end corner of its containing block,\nwhich is right for a `rect` host — a tile, a table cell, a rounded avatar\nsquare. It is wrong for a `circle`, because a circle's bounding-box corner\nlies outside the visible shape: measured on a 40px round avatar, the\ndefault anchor left the dot's centre 5.5px clear of the rim, floating in\nthe gap with nothing behind it.\n\n`circle` puts the dot ON the rim, at the 45° point where a presence dot\nbelongs. The maths is percentage-based, so it holds at every avatar size\nwithout the dot having to be told what that size is: the rim at 45° sits\n`(1 − 1/√2) / 2 ≈ 14.6447%` of the diameter in from each edge, and half the\ndot's own size comes back off to centre it there.\n\n`rect` stays the default deliberately — it is what a dot on a tile, a card\nor a table cell wants, and changing the default would move every dot that\nalready exists."
+    },
+    {
+      "name": "live",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "live",
+      "optional": false,
+      "description": "Pulse the dot outward in its own colour. Useful for \"live now\",\n\"in a call\", \"recording\" affordances. Respects\n`prefers-reduced-motion: reduce` automatically."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Optional accessible label.\n\n- When **empty** (default), the dot is exposed to AT as decorative\n  (`role=\"presentation\"` + `aria-hidden=\"true\"`) so the parent\n  element (typically an `md-avatar` or a list-item) can carry the\n  spoken status without doubling.\n- When **set** and `live` is **off**, the dot becomes `role=\"img\"` with\n  the value as its `aria-label` — a static, labelled status image.\n- When **set** and `live` is **on**, the dot becomes a `role=\"status\"`\n  live region so presence *changes* are announced as they occur. Use this\n  for standalone dots that aren't paired with another labelled element."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [],
+  "events": [],
+  "methods": [],
+  "slots": [],
+  "cssParts": [],
+  "cssProperties": [
+    {
+      "name": "--md-status-dot-size",
+      "description": "Dot diameter (overrides preset)"
+    },
+    {
+      "name": "--md-status-dot-color",
+      "description": "Dot fill color"
+    },
+    {
+      "name": "--md-status-dot-pulse-color",
+      "description": "Halo color used by the live pulse"
+    },
+    {
+      "name": "--md-status-dot-outline-color",
+      "description": "Halo outline (default surface)"
+    },
+    {
+      "name": "--md-status-dot-outline-width",
+      "description": "Halo outline width (default 2px)"
+    },
+    {
+      "name": "--md-status-dot-inset-end",
+      "description": "inline-end anchor offset (default -2px)"
+    },
+    {
+      "name": "--md-status-dot-inset-block-end",
+      "description": "block-end anchor offset (default -2px)"
+    },
+    {
+      "name": "--md-status-dot-pulse-duration",
+      "description": "Pulse animation period (default 1.6s)"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-status-dot': true,\n          [`md-status-dot--${this.state}`]: true,\n          [`md-status-dot--${this.size}`]: true,\n          // Only the circular case gets a class: `rect` is the default anchor\n          // the base rule already implements, so a `--rect` class would be a\n          // second name for \"nothing\".\n          'md-status-dot--circle': this.shape === 'circle',\n          'md-status-dot--live': this.live,\n          'md-status-dot--labelled': labelled,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "role"
+      },
+      {
+        "name": "aria-label",
+        "value": "labelled ? this.label : null"
+      },
+      {
+        "name": "aria-hidden",
+        "value": "labelled ? null : 'true'"
+      }
+    ],
+    "children": []
+  },
+  "diagnostics": [],
+  "source": {
+    "file": "packages/core/src/components/md-status-dot/md-status-dot.tsx",
+    "styleUrl": "md-status-dot.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "f2672be94176a96844730b0dd85bc72f6fc5387b0636d6069f930450049967c4"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_size",
+          "value": "var(--md-status-dot-size, max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_color",
+          "value": "var(--md-status-dot-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_pulse-color",
+          "value": "var(--md-status-dot-pulse-color, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_outline-color",
+          "value": "var(--md-status-dot-outline-color, var(--md-sys-color-surface, #FEF7FF))",
+          "important": false
+        },
+        {
+          "property": "--_outline-width",
+          "value": "var(--md-status-dot-outline-width, max(1px, calc(2px + var(--md-sys-density-scale, 0) * 0.25px)))",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "var(--md-status-dot-inset-end, -2px)",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "var(--md-status-dot-inset-block-end, -2px)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_color)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "var(--_outline-width) solid var(--_outline-color)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--md-sys-motion-duration-short2, 200ms)\n      var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    outline-color var(--md-sys-motion-duration-short2, 200ms)\n      var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-status-dot--small)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_size",
+          "value": "var(--md-status-dot-size, max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_outline-width",
+          "value": "var(--md-status-dot-outline-width, max(1px, calc(1.5px + var(--md-sys-density-scale, 0) * 0.125px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-status-dot--medium)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_size",
+          "value": "var(--md-status-dot-size, max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-status-dot--large)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_size",
+          "value": "var(--md-status-dot-size, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_outline-width",
+          "value": "var(--md-status-dot-outline-width, max(1.5px, calc(3px + var(--md-sys-density-scale, 0) * 0.375px)))",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "var(--md-status-dot-inset-end, -3px)",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "var(--md-status-dot-inset-block-end, -3px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-status-dot--circle)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-end",
+          "value": "var(--md-status-dot-inset-end, calc(14.6447% - var(--_size) / 2))",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "var(--md-status-dot-inset-block-end, calc(14.6447% - var(--_size) / 2))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([inline])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_outline-width",
+          "value": "var(--md-status-dot-outline-width, 0px)",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "vertical-align",
+          "value": "middle",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-status-dot--online)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-status-dot-color, #2DC653)",
+          "important": false
+        },
+        {
+          "property": "--_pulse-color",
+          "value": "var(--md-status-dot-pulse-color, rgba(45, 198, 83, 0.55))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-status-dot--away)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-status-dot-color, #F4B400)",
+          "important": false
+        },
+        {
+          "property": "--_pulse-color",
+          "value": "var(--md-status-dot-pulse-color, rgba(244, 180, 0, 0.55))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-status-dot--busy)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-status-dot-color, #DB4437)",
+          "important": false
+        },
+        {
+          "property": "--_pulse-color",
+          "value": "var(--md-status-dot-pulse-color, rgba(219, 68, 55, 0.55))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-status-dot--offline)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-status-dot-color, var(--md-sys-color-outline, #79747E))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-status-dot--invisible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-status-dot-color, var(--md-sys-color-surface, #FEF7FF))",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "inset 0 0 0 2px var(--md-sys-color-outline, #79747E)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-status-dot-pulse",
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "0 0 0 0 var(--_pulse-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "70%",
+      "context": "@keyframes md-status-dot-pulse",
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "0 0 0 8px transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-status-dot-pulse",
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "0 0 0 0 transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-status-dot--live)",
+      "context": "@media (prefers-reduced-motion: no-preference)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-status-dot-pulse\n      var(--md-status-dot-pulse-duration, 1.6s)\n      ease-out infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "Mark",
+          "important": false
+        },
+        {
+          "property": "outline-color",
+          "value": "ButtonFace",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-status-dot--invisible)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "ButtonFace",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "inset 0 0 0 2px ButtonText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Status Dot",
+  "category": "Communication",
+  "parent": null,
+  "description": "A presence or health indicator. A small coloured dot with six states and an optional pulse, absolutely positioned onto an avatar, a row, or any tile.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-status-dot.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-status-dot/md-status-dot.tsx",
+    "css": "packages/core/src/components/md-status-dot/md-status-dot.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "state",
+        "shape",
+        "label"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "size",
+        "inline",
+        "live",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native semantic color dot; flashing live indicator not implemented."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "inline",
+        "label",
+        "shape",
+        "state"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "size",
+        "live",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

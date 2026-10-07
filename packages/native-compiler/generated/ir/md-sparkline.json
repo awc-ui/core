@@ -1,0 +1,546 @@
+{
+  "tag": "md-sparkline",
+  "className": "MdSparkline",
+  "properties": [
+    {
+      "name": "data",
+      "type": "MdChartDataPoint[]",
+      "default": "[]",
+      "defaultValue": [],
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "data",
+      "optional": false,
+      "description": "Numeric data series. Pass `null` for gaps."
+    },
+    {
+      "name": "labels",
+      "type": "(string | number | Date)[] | undefined",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "labels",
+      "optional": false,
+      "description": "Optional category labels for tooltips / a11y."
+    },
+    {
+      "name": "variant",
+      "type": "'line' | 'bar' | 'area'",
+      "default": "'line'",
+      "defaultValue": "line",
+      "options": [
+        "line",
+        "bar",
+        "area"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Visual variant."
+    },
+    {
+      "name": "color",
+      "type": "MdChartColorRole | string",
+      "default": "'primary'",
+      "defaultValue": "primary",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "color",
+      "optional": false,
+      "description": "Sparkline tint (MD3 role or raw colour)."
+    },
+    {
+      "name": "curve",
+      "type": "MdChartCurve",
+      "default": "'smooth'",
+      "defaultValue": "smooth",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "curve",
+      "optional": false,
+      "description": "Curve type — only meaningful for line / area variants."
+    },
+    {
+      "name": "showTooltip",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "show-tooltip",
+      "optional": false,
+      "description": "Show tooltip + crosshair on hover. Defaults to true."
+    },
+    {
+      "name": "showMarks",
+      "type": "'none' | 'extremes' | 'edges' | 'all'",
+      "default": "'extremes'",
+      "defaultValue": "extremes",
+      "options": [
+        "none",
+        "extremes",
+        "edges",
+        "all"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "show-marks",
+      "optional": false,
+      "description": "Show min / max / first / last markers."
+    },
+    {
+      "name": "referenceAreas",
+      "type": "MdSparklineReferenceArea[] | undefined",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "reference-areas",
+      "optional": false,
+      "description": "Highlight a vertical range (e.g. weekend, anomaly window)."
+    },
+    {
+      "name": "valueFormatter",
+      "type": "(value: number | null) => string",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-formatter",
+      "optional": true,
+      "description": "Format raw values for tooltips / a11y."
+    },
+    {
+      "name": "heightProp",
+      "type": "string",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "height",
+      "optional": true,
+      "description": "Block-size override (defaults to 28px — table-cell friendly)."
+    },
+    {
+      "name": "noAnimation",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "no-animation",
+      "optional": false,
+      "description": "Disable all animation."
+    },
+    {
+      "name": "cornerRadius",
+      "type": "number",
+      "default": "2",
+      "defaultValue": 2,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "corner-radius",
+      "optional": false,
+      "description": "Bar corner radius (bar variant only)."
+    },
+    {
+      "name": "min",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "min",
+      "optional": true,
+      "description": "Pin the value scale's LOWER bound instead of auto-scaling to the data. Give\nseveral sparklines the same `min` + `max` and they share a comparable scale —\na 0–40% metric no longer fills the whole height and reads as maxed out."
+    },
+    {
+      "name": "max",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max",
+      "optional": true,
+      "description": "Pin the value scale's UPPER bound instead of auto-scaling to the data."
+    },
+    {
+      "name": "lineWidth",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "line-width",
+      "optional": true,
+      "description": "Line stroke width in px (line / area variants). Default 2.5."
+    },
+    {
+      "name": "markSize",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "mark-size",
+      "optional": true,
+      "description": "Marker RADIUS in px (line / area variants). Overrides the per-symbol default."
+    },
+    {
+      "name": "barWidth",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "bar-width",
+      "optional": true,
+      "description": "Fixed bar WIDTH in px (bar variant), centred in each slot. Default: auto."
+    }
+  ],
+  "state": [
+    {
+      "name": "mounted",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSparkClick",
+      "detail": "{ dataIndex: number; value: number | null }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdReady",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "refreshTheme",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "resize",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "getInstance",
+      "parameters": [],
+      "returnType": "Promise<LineChartEngine | BarChartEngine | null>"
+    }
+  ],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "canvas",
+      "description": "ECharts SVG container"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-sparkline-block-size",
+      "description": "Default block-size (default: 28px)"
+    },
+    {
+      "name": "--md-sparkline-inline-size",
+      "description": "Default inline-size (default: 100%)"
+    },
+    {
+      "name": "--md-sparkline-min-inline-size",
+      "description": "Minimum inline-size before clipping (default: 32px)"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-sparkline': true,\n          'md-sparkline--mounted': this.mounted,\n          [`md-sparkline--${this.variant}`]: true,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "img"
+      },
+      {
+        "name": "aria-label",
+        "value": "summary"
+      },
+      {
+        "name": "style",
+        "value": "this.heightProp ? { blockSize: this.heightProp } : undefined"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-sparkline__canvas"
+          },
+          {
+            "name": "part",
+            "value": "canvas"
+          },
+          {
+            "name": "ref",
+            "value": "el => this.bindChartHost(el as HTMLDivElement)"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "CALLABLE_PROP",
+      "severity": "warning",
+      "message": "Callable props require target-specific callback signatures.",
+      "line": 83
+    },
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "Native layout measurement must replace ResizeObserver.",
+      "line": 118
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 50
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-sparkline/md-sparkline.tsx",
+    "styleUrl": "md-sparkline.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "ea990fc75cf030b3847259fb86dce2ec21aab1f9bfdf81f586558401439791b8"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_block-size",
+          "value": "var(--md-sparkline-block-size, 28px)",
+          "important": false
+        },
+        {
+          "property": "--_inline-size",
+          "value": "var(--md-sparkline-inline-size, 100%)",
+          "important": false
+        },
+        {
+          "property": "--_min-inline-size",
+          "value": "var(--md-sparkline-min-inline-size, 32px)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "vertical-align",
+          "value": "middle",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_inline-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_block-size)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--_min-inline-size)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-sparkline__canvas",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "forced-color-adjust",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Sparkline",
+  "category": "Charts",
+  "parent": null,
+  "description": "A micro-chart with no chrome. A trend line, bar, or area sized to sit inside a table cell, a card, or a line of text. No axes, no legend, no title.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-sparkline.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-sparkline/md-sparkline.tsx",
+    "css": "packages/core/src/components/md-sparkline/md-sparkline.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "data",
+        "variant",
+        "color",
+        "heightProp",
+        "min",
+        "max",
+        "lineWidth",
+        "barWidth",
+        "cornerRadius",
+        "showMarks"
+      ],
+      "events": [
+        "mdSparkClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "labels",
+        "curve",
+        "showTooltip",
+        "referenceAreas",
+        "valueFormatter",
+        "noAnimation",
+        "markSize"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "refreshTheme",
+        "resize",
+        "getInstance"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Canvas sparkline, scalar/y/value data. Linear curves; referenceAreas and custom formatter not implemented."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "cornerRadius",
+        "data",
+        "heightProp",
+        "lineWidth",
+        "markSize",
+        "max",
+        "min",
+        "showMarks",
+        "variant"
+      ],
+      "events": [
+        "mdReady",
+        "mdSparkClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "labels",
+        "color",
+        "curve",
+        "showTooltip",
+        "referenceAreas",
+        "valueFormatter",
+        "noAnimation",
+        "barWidth"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "refreshTheme",
+        "resize",
+        "getInstance"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

@@ -1,0 +1,1653 @@
+{
+  "tag": "md-menu",
+  "className": "MdMenu",
+  "properties": [
+    {
+      "name": "open",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "open",
+      "optional": false,
+      "description": "Whether the menu is open."
+    },
+    {
+      "name": "anchor",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "anchor",
+      "optional": false,
+      "description": "ID of the anchor element to position relative to."
+    },
+    {
+      "name": "placement",
+      "type": "'bottom-start' | 'bottom-end' | 'top-start' | 'top-end'",
+      "default": "'bottom-start'",
+      "defaultValue": "bottom-start",
+      "options": [
+        "bottom-start",
+        "bottom-end",
+        "top-start",
+        "top-end"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "placement",
+      "optional": false,
+      "description": "Position of the menu relative to the anchor."
+    },
+    {
+      "name": "quick",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "quick",
+      "optional": false,
+      "description": "Skip open/close animation."
+    },
+    {
+      "name": "variant",
+      "type": "'baseline' | 'standard' | 'vibrant'",
+      "default": "'baseline'",
+      "defaultValue": "baseline",
+      "options": [
+        "baseline",
+        "standard",
+        "vibrant"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Visual variant.\n- 'baseline': MD3 baseline menu (square corners, surface container)\n- 'standard': M3 Expressive vertical menu (rounded, surface-based colors)\n- 'vibrant': M3 Expressive vertical menu (rounded, tertiary-based colors)"
+    },
+    {
+      "name": "layout",
+      "type": "'standard' | 'grouped'",
+      "default": "'standard'",
+      "defaultValue": "standard",
+      "options": [
+        "standard",
+        "grouped"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "layout",
+      "optional": false,
+      "description": "Layout style for vertical menus. 'standard' is flat, 'grouped' uses visual section separators."
+    },
+    {
+      "name": "useGap",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "use-gap",
+      "optional": false,
+      "description": "Use gap separators instead of dividers between groups (vertical menu only)."
+    },
+    {
+      "name": "emptyText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "empty-text",
+      "optional": false,
+      "description": "Message shown when all menu items are hidden (e.g. no filter results). Empty string disables."
+    },
+    {
+      "name": "matchAnchorWidth",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "match-anchor-width",
+      "optional": false,
+      "description": "When true, the menu surface min-width matches the anchor element's width. The menu still grows wider if items need more space."
+    },
+    {
+      "name": "responsive",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "responsive",
+      "optional": false,
+      "description": "Adapt to compact viewports. The menu is *always* clamped within the\nviewport (it never overflows the screen and pins to the edges with a\nmargin). When `responsive` is set, on viewports at or below the compact\nbreakpoint (600px) the menu additionally expands to near-full-width\nbelow the trigger for comfortable touch use."
+    },
+    {
+      "name": "persistent",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "persistent",
+      "optional": false,
+      "description": "When set, the menu does NOT auto-dismiss in response to interaction\nelsewhere on the page. By default a menu closes when:\n  1. The user clicks outside the menu and its anchor.\n  2. Another non-persistent menu opens (single-open coordination —\n     opening menu B closes menu A so two top-level menus never\n     overlap each other on screen).\n\n`persistent` opts out of both auto-dismiss paths. The menu then only\ncloses via `close()`, the anchor's toggle, item activation, or\nEscape. Useful for modal-style pickers, multi-step menus, and any\ncontext where the consumer manages dismissal explicitly.\n\nSubmenus (an `<md-menu>` rendered inside a parent menu's `submenu`\nslot) are never affected by sibling-menu dismissal even without this\nflag — ancestors and descendants are always preserved."
+    },
+    {
+      "name": "autoFocus",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "auto-focus",
+      "optional": false,
+      "description": "When false, opening the menu initializes roving tabindex without moving\nfocus to the first item. The consumer handles focus (e.g. docked pickers\nthat scroll to the selected option). `show({ autoFocus: false })` still\ntakes precedence for a single open."
+    },
+    {
+      "name": "maxHeight",
+      "type": "number | string",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max-height",
+      "optional": true,
+      "description": "Cap the menu surface block-size. When the items exceed it the list\nscrolls vertically inside a plain scroll viewport. A number is treated\nas pixels; any CSS length is passed through (e.g. `'50vh'`). Unset, the\ncap falls back to `--md-menu-max-block-size` (250px). Applies to menus\nwith submenus too: their flyouts are `position: fixed` and escape the\nscroll viewport rather than being clipped by it."
+    },
+    {
+      "name": "listLabel",
+      "type": "string",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "list-label",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "listbox",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "listbox",
+      "optional": false,
+      "description": "Present the popup as a WAI-ARIA listbox (surface `role=\"presentation\"`,\nanchor `aria-haspopup=\"listbox\"`) rather than a menu. `md-select` sets this\nfor both its virtual and non-virtual lists so the popup is a listbox of\noptions regardless of size. (The virtual path additionally registers a\nprovider, which adds the aria-activedescendant focus model.)"
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "closing",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "sectioned",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "empty",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSubmenu",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "listboxMode",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdOpen",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": false,
+      "composed": false
+    },
+    {
+      "name": "mdClose",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": false,
+      "composed": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "setComboboxElement",
+      "parameters": [
+        {
+          "name": "el",
+          "type": "HTMLElement | null"
+        }
+      ],
+      "returnType": "inferred"
+    },
+    {
+      "name": "setVirtualProvider",
+      "parameters": [
+        {
+          "name": "provider",
+          "type": "VirtualMenuProvider | null"
+        }
+      ],
+      "returnType": "inferred"
+    },
+    {
+      "name": "getScrollViewport",
+      "parameters": [],
+      "returnType": "Promise<HTMLElement | null>"
+    },
+    {
+      "name": "show",
+      "parameters": [
+        {
+          "name": "opts",
+          "type": "{ autoFocus?: boolean }"
+        }
+      ],
+      "returnType": "inferred"
+    },
+    {
+      "name": "reposition",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "whenClosed",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "close",
+      "parameters": [],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "header"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "empty-text"
+    },
+    {
+      "name": "surface"
+    },
+    {
+      "name": "menu-viewport"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-menu-min-width",
+      "description": "Min container width (default 112px)"
+    },
+    {
+      "name": "--md-menu-max-width",
+      "description": "Max container width (default 280px)"
+    },
+    {
+      "name": "--md-menu-max-block-size",
+      "description": "Max height before the list scrolls (default 250px);"
+    },
+    {
+      "name": "--md-menu-inline-surface-color",
+      "description": "Background for md-menu--inline-fill only (default transparent)"
+    },
+    {
+      "name": "--md-menu-inline-fill-radius-end",
+      "description": "Bottom corner radius for inline-fill embed (default 0)"
+    },
+    {
+      "name": "--md-menu-viewport-margin"
+    },
+    {
+      "name": "--md-menu-group-gap"
+    },
+    {
+      "name": "--md-menu-section-gap"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-menu': true,\n          'md-menu--open': this.open,\n          'md-menu--closing': this.closing,\n          'md-menu--quick': this.quick,\n          [`md-menu--${this.variant}`]: true,\n          [`md-menu--${this.layout}`]: this.variant !== 'baseline',\n          'md-menu--gap': this.useGap,\n          'md-menu--sectioned': this.sectioned,\n          'md-menu--empty': this.empty,\n          'md-menu--responsive': this.responsive,\n          'md-menu--has-submenu': this.hasSubmenu,\n          'md-menu--scroll': this.scrollCapped,\n        }"
+      },
+      {
+        "name": "aria-hidden",
+        "value": "(!this.open || this.closing) ? 'true' : 'false'"
+      },
+      {
+        "name": "inert",
+        "value": "!this.open || this.closing"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-menu__surface"
+          },
+          {
+            "name": "part",
+            "value": "surface"
+          },
+          {
+            "name": "role",
+            "value": "this.asListbox ? 'presentation' : 'menu'"
+          },
+          {
+            "name": "id",
+            "value": "this.menuId"
+          },
+          {
+            "name": "aria-orientation",
+            "value": "this.asListbox ? undefined : 'vertical'"
+          },
+          {
+            "name": "aria-labelledby",
+            "value": "this.asListbox ? undefined : this.anchor || undefined"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "name",
+                "value": "header"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.useScrollViewport ? (\n            <div\n              class=\"md-menu__scroll-shadow\"\n              part=\"menu-viewport\"\n              // Keyboard access to the scrolling option list (WCAG 2.1.1): the\n              // active option's roving tabindex can sit on a PINNED HEADER item\n              // (e.g. a select's \"Select all\") that lives outside this viewport,\n              // leaving the scroll area with no focusable child. Make it focusable\n              // — but ONLY in listbox mode. There the surface is role=\"presentation\"\n              // (the owner renders the real listbox), so a focusable tabindex=\"0\"\n              // viewport is harmless. In a plain role=\"menu\" the viewport would be a\n              // role-less `div[tabindex]` OWNED by the menu, which axe flags as a\n              // disallowed menu child (aria-required-children) — and a menu's own\n              // menuitems (roving tabindex) already satisfy WCAG 2.1.1 without it.\n              tabindex={this.asListbox ? '0' : undefined}\n              // inline-fill is bounded by its flex parent; a capped menu is\n              // bounded by max-height so the viewport scrolls within it. Clamp\n              // to the viewport so an oversized cap can't run off-screen.\n              style={\n                this.inlineFill\n                  ? undefined // flexes to fill its parent; no fixed cap\n                  : {\n                      // Bound the scroll region to the smallest of: any explicit\n                      // max-height, the default cap, the space on the chosen side\n                      // (--md-menu-avail-block, set by positionMenu), and the\n                      // viewport — so it scrolls instead of overflowing.\n                      //\n                      // `--md-menu-max-block-size` is in the fallback branch and\n                      // NOT the first, because this is where a capped menu is\n                      // actually sized: the CSS rule on `.md-menu__surface` never\n                      // applies to `md-menu--scroll`, which is the variant\n                      // md-select, md-multi-select and md-autocomplete all use.\n                      // A default set only in the stylesheet therefore reached\n                      // every menu except the three that most needed it.\n                      maxBlockSize: this.maxHeightValue\n                        ? `min(${this.maxHeightValue}, var(--md-menu-avail-block, 100dvh), calc(100dvh - 2 * var(--md-menu-viewport-margin, 8px)))`\n                        : `min(var(--md-menu-max-block-size, 250px), var(--md-menu-avail-block, 100dvh), calc(100dvh - 2 * var(--md-menu-viewport-margin, 8px)))`,\n                    }\n              }\n            >\n              {this.renderMenuBody()}\n            </div>\n          ) : (\n            this.renderMenuBody()\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 147
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Document access requires a native adapter.",
+      "line": 216
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 282
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 282
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 435
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 448
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 1265
+    },
+    {
+      "code": "DOM_MUTATION",
+      "severity": "warning",
+      "message": "classList depends on browser semantics and requires a native adapter.",
+      "line": 1383
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 24
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-menu/md-menu.tsx",
+    "styleUrl": "md-menu.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "8e661b1e39b36c1c69a10e3bde6ef67c72f4253c331b80b5be608659fb6b4fd0"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "fixed",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--open)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([popover])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-surface-container, #F7F2FA)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "0 1px 2px rgba(0, 0, 0, 0.3),\n    0 2px 6px 2px rgba(0, 0, 0, 0.15)",
+          "important": false
+        },
+        {
+          "property": "min-width",
+          "value": "var(--md-menu-min-width, 112px)",
+          "important": false
+        },
+        {
+          "property": "max-width",
+          "value": "min(\n    var(--md-menu-max-width, 100vw),\n    calc(100vw - 2 * var(--md-menu-viewport-margin, 8px))\n  )",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-sys-spacing-inset-xs, 4px) 0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scaleY(0.8)",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "top left",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),\n    transform var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--open) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--closing) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scaleY(0.8)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),\n    transform var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--closing)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--quick) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--inline-fill)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--inline-fill) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--md-menu-inline-fill-radius-end, 0)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--md-menu-inline-fill-radius-end, 0)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-menu-inline-surface-color, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--inline-fill) .md-menu__scroll-shadow",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--inline-fill) .md-menu__surface ::slotted(md-menu-item:last-child)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--md-menu-inline-fill-radius-end, 0)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--md-menu-inline-fill-radius-end, 0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--scroll) .md-menu__scroll-shadow",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu__scroll-shadow",
+      "context": null,
+      "declarations": [
+        {
+          "property": "overflow-y",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "overflow-anchor",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([match-anchor-width]) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "max-width",
+          "value": "calc(100vw - 2 * var(--md-menu-viewport-margin, 8px))",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--responsive) .md-menu__surface",
+      "context": "@media (max-width: 600px)",
+      "declarations": [
+        {
+          "property": "width",
+          "value": "calc(100vw - 2 * var(--md-menu-viewport-margin, 8px))",
+          "important": false
+        },
+        {
+          "property": "min-width",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "max-width",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([placement=\"bottom-start\"]) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "top left",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([placement=\"bottom-end\"]) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "top right",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([placement=\"top-start\"]) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "bottom left",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([placement=\"top-end\"]) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "bottom right",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--standard) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-surface-container-low, #F7F2FA)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "0 1px 3px rgba(0, 0, 0, 0.12),\n    0 4px 8px 3px rgba(0, 0, 0, 0.08)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-sys-spacing-inset-xs, 4px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item),\n:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:first-child),\n:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:first-child)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:last-child),\n:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:last-child)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:hover),\n:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-extra-small, 4px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:active),\n:host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item.md-menu-item--selected),\n:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:active)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-medium, 12px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:first-child:hover),\n:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:first-child:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--md-sys-shape-corner-extra-small, 4px)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--md-sys-shape-corner-extra-small, 4px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:last-child:hover),\n:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:last-child:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--md-sys-shape-corner-extra-small, 4px)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--md-sys-shape-corner-extra-small, 4px)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--vibrant) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-tertiary-container, #FFD8E4)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "0 1px 3px rgba(0, 0, 0, 0.12),\n    0 4px 8px 3px rgba(0, 0, 0, 0.08)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-sys-spacing-inset-xs, 4px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item),\n:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:first-child),\n:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:first-child)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:last-child),\n:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:last-child)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:hover),\n:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-extra-small, 4px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:active),\n:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item.md-menu-item--selected),\n:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:active)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-medium, 12px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:first-child:hover),\n:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:first-child:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--md-sys-shape-corner-extra-small, 4px)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--md-sys-shape-corner-extra-small, 4px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:last-child:hover),\n:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:last-child:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--md-sys-shape-corner-extra-small, 4px)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--md-sys-shape-corner-extra-small, 4px)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:first-child:last-child:hover),\n:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:first-child:last-child:hover),\n:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:first-child:last-child:hover),\n:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:first-child:last-child:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--gap) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-xs, 4px)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--grouped.md-menu--gap.md-menu--standard) .md-menu__surface,\n:host(.md-menu--grouped.md-menu--gap.md-menu--vibrant) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-menu-group-gap, 4px)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--grouped.md-menu--gap.md-menu--standard:not(.md-menu--has-submenu)) .md-menu__surface,\n:host(.md-menu--grouped.md-menu--gap.md-menu--vibrant:not(.md-menu--has-submenu)) .md-menu__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "filter",
+          "value": "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15))\n    drop-shadow(0 2px 6px rgba(0, 0, 0, 0.1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--grouped.md-menu--gap.md-menu--standard.md-menu--has-submenu) ::slotted(md-menu-item-group),\n:host(.md-menu--grouped.md-menu--gap.md-menu--vibrant.md-menu--has-submenu) ::slotted(md-menu-item-group)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "0 1px 2px rgba(0, 0, 0, 0.15),\n    0 2px 6px rgba(0, 0, 0, 0.1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--grouped.md-menu--gap) .md-menu__surface ::slotted(md-menu-item-group),\n:host(.md-menu--grouped.md-menu--gap) .md-menu__scroll-shadow ::slotted(md-menu-item-group)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--grouped.md-menu--gap) .md-menu__scroll-shadow",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "row-gap",
+          "value": "var(--md-menu-group-gap, 4px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--sectioned.md-menu--baseline) .md-menu__surface ::slotted([gap])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-bottom",
+          "value": "var(--md-menu-section-gap, 2px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu__empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-sys-typescale-body-medium-size, 14px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-body-medium-line-height, 20px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu--empty) .md-menu__empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Menu",
+  "category": "Navigation",
+  "parent": null,
+  "description": "A temporary set of actions or options, anchored to a trigger. Handles placement, viewport flipping and clamping, roving focus, typeahead and dismissal. It is also the dropdown surface inside md-select, md-multi-select, md-autocomplete and md-date-picker.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-menu.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-menu/md-menu.tsx",
+    "css": "packages/core/src/components/md-menu/md-menu.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "open",
+        "persistent",
+        "emptyText",
+        "layout",
+        "listLabel"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "header"
+      ],
+      "unsupportedProperties": [
+        "anchor",
+        "placement",
+        "quick",
+        "variant",
+        "useGap",
+        "matchAnchorWidth",
+        "responsive",
+        "autoFocus",
+        "maxHeight",
+        "listbox",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "setComboboxElement",
+        "setVirtualProvider",
+        "getScrollViewport",
+        "show",
+        "reposition",
+        "whenClosed",
+        "close"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native expandable menu surface; anchor selectors and popover collision placement have no native equivalent."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "open"
+      ],
+      "events": [
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "anchor",
+        "placement",
+        "quick",
+        "variant",
+        "layout",
+        "useGap",
+        "emptyText",
+        "matchAnchorWidth",
+        "responsive",
+        "persistent",
+        "autoFocus",
+        "maxHeight",
+        "listLabel",
+        "listbox",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "setComboboxElement",
+        "setVirtualProvider",
+        "getScrollViewport",
+        "show",
+        "reposition",
+        "whenClosed",
+        "close"
+      ],
+      "unsupportedSlots": [
+        "header"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

@@ -1,0 +1,1046 @@
+{
+  "tag": "md-avatar",
+  "className": "MdAvatar",
+  "properties": [
+    {
+      "name": "src",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "src",
+      "optional": false,
+      "description": "Image URL. When set, the avatar renders as an `<img>` element."
+    },
+    {
+      "name": "alt",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "alt",
+      "optional": false,
+      "description": "Alternative text for the image. When empty, the image is exposed to\nAT as decorative (`aria-hidden`); the host carries the accessible\nlabel instead (see `label`)."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "name",
+      "optional": false,
+      "description": "Full name. The component derives initials automatically:\n  - `\"Ada Lovelace\"` → `\"AL\"`\n  - `\"Cher\"`         → `\"C\"`\n  - `\"  john   doe\"` → `\"JD\"`\n\nHonored only when `src` is not set (or fails to load) and\n`initials` is empty."
+    },
+    {
+      "name": "initials",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "initials",
+      "optional": false,
+      "description": "Explicit initials override. Bypasses the `name` parsing entirely.\nTruncated to the first 3 grapheme clusters at render time so a\nstray \"WXYZ\" can't blow out the layout."
+    },
+    {
+      "name": "size",
+      "type": "MdAvatarSize",
+      "default": "'medium'",
+      "defaultValue": "medium",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "size",
+      "optional": false,
+      "description": "Avatar size. Accepts either a named preset or any CSS length.\n\nPresets:\n- `small`   — 24×24 (typography: label-medium)\n- `medium`  — 40×40 (typography: title-medium)  [default]\n- `large`   — 56×56 (typography: title-large)\n\nCustom values:\n- Unitless number → pixels (`size=\"72\"` → 72px)\n- Any CSS length  → passes through (`size=\"4rem\"`, `size=\"10vw\"`,\n  `size=\"clamp(28px, 4vw, 72px)\"`)\n\nCustom values are wired through the existing `--md-avatar-size` CSS\ncustom property, so per-instance overrides via `style` / class still\nwin when set."
+    },
+    {
+      "name": "shape",
+      "type": "MdAvatarShape",
+      "default": "'circle'",
+      "defaultValue": "circle",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "shape",
+      "optional": false,
+      "description": "Container shape.\n- `circle`  — fully rounded (`50%`)             [default]\n- `rounded` — `--md-sys-shape-corner-medium` (12px)\n- `square`  — sharp corners (`0`)"
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Accessible label for the avatar. When empty:\n  - if `alt` is set, that is exposed instead\n  - if `name` is set, that is exposed instead\n  - otherwise the avatar is hidden from AT (`role=\"presentation\"`)\n    so it doesn't add noise next to a labelled control."
+    },
+    {
+      "name": "colorFromName",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "color-from-name",
+      "optional": false,
+      "description": "When `true` the avatar background is deterministically picked from a\ntonal palette using the initials/name as a hash seed. When `false`,\nthe avatar uses the neutral on-surface tone."
+    },
+    {
+      "name": "loading",
+      "type": "'eager' | 'lazy'",
+      "default": "'lazy'",
+      "defaultValue": "lazy",
+      "options": [
+        "eager",
+        "lazy"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "loading",
+      "optional": false,
+      "description": "`<img>` `loading` attribute."
+    },
+    {
+      "name": "crossorigin",
+      "type": "'' | 'anonymous' | 'use-credentials'",
+      "default": "''",
+      "defaultValue": "",
+      "options": [
+        "",
+        "anonymous",
+        "use-credentials"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "crossorigin",
+      "optional": false,
+      "description": "`<img>` `crossorigin` attribute (forwarded only when set)."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "imageFailed",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdLoad",
+      "detail": "{ src: string }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdError",
+      "detail": "{ src: string }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "image",
+      "description": "The `<img>` element (image mode)"
+    },
+    {
+      "name": "initials",
+      "description": "The initials text element"
+    },
+    {
+      "name": "icon",
+      "description": "The fallback person icon"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-avatar-size",
+      "description": "Square size of the host"
+    },
+    {
+      "name": "--md-avatar-container-color",
+      "description": "Container fill (initials/icon mode)"
+    },
+    {
+      "name": "--md-avatar-container-shape",
+      "description": "Border-radius override"
+    },
+    {
+      "name": "--md-avatar-label-color",
+      "description": "Initials / icon color"
+    },
+    {
+      "name": "--md-avatar-label-font-family",
+      "description": "Initials font family"
+    },
+    {
+      "name": "--md-avatar-label-font-size",
+      "description": "Initials font size"
+    },
+    {
+      "name": "--md-avatar-label-font-weight",
+      "description": "Initials font weight"
+    },
+    {
+      "name": "--md-avatar-icon-size",
+      "description": "Icon glyph size"
+    },
+    {
+      "name": "--md-avatar-outline-color",
+      "description": "Optional outline color"
+    },
+    {
+      "name": "--md-avatar-outline-width",
+      "description": "Optional outline width (default 0)"
+    },
+    {
+      "name": "--md-avatar-label-letter-spacing"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-avatar': true,\n          [`md-avatar--${this.size}`]: isPresetSize,\n          'md-avatar--custom-size': !isPresetSize && !!customSize,\n          [`md-avatar--${this.shape}`]: true,\n          [`md-avatar--mode-${fallbackMode}`]: true,\n          [`md-avatar--palette-${palette}`]: palette > 0 && fallbackMode !== 'image',\n          'md-avatar--has-image': hasImage,\n        }"
+      },
+      {
+        "name": "style",
+        "value": "hostStyle"
+      },
+      {
+        "name": "role",
+        "value": "a11yLabel ? 'img' : 'presentation'"
+      },
+      {
+        "name": "aria-label",
+        "value": "a11yLabel"
+      },
+      {
+        "name": "aria-hidden",
+        "value": "a11yLabel ? null : 'true'"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "fallbackMode === 'image' && (\n          <img\n            class=\"md-avatar__image\"\n            part=\"image\"\n            src={this.src}\n            alt={this.alt || ''}\n            loading={this.loading}\n            crossorigin={this.crossorigin || undefined}\n            aria-hidden=\"true\"\n            draggable={false}\n            onLoad={this.handleImageLoad}\n            onError={this.handleImageError}\n          />\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "fallbackMode === 'initials' && (\n          <span class=\"md-avatar__initials\" part=\"initials\" aria-hidden=\"true\">\n            {computedInitials}\n          </span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "fallbackMode === 'slot' && (\n          <slot>\n            <span class=\"md-avatar__icon material-symbols-outlined\" part=\"icon\" aria-hidden=\"true\">\n              person\n            </span>\n          </slot>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 57
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-avatar/md-avatar.tsx",
+    "styleUrl": "md-avatar.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "ab0383d758f19474a45564c430355d372183410150481924576f7883c93b5549"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_size",
+          "value": "var(--md-avatar-size, max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px)))",
+          "important": false
+        },
+        {
+          "property": "--_container-color",
+          "value": "var(\n    --md-avatar-container-color,\n    var(--md-sys-color-surface-container-highest, #E6E0E9)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(\n    --md-avatar-label-color,\n    var(--md-sys-color-on-surface-variant, #49454F)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_shape",
+          "value": "var(--md-avatar-container-shape, 50%)",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-avatar-icon-size, calc(var(--_size) * 0.6))",
+          "important": false
+        },
+        {
+          "property": "--_label-font-family",
+          "value": "var(\n    --md-avatar-label-font-family,\n    var(--md-sys-typescale-title-medium-font-family, system-ui, sans-serif)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_label-font-size",
+          "value": "var(--md-avatar-label-font-size, calc(var(--_size) * 0.4))",
+          "important": false
+        },
+        {
+          "property": "--_label-font-weight",
+          "value": "var(\n    --md-avatar-label-font-weight,\n    var(--md-sys-typescale-title-medium-font-weight, 500)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_label-letter-spacing",
+          "value": "var(--md-avatar-label-letter-spacing, 0.05em)",
+          "important": false
+        },
+        {
+          "property": "--_outline-color",
+          "value": "var(--md-avatar-outline-color, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_outline-width",
+          "value": "var(--md-avatar-outline-width, 0)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "vertical-align",
+          "value": "middle",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_shape)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_label-color)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "var(--_outline-width) solid var(--_outline-color)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "calc(-1 * var(--_outline-width))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--small)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_size",
+          "value": "var(--md-avatar-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1.5px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--medium)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_size",
+          "value": "var(--md-avatar-size, max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--large)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_size",
+          "value": "var(--md-avatar-size, max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--circle)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_shape",
+          "value": "var(--md-avatar-container-shape, 50%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--rounded)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_shape",
+          "value": "var(--md-avatar-container-shape, var(--md-sys-shape-corner-medium, 12px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--square)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_shape",
+          "value": "var(--md-avatar-container-shape, 0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--mode-image)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-avatar__image",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "object-fit",
+          "value": "cover",
+          "important": false
+        },
+        {
+          "property": "object-position",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "-webkit-user-drag",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-avatar__initials",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--_label-font-family)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_label-font-size)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--_label-font-weight)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--_label-letter-spacing)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "uppercase",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "\"tnum\"",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-avatar__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted(*:not(md-badge))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "fill",
+          "value": "currentColor",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--palette-1)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(\n    --md-avatar-palette-1-container,\n    var(--md-sys-color-primary-container, #EADDFF)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(\n    --md-avatar-palette-1-label,\n    var(--md-sys-color-on-primary-container, #21005D)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--palette-2)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(\n    --md-avatar-palette-2-container,\n    var(--md-sys-color-secondary-container, #E8DEF8)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(\n    --md-avatar-palette-2-label,\n    var(--md-sys-color-on-secondary-container, #1D192B)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--palette-3)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(\n    --md-avatar-palette-3-container,\n    var(--md-sys-color-tertiary-container, #FFD8E4)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(\n    --md-avatar-palette-3-label,\n    var(--md-sys-color-on-tertiary-container, #31111D)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--palette-4)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(\n    --md-avatar-palette-4-container,\n    var(--md-sys-color-error-container, #F9DEDC)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(\n    --md-avatar-palette-4-label,\n    var(--md-sys-color-on-error-container, #410E0B)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--palette-5)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(\n    --md-avatar-palette-5-container,\n    color-mix(in srgb, var(--md-sys-color-primary, #6750A4) 22%, var(--md-sys-color-surface, #FEF7FF))\n  )",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(\n    --md-avatar-palette-5-label,\n    color-mix(in srgb, var(--md-sys-color-primary, #6750A4) 72%, var(--md-sys-color-on-surface, #1C1B1F))\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--palette-6)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(\n    --md-avatar-palette-6-container,\n    color-mix(in srgb, var(--md-sys-color-tertiary, #7D5260) 22%, var(--md-sys-color-surface, #FEF7FF))\n  )",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(\n    --md-avatar-palette-6-label,\n    color-mix(in srgb, var(--md-sys-color-tertiary, #7D5260) 72%, var(--md-sys-color-on-surface, #1C1B1F))\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-avatar--palette-7)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(\n    --md-avatar-palette-7-container,\n    color-mix(in srgb, var(--md-sys-color-secondary, #625B71) 22%, var(--md-sys-color-surface, #FEF7FF))\n  )",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(\n    --md-avatar-palette-7-label,\n    color-mix(in srgb, var(--md-sys-color-secondary, #625B71) 72%, var(--md-sys-color-on-surface, #1C1B1F))\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "ButtonFace",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "ButtonText",
+          "important": false
+        },
+        {
+          "property": "--_outline-color",
+          "value": "ButtonText",
+          "important": false
+        },
+        {
+          "property": "--_outline-width",
+          "value": "1px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Avatar",
+  "category": "Data Display",
+  "parent": null,
+  "description": "A person or entity, as an image, initials, or a fallback glyph. It resolves one source from a fixed chain — image, then initials, then slotted content, then a person icon — with a deterministic container colour hashed from the identity.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-avatar.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-avatar/md-avatar.tsx",
+    "css": "packages/core/src/components/md-avatar/md-avatar.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "src",
+        "alt",
+        "name",
+        "initials",
+        "size",
+        "shape",
+        "label"
+      ],
+      "events": [
+        "mdLoad",
+        "mdError"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "colorFromName",
+        "loading",
+        "crossorigin",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        ""
+      ],
+      "notes": [
+        "AsyncImage loads remote images. Native image cache/loading replaces browser loading/crossorigin."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "alt",
+        "initials",
+        "label",
+        "name",
+        "shape",
+        "size",
+        "src"
+      ],
+      "events": [
+        "mdError",
+        "mdLoad"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "colorFromName",
+        "loading",
+        "crossorigin",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native asynchronous HTTP(S) bitmap loading with initials/name fallback. CSS loading/crossorigin policies do not map to Android."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

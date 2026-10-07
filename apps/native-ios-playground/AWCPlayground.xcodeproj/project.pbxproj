@@ -1,0 +1,43 @@
+// !$*UTF8*$!
+{
+    archiveVersion = 1;
+    classes = {};
+    objectVersion = 56;
+    objects = {
+        A00000000000000000000001 = { isa = PBXBuildFile; fileRef = A00000000000000000000002; };
+        A00000000000000000000003 = { isa = PBXBuildFile; productRef = A00000000000000000000004; };
+        A00000000000000000000002 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWCPlaygroundApp.swift; sourceTree = "<group>"; };
+        A00000000000000000000005 = { isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AWCPlayground.app; sourceTree = BUILT_PRODUCTS_DIR; };
+        A00000000000000000000006 = { isa = PBXGroup; children = (A00000000000000000000007, A00000000000000000000008); sourceTree = "<group>"; };
+        A00000000000000000000007 = { isa = PBXGroup; children = (A00000000000000000000002); path = AWCPlayground; sourceTree = "<group>"; };
+        A00000000000000000000008 = { isa = PBXGroup; children = (A00000000000000000000005); name = Products; sourceTree = "<group>"; };
+        A00000000000000000000009 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000001); runOnlyForDeploymentPostprocessing = 0; };
+        A0000000000000000000000A = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000003); runOnlyForDeploymentPostprocessing = 0; };
+        A0000000000000000000000B = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A0000000000000000000000C = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = A0000000000000000000000D;
+            buildPhases = (A00000000000000000000009, A0000000000000000000000A, A0000000000000000000000B);
+            buildRules = (); dependencies = (); name = AWCPlayground;
+            packageProductDependencies = (A00000000000000000000004);
+            productName = AWCPlayground; productReference = A00000000000000000000005; productType = "com.apple.product-type.application";
+        };
+        A0000000000000000000000E = {
+            isa = PBXProject;
+            attributes = { BuildIndependentTargetsInParallel = YES; LastSwiftUpdateCheck = 1500; LastUpgradeCheck = 1500; TargetAttributes = { A0000000000000000000000C = { CreatedOnToolsVersion = 15.0; }; }; };
+            buildConfigurationList = A0000000000000000000000F;
+            compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base);
+            mainGroup = A00000000000000000000006; packageReferences = (A00000000000000000000010);
+            productRefGroup = A00000000000000000000008; projectDirPath = ""; projectRoot = ""; targets = (A0000000000000000000000C);
+        };
+        A00000000000000000000010 = { isa = XCLocalSwiftPackageReference; relativePath = ../../packages/native-ios; };
+        A00000000000000000000004 = { isa = XCSwiftPackageProductDependency; package = A00000000000000000000010; productName = AWCUI; };
+        A0000000000000000000000D = { isa = XCConfigurationList; buildConfigurations = (A00000000000000000000011, A00000000000000000000012); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+        A0000000000000000000000F = { isa = XCConfigurationList; buildConfigurations = (A00000000000000000000013, A00000000000000000000014); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+        A00000000000000000000011 = { isa = XCBuildConfiguration; name = Debug; buildSettings = { CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = "AWC Native"; INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = dev.awcui.nativeplayground; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; };
+        A00000000000000000000012 = { isa = XCBuildConfiguration; name = Release; buildSettings = { CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = "AWC Native"; INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = dev.awcui.nativeplayground; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SWIFT_COMPILATION_MODE = wholemodule; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; };
+        A00000000000000000000013 = { isa = XCBuildConfiguration; name = Debug; buildSettings = { CLANG_ENABLE_MODULES = YES; DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1", "$(inherited)"); ONLY_ACTIVE_ARCH = YES; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; }; };
+        A00000000000000000000014 = { isa = XCBuildConfiguration; name = Release; buildSettings = { CLANG_ENABLE_MODULES = YES; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; SWIFT_OPTIMIZATION_LEVEL = "-O"; }; };
+    };
+    rootObject = A0000000000000000000000E;
+}

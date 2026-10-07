@@ -1,0 +1,920 @@
+{
+  "tag": "md-table-container",
+  "className": "MdTableContainer",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "'elevated' | 'outlined' | 'filled' | 'flat'",
+      "default": "'elevated'",
+      "defaultValue": "elevated",
+      "options": [
+        "elevated",
+        "outlined",
+        "filled",
+        "flat"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Visual surface variant.\n- `elevated` — surface-container-low + box-shadow\n- `outlined` — surface + 1px outline\n- `filled`   — surface-container-low, no shadow / outline\n- `flat`     — transparent (use when nesting inside another surface)"
+    },
+    {
+      "name": "shape",
+      "type": "'extra-large' | 'large' | 'medium' | 'small' | 'none'",
+      "default": "'large'",
+      "defaultValue": "large",
+      "options": [
+        "extra-large",
+        "large",
+        "medium",
+        "small",
+        "none"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "shape",
+      "optional": false,
+      "description": "Container shape — large for dashboards, medium for dense, small for compact.\nMaps to MD3 `--md-sys-shape-corner-{size}` tokens."
+    },
+    {
+      "name": "maxHeight",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max-height",
+      "optional": false,
+      "description": "If set, the table area becomes scrollable up to this max-height\n(e.g. `\"480px\"`, `\"60vh\"`). Required for sticky header / column."
+    },
+    {
+      "name": "minHeight",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "min-height",
+      "optional": false,
+      "description": "If set, the table area becomes scrollable up to this min-height\n(useful to keep an empty-state visible)."
+    },
+    {
+      "name": "vibrant",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "vibrant",
+      "optional": false,
+      "description": "Vibrant tonality: tints the whole table with primary/tertiary container\ntones (coloured header, primary hover, tertiary selection, primary-tinted\nsurface). Cascades to the contained md-table via CSS custom properties."
+    },
+    {
+      "name": "elevation",
+      "type": "0 | 1 | 2 | 3 | 4 | 5",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "elevation",
+      "optional": true,
+      "description": "Explicit MD3 elevation level (0–5), overriding the variant's default\nshadow. Handy to raise/flatten the surface without changing `variant`\n(e.g. `variant=\"outlined\" elevation=\"2\"`). Also settable via\n`--md-table-container-elevation`."
+    }
+  ],
+  "state": [],
+  "events": [],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "top"
+    },
+    {
+      "name": "bottom"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "top",
+      "description": "Wrapper around `slot[name=\"top\"]` (toolbar etc.)"
+    },
+    {
+      "name": "scroll",
+      "description": "The scroll viewport that contains the table"
+    },
+    {
+      "name": "bottom",
+      "description": "Wrapper around `slot[name=\"bottom\"]` (pagination etc.)"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-table-container-color",
+      "description": "Surface background"
+    },
+    {
+      "name": "--md-table-container-shape",
+      "description": "Border-radius"
+    },
+    {
+      "name": "--md-table-container-elevation",
+      "description": "Box-shadow"
+    },
+    {
+      "name": "--md-table-container-outline-color",
+      "description": "Outline color (variant=outlined)"
+    },
+    {
+      "name": "--md-table-container-outline-width",
+      "description": "Outline width (variant=outlined)"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-table-container': true,\n          [`md-table-container--${this.variant}`]: true,\n          [`md-table-container--shape-${this.shape}`]: true,\n          'md-table-container--scrollable': !!this.maxHeight,\n          'md-table-container--frozen-header': frozen,\n          'md-table-container--vibrant': this.vibrant,\n        }"
+      },
+      {
+        "name": "style",
+        "value": "style"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table-container__top"
+          },
+          {
+            "name": "part",
+            "value": "top"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "name",
+                "value": "top"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table-container__scroll"
+          },
+          {
+            "name": "part",
+            "value": "scroll"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table-container__bottom"
+          },
+          {
+            "name": "part",
+            "value": "bottom"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "name",
+                "value": "bottom"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 82
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 123
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-table-container/md-table-container.tsx",
+    "styleUrl": "md-table-container.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "02e99fc9ec63f175cae7dd916ef0a89c0ff0e148b1ab4f7b8f550bb3e0dd452a"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-table-container-color, var(--md-sys-color-surface-container-low, #F7F2FA))",
+          "important": false
+        },
+        {
+          "property": "--_shape",
+          "value": "var(--md-table-container-shape, var(--md-sys-shape-corner-extra-large, 24px))",
+          "important": false
+        },
+        {
+          "property": "--_elevation",
+          "value": "var(--md-table-container-elevation, var(--md-sys-elevation-1, 0 1px 2px rgba(0, 0, 0, 0.08)))",
+          "important": false
+        },
+        {
+          "property": "--_outline-color",
+          "value": "var(--md-table-container-outline-color, var(--md-sys-color-outline-variant, #CAC4D0))",
+          "important": false
+        },
+        {
+          "property": "--_outline-width",
+          "value": "var(--md-table-container-outline-width, 1px)",
+          "important": false
+        },
+        {
+          "property": "--_max-h",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "--_min-h",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_shape)",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "isolation",
+          "value": "isolate",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "box-shadow var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    background-color var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-container--shape-extra-large)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_shape",
+          "value": "var(--md-sys-shape-corner-extra-large, 28px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-container--shape-large)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_shape",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-container--shape-medium)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_shape",
+          "value": "var(--md-sys-shape-corner-medium, 12px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-container--shape-small)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_shape",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-container--shape-none)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_shape",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-container--elevated)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-table-surface",
+          "value": "var(--md-sys-color-surface-container-low, #F7F2FA)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-table-surface)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--_elevation)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-container--outlined)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-table-surface",
+          "value": "var(--md-sys-color-surface, #FFFBFE)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-table-surface)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "var(--_outline-width) solid var(--_outline-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-container--filled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-table-surface",
+          "value": "var(--md-sys-color-surface-container-low, #F7F2FA)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-table-surface)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-container--flat)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-table-surface",
+          "value": "var(--md-sys-color-surface, #FEF7FF)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([elevation='0'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([elevation='1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-1, 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([elevation='2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-2, 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([elevation='3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-3, 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([elevation='4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-4, 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px rgba(0, 0, 0, 0.3))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([elevation='5'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-5, 0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.3))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-container--vibrant)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-primary, #6750A4) 6%, var(--md-sys-color-surface, #FEF7FF))",
+          "important": false
+        },
+        {
+          "property": "--md-table-head-bg",
+          "value": "var(--md-sys-color-primary-container, #EADDFF)",
+          "important": false
+        },
+        {
+          "property": "--md-table-head-color",
+          "value": "var(--md-sys-color-on-primary-container, #21005D)",
+          "important": false
+        },
+        {
+          "property": "--md-table-sort-label-color",
+          "value": "var(--md-sys-color-on-primary-container, #21005D)",
+          "important": false
+        },
+        {
+          "property": "--md-table-sort-label-active-color",
+          "value": "var(--md-sys-color-primary, #6750A4)",
+          "important": false
+        },
+        {
+          "property": "--md-table-row-hover-color",
+          "value": "var(--md-sys-color-primary, #6750A4)",
+          "important": false
+        },
+        {
+          "property": "--md-table-row-selected-bg",
+          "value": "var(--md-sys-color-tertiary-container, #FFD8E4)",
+          "important": false
+        },
+        {
+          "property": "--md-table-row-selected-color",
+          "value": "var(--md-sys-color-on-tertiary-container, #31111D)",
+          "important": false
+        },
+        {
+          "property": "--md-table-divider-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-primary, #6750A4) 22%, transparent)",
+          "important": false
+        },
+        {
+          "property": "--md-table-stripe-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-primary, #6750A4) 7%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-container__top:empty,\n.md-table-container__bottom:empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-container__top,\n.md-table-container__bottom",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-container__scroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_min-h)",
+          "important": false
+        },
+        {
+          "property": "overflow-x",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "overflow-y",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "overscroll-behavior-x",
+          "value": "contain",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-container--scrollable) .md-table-container__scroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "max-block-size",
+          "value": "var(--_max-h)",
+          "important": false
+        },
+        {
+          "property": "overflow-y",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-container--frozen-header) .md-table-container__scroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-container__scroll::-webkit-scrollbar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "width",
+          "value": "10px",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "10px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-container__scroll::-webkit-scrollbar-thumb",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "var(--md-sys-color-surface-container-highest, #E6E0E9)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "999px",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "2px solid transparent",
+          "important": false
+        },
+        {
+          "property": "background-clip",
+          "value": "content-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-container__scroll::-webkit-scrollbar-thumb:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "var(--md-sys-color-outline-variant, #CAC4D0)",
+          "important": false
+        },
+        {
+          "property": "background-clip",
+          "value": "content-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-container__scroll::-webkit-scrollbar-corner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Table Container",
+  "category": "Data Display",
+  "parent": "md-table",
+  "description": "The surface around a md-table. It supplies elevation, shape and the scroll region, plus the top / bottom bands where a toolbar and pagination sit outside the scroll. It also brackets pagination changes with the table's built-in motion.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-table-container.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-table-container/md-table-container.tsx",
+    "css": "packages/core/src/components/md-table-container/md-table-container.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "maxHeight"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "shape",
+        "minHeight",
+        "vibrant",
+        "elevation"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "top",
+        "bottom"
+      ],
+      "notes": [
+        "Native scroll container. minHeight, elevation and shape variants not reproduced."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "shape",
+        "maxHeight",
+        "minHeight",
+        "vibrant",
+        "elevation"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "top",
+        "bottom"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

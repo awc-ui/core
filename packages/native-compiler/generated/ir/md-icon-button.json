@@ -1,0 +1,2141 @@
+{
+  "tag": "md-icon-button",
+  "className": "MdIconButton",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "'standard' | 'filled' | 'outlined' | 'tonal'",
+      "default": "'standard'",
+      "defaultValue": "standard",
+      "options": [
+        "standard",
+        "filled",
+        "outlined",
+        "tonal"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Visual style variant"
+    },
+    {
+      "name": "size",
+      "type": "'xs' | 'sm' | 'md' | 'lg' | 'xl'",
+      "default": "'sm'",
+      "defaultValue": "sm",
+      "options": [
+        "xs",
+        "sm",
+        "md",
+        "lg",
+        "xl"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "size",
+      "optional": false,
+      "description": "M3 Expressive size"
+    },
+    {
+      "name": "shape",
+      "type": "'round' | 'square'",
+      "default": "'round'",
+      "defaultValue": "round",
+      "options": [
+        "round",
+        "square"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "shape",
+      "optional": false,
+      "description": "Container shape"
+    },
+    {
+      "name": "buttonWidth",
+      "type": "'narrow' | 'default' | 'wide'",
+      "default": "'default'",
+      "defaultValue": "default",
+      "options": [
+        "narrow",
+        "default",
+        "wide"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "button-width",
+      "optional": false,
+      "description": "M3 Expressive width (narrow, default, wide)"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Prevents interaction and removes from tab order"
+    },
+    {
+      "name": "softDisabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "soft-disabled",
+      "optional": false,
+      "description": "Visually disabled but remains focusable for discoverability"
+    },
+    {
+      "name": "toggle",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "toggle",
+      "optional": false,
+      "description": "Enable toggle behavior (selected/unselected)"
+    },
+    {
+      "name": "selected",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "selected",
+      "optional": false,
+      "description": "Current selected state (toggle mode)"
+    },
+    {
+      "name": "shapeMorph",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "shape-morph",
+      "optional": false,
+      "description": "Enable M3 Expressive shape morphing on press and toggle"
+    },
+    {
+      "name": "ripple",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "ripple",
+      "optional": false,
+      "description": "Whether to show the ripple effect"
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "icon",
+      "optional": false,
+      "description": "Material Symbols icon name"
+    },
+    {
+      "name": "selectedIcon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "selected-icon",
+      "optional": false,
+      "description": "Icon shown when selected in toggle mode"
+    },
+    {
+      "name": "href",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "href",
+      "optional": false,
+      "description": "Turns the button into a link"
+    },
+    {
+      "name": "target",
+      "type": "string",
+      "default": "'_self'",
+      "defaultValue": "_self",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "target",
+      "optional": false,
+      "description": "Link target attribute"
+    },
+    {
+      "name": "connectedLeft",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "connected-left",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "connectedRight",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "connected-right",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "groupTabindex",
+      "type": "number | null",
+      "default": "null",
+      "defaultValue": null,
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "group-tabindex",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "hasSlottedIcon",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedBadge",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedSelected",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "pressed",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "{ selected: boolean }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "selected",
+      "description": "Custom selected icon (toggle)"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "State-layer overlay"
+    },
+    {
+      "name": "icon",
+      "description": "Default icon wrapper"
+    },
+    {
+      "name": "selected-icon",
+      "description": "Selected icon wrapper (toggle)"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-icon-button-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-icon-button-icon-color",
+      "description": "Icon color"
+    },
+    {
+      "name": "--md-icon-button-state-layer-color",
+      "description": "State-layer ink (hover / focus / press)"
+    },
+    {
+      "name": "--md-icon-button-icon-size",
+      "description": "Icon dimensions"
+    },
+    {
+      "name": "--md-icon-button-container-shape",
+      "description": "Border-radius override"
+    },
+    {
+      "name": "--md-icon-button-outline-color",
+      "description": "Outlined border color"
+    },
+    {
+      "name": "--md-icon-button-outline-width",
+      "description": "Outlined border width"
+    },
+    {
+      "name": "--md-icon-button-container-width",
+      "description": "Container width override"
+    },
+    {
+      "name": "--md-icon-button-container-height",
+      "description": "Container height override"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-icon-button': true,\n          [`md-icon-button--${this.variant}`]: true,\n          [`md-icon-button--${this.size}`]: true,\n          [`md-icon-button--${this.shape}`]: true,\n          [`md-icon-button--width-${this.buttonWidth}`]: this.buttonWidth !== 'default',\n          'md-icon-button--selected': this.selected,\n          'md-icon-button--toggle': this.toggle,\n          'md-icon-button--disabled': this.disabled || this.softDisabled,\n          'md-icon-button--shape-morph': this.shapeMorph,\n          'md-icon-button--has-badge': this.hasSlottedBadge,\n          'md-icon-button--pressed': this.shapeMorph && this.pressed,\n          'md-icon-button--connected-left': this.connectedLeft,\n          'md-icon-button--connected-right': this.connectedRight,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "button"
+      },
+      {
+        "name": "aria-disabled",
+        "value": "isEffectivelyDisabled ? 'true' : 'false'"
+      },
+      {
+        "name": "aria-pressed",
+        "value": "this.toggle ? String(this.selected) : undefined"
+      },
+      {
+        "name": "tabindex",
+        "value": "this.disabled\n            ? '-1'\n            : (this.groupTabindex !== null ? String(this.groupTabindex) : '0')"
+      },
+      {
+        "name": "onClick",
+        "value": "this.handleClick"
+      },
+      {
+        "name": "onKeyDown",
+        "value": "this.handleKeyDown"
+      },
+      {
+        "name": "onPointerDown",
+        "value": "this.handlePointerDown"
+      },
+      {
+        "name": "onPointerUp",
+        "value": "this.handlePointerUp"
+      },
+      {
+        "name": "onPointerLeave",
+        "value": "this.handlePointerUp"
+      },
+      {
+        "name": "onPointerCancel",
+        "value": "this.handlePointerUp"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.ripple && <md-ripple disabled={isEffectivelyDisabled}></md-ripple>"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-icon-button__state-layer"
+          },
+          {
+            "name": "part",
+            "value": "state-layer"
+          },
+          {
+            "name": "aria-hidden",
+            "value": "true"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "{\n            'md-icon-button__icon': true,\n            'md-icon-button__icon--on': showDefaultIconLayer,\n          }"
+          },
+          {
+            "name": "part",
+            "value": "icon"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "showDefaultIconLayer && hasIcon && !this.hasSlottedIcon && (\n            <span class=\"md-icon-button__icon-font material-symbols-outlined\" aria-hidden=\"true\">\n              {showSelected && this.selectedIcon ? this.selectedIcon : this.icon}\n            </span>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.toggle && (this.selectedIcon || this.hasSlottedSelected) && (\n          <span\n            class={{\n              'md-icon-button__icon': true,\n              'md-icon-button__icon--on': showSelected,\n            }}\n            part=\"selected-icon\"\n          >\n            <slot name=\"selected\" />\n            {!this.hasSlottedSelected && this.selectedIcon && (\n              <span class=\"md-icon-button__icon-font material-symbols-outlined\" aria-hidden=\"true\">\n                {this.selectedIcon}\n              </span>\n            )}\n          </span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 99
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 102
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedNodes depends on browser semantics and requires a native adapter.",
+      "line": 113
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Window access requires a native adapter.",
+      "line": 143
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 5
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-icon-button/md-icon-button.tsx",
+    "styleUrl": "md-icon-button.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "b0c190f9e48573f6d5f85a0048f1640e1e6d434599ae1933e90510467e5be888"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-icon-button-container-color, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-icon-button-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-icon-button-state-layer-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-icon-button-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_container-height",
+          "value": "var(--md-icon-button-container-height, max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_shape-round",
+          "value": "20px",
+          "important": false
+        },
+        {
+          "property": "--_border-radius",
+          "value": "var(--md-icon-button-container-shape, var(--_shape-round))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_container-width)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_container-height)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "calc(var(--_border-radius) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_border-radius)) - var(--_border-radius)))",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    color var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    border-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "vertical-align",
+          "value": "middle",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--xs)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(32px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_container-height",
+          "value": "var(--md-icon-button-container-height, max(32px, calc(32px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-icon-button-icon-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_shape-round",
+          "value": "16px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--sm)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_container-height",
+          "value": "var(--md-icon-button-container-height, max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-icon-button-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_shape-round",
+          "value": "20px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--md)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(56px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_container-height",
+          "value": "var(--md-icon-button-container-height, max(32px, calc(56px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-icon-button-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_shape-round",
+          "value": "28px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--lg)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(96px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_container-height",
+          "value": "var(--md-icon-button-container-height, max(32px, calc(96px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-icon-button-icon-size, max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_shape-round",
+          "value": "48px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--xl)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(136px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_container-height",
+          "value": "var(--md-icon-button-container-height, max(32px, calc(136px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-icon-button-icon-size, max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px)))",
+          "important": false
+        },
+        {
+          "property": "--_shape-round",
+          "value": "68px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--width-narrow.md-icon-button--xs)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(28px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--width-narrow.md-icon-button--sm)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(32px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--width-narrow.md-icon-button--md)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--width-narrow.md-icon-button--lg)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(64px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--width-narrow.md-icon-button--xl)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(104px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--width-wide.md-icon-button--xs)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--width-wide.md-icon-button--sm)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(52px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--width-wide.md-icon-button--md)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(72px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--width-wide.md-icon-button--lg)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(128px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--width-wide.md-icon-button--xl)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-width",
+          "value": "var(--md-icon-button-container-width, max(32px, calc(184px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--round)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_border-radius",
+          "value": "var(--md-icon-button-container-shape, var(--_shape-round))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--square.md-icon-button--xs)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_border-radius",
+          "value": "var(--md-icon-button-container-shape, var(--md-sys-shape-corner-medium, 12px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--square.md-icon-button--sm)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_border-radius",
+          "value": "var(--md-icon-button-container-shape, var(--md-sys-shape-corner-medium, 12px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--square.md-icon-button--md)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_border-radius",
+          "value": "var(--md-icon-button-container-shape, var(--md-sys-shape-corner-large, 16px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--square.md-icon-button--lg)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_border-radius",
+          "value": "var(--md-icon-button-container-shape, var(--md-sys-shape-corner-extra-large, 28px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--square.md-icon-button--xl)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_border-radius",
+          "value": "var(--md-icon-button-container-shape, var(--md-sys-shape-corner-extra-large, 28px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--shape-morph.md-icon-button--round.md-icon-button--selected.md-icon-button--xs)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_morph-to",
+          "value": "var(--md-sys-shape-corner-medium, 12px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--shape-morph.md-icon-button--round.md-icon-button--selected.md-icon-button--sm)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_morph-to",
+          "value": "var(--md-sys-shape-corner-medium, 12px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--shape-morph.md-icon-button--round.md-icon-button--selected.md-icon-button--md)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_morph-to",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--shape-morph.md-icon-button--round.md-icon-button--selected.md-icon-button--lg)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_morph-to",
+          "value": "var(--md-sys-shape-corner-extra-large, 28px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--shape-morph.md-icon-button--round.md-icon-button--selected.md-icon-button--xl)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_morph-to",
+          "value": "var(--md-sys-shape-corner-extra-large, 28px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--shape-morph.md-icon-button--square.md-icon-button--selected)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_morph-to",
+          "value": "var(--_shape-round)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--pressed.md-icon-button--xs)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_morph-to",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "transition-duration",
+          "value": "var(--md-sys-motion-duration-short4, 200ms)",
+          "important": false
+        },
+        {
+          "property": "transition-timing-function",
+          "value": "var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--pressed.md-icon-button--sm)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_morph-to",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "transition-duration",
+          "value": "var(--md-sys-motion-duration-short4, 200ms)",
+          "important": false
+        },
+        {
+          "property": "transition-timing-function",
+          "value": "var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--pressed.md-icon-button--md)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_morph-to",
+          "value": "var(--md-sys-shape-corner-medium, 12px)",
+          "important": false
+        },
+        {
+          "property": "transition-duration",
+          "value": "var(--md-sys-motion-duration-short4, 200ms)",
+          "important": false
+        },
+        {
+          "property": "transition-timing-function",
+          "value": "var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--pressed.md-icon-button--lg)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_morph-to",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "transition-duration",
+          "value": "var(--md-sys-motion-duration-short4, 200ms)",
+          "important": false
+        },
+        {
+          "property": "transition-timing-function",
+          "value": "var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--pressed.md-icon-button--xl)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_morph-to",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "transition-duration",
+          "value": "var(--md-sys-motion-duration-short4, 200ms)",
+          "important": false
+        },
+        {
+          "property": "transition-timing-function",
+          "value": "var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--width-narrow.md-icon-button--pressed)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition-duration",
+          "value": "var(--md-sys-motion-duration-medium1, 250ms)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--connected-left.md-icon-button--xs),\n:host(.md-icon-button--connected-right.md-icon-button--xs)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_c-inner",
+          "value": "4px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--connected-left.md-icon-button--sm),\n:host(.md-icon-button--connected-right.md-icon-button--sm)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_c-inner",
+          "value": "8px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--connected-left.md-icon-button--md),\n:host(.md-icon-button--connected-right.md-icon-button--md)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_c-inner",
+          "value": "8px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--connected-left.md-icon-button--lg),\n:host(.md-icon-button--connected-right.md-icon-button--lg)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_c-inner",
+          "value": "16px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--connected-left.md-icon-button--xl),\n:host(.md-icon-button--connected-right.md-icon-button--xl)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_c-inner",
+          "value": "20px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--connected-left.md-icon-button--connected-right)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "var(--_c-inner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--round.md-icon-button--connected-right:not(.md-icon-button--connected-left))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_shape-round)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_shape-round)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_c-inner)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_c-inner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--round.md-icon-button--connected-left:not(.md-icon-button--connected-right))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_c-inner)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_c-inner)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_shape-round)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_shape-round)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--square.md-icon-button--connected-right:not(.md-icon-button--connected-left)),\n:host(.md-icon-button--square.md-icon-button--connected-left:not(.md-icon-button--connected-right))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "var(--_c-inner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--standard)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-icon-button-container-color, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-icon-button-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-icon-button-state-layer-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--standard.md-icon-button--selected:not(.md-icon-button--disabled))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-icon-button-icon-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-icon-button-state-layer-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--filled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-icon-button-container-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-icon-button-icon-color, var(--md-sys-color-on-primary, #FFFFFF))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-icon-button-state-layer-color, var(--md-sys-color-on-primary, #FFFFFF))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--filled.md-icon-button--toggle:not(.md-icon-button--selected):not(.md-icon-button--disabled))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-icon-button-container-color, var(--md-sys-color-surface-container-highest, #E6E0E9))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-icon-button-icon-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-icon-button-state-layer-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--filled.md-icon-button--selected:not(.md-icon-button--disabled))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-icon-button-container-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-icon-button-icon-color, var(--md-sys-color-on-primary, #FFFFFF))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-icon-button-state-layer-color, var(--md-sys-color-on-primary, #FFFFFF))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--tonal)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-icon-button-container-color, var(--md-sys-color-secondary-container, #E8DEF8))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-icon-button-icon-color, var(--md-sys-color-on-secondary-container, #1E192B))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-icon-button-state-layer-color, var(--md-sys-color-on-secondary-container, #1E192B))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--tonal.md-icon-button--toggle:not(.md-icon-button--selected):not(.md-icon-button--disabled))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-icon-button-container-color, var(--md-sys-color-surface-container-highest, #E6E0E9))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-icon-button-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-icon-button-state-layer-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--tonal.md-icon-button--selected:not(.md-icon-button--disabled))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-icon-button-container-color, var(--md-sys-color-secondary-container, #E8DEF8))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-icon-button-icon-color, var(--md-sys-color-on-secondary-container, #1E192B))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-icon-button-state-layer-color, var(--md-sys-color-on-secondary-container, #1E192B))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--outlined)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-icon-button-container-color, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-icon-button-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-icon-button-state-layer-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "var(--md-icon-button-outline-width, 1px) solid var(--md-icon-button-outline-color, var(--md-sys-color-outline, #79747E))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--outlined.md-icon-button--selected:not(.md-icon-button--disabled))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-icon-button-container-color, var(--md-sys-color-inverse-surface, #313033))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-icon-button-icon-color, var(--md-sys-color-inverse-on-surface, #F4EFF4))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-icon-button-state-layer-color, var(--md-sys-color-inverse-on-surface, #F4EFF4))",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-icon-button__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_state-layer-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover) .md-icon-button__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:active) .md-icon-button__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible) .md-icon-button__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-focus-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled]) .md-icon-button__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--standard.md-icon-button--disabled),\n:host(.md-icon-button--outlined.md-icon-button--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_icon-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--outlined.md-icon-button--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--filled.md-icon-button--disabled),\n:host(.md-icon-button--tonal.md-icon-button--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--disabled:hover) .md-icon-button__state-layer,\n:host(.md-icon-button--disabled:active) .md-icon-button__state-layer,\n:host(.md-icon-button--disabled:focus-visible) .md-icon-button__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-icon-button__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-icon-button__icon slot",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-icon-button__icon--on",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-icon-button__icon-font",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--has-badge)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--has-badge) .md-icon-button__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted(*:not(md-badge):not(md-avatar))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": true
+        },
+        {
+          "property": "fill",
+          "value": "currentColor",
+          "important": true
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": true
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": true
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": true
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ".material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-icon-button--outlined)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "ButtonText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Icon Button",
+  "category": "Actions",
+  "parent": null,
+  "description": "A common action expressed as an icon alone. Four emphasis styles, five sizes, three container widths, round/square shape with shape morphing, and an optional toggle mode with a distinct selected glyph.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-icon-button.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-icon-button/md-icon-button.tsx",
+    "css": "packages/core/src/components/md-icon-button/md-icon-button.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "variant",
+        "size",
+        "shape",
+        "toggle",
+        "selected",
+        "icon",
+        "selectedIcon",
+        "href",
+        "value",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "buttonWidth",
+        "shapeMorph",
+        "ripple",
+        "target",
+        "connectedLeft",
+        "connectedRight",
+        "groupTabindex",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "",
+        "selected"
+      ],
+      "notes": [
+        "Icons map Material names to SF Symbols; raw SF Symbol names are accepted. Arbitrary Material glyph coverage is not guaranteed."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "disabled",
+        "href",
+        "icon",
+        "selected",
+        "selectedIcon",
+        "softDisabled",
+        "target",
+        "toggle",
+        "value",
+        "variant"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "size",
+        "shape",
+        "buttonWidth",
+        "shapeMorph",
+        "ripple",
+        "connectedLeft",
+        "connectedRight",
+        "groupTabindex",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "",
+        "selected"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

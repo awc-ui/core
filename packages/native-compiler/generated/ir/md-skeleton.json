@@ -1,0 +1,972 @@
+{
+  "tag": "md-skeleton",
+  "className": "MdSkeleton",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "'text' | 'rectangular' | 'rounded' | 'circular'",
+      "default": "'text'",
+      "defaultValue": "text",
+      "options": [
+        "text",
+        "rectangular",
+        "rounded",
+        "circular"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Shape of the skeleton placeholder.\n- `text` — single short rectangle the height of a body line. With\n  `lines > 1` the last line gets a tapered width so it reads as a\n  \"last line of a paragraph\".\n- `rectangular` — fills the inline + block sizes you give it; no\n  border-radius unless you set `--md-skeleton-radius`.\n- `rounded` — same as `rectangular` but with the MD3 medium corner\n  radius (or your override). Good for cards / images.\n- `circular` — perfect circle (1:1 aspect). Use for avatar / icon\n  placeholders; set `--md-skeleton-size` or `width`+`height`."
+    },
+    {
+      "name": "animation",
+      "type": "'pulse' | 'wave' | 'none'",
+      "default": "'pulse'",
+      "defaultValue": "pulse",
+      "options": [
+        "pulse",
+        "wave",
+        "none"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "animation",
+      "optional": false,
+      "description": "Animation style:\n- `pulse` (default) — gentle opacity fade in and out.\n- `wave` — shimmer gradient sweeps across the surface.\n- `none` — static block; useful in `prefers-reduced-motion` opt-outs\n  or when the skeleton is purely decorative."
+    },
+    {
+      "name": "lines",
+      "type": "number",
+      "default": "1",
+      "defaultValue": 1,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "lines",
+      "optional": false,
+      "description": "Number of text rows to render. Only meaningful for `variant=\"text\"`.\nThe last row is tapered to ~60 % width so it reads as the final\nline of a paragraph."
+    },
+    {
+      "name": "width",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "width",
+      "optional": false,
+      "description": "Inline size (CSS length). Overrides any `--md-skeleton-width`.\nExamples: `\"100%\"`, `\"240px\"`, `\"60ch\"`."
+    },
+    {
+      "name": "height",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "height",
+      "optional": false,
+      "description": "Block size (CSS length). Defaults are `1em` for text, `120px` for\nrectangular/rounded, and `40px` for circular."
+    },
+    {
+      "name": "fullWidth",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "full-width",
+      "optional": false,
+      "description": "Stretch to fill the parent's inline size, overriding `width` /\n`--md-skeleton-width`. (The skeleton is already 100%-wide by default; this\nmakes it explicit and wins over a fixed width — handy in responsive grids.)"
+    },
+    {
+      "name": "fullHeight",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "full-height",
+      "optional": false,
+      "description": "Stretch to fill the parent's block size — the placeholder fills its\ncontainer's height (which must be definite, e.g. a flex/grid cell). Best\nwith the shape variants (`rectangular` / `rounded` / `circular`); pairs with\n`full-width` for a fully responsive block."
+    },
+    {
+      "name": "ariaLabelProp",
+      "type": "string",
+      "default": "'Loading'",
+      "defaultValue": "Loading",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "aria-label",
+      "optional": false,
+      "description": "Accessible label. Defaults to \"Loading…\". Pass a more specific\nlabel when the skeleton represents a recognisable region\n(\"Loading article\") for better screen-reader context."
+    },
+    {
+      "name": "announce",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "announce",
+      "optional": false,
+      "description": "Whether to expose the skeleton to assistive tech at all. Set to\n`false` when the surrounding region already announces its own\nbusy state — duplicate announcements get noisy."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "prefersReducedMotion",
+      "type": "boolean",
+      "initializer": "false"
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "shape",
+      "description": "The rectangular / rounded / circular block."
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-skeleton-color",
+      "description": "Base placeholder colour"
+    },
+    {
+      "name": "--md-skeleton-highlight",
+      "description": "Wave-shimmer highlight colour"
+    },
+    {
+      "name": "--md-skeleton-radius",
+      "description": "Border-radius for rectangular variant"
+    },
+    {
+      "name": "--md-skeleton-rounded-radius",
+      "description": "Radius for `variant=\"rounded\"`"
+    },
+    {
+      "name": "--md-skeleton-width",
+      "description": "Default inline-size (text/rect)"
+    },
+    {
+      "name": "--md-skeleton-height",
+      "description": "Default block-size (text/rect)"
+    },
+    {
+      "name": "--md-skeleton-size",
+      "description": "Default size for circular variant"
+    },
+    {
+      "name": "--md-skeleton-line-gap",
+      "description": "Gap between text rows (lines > 1)"
+    },
+    {
+      "name": "--md-skeleton-pulse-duration",
+      "description": "Pulse animation duration"
+    },
+    {
+      "name": "--md-skeleton-wave-duration",
+      "description": "Wave animation duration"
+    },
+    {
+      "name": "--md-skeleton-bloom-duration",
+      "description": "Initial mount \"bloom\" duration"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-skeleton': true,\n          [`md-skeleton--${this.variant}`]: true,\n          [`md-skeleton--anim-${effectiveAnimation}`]: true,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "this.announce ? 'status' : undefined"
+      },
+      {
+        "name": "aria-busy",
+        "value": "this.announce ? 'true' : undefined"
+      },
+      {
+        "name": "aria-live",
+        "value": "this.announce ? 'polite' : undefined"
+      },
+      {
+        "name": "aria-label",
+        "value": "this.announce ? this.ariaLabelProp : undefined"
+      },
+      {
+        "name": "aria-hidden",
+        "value": "this.announce ? undefined : 'true'"
+      },
+      {
+        "name": "style",
+        "value": "inlineStyle"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.variant === 'text' ? (\n          this.renderTextLines()\n        ) : (\n          <span\n            class=\"md-skeleton__shape\"\n            part=\"shape\"\n            aria-hidden=\"true\"\n          ></span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Window access requires a native adapter.",
+      "line": 95
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-skeleton/md-skeleton.tsx",
+    "styleUrl": "md-skeleton.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "5a7c8d5a2593ea9329768ce1509d1ebce663e3546f7c8c7fa2879bc276ad2719"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-skeleton-color,\n    color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 16%, transparent))",
+          "important": false
+        },
+        {
+          "property": "--_highlight",
+          "value": "var(--md-skeleton-highlight,\n    var(--md-sys-color-surface-bright,\n      color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 5%, transparent)))",
+          "important": false
+        },
+        {
+          "property": "--_radius",
+          "value": "var(--md-skeleton-radius, var(--md-sys-shape-corner-extra-small, 4px))",
+          "important": false
+        },
+        {
+          "property": "--_rounded-radius",
+          "value": "var(--md-skeleton-rounded-radius, max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_w",
+          "value": "var(--md-skeleton-width, 100%)",
+          "important": false
+        },
+        {
+          "property": "--_h",
+          "value": "var(--md-skeleton-height, max(0.75em, calc(1em + var(--md-sys-density-scale, 0) * 0.05em)))",
+          "important": false
+        },
+        {
+          "property": "--_size",
+          "value": "var(--md-skeleton-size, max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px)))",
+          "important": false
+        },
+        {
+          "property": "--_line-gap",
+          "value": "var(--md-skeleton-line-gap, max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_pulse-duration",
+          "value": "var(--md-skeleton-pulse-duration, var(--md-sys-motion-duration-extra-long2, 1800ms))",
+          "important": false
+        },
+        {
+          "property": "--_wave-duration",
+          "value": "var(--md-skeleton-wave-duration, var(--md-sys-motion-duration-extra-long2, 1800ms))",
+          "important": false
+        },
+        {
+          "property": "--_bloom-duration",
+          "value": "var(--md-skeleton-bloom-duration, var(--md-sys-motion-spring-spatial-default-duration, 500ms))",
+          "important": false
+        },
+        {
+          "property": "--_wave-easing",
+          "value": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_pulse-easing",
+          "value": "var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_bloom-easing",
+          "value": "var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_w)",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-skeleton-bloom var(--_bloom-duration) var(--_bloom-easing) both",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-skeleton-bloom",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scale(0.96)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-skeleton-bloom",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scale(1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-skeleton__shape",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_color)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_h)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-skeleton--rectangular)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_h",
+          "value": "var(--md-skeleton-height, max(80px, calc(120px + var(--md-sys-density-scale, 0) * 8px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-skeleton--rectangular) .md-skeleton__shape",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "var(--_radius)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-skeleton--rounded)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_h",
+          "value": "var(--md-skeleton-height, max(80px, calc(120px + var(--md-sys-density-scale, 0) * 8px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-skeleton--rounded) .md-skeleton__shape",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "var(--_rounded-radius)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-skeleton--circular)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_w",
+          "value": "var(--md-skeleton-width, var(--_size))",
+          "important": false
+        },
+        {
+          "property": "--_h",
+          "value": "var(--md-skeleton-height, var(--_size))",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_w)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-skeleton--circular) .md-skeleton__shape",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "aspect-ratio",
+          "value": "1 / 1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([full-width])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([full-height])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_h)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([full-height]) .md-skeleton__shape",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([full-height].md-skeleton--circular)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "aspect-ratio",
+          "value": "1 / 1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([full-height].md-skeleton--circular) .md-skeleton__shape",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-skeleton--text)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_line-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-skeleton__line",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_color)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_h)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_radius)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-skeleton__line--tapered",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "60%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([dir=\"rtl\"]) .md-skeleton__line--tapered,\n:host-context([dir=\"rtl\"]) .md-skeleton__line--tapered",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-end",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-skeleton-pulse",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "50%",
+      "context": "@keyframes md-skeleton-pulse",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0.55",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-skeleton-pulse",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-skeleton-wave",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(-100%) skewX(-12deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-skeleton-wave",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(200%) skewX(-12deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-skeleton--anim-pulse) .md-skeleton__shape,\n:host(.md-skeleton--anim-pulse) .md-skeleton__line",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-skeleton-pulse var(--_pulse-duration) var(--_pulse-easing) infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-skeleton--anim-wave) .md-skeleton__shape,\n:host(.md-skeleton--anim-wave) .md-skeleton__line",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "isolation",
+          "value": "isolate",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-skeleton--anim-wave) .md-skeleton__shape::after,\n:host(.md-skeleton--anim-wave) .md-skeleton__line::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "-10%",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "-100%",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "200%",
+          "important": false
+        },
+        {
+          "property": "background-image",
+          "value": "linear-gradient(\n    90deg,\n    transparent 0%,\n    transparent 35%,\n    var(--_highlight) 50%,\n    transparent 65%,\n    transparent 100%\n  )",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(-100%) skewX(-12deg)",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-skeleton-wave var(--_wave-duration) var(--_wave-easing) infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([dir=\"rtl\"].md-skeleton--anim-wave) .md-skeleton__shape::after,\n:host([dir=\"rtl\"].md-skeleton--anim-wave) .md-skeleton__line::after,\n:host-context([dir=\"rtl\"]).md-skeleton--anim-wave .md-skeleton__shape::after,\n:host-context([dir=\"rtl\"]).md-skeleton--anim-wave .md-skeleton__line::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation-direction",
+          "value": "reverse",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "none",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-skeleton--anim-pulse) .md-skeleton__shape,\n  :host(.md-skeleton--anim-pulse) .md-skeleton__line",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation-duration",
+          "value": "calc(var(--_pulse-duration) * 2)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-skeleton__shape::after,\n  .md-skeleton__line::after",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "none",
+          "important": true
+        },
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-skeleton__shape,\n  .md-skeleton__line",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "GrayText",
+          "important": false
+        },
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Skeleton",
+  "category": "Communication",
+  "parent": null,
+  "description": "A content-shaped loading placeholder. Text lines, rectangles, rounded blocks, or circles, with pulse or wave animation — used to reserve layout while data loads.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-skeleton.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-skeleton/md-skeleton.tsx",
+    "css": "packages/core/src/components/md-skeleton/md-skeleton.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "variant",
+        "lines",
+        "width",
+        "height",
+        "ariaLabelProp"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "animation",
+        "fullWidth",
+        "fullHeight",
+        "announce",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Static native skeleton; CSS percentage dimensions and pulse/wave animation are not implemented."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "announce",
+        "ariaLabelProp",
+        "height",
+        "lines",
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "animation",
+        "width",
+        "fullWidth",
+        "fullHeight",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Static native skeleton blocks; shimmer/pulse motion remains unsupported."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

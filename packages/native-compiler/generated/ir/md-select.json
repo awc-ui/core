@@ -1,0 +1,1523 @@
+{
+  "tag": "md-select",
+  "className": "MdSelect",
+  "properties": [
+    {
+      "name": "valueMissingLabel",
+      "type": "string",
+      "default": "'Please select an item in the list.'",
+      "defaultValue": "Please select an item in the list.",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-missing-label",
+      "optional": false,
+      "description": "Localized constraint-validation message shown when `required` is unmet.\n\nA prop rather than a hardcoded string, matching md-time-picker's\n`value-missing-label`: components stay i18n-engine-agnostic and the\nconsumer localizes through its own dictionary. Native inputs get their\nmessage from the browser's locale for free; a form-associated custom\nelement supplies its own, so leaving this hardcoded would ship an\nEnglish-only form to every locale."
+    },
+    {
+      "name": "reserveSupportingSpace",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "reserve-supporting-space",
+      "optional": false,
+      "description": "Always occupy the supporting-text line, even when there is no message, so a\nvalidation error does not push the content below it down. Forwarded to the\nembedded md-text-field. See that component for why it is opt-in."
+    },
+    {
+      "name": "variant",
+      "type": "'filled' | 'outlined'",
+      "default": "'outlined'",
+      "defaultValue": "outlined",
+      "options": [
+        "filled",
+        "outlined"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Visual variant — forwarded to the inner `md-text-field`."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Floating label / accessible name."
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "placeholder",
+      "optional": false,
+      "description": "Placeholder shown when no value is selected."
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "value",
+      "optional": false,
+      "description": "Selected option value. Empty string = nothing selected."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disabled — non-interactive."
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "required",
+      "optional": false,
+      "description": "Required (form validation parity)."
+    },
+    {
+      "name": "error",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "error",
+      "optional": false,
+      "description": "Error state — forwarded to the inner field."
+    },
+    {
+      "name": "errorText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "error-text",
+      "optional": false,
+      "description": "Error text rendered in place of supporting text when `error` is set."
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": "Supporting / helper text rendered below the field."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Density forwarded to the inner field (0 = comfortable … -3 = compact)."
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "clearable",
+      "optional": false,
+      "description": "Show a clear (✕) button in the trigger when a value is selected."
+    },
+    {
+      "name": "matchTriggerWidth",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "match-trigger-width",
+      "optional": false,
+      "description": "Match the dropdown width to the trigger width. When `false` the menu\nsizes to its content (down to its own min-width). Maps to `md-menu`'s\n`match-anchor-width`. Default `true` — the expected select behaviour."
+    },
+    {
+      "name": "placement",
+      "type": "'bottom-start' | 'bottom-end' | 'top-start' | 'top-end'",
+      "default": "'bottom-start'",
+      "defaultValue": "bottom-start",
+      "options": [
+        "bottom-start",
+        "bottom-end",
+        "top-start",
+        "top-end"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "placement",
+      "optional": false,
+      "description": "Menu placement relative to the trigger — forwarded to `md-menu`."
+    },
+    {
+      "name": "maxHeight",
+      "type": "number | string",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max-height",
+      "optional": true,
+      "description": "Cap the dropdown height. When the options exceed it the list scrolls\nvertically with top/bottom edge shadows. A number is pixels; any CSS\nlength is passed through (e.g. `'50vh'`). Forwarded to `md-menu`'s\n`max-height`."
+    },
+    {
+      "name": "options",
+      "type": "SelectOptionInit[] | string",
+      "default": "[]",
+      "defaultValue": [],
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "options",
+      "optional": false,
+      "description": "Programmatic options. Slotted `md-select-option` children take precedence.\n\nAccepts the array (property) or a **JSON string** (attribute), so a\nplain-HTML page can declare its data inline instead of reaching for a\nscript. Malformed JSON degrades to an empty list with a console warning."
+    },
+    {
+      "name": "virtualize",
+      "type": "'auto' | 'always' | 'never'",
+      "default": "'auto'",
+      "defaultValue": "auto",
+      "options": [
+        "auto",
+        "always",
+        "never"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "virtualize",
+      "optional": false,
+      "description": "Virtualization mode for large option lists (backed by a WASM data engine):\n  - `'auto'` (default): virtualize only above `VIRTUALIZE_THRESHOLD` rows.\n  - `'always'`: always virtualize the `options` / `loadOptions` dataset.\n  - `'never'`: keep the classic DOM rendering regardless of size.\nVirtualized rows render label + selection only (no per-row icon /\nsupporting text) and assume a uniform row height."
+    },
+    {
+      "name": "filterable",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "filterable",
+      "optional": false,
+      "description": "Show a search field in the menu header.\n\nA plain list filters client-side on label / supporting text; a virtualized\none filters inside the WASM engine. Closing the menu clears the query."
+    },
+    {
+      "name": "filterMode",
+      "type": "FilterMode",
+      "default": "'substring'",
+      "defaultValue": "substring",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "filter-mode",
+      "optional": false,
+      "description": "Filter strategy used by `filterable` / `setQuery`."
+    },
+    {
+      "name": "rowHeight",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "row-height",
+      "optional": true,
+      "description": "Fixed virtualized row height (px). Auto-measured from the first row if unset."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "name",
+      "optional": false,
+      "description": "Form field name. The selected value is submitted under this name."
+    },
+    {
+      "name": "searchPlaceholder",
+      "type": "string",
+      "default": "'Search…'",
+      "defaultValue": "Search…",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "search-placeholder",
+      "optional": false,
+      "description": "Placeholder for the in-menu filter field (`filterable`)."
+    },
+    {
+      "name": "filterLabel",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "filter-label",
+      "optional": false,
+      "description": "Accessible name for the filter field. Falls back to `Filter <label>`."
+    },
+    {
+      "name": "noResultsText",
+      "type": "string",
+      "default": "'No results'",
+      "defaultValue": "No results",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "no-results-text",
+      "optional": false,
+      "description": "Empty-state text when a filter matches nothing."
+    },
+    {
+      "name": "noOptionsText",
+      "type": "string",
+      "default": "'No options'",
+      "defaultValue": "No options",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "no-options-text",
+      "optional": false,
+      "description": "Empty-state text when there are no options at all."
+    },
+    {
+      "name": "clearLabel",
+      "type": "string",
+      "default": "'Clear selection'",
+      "defaultValue": "Clear selection",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "clear-label",
+      "optional": false,
+      "description": "Accessible label for the clear button (`clearable`)."
+    },
+    {
+      "name": "searchingLabel",
+      "type": "string",
+      "default": "'Searching'",
+      "defaultValue": "Searching",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "searching-label",
+      "optional": false,
+      "description": "Accessible label for the in-menu loading spinner while filtering."
+    },
+    {
+      "name": "loadingText",
+      "type": "string",
+      "default": "'Loading…'",
+      "defaultValue": "Loading…",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "loading-text",
+      "optional": false,
+      "description": "Text shown in the trigger / menu while `loading` is true."
+    },
+    {
+      "name": "clearIcon",
+      "type": "string",
+      "default": "'close'",
+      "defaultValue": "close",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "clear-icon",
+      "optional": false,
+      "description": "Icon (Material Symbols name) for the clear button (`clearable`)."
+    },
+    {
+      "name": "dropdownIcon",
+      "type": "string",
+      "default": "'arrow_drop_down'",
+      "defaultValue": "arrow_drop_down",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "dropdown-icon",
+      "optional": false,
+      "description": "Caret icon; rotates 180° when open. Slot `dropdown-icon` overrides it."
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "loading",
+      "optional": false,
+      "description": "Show a busy state: the trigger shows a spinner instead of the caret and the\nhost is `aria-busy`. Use while an async dataset loads (e.g. before/around a\nlarge `loadOptions`). Replace the spinner with the `loader` slot."
+    },
+    {
+      "name": "fullWidth",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "full-width",
+      "optional": false,
+      "description": "Stretch the control to fill its parent's inline width (otherwise it sizes to\na sensible default). The dropdown follows when `match-trigger-width` is set."
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "open",
+      "optional": false,
+      "description": "Open state of the dropdown. Reflected so `:host([open])` rules apply."
+    }
+  ],
+  "state": [
+    {
+      "name": "validationMessage",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "optionsData",
+      "type": "SelectOptionData[]",
+      "initializer": "[]"
+    },
+    {
+      "name": "triggerId",
+      "type": "inferred",
+      "initializer": "`md-select-${++selectIdCounter}`"
+    },
+    {
+      "name": "query",
+      "type": "inferred",
+      "initializer": "''"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "string",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdClose",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "close",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "focusTrigger",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "reset",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "loadOptions",
+      "parameters": [
+        {
+          "name": "source",
+          "type": "SelectOptionInit[] | OptionRowSource"
+        }
+      ],
+      "returnType": "inferred"
+    },
+    {
+      "name": "setQuery",
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string"
+        }
+      ],
+      "returnType": "inferred"
+    },
+    {
+      "name": "getLabels",
+      "parameters": [
+        {
+          "name": "values",
+          "type": "string[]"
+        }
+      ],
+      "returnType": "Promise<Record<string, string>>"
+    },
+    {
+      "name": "getValidity",
+      "parameters": [],
+      "returnType": "Promise<{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }>"
+    },
+    {
+      "name": "checkValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "reportValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "setCustomValidity",
+      "parameters": [
+        {
+          "name": "message",
+          "type": "string"
+        }
+      ],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "loader"
+    },
+    {
+      "name": "dropdown-icon"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "field"
+    },
+    {
+      "name": "trailing"
+    },
+    {
+      "name": "loading-spinner"
+    },
+    {
+      "name": "clear"
+    },
+    {
+      "name": "caret"
+    },
+    {
+      "name": "option-icon"
+    },
+    {
+      "name": "menu"
+    },
+    {
+      "name": "search-wrap"
+    },
+    {
+      "name": "search"
+    },
+    {
+      "name": "search-spinner"
+    },
+    {
+      "name": "loading-bar"
+    },
+    {
+      "name": "loading-progress"
+    },
+    {
+      "name": "field-container"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-select-width",
+      "description": "Host inline size            (default 100%)"
+    },
+    {
+      "name": "--md-select-min-width",
+      "description": "Host minimum inline size    (default 0)"
+    },
+    {
+      "name": "--md-select-caret-color",
+      "description": "Dropdown caret colour"
+    },
+    {
+      "name": "--md-select-caret-size",
+      "description": "Dropdown caret glyph size   (default 24px)"
+    },
+    {
+      "name": "--md-select-clear-color",
+      "description": "Clear (✕) icon colour       (default: caret colour)"
+    },
+    {
+      "name": "--md-select-trailing-gap",
+      "description": "Gap between clear + caret   (default 2px)"
+    },
+    {
+      "name": "--md-select-option-icon-color",
+      "description": "Leading icon colour in option rows"
+    },
+    {
+      "name": "--md-select-spinner-size"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-select': true,\n          [`md-select--${this.variant}`]: true,\n          'md-select--open': this.open,\n          'md-select--disabled': this.disabled,\n          'md-select--loading': this.loading,\n        }"
+      },
+      {
+        "name": "aria-haspopup",
+        "value": "listbox"
+      },
+      {
+        "name": "aria-busy",
+        "value": "this.loading ? 'true' : undefined"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderTrigger()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderMenu()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-select__options"
+          },
+          {
+            "name": "hidden",
+            "value": true
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "onSlotchange",
+                "value": "() => this.refreshOptions()"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "HTML_FORM",
+      "severity": "warning",
+      "message": "HTML form association requires explicit native form state.",
+      "line": 117
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 293
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 293
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 651
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 77
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-select/md-select.tsx",
+    "styleUrl": "md-select.css",
+    "shadow": true,
+    "formAssociated": true,
+    "sha256": "9bb5b36f1552db3ccb459a8ac8e49bc642955994d1b5c97146266887e60e4cc0"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-text-field-padding-inline-end",
+          "value": "var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--md-select-width, 100%)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--md-select-min-width, 0)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-cursor",
+          "value": "pointer",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__field::part(input)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-select--disabled) .md-select__field::part(input)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "not-allowed",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__field .md-select__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-select-trailing-gap, 2px)",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__caret",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--md-select-caret-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-select-caret-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-short4, 200ms)\n    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-select--open) .md-select__caret",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "rotate(180deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__caret",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__loader",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "--md-loading-indicator-size",
+          "value": "var(--md-select-spinner-size, 22px)",
+          "important": false
+        },
+        {
+          "property": "--md-loading-indicator-shape-size",
+          "value": "var(--md-select-spinner-size, 22px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([full-width])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__loading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__loading md-progress-indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__field .md-select__clear",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_clear-color",
+          "value": "var(--md-select-clear-color,\n    var(--md-select-caret-color, var(--md-sys-color-on-surface-variant, #49454F)))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "18px",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--_clear-color)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-state-layer-color",
+          "value": "var(--_clear-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__option-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "20px",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-select-option-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-select--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-select--disabled) .md-select__field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-text-field-cursor",
+          "value": "not-allowed",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__vspacer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__search-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__search",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "12px 44px 12px 16px",
+          "important": false
+        },
+        {
+          "property": "font",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1d1b20)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--md-sys-color-surface-container, #f3edf7)",
+          "important": false
+        },
+        {
+          "property": "border-bottom",
+          "value": "1px solid var(--md-sys-color-outline-variant, #cac4d0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__search::placeholder",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454f)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-select__search-spinner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "-12px",
+          "important": false
+        },
+        {
+          "property": "--md-loading-indicator-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "--md-loading-indicator-shape-size",
+          "value": "18px",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Select",
+  "category": "Selection",
+  "parent": null,
+  "description": "Pick exactly one value from a list. A readonly md-text-field trigger with an md-menu listbox popup, optional in-menu filtering, async option loading and row virtualization for large lists. Form-associated with full constraint validation.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-select.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-select/md-select.tsx",
+    "css": "packages/core/src/components/md-select/md-select.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "label",
+        "placeholder",
+        "value",
+        "required",
+        "error",
+        "errorText",
+        "supportingText",
+        "clearable",
+        "options",
+        "filterable",
+        "searchPlaceholder",
+        "noResultsText",
+        "noOptionsText",
+        "clearLabel",
+        "loadingText",
+        "loading",
+        "open",
+        "dropdownIcon",
+        "valueMissingLabel",
+        "disabled"
+      ],
+      "events": [
+        "mdChange",
+        "mdOpen",
+        "mdClose",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "reserveSupportingSpace",
+        "variant",
+        "density",
+        "matchTriggerWidth",
+        "placement",
+        "maxHeight",
+        "virtualize",
+        "filterMode",
+        "rowHeight",
+        "name",
+        "filterLabel",
+        "searchingLabel",
+        "clearIcon",
+        "fullWidth"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "close",
+        "focusTrigger",
+        "reset",
+        "loadOptions",
+        "setQuery",
+        "getLabels",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [
+        "",
+        "loader",
+        "dropdown-icon"
+      ],
+      "notes": [
+        "Native searchable sheet replaces anchored web listbox. Default-slot select-option children are parsed as option data."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "clearLabel",
+        "clearable",
+        "disabled",
+        "error",
+        "errorText",
+        "filterable",
+        "label",
+        "loading",
+        "maxHeight",
+        "noOptionsText",
+        "noResultsText",
+        "open",
+        "options",
+        "placeholder",
+        "searchPlaceholder",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "valueMissingLabel",
+        "reserveSupportingSpace",
+        "variant",
+        "required",
+        "density",
+        "matchTriggerWidth",
+        "placement",
+        "virtualize",
+        "filterMode",
+        "rowHeight",
+        "name",
+        "filterLabel",
+        "searchingLabel",
+        "loadingText",
+        "clearIcon",
+        "dropdownIcon",
+        "fullWidth"
+      ],
+      "unsupportedEvents": [
+        "mdValidityChange"
+      ],
+      "unsupportedMethods": [
+        "show",
+        "close",
+        "focusTrigger",
+        "reset",
+        "loadOptions",
+        "setQuery",
+        "getLabels",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [
+        "loader",
+        "dropdown-icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

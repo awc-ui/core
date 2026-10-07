@@ -1,0 +1,714 @@
+{
+  "tag": "md-badge",
+  "className": "MdBadge",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "'small' | 'large'",
+      "default": "'large'",
+      "defaultValue": "large",
+      "options": [
+        "small",
+        "large"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Badge size — small renders a dot; large renders a label"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": "Text or number to display (large variant only, max 4 visible characters)"
+    },
+    {
+      "name": "max",
+      "type": "number",
+      "default": "999",
+      "defaultValue": 999,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max",
+      "optional": false,
+      "description": "Numeric threshold. When the parsed value exceeds this, the badge\nshows `{max}+` (e.g. `999+`). Ignored for non-numeric values."
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "icon",
+      "optional": false,
+      "description": "Material Symbols icon name (large variant only, e.g. `\"error\"`)"
+    },
+    {
+      "name": "shape",
+      "type": "'rect' | 'circle'",
+      "default": "'rect'",
+      "defaultValue": "rect",
+      "options": [
+        "rect",
+        "circle"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "shape",
+      "optional": false,
+      "description": "The SHAPE of the thing the badge is anchored to.\n\nThe badge pins to its containing block's top-inline-end CORNER and\ntranslates itself onto it, which is right for a `rect` host — a button, a\ntab, a tile. On a `circle` it is wrong for the same reason it is wrong for\n`md-status-dot`: a circle's bounding-box corner lies outside the visible\nshape, so the badge floats clear of the avatar with nothing behind it.\n\n`circle` anchors it to the 45° point on the rim instead — the top-trailing\narc, where a count badge on an avatar belongs. Percentage insets, so it is\ncorrect at every avatar size without being told the size, and it needs no\nhand-tuned offsets at the call site.\n\n`rect` stays the default: changing it would move every badge already\nsitting on a button or a tab."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "hasSlottedIcon",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [
+    {
+      "name": "icon"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "icon"
+    },
+    {
+      "name": "label"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-badge-container-color"
+    },
+    {
+      "name": "--md-badge-label-color"
+    },
+    {
+      "name": "--md-badge-container-shape"
+    },
+    {
+      "name": "--md-badge-icon-color"
+    },
+    {
+      "name": "--md-badge-icon-size"
+    },
+    {
+      "name": "--md-badge-offset-x"
+    },
+    {
+      "name": "--md-badge-offset-y"
+    },
+    {
+      "name": "--md-badge-large-height"
+    },
+    {
+      "name": "--md-badge-large-padding"
+    },
+    {
+      "name": "--md-badge-small-size"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-badge': true,\n          'md-badge--small': isSmall,\n          'md-badge--large': !isSmall,\n          // Only the circular case gets a class — `rect` is the corner anchor\n          // the base rule already is, so a `--rect` class would name nothing.\n          'md-badge--circle': this.shape === 'circle',\n          'md-badge--has-content': hasContent,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "status"
+      },
+      {
+        "name": "aria-label",
+        "value": "this.accessibleLabel"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "!isSmall && (\n          <slot name=\"icon\" onSlotchange={this.readSlottedIcon}>\n            {this.icon ? (\n              <span class=\"md-badge__icon material-symbols-outlined\" part=\"icon\" aria-hidden=\"true\">\n                {this.icon}\n              </span>\n            ) : null}\n          </slot>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "hasLabel && (\n          <span class=\"md-badge__label\" part=\"label\">\n            {display}\n          </span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [],
+  "source": {
+    "file": "packages/core/src/components/md-badge/md-badge.tsx",
+    "styleUrl": "md-badge.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "94a8747bae28b47faac7bff2853c114633f94c404123fb068686a341d6af5dfd"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-badge-container-color, var(--md-sys-color-error, #B3261E))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-badge-label-color, var(--md-sys-color-on-error, #FFFFFF))",
+          "important": false
+        },
+        {
+          "property": "--_shape",
+          "value": "var(--md-badge-container-shape, var(--md-sys-shape-corner-full, 9999px))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-badge-icon-color, var(--md-badge-label-color, var(--md-sys-color-on-error, #FFFFFF)))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-badge-icon-size, max(8px, calc(10px + var(--md-sys-density-scale, 0) * 0.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_offset-x",
+          "value": "var(--md-badge-offset-x, 50%)",
+          "important": false
+        },
+        {
+          "property": "--_offset-y",
+          "value": "var(--md-badge-offset-y, -50%)",
+          "important": false
+        },
+        {
+          "property": "--_large-height",
+          "value": "var(--md-badge-large-height, max(12px, calc(16px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_large-padding",
+          "value": "var(--md-badge-large-padding, 0 max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_small-size",
+          "value": "var(--md-badge-small-size, max(4px, calc(6px + var(--md-sys-density-scale, 0) * 0.5px)))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "top",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "right",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_shape)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-badge--circle)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "top",
+          "value": "14.6447%",
+          "important": false
+        },
+        {
+          "property": "right",
+          "value": "14.6447%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-badge--small)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "width",
+          "value": "var(--_small-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_small-size)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translate(var(--_offset-x), var(--_offset-y))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-badge--large)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-width",
+          "value": "var(--_large-height)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_large-height)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--_large-padding)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translate(var(--_offset-x), var(--_offset-y))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_label-color)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(9px, calc(11px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-small-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-label-small-letter-spacing, 0.5px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-badge--large:not(.md-badge--has-content))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-badge__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-badge__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": true
+        },
+        {
+          "property": "fill",
+          "value": "var(--_icon-color)",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ".material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size, 10px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "Mark",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "MarkText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Badge",
+  "category": "Communication",
+  "parent": null,
+  "description": "A small count or marker attached to another element. A dot, or a count pill. variant=\"small\" is a bare dot for \"something is here\"; variant=\"large\" is a pill carrying a number or a glyph. It positions itself absolutely at the upper-right corner of the nearest positioned ancestor — a physical anchor (top: 0; right: 0), which does not mirror in RTL — and never takes pointer events.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-badge.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-badge/md-badge.tsx",
+    "css": "packages/core/src/components/md-badge/md-badge.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "variant",
+        "value",
+        "max",
+        "icon",
+        "shape"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "icon"
+      ],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "max",
+        "value",
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "icon",
+        "shape",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

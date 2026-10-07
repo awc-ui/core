@@ -1,0 +1,213 @@
+{
+  "tag": "md-tab-panels",
+  "className": "MdTabPanels",
+  "properties": [
+    {
+      "name": "for",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "for",
+      "optional": false,
+      "description": "id of the `md-tabs` to follow. Empty = nearest preceding md-tabs sibling."
+    },
+    {
+      "name": "sizing",
+      "type": "'stable' | 'active'",
+      "default": "'stable'",
+      "defaultValue": "stable",
+      "options": [
+        "stable",
+        "active"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "sizing",
+      "optional": false,
+      "description": "stable = reserve the largest panel's box; active = size to the active panel."
+    }
+  ],
+  "state": [],
+  "events": [],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [],
+  "cssProperties": [],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "slot",
+        "attributes": [],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 50
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 50
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Document access requires a native adapter.",
+      "line": 66
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 92
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-tab-panels/md-tab-panels.tsx",
+    "styleUrl": "md-tab-panels.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "29c0548db9900af61e7f7b5c40639aa75c44c1eba9e8a91c7175e4a2382dc75c"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted(md-tab-panel)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "grid-area",
+          "value": "1 / 1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([sizing='active'][data-active-resolved]) ::slotted(md-tab-panel:not([active]))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Tab Panels",
+  "category": "Navigation",
+  "parent": "md-tabs",
+  "description": "The content container that pairs with a md-tabs strip. It finds the strip, follows its mdTabChange, drives active / inert on its md-tab-panel children, and wires the tab↔panel ARIA in both directions.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-tab-panels.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-tab-panels/md-tab-panels.tsx",
+    "css": "packages/core/src/components/md-tab-panels/md-tab-panels.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "for"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "sizing"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "The for property matches an md-tabs native node ID within the same tree or AWCNativeScope. Browser DOM querying and stable max-height measuring are not reproduced."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "for",
+        "sizing"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Composition container. Pass active on child panels; HTML for/id linkage is not available."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

@@ -1,0 +1,1217 @@
+{
+  "tag": "md-toolbar",
+  "className": "MdToolbar",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "'docked' | 'floating'",
+      "default": "'docked'",
+      "defaultValue": "docked",
+      "options": [
+        "docked",
+        "floating"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Toolbar type: docked (anchored to bottom) or floating (free-placed)"
+    },
+    {
+      "name": "color",
+      "type": "'standard' | 'vibrant'",
+      "default": "'standard'",
+      "defaultValue": "standard",
+      "options": [
+        "standard",
+        "vibrant"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "color",
+      "optional": false,
+      "description": "Toolbar color scheme (bar chrome). Also applies the MD3 expressive **toolbar-only**\ntoken map to slotted `md-icon-button` — does not change standalone icon buttons elsewhere."
+    },
+    {
+      "name": "layout",
+      "type": "'horizontal' | 'vertical'",
+      "default": "'horizontal'",
+      "defaultValue": "horizontal",
+      "options": [
+        "horizontal",
+        "vertical"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "layout",
+      "optional": false,
+      "description": "Layout direction for floating toolbar"
+    },
+    {
+      "name": "alignment",
+      "type": "'start' | 'center' | 'end' | 'space-between'",
+      "default": "'start'",
+      "defaultValue": "start",
+      "options": [
+        "start",
+        "center",
+        "end",
+        "space-between"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "alignment",
+      "optional": false,
+      "description": "Alignment of items within the container"
+    },
+    {
+      "name": "containerSemantics",
+      "type": "'toolbar' | 'generic'",
+      "default": "'toolbar'",
+      "defaultValue": "toolbar",
+      "options": [
+        "toolbar",
+        "generic"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "container-semantics",
+      "optional": false,
+      "description": "`toolbar` (default): `role=\"toolbar\"`, adaptive roving tabindex, and toolbar ARIA on the\nhost for web. `generic`: no toolbar role — plain container, no roving/arrow navigation.\nA generic container cannot be named (ARIA name-prohibited): an author-set `aria-label`/\n`aria-labelledby` is left in place but ignored by assistive tech, and a dev-mode\nwarning is logged."
+    },
+    {
+      "name": "ariaLabelProp",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "aria-label",
+      "optional": false,
+      "description": "Accessible name for the toolbar (`containerSemantics=\"toolbar\"`). Provide a meaningful\nlabel describing the toolbar's purpose (e.g. \"Text formatting\"); prefer `aria-labelledby`\nwhen a visible label exists. When neither is set the toolbar is left unnamed (valid ARIA)\nand a dev-mode warning is logged."
+    },
+    {
+      "name": "ariaLabelledby",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "aria-labelledby",
+      "optional": false,
+      "description": "ID(s) of visible label element(s); takes precedence over `aria-label` for the accessible name"
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "hasFab",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [],
+  "methods": [
+    {
+      "name": "setFocus",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "leading",
+      "description": "Leading (start) section"
+    },
+    {
+      "name": "trailing",
+      "description": "Trailing (end) section"
+    },
+    {
+      "name": "fab",
+      "description": "Paired FAB element"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "container",
+      "description": "Inner container holding slotted content"
+    },
+    {
+      "name": "fab-container",
+      "description": "FAB wrapper"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-toolbar-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-toolbar-icon-color",
+      "description": "Slotted control tint (defaults: on-surface-variant / on-surface)"
+    },
+    {
+      "name": "--md-toolbar-container-shape",
+      "description": "Border-radius"
+    },
+    {
+      "name": "--md-toolbar-container-height",
+      "description": "Container height"
+    },
+    {
+      "name": "--md-toolbar-padding",
+      "description": "Padding"
+    },
+    {
+      "name": "--md-toolbar-gap",
+      "description": "Gap between items"
+    },
+    {
+      "name": "--md-toolbar-fab-gap",
+      "description": "Gap between toolbar and FAB"
+    },
+    {
+      "name": "--md-toolbar-scrollbar-width",
+      "description": "Scrollbar width for opt-in scrolling (set to"
+    },
+    {
+      "name": "--md-toolbar-flex-wrap"
+    },
+    {
+      "name": "--md-toolbar-overflow-x"
+    },
+    {
+      "name": "--md-toolbar-overflow-y"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-toolbar': true,\n          [`md-toolbar--${this.variant}`]: true,\n          [`md-toolbar--${this.color}`]: true,\n          [`md-toolbar--${this.layout}`]: isFloating,\n          [`md-toolbar--align-${this.alignment}`]: true,\n          'md-toolbar--vertical': isVertical,\n          'md-toolbar--generic': !isToolbar,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "isToolbar ? 'toolbar' : undefined"
+      },
+      {
+        "name": "aria-label",
+        "value": "ariaLabel"
+      },
+      {
+        "name": "aria-labelledby",
+        "value": "ariaLabelledbyOut"
+      },
+      {
+        "name": "aria-orientation",
+        "value": "ariaOrientation"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-toolbar__container"
+          },
+          {
+            "name": "part",
+            "value": "container"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "name",
+                "value": "leading"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "name",
+                "value": "trailing"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "{\n            'md-toolbar__fab-container': true,\n            'md-toolbar__fab-container--floating': isFloating,\n            'md-toolbar__fab-container--hidden': !this.hasFab,\n          }"
+          },
+          {
+            "name": "part",
+            "value": "fab-container"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "name",
+                "value": "fab"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 92
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 99
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 105
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 181
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 182
+    },
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 311
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-toolbar/md-toolbar.tsx",
+    "styleUrl": "md-toolbar.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "94d9f87e0e0bcde2c7fd06ccf5bed4894849d9d2ad38a0c33a187faf248495f6"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-toolbar-container-color, var(--md-sys-color-surface-container, #F3EDF7))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-toolbar-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_shape",
+          "value": "var(--md-toolbar-container-shape, 0px)",
+          "important": false
+        },
+        {
+          "property": "--_height",
+          "value": "var(--md-toolbar-container-height, max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_padding",
+          "value": "var(--md-toolbar-padding, var(--md-sys-spacing-inset-lg, 16px))",
+          "important": false
+        },
+        {
+          "property": "--_gap",
+          "value": "var(--md-toolbar-gap, max(4px, calc(32px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_fab-gap",
+          "value": "var(--md-toolbar-fab-gap, var(--md-sys-spacing-gap-lg, 16px))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--docked)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_gap",
+          "value": "var(--md-toolbar-gap, max(4px, calc(32px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_padding",
+          "value": "var(--md-toolbar-padding, var(--md-sys-spacing-inset-lg, 16px))",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_height)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--_padding)",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "env(safe-area-inset-bottom, 0px)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_shape)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-2, 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.3))",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "sticky",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "var(--md-sys-z-index-app-bar, 100)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--docked.md-toolbar--align-center)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_gap",
+          "value": "var(--md-toolbar-gap, var(--md-sys-spacing-gap-sm, 8px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--docked.md-toolbar--align-space-between)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_gap",
+          "value": "0px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--floating)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_shape",
+          "value": "var(--md-toolbar-container-shape, var(--md-sys-shape-corner-full, 100px))",
+          "important": false
+        },
+        {
+          "property": "--_gap",
+          "value": "var(--md-toolbar-gap, var(--md-sys-spacing-gap-xs, 4px))",
+          "important": false
+        },
+        {
+          "property": "--_padding",
+          "value": "var(--md-toolbar-padding, var(--md-sys-spacing-inset-sm, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_fab-gap",
+          "value": "var(--md-toolbar-fab-gap, var(--md-sys-spacing-gap-sm, 8px))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_fab-gap)",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--floating) .md-toolbar__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_shape)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-2, 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.3))",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--_padding)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 1 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--floating:not(.md-toolbar--vertical))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-block-size",
+          "value": "var(--_height)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--floating:not(.md-toolbar--vertical)) .md-toolbar__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "var(--_height)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--floating.md-toolbar--vertical) .md-toolbar__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--vertical)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_height)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--vertical) .md-toolbar__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--standard)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-toolbar-container-color, var(--md-sys-color-surface-container, #F3EDF7))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-toolbar-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--vibrant)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-toolbar-container-color, var(--md-sys-color-primary-container, #EADDFF))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-toolbar-icon-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-toolbar__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_gap)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "flex-wrap",
+          "value": "var(--md-toolbar-flex-wrap, nowrap)",
+          "important": false
+        },
+        {
+          "property": "overflow-x",
+          "value": "var(--md-toolbar-overflow-x, visible)",
+          "important": false
+        },
+        {
+          "property": "scrollbar-width",
+          "value": "var(--md-toolbar-scrollbar-width, thin)",
+          "important": false
+        },
+        {
+          "property": "scroll-padding-inline",
+          "value": "var(--_padding)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--vertical) .md-toolbar__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "overflow-x",
+          "value": "visible",
+          "important": false
+        },
+        {
+          "property": "overflow-y",
+          "value": "var(--md-toolbar-overflow-y, visible)",
+          "important": false
+        },
+        {
+          "property": "scroll-padding-block",
+          "value": "var(--_padding)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--align-start) .md-toolbar__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "flex-start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--align-center) .md-toolbar__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--align-end) .md-toolbar__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "flex-end",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--align-space-between) .md-toolbar__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "space-between",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-toolbar__fab-container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "var(--_fab-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-toolbar__fab-container--hidden",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-toolbar__fab-container--floating",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--standard) ::slotted(md-icon-button.md-icon-button--standard:not(.md-icon-button--selected)),\n:host(.md-toolbar--standard) ::slotted(md-icon-button.md-icon-button--outlined:not(.md-icon-button--selected))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--md-toolbar-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-state-layer-color",
+          "value": "var(--md-toolbar-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--vibrant) ::slotted(md-icon-button.md-icon-button--standard:not(.md-icon-button--selected)),\n:host(.md-toolbar--vibrant) ::slotted(md-icon-button.md-icon-button--outlined:not(.md-icon-button--selected))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--md-toolbar-icon-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-state-layer-color",
+          "value": "var(--md-toolbar-icon-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--vibrant) ::slotted(md-icon-button.md-icon-button--tonal.md-icon-button--toggle:not(.md-icon-button--selected))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-container-color",
+          "value": "var(--md-sys-color-surface-container, #F3EDF7)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-state-layer-color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--vibrant) ::slotted(md-icon-button.md-icon-button--tonal.md-icon-button--toggle.md-icon-button--selected)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-container-color",
+          "value": "var(--md-sys-color-secondary-container, #E8DEF8)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--md-sys-color-on-secondary-container, #1E192B)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-state-layer-color",
+          "value": "var(--md-sys-color-on-secondary-container, #1E192B)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot=\"leading\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-end",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot=\"trailing\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--docked) ::slotted([slot=\"fab\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "none",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--docked)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-block-start",
+          "value": "1px solid CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--floating) .md-toolbar__container",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border",
+          "value": "1px solid CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-toolbar__container",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "scroll-behavior",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Toolbar",
+  "category": "Navigation",
+  "parent": null,
+  "description": "A persistent cluster of local actions. Docked or floating, horizontal or vertical, with an optional FAB slot. Where a menu is temporary, a toolbar keeps the essential actions on screen — and it wires the WAI-ARIA toolbar keyboard pattern over whatever controls you slot in.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-toolbar.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-toolbar/md-toolbar.tsx",
+    "css": "packages/core/src/components/md-toolbar/md-toolbar.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "variant",
+        "layout",
+        "ariaLabelProp"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        "",
+        "leading",
+        "trailing",
+        "fab"
+      ],
+      "unsupportedProperties": [
+        "color",
+        "alignment",
+        "containerSemantics",
+        "ariaLabelledby",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "setFocus"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Preserves authored child order and native horizontal/vertical layout."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "density"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        "",
+        "leading",
+        "trailing"
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "color",
+        "layout",
+        "alignment",
+        "containerSemantics",
+        "ariaLabelProp",
+        "ariaLabelledby"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "setFocus"
+      ],
+      "unsupportedSlots": [
+        "fab"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

@@ -1,0 +1,926 @@
+{
+  "tag": "md-table-cell",
+  "className": "MdTableCell",
+  "properties": [
+    {
+      "name": "align",
+      "type": "'start' | 'center' | 'end' | 'justify'",
+      "default": "'start'",
+      "defaultValue": "start",
+      "options": [
+        "start",
+        "center",
+        "end",
+        "justify"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "align",
+      "optional": false,
+      "description": "Text alignment within the cell."
+    },
+    {
+      "name": "numeric",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "numeric",
+      "optional": false,
+      "description": "Right-align + tabular figures (for monetary / numeric data)."
+    },
+    {
+      "name": "padding",
+      "type": "'default' | 'none' | 'checkbox'",
+      "default": "'default'",
+      "defaultValue": "default",
+      "options": [
+        "default",
+        "none",
+        "checkbox"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "padding",
+      "optional": false,
+      "description": "Padding mode (MUI parity)."
+    },
+    {
+      "name": "head",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "head",
+      "optional": false,
+      "description": "Render as a column / row header."
+    },
+    {
+      "name": "scope",
+      "type": "'col' | 'row' | 'colgroup' | 'rowgroup' | ''",
+      "default": "''",
+      "defaultValue": "",
+      "options": [
+        "col",
+        "row",
+        "colgroup",
+        "rowgroup",
+        ""
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "scope",
+      "optional": false,
+      "description": "Header scope (used when `head` is true)."
+    },
+    {
+      "name": "sticky",
+      "type": "'start' | 'end' | ''",
+      "default": "''",
+      "defaultValue": "",
+      "options": [
+        "start",
+        "end",
+        ""
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "sticky",
+      "optional": false,
+      "description": "Sticky positioning — `start` for first column, `end` for last column."
+    },
+    {
+      "name": "colSpan",
+      "type": "number",
+      "default": "1",
+      "defaultValue": 1,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "colspan",
+      "optional": false,
+      "description": "Number of columns this cell spans (CSS Grid `grid-column: span N`)."
+    },
+    {
+      "name": "rowSpan",
+      "type": "number",
+      "default": "1",
+      "defaultValue": 1,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "rowspan",
+      "optional": false,
+      "description": "Number of rows this cell spans (CSS Grid `grid-row: span N`)."
+    },
+    {
+      "name": "ellipsis",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "ellipsis",
+      "optional": false,
+      "description": "Disable text-wrap (single-line, ellipsis)."
+    },
+    {
+      "name": "variant",
+      "type": "'body' | 'meta'",
+      "default": "'body'",
+      "defaultValue": "body",
+      "options": [
+        "body",
+        "meta"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Optional content variant: `body` | `meta` (smaller, dimmer)."
+    },
+    {
+      "name": "noPinIndicator",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "no-pin-indicator",
+      "optional": false,
+      "description": "Suppress the automatic pin indicator that a sticky header cell shows.\nBy default a frozen (sticky) column always advertises that it's pinned\nwith a small pin icon in its header; set this to opt out (e.g. a sticky\ncheckbox column — which is auto-skipped anyway)."
+    },
+    {
+      "name": "pinIcon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "pin-icon",
+      "optional": false,
+      "description": "Custom pin-indicator icon: a Material Symbols ligature (e.g. \"anchor\",\n\"keep\"). Empty = the built-in 45° push-pin SVG. Usually set ONCE on\nmd-table via its `pin-icon` prop, which casts the value to every pinned\nheader cell; setting it here directly overrides the cast."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [],
+  "events": [],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "pin"
+    },
+    {
+      "name": "content"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-table-cell-color",
+      "description": "Foreground (text) color"
+    },
+    {
+      "name": "--md-table-cell-background",
+      "description": "Background color"
+    },
+    {
+      "name": "--md-table-cell-padding-inline",
+      "description": "Horizontal padding"
+    },
+    {
+      "name": "--md-table-cell-min-height",
+      "description": "Minimum cell height"
+    },
+    {
+      "name": "--md-table-cell-sticky-bg",
+      "description": "Opaque bg for sticky columns"
+    },
+    {
+      "name": "--md-table-cell-padding-block"
+    },
+    {
+      "name": "--md-table-cell-pin-display"
+    },
+    {
+      "name": "--md-table-cell-pin-color"
+    },
+    {
+      "name": "--md-table-cell-pin-size"
+    },
+    {
+      "name": "--md-table-cell-sticky-transition"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-table-cell': true,\n          'md-table-cell--head': this.head,\n          'md-table-cell--pinned': this.showPin,\n          [`md-table-cell--align-${this.align}`]: true,\n          [`md-table-cell--padding-${this.padding}`]: true,\n          [`md-table-cell--variant-${this.variant}`]: true,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "this.role"
+      },
+      {
+        "name": "scope",
+        "value": "this.head && this.scope ? this.scope : undefined"
+      },
+      {
+        "name": "aria-colspan",
+        "value": "this.colSpan > 1 ? String(this.colSpan) : null"
+      },
+      {
+        "name": "aria-rowspan",
+        "value": "this.rowSpan > 1 ? String(this.rowSpan) : null"
+      },
+      {
+        "name": "style",
+        "value": "style"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.showPin && (\n          <span\n            class=\"md-table-cell__pin\"\n            part=\"pin\"\n            aria-hidden=\"true\"\n            title={this.sticky === 'end' ? 'Pinned right' : 'Pinned left'}\n          >\n            {this.pinIcon ? (\n              <span class=\"material-symbols-outlined md-table-cell__pin-glyph\">{this.pinIcon}</span>\n            ) : (\n              <svg viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\">\n                <path d=\"M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z\" />\n              </svg>\n            )}\n          </span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table-cell__content"
+          },
+          {
+            "name": "part",
+            "value": "content"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [],
+  "source": {
+    "file": "packages/core/src/components/md-table-cell/md-table-cell.tsx",
+    "styleUrl": "md-table-cell.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "d00799003e619ef472c7362518baed600c2dbc4f706287e29e0e0a008f23560d"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--md-table-cell-min-height, var(--_cell-min-h, var(--_row-h, 52px)))",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--md-table-cell-padding-block, var(--_cell-pad-block, 8px))",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--md-table-cell-padding-inline, var(--_cell-pad-inline, 16px))",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-table-cell-background, transparent)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-table-cell-color, var(--_cell-color, inherit))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--_cell-weight, inherit)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--_cell-letter-spacing, inherit)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-cell--align-center)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-cell--align-end)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "flex-end",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "end",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-cell--align-justify)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "text-align",
+          "value": "justify",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([numeric])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "flex-end",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "end",
+          "important": false
+        },
+        {
+          "property": "font-variant-numeric",
+          "value": "tabular-nums",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-cell--padding-none)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-cell--padding-checkbox)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--md-sys-spacing-inset-xs, 4px) 0",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-cell--variant-meta)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--md-sys-typescale-body-small-font-size, 12px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-body-small-line-height, 16px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-table-cell-color, var(--_cell-color, var(--md-sys-color-on-surface-variant, #49454F)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([ellipsis]) .md-table-cell__content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-cell__content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-cell--head) .md-table-cell__content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-cell__pin",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "var(--md-table-cell-pin-display, inline-flex)",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-table-cell-pin-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-cell__pin svg",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--md-table-cell-pin-size, 16px)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--md-table-cell-pin-size, 16px)",
+          "important": false
+        },
+        {
+          "property": "fill",
+          "value": "currentColor",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "rotate(45deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-cell--pinned.md-table-cell--align-end),\n:host(.md-table-cell--pinned[numeric])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "flex-start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([sticky='start'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "sticky",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "var(--_sticky-offset, 0)",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(\n    --md-table-cell-sticky-bg,\n    var(--md-table-cell-background, var(--md-sys-color-surface, #FEF7FF))\n  )",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color\n    var(--md-table-cell-sticky-transition, var(--_fx-fast, 150ms cubic-bezier(0.31, 0.94, 0.34, 1)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([sticky='end'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "sticky",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "var(--_sticky-offset, 0)",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(\n    --md-table-cell-sticky-bg,\n    var(--md-table-cell-background, var(--md-sys-color-surface, #FEF7FF))\n  )",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color\n    var(--md-table-cell-sticky-transition, var(--_fx-fast, 150ms cubic-bezier(0.31, 0.94, 0.34, 1)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-cell__pin-glyph",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--md-table-cell-pin-size, 14px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-md-col-hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Table Cell",
+  "category": "Data Display",
+  "parent": "md-table",
+  "description": "One cell of an md-table. Renders as a data cell, a column header or a row header depending on head and scope, with alignment, spanning, sticky pinning and truncation options. It is a dumb surface: row state (selected, disabled, header) arrives as inherited CSS custom properties cast by md-table-row.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-table-cell.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-table-cell/md-table-cell.tsx",
+    "css": "packages/core/src/components/md-table-cell/md-table-cell.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "align",
+        "numeric",
+        "padding",
+        "head",
+        "ellipsis",
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "scope",
+        "sticky",
+        "colSpan",
+        "rowSpan",
+        "noPinIndicator",
+        "pinIcon",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native equal-flex columns; colSpan/rowSpan and sticky pinning are not supported."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "align",
+        "head",
+        "numeric",
+        "padding"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "scope",
+        "sticky",
+        "colSpan",
+        "rowSpan",
+        "ellipsis",
+        "variant",
+        "noPinIndicator",
+        "pinIcon",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

@@ -1,0 +1,1588 @@
+{
+  "tag": "md-radio",
+  "className": "MdRadio",
+  "properties": [
+    {
+      "name": "valueMissingLabel",
+      "type": "string",
+      "default": "'Please select one of these options.'",
+      "defaultValue": "Please select one of these options.",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-missing-label",
+      "optional": false,
+      "description": "Localized constraint-validation message shown when `required` is unmet.\n\nA prop rather than a hardcoded string, matching md-time-picker's\n`value-missing-label`: components stay i18n-engine-agnostic and the\nconsumer localizes through its own dictionary. Native inputs get their\nmessage from the browser's locale for free; a form-associated custom\nelement supplies its own, so leaving this hardcoded would ship an\nEnglish-only form to every locale."
+    },
+    {
+      "name": "checked",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "checked",
+      "optional": false,
+      "description": "Whether the radio button is selected"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disables the radio button"
+    },
+    {
+      "name": "softDisabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "soft-disabled",
+      "optional": false,
+      "description": "Soft-disabled: disabled visuals but remains focusable for discoverability"
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "required",
+      "optional": false,
+      "description": "Whether the radio is required in a form"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "name",
+      "optional": false,
+      "description": "Form name — radios sharing a name form an exclusive group"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "value",
+      "optional": false,
+      "description": "Form value submitted when checked"
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "validationMessage",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "invalid",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "pressed",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "focused",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "programmaticFocus",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "managedTabIndex",
+      "type": "inferred",
+      "initializer": "'0'"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "{ checked: boolean; value: string }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdFocus",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdBlur",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "syncValidityFromGroup",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "getValidity",
+      "parameters": [],
+      "returnType": "Promise<{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }>"
+    },
+    {
+      "name": "checkValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "reportValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "setCustomValidity",
+      "parameters": [
+        {
+          "name": "message",
+          "type": "string"
+        }
+      ],
+      "returnType": "inferred"
+    },
+    {
+      "name": "setFocus",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "setBlur",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "select",
+      "parameters": [],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "Hover / focus / press overlay"
+    },
+    {
+      "name": "container",
+      "description": "Wrapper around outer + inner circles"
+    },
+    {
+      "name": "outer-circle",
+      "description": "The 20px circle border"
+    },
+    {
+      "name": "inner-circle",
+      "description": "The 10px filled dot"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-radio-icon-color",
+      "description": "Unchecked outer circle color"
+    },
+    {
+      "name": "--md-radio-selected-icon-color",
+      "description": "Checked outer circle + inner dot color"
+    },
+    {
+      "name": "--md-radio-icon-size",
+      "description": "Outer circle size"
+    },
+    {
+      "name": "--md-radio-inner-circle-size",
+      "description": "Inner dot size"
+    },
+    {
+      "name": "--md-radio-state-layer-size",
+      "description": "State-layer diameter"
+    },
+    {
+      "name": "--md-radio-state-layer-color",
+      "description": "State-layer color (unchecked)"
+    },
+    {
+      "name": "--md-radio-selected-state-layer-color"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-radio': true,\n          'md-radio--checked': this.checked,\n          'md-radio--unchecked': !this.checked,\n          'md-radio--disabled': isEffectivelyDisabled,\n          'md-radio--pressed': this.pressed,\n          'md-radio--focused': this.focused,\n          'md-radio--focus-ring': this.programmaticFocus,\n          'md-radio--has-support': !!this.validationMessage,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "radio"
+      },
+      {
+        "name": "aria-invalid",
+        "value": "this.invalid ? 'true' : undefined"
+      },
+      {
+        "name": "aria-checked",
+        "value": "String(this.checked)"
+      },
+      {
+        "name": "aria-disabled",
+        "value": "isEffectivelyDisabled ? 'true' : undefined"
+      },
+      {
+        "name": "aria-required",
+        "value": "this.required ? 'true' : undefined"
+      },
+      {
+        "name": "tabindex",
+        "value": "this.managedTabIndex"
+      },
+      {
+        "name": "onClick",
+        "value": "this.handleClick"
+      },
+      {
+        "name": "onKeyDown",
+        "value": "this.handleKeyDown"
+      },
+      {
+        "name": "onFocus",
+        "value": "this.handleFocus"
+      },
+      {
+        "name": "onBlur",
+        "value": "this.handleBlur"
+      },
+      {
+        "name": "onPointerDown",
+        "value": "this.handlePointerDown"
+      },
+      {
+        "name": "onPointerUp",
+        "value": "this.handlePointerUp"
+      },
+      {
+        "name": "onPointerLeave",
+        "value": "this.handlePointerUp"
+      },
+      {
+        "name": "onPointerCancel",
+        "value": "this.handlePointerUp"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-radio__target"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-radio__ripple-layer"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "md-ripple",
+                "attributes": [
+                  {
+                    "name": "disabled",
+                    "value": "isEffectivelyDisabled"
+                  }
+                ],
+                "children": []
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-radio__state-layer"
+              },
+              {
+                "name": "part",
+                "value": "state-layer"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-radio__container"
+              },
+              {
+                "name": "part",
+                "value": "container"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "span",
+                "attributes": [
+                  {
+                    "name": "class",
+                    "value": "md-radio__outer"
+                  },
+                  {
+                    "name": "part",
+                    "value": "outer-circle"
+                  }
+                ],
+                "children": []
+              },
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "span",
+                "attributes": [
+                  {
+                    "name": "class",
+                    "value": "md-radio__inner"
+                  },
+                  {
+                    "name": "part",
+                    "value": "inner-circle"
+                  }
+                ],
+                "children": []
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "input",
+            "attributes": [
+              {
+                "name": "type",
+                "value": "radio"
+              },
+              {
+                "name": "class",
+                "value": "md-radio__native"
+              },
+              {
+                "name": "checked",
+                "value": "this.checked"
+              },
+              {
+                "name": "disabled",
+                "value": "this.disabled"
+              },
+              {
+                "name": "required",
+                "value": "this.required"
+              },
+              {
+                "name": "name",
+                "value": "this.name"
+              },
+              {
+                "name": "value",
+                "value": "this.value"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              },
+              {
+                "name": "aria-invalid",
+                "value": "this.invalid ? 'true' : undefined"
+              },
+              {
+                "name": "aria-describedby",
+                "value": "this.validationMessage ? `${this.uid}-support` : undefined"
+              },
+              {
+                "name": "tabindex",
+                "value": "-1"
+              },
+              {
+                "name": "onChange",
+                "value": "() => {}"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.validationMessage && (\n          <span\n            id={`${this.uid}-support`}\n            ref={(el) => { this.supportEl = el; }}\n            class=\"md-radio__support\"\n            role=\"alert\"\n          >\n            {this.validationMessage}\n          </span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "HTML_FORM",
+      "severity": "warning",
+      "message": "HTML form association requires explicit native form state.",
+      "line": 28
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
+      "line": 190
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 14
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-radio/md-radio.tsx",
+    "styleUrl": "md-radio.css",
+    "shadow": true,
+    "formAssociated": true,
+    "sha256": "7d212822a2e6bb94566aae406f5d64584245988197da93891167e82ae3ca337e"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-radio-icon-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_selected-icon-color",
+          "value": "var(--md-radio-selected-icon-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-radio-icon-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_inner-circle-size",
+          "value": "var(--md-radio-inner-circle-size, max(8px, calc(10px + var(--md-sys-density-scale, 0) * 0.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-size",
+          "value": "max(24px, calc(var(--md-radio-state-layer-size, 40px) + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-radio-state-layer-color, var(--md-sys-color-on-surface))",
+          "important": false
+        },
+        {
+          "property": "--_selected-state-layer-color",
+          "value": "var(--md-radio-selected-state-layer-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_touch-size",
+          "value": "max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_touch-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_touch-size)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 50%)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "vertical-align",
+          "value": "middle",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_state-layer-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--checked)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_selected-state-layer-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-radio__native",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-radio__ripple-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_state-layer-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_state-layer-size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 50%)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--disabled) .md-radio__ripple-layer,\n:host([soft-disabled]) .md-radio__ripple-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-radio__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_state-layer-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_state-layer-size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 50%)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_state-layer-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--unchecked:hover) .md-radio__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--unchecked:active) .md-radio__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--checked) .md-radio__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_selected-state-layer-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--checked:hover) .md-radio__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--checked:active) .md-radio__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible) .md-radio__target::after,\n:host(.md-radio--focus-ring) .md-radio__target::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_state-layer-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_state-layer-size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 50%)",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-radio__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--pressed) .md-radio__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scale(0.82)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-radio__outer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 50%)",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "2px solid var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "border-color var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--checked) .md-radio__outer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--_selected-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-radio__inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--_inner-circle-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_inner-circle-size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 50%)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_selected-icon-color)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scale(0)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--checked) .md-radio__inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scale(1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--disabled.md-radio--unchecked) .md-radio__outer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--disabled.md-radio--checked) .md-radio__outer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--disabled.md-radio--checked) .md-radio__inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--disabled) .md-radio__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled].md-radio--unchecked) .md-radio__outer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled].md-radio--checked) .md-radio__outer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled].md-radio--checked) .md-radio__inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled]) .md-radio__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-radio__container,\n  .md-radio__state-layer,\n  .md-radio__outer,\n  .md-radio__inner",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-radio__outer",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "ButtonText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--checked) .md-radio__outer",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--checked) .md-radio__inner",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible) .md-radio__target::after,\n  :host(.md-radio--focus-ring) .md-radio__target::after",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "outline-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--disabled) .md-radio__outer",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--disabled.md-radio--checked) .md-radio__inner",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-radio__state-layer",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-radio__target",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_touch-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_touch-size)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 50%)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-radio--has-support)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-radio__support",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "calc((var(--_touch-size) - var(--_icon-size)) / 2)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "max-content",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "min(60ch, calc(100vw - 48px))",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "anywhere",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-small-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-error, #B3261E)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Radio",
+  "category": "Selection",
+  "parent": null,
+  "description": "Exactly one option from a small, visible set. Radios sharing a name form an exclusive group with a roving tabstop and arrow-key navigation, and participate in form submission and validation.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-radio.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-radio/md-radio.tsx",
+    "css": "packages/core/src/components/md-radio/md-radio.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "checked",
+        "required",
+        "value",
+        "valueMissingLabel",
+        "disabled",
+        "softDisabled",
+        "name"
+      ],
+      "events": [
+        "mdChange",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdFocus",
+        "mdBlur"
+      ],
+      "unsupportedMethods": [
+        "syncValidityFromGroup",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity",
+        "setFocus",
+        "setBlur",
+        "select"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native name groups share selected values within a nested tree or an explicit AWCNativeScope. The host can also update checked declaratively."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "checked",
+        "disabled",
+        "softDisabled",
+        "value"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "valueMissingLabel",
+        "required",
+        "name",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdFocus",
+        "mdBlur",
+        "mdValidityChange"
+      ],
+      "unsupportedMethods": [
+        "syncValidityFromGroup",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity",
+        "setFocus",
+        "setBlur",
+        "select"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

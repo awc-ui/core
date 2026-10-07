@@ -1,0 +1,2166 @@
+{
+  "tag": "md-menu-item",
+  "className": "MdMenuItem",
+  "properties": [
+    {
+      "name": "headline",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "headline",
+      "optional": false,
+      "description": "Primary label text."
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": "Secondary descriptive text below the headline."
+    },
+    {
+      "name": "trailingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "trailing-text",
+      "optional": false,
+      "description": "Trailing text (e.g. keyboard shortcut)."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Whether the item is disabled."
+    },
+    {
+      "name": "selected",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "selected",
+      "optional": false,
+      "description": "Whether the item is currently selected."
+    },
+    {
+      "name": "indeterminate",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "indeterminate",
+      "optional": false,
+      "description": "Mixed/partial state for a `checkbox` item — renders a dash in the check\nslot instead of a tick and exposes `aria-checked=\"mixed\"`. Used for a\n\"select all\" affordance where only some children are selected. Ignored for\n`button`/`radio` types and when `selected` is true."
+    },
+    {
+      "name": "keepOpen",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "keep-open",
+      "optional": false,
+      "description": "Prevent the parent menu from closing when this item is clicked."
+    },
+    {
+      "name": "divider",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "divider",
+      "optional": false,
+      "description": "Render a divider line below this item."
+    },
+    {
+      "name": "gap",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "gap",
+      "optional": false,
+      "description": "Render a gap (extra space) below this item — an alternative separator to divider."
+    },
+    {
+      "name": "badge",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "badge",
+      "optional": false,
+      "description": "Small badge label (e.g. \"New\") displayed before the trailing area."
+    },
+    {
+      "name": "type",
+      "type": "'button' | 'checkbox' | 'radio'",
+      "default": "'button'",
+      "defaultValue": "button",
+      "options": [
+        "button",
+        "checkbox",
+        "radio"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "type",
+      "optional": false,
+      "description": "Type of item: 'button' (default action), 'checkbox' (toggle), or 'radio' (single-select within group)."
+    },
+    {
+      "name": "checkPosition",
+      "type": "'start' | 'end'",
+      "default": "'end'",
+      "defaultValue": "end",
+      "options": [
+        "start",
+        "end"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "check-position",
+      "optional": false,
+      "description": "Position of the selection checkmark indicator."
+    },
+    {
+      "name": "presentation",
+      "type": "'menuitem' | 'option'",
+      "default": "'menuitem'",
+      "defaultValue": "menuitem",
+      "options": [
+        "menuitem",
+        "option"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "presentation",
+      "optional": false,
+      "description": "ARIA presentation. `'menuitem'` (default) exposes the item with the menu\nrole family (`menuitem` / `menuitemradio` / `menuitemcheckbox`, state via\n`aria-checked`). `'option'` exposes it as a listbox option (`role=\"option\"`,\nstate via `aria-selected`) — used by `md-select` so the popup is a proper\nWAI-ARIA combobox/listbox rather than a menu."
+    },
+    {
+      "name": "roleOverride",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "role-override",
+      "optional": false,
+      "description": "Override the computed ARIA role. Used when a checkbox/radio item is NOT inside\na menu — e.g. a \"select all\" toggle in a listbox popup, which is semantically a\n`checkbox` (keeps `aria-checked`, drops the menu-only required-parent). Empty =\nthe default menuitem/option role family."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "hasLeadingIcon",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasTrailingIcon",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "leading-icon"
+    },
+    {
+      "name": "trailing-icon"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer"
+    },
+    {
+      "name": "leading-icon"
+    },
+    {
+      "name": "content"
+    },
+    {
+      "name": "headline"
+    },
+    {
+      "name": "supporting-text"
+    },
+    {
+      "name": "badge"
+    },
+    {
+      "name": "trailing"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-menu-item-height",
+      "description": "Item height (default 48px)"
+    },
+    {
+      "name": "--md-menu-item-padding-inline",
+      "description": "Horizontal padding (default 12px)"
+    },
+    {
+      "name": "--md-menu-item-gap",
+      "description": "Gap between elements (default 12px)"
+    },
+    {
+      "name": "--md-menu-item-icon-size",
+      "description": "Leading/trailing icon (default 24px,"
+    },
+    {
+      "name": "--md-menu-item-check-size",
+      "description": "Selection check/radio glyph (default 20px)"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-menu-item': true,\n          'md-menu-item--selected': this.selected,\n          'md-menu-item--disabled': this.disabled,\n          'md-menu-item--divider': this.divider,\n          'md-menu-item--gap': this.gap,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "this.role"
+      },
+      {
+        "name": "aria-disabled",
+        "value": "this.disabled ? 'true' : 'false'"
+      },
+      {
+        "name": "aria-selected",
+        "value": "this.presentation === 'option' ? String(this.selected) : undefined"
+      },
+      {
+        "name": "aria-checked",
+        "value": "this.presentation !== 'option' && this.type !== 'button'\n            ? this.indeterminate && !this.selected\n              ? 'mixed'\n              : String(this.selected)\n            : undefined"
+      },
+      {
+        "name": "tabindex",
+        "value": "-1"
+      },
+      {
+        "name": "onClick",
+        "value": "this.handleClick"
+      },
+      {
+        "name": "onKeyDown",
+        "value": "this.handleKeyDown"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "md-ripple",
+        "attributes": [
+          {
+            "name": "disabled",
+            "value": "this.disabled"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-menu-item__state-layer"
+          },
+          {
+            "name": "part",
+            "value": "state-layer"
+          },
+          {
+            "name": "aria-hidden",
+            "value": "true"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.type !== 'button' && this.checkPosition === 'start' && (\n          <span class=\"md-menu-item__check\" aria-hidden=\"true\">\n            <span class=\"material-symbols-outlined\">\n              {this.selected ? 'check' : this.indeterminate ? 'remove' : ''}\n            </span>\n          </span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.hasLeadingIcon && (\n          <span class=\"md-menu-item__leading\" part=\"leading-icon\" aria-hidden=\"true\">\n            <slot name=\"leading-icon\"></slot>\n          </span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-menu-item__content"
+          },
+          {
+            "name": "part",
+            "value": "content"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-menu-item__headline"
+              },
+              {
+                "name": "part",
+                "value": "headline"
+              }
+            ],
+            "children": [
+              {
+                "kind": "expression",
+                "source": "this.headline"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.supportingText && (\n            <span class=\"md-menu-item__supporting\" part=\"supporting-text\">{this.supportingText}</span>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.badge && (\n          <span class=\"md-menu-item__badge\" part=\"badge\">{this.badge}</span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "(this.hasTrailingIcon || this.trailingText) && (\n          <span class=\"md-menu-item__trailing\" part=\"trailing\">\n            <slot name=\"trailing-icon\">\n              {this.trailingText && (\n                <span class=\"md-menu-item__trailing-text\">{this.trailingText}</span>\n              )}\n            </slot>\n          </span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.type !== 'button' && this.checkPosition === 'end' && (\n          <span class=\"md-menu-item__check\" aria-hidden=\"true\">\n            <span class=\"material-symbols-outlined\">\n              {this.selected ? 'check' : this.indeterminate ? 'remove' : ''}\n            </span>\n          </span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 67
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Document access requires a native adapter.",
+      "line": 93
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 5
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-menu-item/md-menu-item.tsx",
+    "styleUrl": "md-menu-item.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "73bc066c2b75d8419c3e65560c994a6b759ea675ba7f82edc0927f37c6da0ce8"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "min-height",
+          "value": "var(--md-menu-item-height, calc(48px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-menu-item-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_check-size",
+          "value": "var(--md-menu-item-check-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0 var(--md-menu-item-padding-inline, var(--md-sys-spacing-inset-md, 12px))",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-menu-item-gap, var(--md-sys-spacing-gap-md, 12px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    color var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    border-radius var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-menu-item-group[data-use-gap]) .md-menu-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "calc(var(--md-menu-group-shape, 12px) - var(--md-sys-spacing-inset-xs, 4px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover) .md-menu-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0.08",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:active) .md-menu-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0.12",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible) .md-menu-item__state-layer,\n:host([data-md-focused]) .md-menu-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0.12",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover) .md-menu-item__state-layer,\n:host(:active) .md-menu-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible),\n:host([data-md-focused])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "-3px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu-item--selected)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-secondary-container, #E8DEF8)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"].md-menu-item--selected)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-tertiary-container, #FFD8E4)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-tertiary-container, #31111D)",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"]:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"]:active)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"]:first-child:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"]:last-child:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"]:first-child:last-child:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"][data-after-gap]:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"][gap]:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"][data-after-gap][gap]:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"].md-menu-item--selected)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-tertiary, #7D5260)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-tertiary, #FFFFFF)",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"]:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"]:active)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"]:first-child:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"]:last-child:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"]:first-child:last-child:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"][data-after-gap]:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"][gap]:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"][data-after-gap][gap]:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu-item--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.38",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__leading ::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu-item--selected) .md-menu-item__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "min-width",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__headline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-large-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__supporting",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__badge",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "20px",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0 8px",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 9999px)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-tertiary-container, #FFD8E4)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-tertiary-container, #31111D)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-sys-typescale-label-small-size, 11px)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-small-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-label-small-line-height, 16px)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-label-small-tracking, 0.5px)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__trailing \n::slotted(*:not(md-badge))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__trailing-text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-sys-typescale-label-small-size, 11px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__trailing:not(:has(::slotted(*), .md-menu-item__trailing-text))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu-item--selected) .md-menu-item__trailing,\n:host(.md-menu-item--selected) .md-menu-item__trailing-text,\n:host(.md-menu-item--selected) .md-menu-item__supporting",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__check",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_check-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_check-size)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-menu-item__check .material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_check-size)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu-item--divider)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-bottom",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-bottom",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-menu-item--divider)::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "bottom",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-outline-variant, #CAC4D0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_rest-ss",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "--_rest-se",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "--_rest-es",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "--_rest-ee",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-menu-item-icon-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"]:first-child)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_rest-ss",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--_rest-se",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"]:last-child)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_rest-es",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--_rest-ee",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"]) .md-menu-item__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"]) .md-menu-item__trailing,\n:host([data-variant=\"standard\"]) .md-menu-item__supporting,\n:host([data-variant=\"standard\"]) .md-menu-item__trailing-text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"standard\"].md-menu-item--selected) .md-menu-item__leading,\n:host([data-variant=\"standard\"].md-menu-item--selected) .md-menu-item__trailing,\n:host([data-variant=\"standard\"].md-menu-item--selected) .md-menu-item__trailing-text,\n:host([data-variant=\"standard\"].md-menu-item--selected) .md-menu-item__supporting",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_rest-ss",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "--_rest-se",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "--_rest-es",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "--_rest-ee",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-tertiary-container, #31111D)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-menu-item-icon-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"]:first-child)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_rest-ss",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--_rest-se",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"]:last-child)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_rest-es",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--_rest-ee",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"]) .md-menu-item__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-tertiary-container, #31111D)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"]) .md-menu-item__trailing,\n:host([data-variant=\"vibrant\"]) .md-menu-item__supporting,\n:host([data-variant=\"vibrant\"]) .md-menu-item__trailing-text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-tertiary-container, #31111D)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"].md-menu-item--selected) .md-menu-item__leading,\n:host([data-variant=\"vibrant\"].md-menu-item--selected) .md-menu-item__trailing,\n:host([data-variant=\"vibrant\"].md-menu-item--selected) .md-menu-item__trailing-text,\n:host([data-variant=\"vibrant\"].md-menu-item--selected) .md-menu-item__supporting",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-variant=\"vibrant\"]) .md-menu-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-on-tertiary-container, #31111D)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Menu Item",
+  "category": "Navigation",
+  "parent": "md-menu",
+  "description": "One row in a md-menu. A command, or a checkbox/radio option, with optional icons, supporting text, a badge and trailing text.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-menu-item.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-menu-item/md-menu-item.tsx",
+    "css": "packages/core/src/components/md-menu-item/md-menu-item.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "headline",
+        "supportingText",
+        "trailingText",
+        "selected",
+        "type",
+        "divider",
+        "badge",
+        "disabled"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        "leading-icon",
+        "trailing-icon"
+      ],
+      "unsupportedProperties": [
+        "indeterminate",
+        "keepOpen",
+        "gap",
+        "checkPosition",
+        "presentation",
+        "roleOverride",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "disabled",
+        "divider",
+        "headline",
+        "selected",
+        "supportingText",
+        "trailingText",
+        "type"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "indeterminate",
+        "keepOpen",
+        "gap",
+        "badge",
+        "checkPosition",
+        "presentation",
+        "roleOverride",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "leading-icon",
+        "trailing-icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

@@ -1,0 +1,262 @@
+{
+  "tag": "md-select-option",
+  "className": "MdSelectOption",
+  "properties": [
+    {
+      "name": "value",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": "Stable identifier emitted by the picker and used for matching."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Visible label. Falls back to the slotted text content when empty."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disabled options stay visible in the menu but cannot be selected."
+    },
+    {
+      "name": "selected",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "selected",
+      "optional": false,
+      "description": "Initial-selected hint (used by the picker only when its value is unset)."
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "icon",
+      "optional": false,
+      "description": "Material Symbols leading-icon glyph rendered in the menu row."
+    },
+    {
+      "name": "iconColor",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "icon-color",
+      "optional": false,
+      "description": "CSS colour for the leading icon (any CSS `<color>` — hex, `rgb()`, or a\ntheme token such as `var(--md-sys-color-primary)`). Ignored without `icon`."
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": "Secondary text rendered under the label in the menu row."
+    }
+  ],
+  "state": [],
+  "events": [
+    {
+      "name": "mdSelectOptionChange",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [],
+  "cssProperties": [],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "role",
+        "value": "option"
+      },
+      {
+        "name": "aria-hidden",
+        "value": "true"
+      },
+      {
+        "name": "aria-selected",
+        "value": "String(this.selected)"
+      },
+      {
+        "name": "aria-disabled",
+        "value": "this.disabled ? 'true' : 'false'"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "slot",
+        "attributes": [],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 31
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-select-option/md-select-option.tsx",
+    "styleUrl": "md-select-option.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "af6235146786376412c5f25d486c53f6aeb5a017c9f7fd160909dece8fa70c09"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Select Option",
+  "category": "Selection",
+  "parent": "md-select",
+  "description": "A declarative data carrier for the pickers. It renders nothing visible (:host { display: none }). The parent picker reads its props and projects them into its own md-menu dropdown as real md-menu-item rows.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-select-option.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-select-option/md-select-option.tsx",
+    "css": "packages/core/src/components/md-select-option/md-select-option.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "value",
+        "label",
+        "selected",
+        "icon",
+        "supportingText",
+        "disabled"
+      ],
+      "events": [
+        "mdSelectOptionChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "iconColor"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "disabled",
+        "label",
+        "selected",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdSelectOptionChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "icon",
+        "iconColor"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

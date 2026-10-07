@@ -1,0 +1,642 @@
+{
+  "tag": "md-tabs",
+  "className": "MdTabs",
+  "properties": [
+    {
+      "name": "activeTabIndex",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "active-tab-index",
+      "optional": false,
+      "description": "Index of the currently active tab"
+    },
+    {
+      "name": "variant",
+      "type": "'primary' | 'secondary'",
+      "default": "'primary'",
+      "defaultValue": "primary",
+      "options": [
+        "primary",
+        "secondary"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Visual variant applied to all child tabs"
+    },
+    {
+      "name": "divider",
+      "type": "'auto' | 'full'",
+      "default": "'full'",
+      "defaultValue": "full",
+      "options": [
+        "auto",
+        "full"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "divider",
+      "optional": false,
+      "description": "How far the bottom rule under the strip runs.\n\n- `full` — one rule across the whole container, drawn by md-tabs itself\n  and running past the last tab to the container's edge. **The default.**\n- `auto` — each tab draws its own 1px segment, so the rule is exactly as\n  wide as the tabs collectively are.\n\n`full` IS THE DEFAULT because `auto` only looks right in the one case\nwhere the strip happens to fill its container — `tab-width=\"equal\"`. In a\nwide panel at `tab-width=\"auto\"`, a few content-sized tabs leave the rule\nstopping partway across and the panel below appears to hang off the end of\nit, which reads as a bug rather than a choice. `auto` remains available for\na strip that genuinely should be bounded by its tabs.\n\nIn `full` mode the per-tab segments are suppressed by setting\n`--md-tab-divider-color: transparent` on the host — custom properties\ninherit through the slotted tabs' shadow roots, so there is no second\nsource of truth about which mode is active."
+    },
+    {
+      "name": "ariaLabelProp",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "aria-label",
+      "optional": false,
+      "description": "Accessible label for the tablist"
+    },
+    {
+      "name": "tabWidth",
+      "type": "string",
+      "default": "'equal'",
+      "defaultValue": "equal",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "tab-width",
+      "optional": false,
+      "description": "How tabs size along the strip. All modes are layout-stable under\ndynamic content (labels/badges can change without reshuffling the\nstrip); long labels ellipsize instead of forcing a tab wider.\n- `equal` (default) — tabs share the parent's FULL width equally;\n  tracks change only when the PARENT resizes.\n- `auto` — each tab takes its content width (the strip scrolls), so\n  tracks follow content by design.\n- any CSS length (e.g. `\"140px\"`, `\"10rem\"`) — every tab gets exactly\n  that width regardless of parent or content."
+    },
+    {
+      "name": "width",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "width",
+      "optional": false,
+      "description": "Explicit width for the WHOLE strip (any CSS size: `\"480px\"`, `\"40rem\"`,\n`\"100%\"`). By default the strip is `100%` of its parent — in\nshrink-to-fit layouts (inline-block cards, auto grid columns, flex\nitems) that parent's width follows the ACTIVE TAB PANEL, so switching\nto a tab with tiny content collapses the whole tablist. Set `width` to\nanchor the strip regardless of what the panels do."
+    }
+  ],
+  "state": [
+    {
+      "name": "tabCount",
+      "type": "inferred",
+      "initializer": "0"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdTabChange",
+      "detail": "{ index: number; previousIndex: number }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "selectTab",
+      "parameters": [
+        {
+          "name": "index",
+          "type": "number"
+        }
+      ],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "container",
+      "description": "Scrollable tab container"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-tabs-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-tabs-divider-color",
+      "description": "Divider color for every child tab's"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-tabs': true,\n          [`md-tabs--${this.variant}`]: true,\n          'md-tabs--tw-auto': this.tabWidthMode === 'auto',\n          'md-tabs--tw-fixed': this.tabWidthMode === 'fixed',\n        }"
+      },
+      {
+        "name": "style",
+        "value": "{\n          ...(this.tabWidthMode === 'fixed' ? { '--_tab-width': this.tabWidth } : {}),\n          ...(this.width ? { 'inline-size': this.width } : {}),\n        }"
+      },
+      {
+        "name": "role",
+        "value": "tablist"
+      },
+      {
+        "name": "aria-label",
+        "value": "this.ariaLabelProp || 'tabs'"
+      },
+      {
+        "name": "aria-orientation",
+        "value": "horizontal"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-tabs__container"
+          },
+          {
+            "name": "part",
+            "value": "container"
+          },
+          {
+            "name": "ref",
+            "value": "el => (this.containerEl = el)"
+          },
+          {
+            "name": "onWheel",
+            "value": "this.handleWheel"
+          },
+          {
+            "name": "onScroll",
+            "value": "this.updateOverflow"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "Native layout measurement must replace ResizeObserver.",
+      "line": 101
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 108
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 111
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Document access requires a native adapter.",
+      "line": 149
+    },
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 247
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 291
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 489
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 495
+    },
+    {
+      "code": "DOM_MUTATION",
+      "severity": "warning",
+      "message": "classList depends on browser semantics and requires a native adapter.",
+      "line": 557
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 9
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-tabs/md-tabs.tsx",
+    "styleUrl": "md-tabs.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "e560f535711f8f6dbe02deea7b36d33b21ba68be19c4106cbd8aef2b457cf993"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-tabs-container-color, var(--md-sys-color-surface, #FFFBFE))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:not([divider='auto']))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-tab-divider-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:not([divider='auto']))::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-tabs-divider-color, var(--md-sys-color-outline-variant, #CAC4D0))",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:not([divider='auto'])) ::slotted(md-tab)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-tabs__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "overflow-x",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "scrollbar-width",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "-ms-overflow-style",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "scroll-behavior",
+          "value": "smooth",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-tabs__container::-webkit-scrollbar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted(md-tab)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "90px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-tabs--tw-auto) ::slotted(md-tab)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-tabs--tw-fixed) ::slotted(md-tab)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "0 0 var(--_tab-width)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_tab-width)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--_tab-width)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "var(--_tab-width)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-tabs--clip-left) .md-tabs__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "-webkit-mask-image",
+          "value": "linear-gradient(to right, transparent 0, #000 40px)",
+          "important": false
+        },
+        {
+          "property": "mask-image",
+          "value": "linear-gradient(to right, transparent 0, #000 40px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-tabs--clip-right) .md-tabs__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "-webkit-mask-image",
+          "value": "linear-gradient(to left, transparent 0, #000 40px)",
+          "important": false
+        },
+        {
+          "property": "mask-image",
+          "value": "linear-gradient(to left, transparent 0, #000 40px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-tabs--clip-left.md-tabs--clip-right) .md-tabs__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "-webkit-mask-image",
+          "value": "linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%)",
+          "important": false
+        },
+        {
+          "property": "mask-image",
+          "value": "linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-tabs__container",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "scroll-behavior",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Tabs",
+  "category": "Navigation",
+  "parent": null,
+  "description": "Switch between sibling views within one screen. The tab strip owns the active index, roving focus, the child tabs' variant, and the sliding indicator. It renders no content of its own — pair it with md-tab-panels.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-tabs.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-tabs/md-tabs.tsx",
+    "css": "packages/core/src/components/md-tabs/md-tabs.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "activeTabIndex"
+      ],
+      "events": [
+        "mdTabChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "divider",
+        "ariaLabelProp",
+        "tabWidth",
+        "width"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "selectTab"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Updates linked md-tab-panels within the same native tree or AWCNativeScope using native node IDs."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "activeTabIndex",
+        "divider"
+      ],
+      "events": [
+        "mdTabChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "ariaLabelProp",
+        "tabWidth",
+        "width"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "selectTab"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

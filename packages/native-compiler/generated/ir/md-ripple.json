@@ -1,0 +1,317 @@
+{
+  "tag": "md-ripple",
+  "className": "MdRipple",
+  "properties": [
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "disabled",
+      "optional": false,
+      "description": ""
+    }
+  ],
+  "state": [],
+  "events": [],
+  "methods": [
+    {
+      "name": "whenSettled",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "trigger",
+      "parameters": [],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [],
+  "cssParts": [],
+  "cssProperties": [
+    {
+      "name": "--md-ripple-color",
+      "description": "Ripple tint color (default: currentColor)"
+    },
+    {
+      "name": "--md-ripple-opacity",
+      "description": "Ripple peak opacity (default: 0.12)"
+    },
+    {
+      "name": "--md-ripple-extend-inline",
+      "description": "Extra pixels to add on each inline edge"
+    },
+    {
+      "name": "--md-ripple-extend-block",
+      "description": "Same as --md-ripple-extend-inline but"
+    },
+    {
+      "name": "--md-ripple-grow-duration",
+      "description": "Override the wave's scale 0 → 1 grow"
+    },
+    {
+      "name": "--md-ripple-grow-easing",
+      "description": "Companion to --md-ripple-grow-duration"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "aria-hidden",
+        "value": "true"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-ripple"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 34
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 214
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 214
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 219
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Document access requires a native adapter.",
+      "line": 239
+    },
+    {
+      "code": "DOM_MUTATION",
+      "severity": "warning",
+      "message": "classList depends on browser semantics and requires a native adapter.",
+      "line": 240
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-ripple/md-ripple.tsx",
+    "styleUrl": "md-ripple.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "1640358ee5059a3240927395658064a226a9bf3ddcb29e7099361f2a961544d4"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "contents",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "--_color",
+          "value": "var(--md-ripple-color, currentColor)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-ripple",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-ripple__wave",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scale(0)",
+          "important": false
+        },
+        {
+          "property": "will-change",
+          "value": "transform, opacity",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-ripple",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-ripple-enabled, 1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Ripple",
+  "category": "Containment",
+  "parent": null,
+  "description": "The touch-feedback primitive. Paints the MD3 press ripple inside its positioned parent. Used internally by 24 components — you only reach for it directly when building a custom interactive surface.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-ripple.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-ripple/md-ripple.tsx",
+    "css": "packages/core/src/components/md-ripple/md-ripple.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "disabled"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "whenSettled",
+        "trigger"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native pressed state feedback, not CSS radial ripple geometry."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "disabled"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "whenSettled",
+        "trigger"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Uses the Compose ripple on a tappable native surface; standalone DOM ripple attachment has no native counterpart."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

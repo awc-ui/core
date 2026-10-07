@@ -1,0 +1,2074 @@
+{
+  "tag": "md-table",
+  "className": "MdTable",
+  "properties": [
+    {
+      "name": "density",
+      "type": "| 'compact'\n    | 'standard'\n    | 'comfortable'\n    | 0\n    | -1\n    | -2\n    | -3\n    | -4",
+      "default": "'standard'",
+      "defaultValue": "standard",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Layout density. Accepts BOTH vocabularies:\n\n- the semantic sizes `'compact' | 'standard' | 'comfortable'` (row heights\n  36 / 52 / 60px), which is this component's original API, and\n- a numeric rung `0 | -1 | -2 | -3 | -4`, the scale every other component in\n  the library uses.\n\nA numeric value drives `--md-sys-density-scale` on the host (see the DENSITY\nblock in the CSS) exactly as a global `data-density` ancestor would, and\ntakes the `standard` row-height base. The two are not exclusive: the\nsemantic sizes are themselves scale-aware, so `density=\"compact\"` inside a\n`data-density=\"-2\"` region condenses further."
+    },
+    {
+      "name": "columnTemplate",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "column-template",
+      "optional": false,
+      "description": "CSS `grid-template-columns` value (e.g. `\"auto 1fr 120px\"`).\nTakes precedence over the `columns` prop. Use this for fine control,\nincluding using `minmax()`, `fr` units and `auto`."
+    },
+    {
+      "name": "columns",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "columns",
+      "optional": false,
+      "description": "Number of columns when no `column-template` is provided. The grid uses\n`repeat(<columns>, minmax(0, 1fr))`. When neither is set, the column\ncount is derived from the first row's cells."
+    },
+    {
+      "name": "minWidth",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "min-width",
+      "optional": false,
+      "description": "Minimum table width (e.g. `\"640px\"`). When the container is narrower, the\ngrid keeps this width and the container shows a horizontal scrollbar\ninstead of squishing the columns. Also settable via\n`--md-table-min-width`."
+    },
+    {
+      "name": "stickyHeader",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "sticky-header",
+      "optional": false,
+      "description": "Stick the head row(s) to the top of the scroll container."
+    },
+    {
+      "name": "frozenHeader",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "frozen-header",
+      "optional": false,
+      "description": "Frozen-header architecture: the header is rendered OUTSIDE the vertical\nscroll area, so the scrollbar spans only the body and runs UNDER the head\nPair with `md-table-container[max-height]` to cap\nthe body — max-height controls the SIZE, this prop controls the\nARCHITECTURE. Without it, a max-height container scrolls the whole table\n(use `sticky-header` there for the classic in-flow pinned header)."
+    },
+    {
+      "name": "keepHeight",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "keep-height",
+      "optional": false,
+      "description": "Height ratchet (default ON): once the table has rendered, it never\nshrinks below that initial height. Paging, filtering to fewer/zero rows,\nor an async refetch that momentarily empties the body keep the table (and\ntherefore the page) geometrically stable — no content below jumps up, and\nno scrollbar can flash from a transient collapse (async rebuilds have a\nfew frames where fresh rows haven't hydrated and measure 0). Set\n`keep-height=\"false\"` for tables that intentionally resize (e.g. a\ndensity-toggle demo)."
+    },
+    {
+      "name": "scrollbar",
+      "type": "'overlay' | 'gutter'",
+      "default": "'overlay'",
+      "defaultValue": "overlay",
+      "options": [
+        "overlay",
+        "gutter"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "scrollbar",
+      "optional": false,
+      "description": "Scrollbar presentation (frozen mode):\n- `overlay` (default) — a custom always-visible thumb FLOATS over the\n  rows' right edge; no gutter is reserved, so row backgrounds and\n  dividers run the full width and the bar never takes layout space.\n- `gutter` — classic inset bar in a reserved gap: `scrollbar-gutter:\n  stable` keeps a fixed strip inside the table (rows stop short of the\n  edge) and native bars render on both overflowing axes."
+    },
+    {
+      "name": "pinMode",
+      "type": "'stack' | 'static'",
+      "default": "'stack'",
+      "defaultValue": "stack",
+      "options": [
+        "stack",
+        "static"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "pin-mode",
+      "optional": false,
+      "description": "How MULTIPLE pinned columns on the same side behave during horizontal\nscroll:\n- `stack` (default) — every pinned column sticks at the same edge, so\n  later ones slide OVER earlier ones while scrolling (a deck-of-cards\n  effect; only the top one stays fully visible).\n- `static` — each pinned column gets a cumulative inset equal to the\n  widths of the pinned columns before it, so ALL of them stay visible\n  side-by-side (spreadsheet-style)."
+    },
+    {
+      "name": "pinIcon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "pin-icon",
+      "optional": false,
+      "description": "Table-wide custom pin-indicator icon (Material Symbols ligature, e.g.\n\"anchor\"). Cast to every pinned header cell so consumers set it once;\na cell's own `pin-icon` attribute wins over the cast. Empty = built-in\npush-pin SVG."
+    },
+    {
+      "name": "stickyFooter",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "sticky-footer",
+      "optional": false,
+      "description": "Stick the foot row(s) to the bottom of the scroll container."
+    },
+    {
+      "name": "striped",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "striped",
+      "optional": false,
+      "description": "Show alternating row colors."
+    },
+    {
+      "name": "noDividers",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "no-dividers",
+      "optional": false,
+      "description": "Hide the dividers between rows."
+    },
+    {
+      "name": "hoverable",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "hoverable",
+      "optional": false,
+      "description": "Hover surface on rows."
+    },
+    {
+      "name": "motion",
+      "type": "'expressive' | 'none'",
+      "default": "'expressive'",
+      "defaultValue": "expressive",
+      "options": [
+        "expressive",
+        "none"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "motion",
+      "optional": false,
+      "description": "Built-in expressive motion. With `expressive` (the default) the table\nFLIP-animates its rows around sort and page changes: it snapshots the row\nboxes when the triggering event fires (`mdSortRequest`, or a pagination\nevent heard by the surrounding `md-table-container`), lets the consumer's\nsynchronous handler mutate the rows, then glides survivors to their new\npositions and fades + rises entrants. Async mutations settle as a clean\nno-op. `prefers-reduced-motion` always wins; set `none` to opt out —\ne.g. when driving your own `flipRows` wiring around the same events."
+    },
+    {
+      "name": "selection",
+      "type": "'none' | 'single' | 'multiple'",
+      "default": "'none'",
+      "defaultValue": "none",
+      "options": [
+        "none",
+        "single",
+        "multiple"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "selection",
+      "optional": false,
+      "description": "Selection mode.\n- `none`     — no selection (default)\n- `single`   — radio-like: selecting a row DESELECTS every other row;\n               `selectAll()`/the select-all checkbox are inert (disabled)\n- `multiple` — checkbox-like; select-all checkbox + selectAll() available"
+    },
+    {
+      "name": "sortBy",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "sort-by",
+      "optional": false,
+      "description": "Currently active sort column id. Read by `<md-table-sort-label column=\"…\">`\nto render its arrow. Empty = no sort."
+    },
+    {
+      "name": "sortOrder",
+      "type": "MdTableSortOrder",
+      "default": "'asc'",
+      "defaultValue": "asc",
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "sort-order",
+      "optional": false,
+      "description": "Currently active sort direction."
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "loading",
+      "optional": false,
+      "description": "Show the loading state."
+    },
+    {
+      "name": "loadingMode",
+      "type": "'overlay' | 'skeleton'",
+      "default": "'overlay'",
+      "defaultValue": "overlay",
+      "options": [
+        "overlay",
+        "skeleton"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "loading-mode",
+      "optional": false,
+      "description": "Loading presentation:\n- `overlay` (default) — an indeterminate progress line under the header\n  plus a scrim that dims/disables the body while the header/footer stay put.\n- `skeleton` — the body is replaced by shimmering skeleton rows; the\n  header and footer are untouched."
+    },
+    {
+      "name": "loadingRows",
+      "type": "number",
+      "default": "4",
+      "defaultValue": 4,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "loading-rows",
+      "optional": false,
+      "description": "Number of skeleton rows rendered in `loading-mode=\"skeleton\"`."
+    },
+    {
+      "name": "empty",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "empty",
+      "optional": false,
+      "description": "Render the empty-state slot when true."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Accessible name for the `role=\"table\"`. When omitted, the `caption` text\nnames the table (WAI: a caption identifies the table for screen-reader\nusers browsing in tables mode); the generic \"Data table\" is the last\nresort. IDREFs cannot cross the shadow boundary, so the caption text is\nmirrored into `aria-label` rather than referenced via `aria-labelledby`."
+    },
+    {
+      "name": "caption",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "caption",
+      "optional": false,
+      "description": "Optional caption rendered above the table head."
+    },
+    {
+      "name": "summary",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "summary",
+      "optional": false,
+      "description": "Long description of a COMPLEX table's structure (WAI caption & summary\npattern) — e.g. \"Columns are grouped under Profile and Employment\".\nExposed as `aria-description` on the table; invisible otherwise."
+    },
+    {
+      "name": "rowOffset",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "row-offset",
+      "optional": false,
+      "description": "Absolute 0-based index of the FIRST rendered body row within the full\ndataset (WAI/ARIA pagination): with `row-count` set, each row gets an\n`aria-rowindex` so AT reports \"row 42 of 5000\" instead of a position\nwithin the rendered page. Update it on every page change."
+    },
+    {
+      "name": "rowCount",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "row-count",
+      "optional": false,
+      "description": "Total row count for assistive tech when only a subset is rendered\n(pagination / virtualization). 0 = use the rendered count."
+    }
+  ],
+  "state": [
+    {
+      "name": "srAnnouncement",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "hasExpandableRow",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSortChange",
+      "detail": "MdTableSortState",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdSelectionChange",
+      "detail": "MdTableSelectionState",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdPinChange",
+      "detail": "{ column: number; side: 'start' | 'end' | null }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdColumnVisibilityChange",
+      "detail": "{ column: number; visible: boolean; hidden: number[] }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdScroll",
+      "detail": "{ scrollLeft: number; scrollTop: number }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "getSelection",
+      "parameters": [],
+      "returnType": "Promise<MdTableSelectionState>"
+    },
+    {
+      "name": "selectAll",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "deselectAll",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "toggleSelectAll",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "setSort",
+      "parameters": [
+        {
+          "name": "column",
+          "type": "string"
+        },
+        {
+          "name": "order",
+          "type": "MdTableSortOrder"
+        }
+      ],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "pinColumn",
+      "parameters": [
+        {
+          "name": "column",
+          "type": "number"
+        },
+        {
+          "name": "side",
+          "type": "'start' | 'end' | 'none'"
+        }
+      ],
+      "returnType": "Promise<'start' | 'end' | null>"
+    },
+    {
+      "name": "setColumnVisibility",
+      "parameters": [
+        {
+          "name": "column",
+          "type": "number"
+        },
+        {
+          "name": "visible",
+          "type": "boolean"
+        }
+      ],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "animateNextChange",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "empty"
+    },
+    {
+      "name": "head"
+    },
+    {
+      "name": "loader"
+    },
+    {
+      "name": "loading"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "skeleton-row"
+    },
+    {
+      "name": "empty",
+      "description": "The empty-state region (when `empty`)"
+    },
+    {
+      "name": "caption",
+      "description": "The optional caption above the head"
+    },
+    {
+      "name": "header-grid"
+    },
+    {
+      "name": "grid",
+      "description": "The grid container holding all rows"
+    },
+    {
+      "name": "hscrollbar"
+    },
+    {
+      "name": "hscrollbar-thumb"
+    },
+    {
+      "name": "vscrollbar"
+    },
+    {
+      "name": "vscrollbar-thumb"
+    },
+    {
+      "name": "loading",
+      "description": "The loading overlay (when `loading`)"
+    },
+    {
+      "name": "progress"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-table-row-height-compact",
+      "description": "36px (dense)"
+    },
+    {
+      "name": "--md-table-row-height-standard",
+      "description": "52px"
+    },
+    {
+      "name": "--md-table-row-height-comfortable",
+      "description": "60px"
+    },
+    {
+      "name": "--md-table-header-height",
+      "description": "56px"
+    },
+    {
+      "name": "--md-table-cell-padding-inline",
+      "description": "per-density default"
+    },
+    {
+      "name": "--md-table-divider-color",
+      "description": "between rows"
+    },
+    {
+      "name": "--md-table-stripe-color",
+      "description": "every-other-row overlay color"
+    },
+    {
+      "name": "--md-table-head-bg",
+      "description": "background for thead rows"
+    },
+    {
+      "name": "--md-table-head-color",
+      "description": "text color for thead"
+    },
+    {
+      "name": "--md-table-foot-bg",
+      "description": "background for tfoot rows"
+    },
+    {
+      "name": "--md-table-row-hover-color",
+      "description": "row hover state-layer color"
+    },
+    {
+      "name": "--md-table-row-selected-bg",
+      "description": "selected row background"
+    },
+    {
+      "name": "--md-table-row-selected-color",
+      "description": "selected row text"
+    },
+    {
+      "name": "--md-table-columns-template",
+      "description": "grid-template-columns override"
+    },
+    {
+      "name": "--md-table-cell-padding-block"
+    },
+    {
+      "name": "--md-table-min-width"
+    },
+    {
+      "name": "--md-table-body-max-h"
+    },
+    {
+      "name": "--md-table-empty-min-height"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-table': true,\n          [`md-table--density-${this.density}`]: typeof this.density === 'string',\n          'md-table--sticky-header': this.stickyHeader,\n          'md-table--sticky-footer': this.stickyFooter,\n          'md-table--striped': this.striped,\n          'md-table--no-dividers': this.noDividers,\n          'md-table--hoverable': this.hoverable,\n          'md-table--loading': this.loading,\n          [`md-table--loading-${this.loadingMode}`]: this.loading,\n          'md-table--empty': this.empty,\n        }"
+      },
+      {
+        "name": "style",
+        "value": "style"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table__sr-status"
+          },
+          {
+            "name": "aria-live",
+            "value": "polite"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.srAnnouncement"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.caption && (\n          <div class=\"md-table__caption\" part=\"caption\" aria-hidden=\"true\">\n            {this.caption}\n          </div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.frozenHeader ? (\n          // Frozen header: the header grid sits above a vertically-scrolling\n          // body grid, so the scrollbar spans only the body. Both grids share\n          // the column tracks (syncFrozenColumns copies the body's resolved\n          // pixel tracks onto the header, which also reserves the body's\n          // scrollbar gutter on the header). Horizontal scroll is mirrored.\n          <div class=\"md-table__frozen\" {...tableAria}>\n            <div\n              class=\"md-table__head-scroll\"\n              role=\"presentation\"\n              ref={(el) => (this.headScrollEl = el as HTMLElement)}\n            >\n              <div\n                class=\"md-table__grid md-table__grid--head\"\n                part=\"header-grid\"\n                ref={(el) => (this.headGridEl = el as HTMLElement)}\n              >\n                <slot name=\"head\" onSlotchange={this.handleSlotChange}></slot>\n              </div>\n            </div>\n            <div\n              class=\"md-table__body-scroll\"\n              // Keyboard users must be able to scroll the capped body without\n              // a pointer (WAI: scrollable region), hence the tab stop. A\n              // focusable element may not sit as a bare child of role=\"table\"\n              // (axe aria-required-children — only rowgroup/row are allowed),\n              // so this wrapper IS the body's rowgroup: role=\"rowgroup\" is a\n              // required child of table, so axe walks THROUGH it to the rows\n              // even though it is a scroll tab stop. The slotted md-table-body/\n              // md-table-foot inside drop to presentation (see syncRows) so\n              // their rows promote here instead of nesting a second rowgroup.\n              role=\"rowgroup\"\n              tabindex=\"0\"\n              ref={(el) => (this.bodyScrollEl = el as HTMLElement)}\n              onScroll={this.onBodyScroll}\n              onWheel={this.onBodyWheel}\n              onKeyDown={this.onBodyKeyDown}\n            >\n              <div\n                class=\"md-table__grid md-table__grid--body\"\n                part=\"grid\"\n                // Layout-only grid between the rowgroup wrapper and the rows.\n                role=\"presentation\"\n                ref={(el) => (this.bodyGridEl = el as HTMLElement)}\n              >\n                <slot onSlotchange={this.handleSlotChange}></slot>\n                {this.loading && this.loadingMode === 'skeleton' && this.renderSkeletonRows()}\n              </div>\n              {/* Frozen mode: empty message lives inside the body scroll area so\n                  it sits directly under the header and fills the body. */}\n              {this.empty && !this.loading && this.renderEmpty()}\n            </div>\n            {/* Custom, always-visible horizontal scrollbar (JS-toggled when the\n                body overflows) — replaces the invisible native overlay bar. */}\n            <div\n              class=\"md-table__hscroll\"\n              part=\"hscrollbar\"\n              aria-hidden=\"true\"\n              ref={(el) => (this.hTrackEl = el as HTMLElement)}\n            >\n              <div\n                class=\"md-table__hscroll-thumb\"\n                part=\"hscrollbar-thumb\"\n                ref={(el) => (this.hThumbEl = el as HTMLElement)}\n                onPointerDown={this.onHThumbPointerDown}\n                onPointerMove={this.onHThumbPointerMove}\n                onPointerUp={this.onHThumbPointerUp}\n                onPointerCancel={this.onHThumbPointerUp}\n              ></div>\n            </div>\n            {/* Custom vertical OVERLAY scrollbar — floats over the rows' right\n                edge (no reserved gutter, rows stay full width). */}\n            <div\n              class=\"md-table__vscroll\"\n              part=\"vscrollbar\"\n              aria-hidden=\"true\"\n              ref={(el) => (this.vTrackEl = el as HTMLElement)}\n            >\n              <div\n                class=\"md-table__vscroll-thumb\"\n                part=\"vscrollbar-thumb\"\n                ref={(el) => (this.vThumbEl = el as HTMLElement)}\n                onPointerDown={this.onVThumbPointerDown}\n                onPointerMove={this.onVThumbPointerMove}\n                onPointerUp={this.onVThumbPointerUp}\n                onPointerCancel={this.onVThumbPointerUp}\n              ></div>\n            </div>\n          </div>\n        ) : (\n          <div class=\"md-table__grid\" part=\"grid\" {...tableAria}>\n            <slot onSlotchange={this.handleSlotChange}></slot>\n            {this.loading && this.loadingMode === 'skeleton' && this.renderSkeletonRows()}\n          </div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.loading && this.loadingMode === 'overlay' && (\n          <div class=\"md-table__loading\" part=\"loading\" aria-hidden=\"true\">\n            {/* `loader` is the library-wide name for \"swap the loading affordance\";\n                `loading` is kept as the older alias. Nesting them means either\n                works — the outer slot falls back to the inner one, which falls\n                back to the default below — and `loader` wins if both are given. */}\n            <slot name=\"loader\">\n              <slot name=\"loading\">\n              <div class=\"md-table__progress\" part=\"progress\">\n                <md-progress-indicator variant=\"linear\" indeterminate aria-label=\"Loading\"></md-progress-indicator>\n              </div>\n              <div class=\"md-table__scrim\" />\n            </slot>\n            </slot>\n          </div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.empty && !this.loading && !this.frozenHeader && this.renderEmpty()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
+      "line": 197
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 207
+    },
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 209
+    },
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "Native layout measurement must replace ResizeObserver.",
+      "line": 359
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 495
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 506
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 71
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-table/md-table.tsx",
+    "styleUrl": "md-table.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "93fb1aa2cf284f04ca27ad416d7917647686485c2febbb447d10a3a27831f747"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_fx-fast",
+          "value": "var(--md-sys-motion-spring-effects-fast-duration, 150ms)\n    var(--md-sys-motion-spring-effects-fast-easing, cubic-bezier(0.31, 0.94, 0.34, 1))",
+          "important": false
+        },
+        {
+          "property": "--_fx-default",
+          "value": "var(--md-sys-motion-spring-effects-default-duration, 200ms)\n    var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.8, 0.34, 1))",
+          "important": false
+        },
+        {
+          "property": "--_row-h-compact",
+          "value": "var(--md-table-row-height-compact, max(28px, calc(36px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_row-h-standard",
+          "value": "var(--md-table-row-height-standard, calc(52px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_row-h-comfortable",
+          "value": "var(--md-table-row-height-comfortable, max(40px, calc(60px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_row-h",
+          "value": "var(--_row-h-standard)",
+          "important": false
+        },
+        {
+          "property": "--_head-h",
+          "value": "var(--md-table-header-height, max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_cell-pad-inline",
+          "value": "var(--md-table-cell-padding-inline, var(--md-sys-spacing-inset-lg, 16px))",
+          "important": false
+        },
+        {
+          "property": "--_cell-pad-block",
+          "value": "var(--md-table-cell-padding-block, var(--md-sys-spacing-inset-sm, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_divider-color",
+          "value": "var(--md-table-divider-color, var(--md-sys-color-outline-variant, #CAC4D0))",
+          "important": false
+        },
+        {
+          "property": "--_divider",
+          "value": "var(--_divider-color)",
+          "important": false
+        },
+        {
+          "property": "--_stripe-color",
+          "value": "var(\n    --md-table-stripe-color,\n    color-mix(\n      in srgb,\n      var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 50%),\n      transparent\n    )\n  )",
+          "important": false
+        },
+        {
+          "property": "--_head-bg",
+          "value": "var(--md-table-head-bg, var(--md-sys-color-surface-container, #F3EDF7))",
+          "important": false
+        },
+        {
+          "property": "--_head-color",
+          "value": "var(--md-table-head-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_foot-bg",
+          "value": "var(--md-table-foot-bg, var(--md-sys-color-surface-container-low, #F7F2FA))",
+          "important": false
+        },
+        {
+          "property": "--_hover-layer",
+          "value": "color-mix(\n    in srgb,\n    var(--md-table-row-hover-color, var(--md-sys-color-on-surface, #1C1B1F))\n      calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),\n    transparent\n  )",
+          "important": false
+        },
+        {
+          "property": "--_row-selected-bg",
+          "value": "var(--md-table-row-selected-bg, var(--md-sys-color-secondary-container, #E8DEF8))",
+          "important": false
+        },
+        {
+          "property": "--_row-selected-color",
+          "value": "var(\n    --md-table-row-selected-color,\n    var(--md-sys-color-on-secondary-container, #1E192B)\n  )",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "isolation",
+          "value": "isolate",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-medium-letter-spacing, 0.25px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table--density-compact)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_row-h",
+          "value": "var(--_row-h-compact)",
+          "important": false
+        },
+        {
+          "property": "--_cell-pad-inline",
+          "value": "var(--md-table-cell-padding-inline, 12px)",
+          "important": false
+        },
+        {
+          "property": "--_cell-pad-block",
+          "value": "var(--md-table-cell-padding-block, 4px)",
+          "important": false
+        },
+        {
+          "property": "--md-checkbox-touch-target-size",
+          "value": "32px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table--density-comfortable)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_row-h",
+          "value": "var(--_row-h-comfortable)",
+          "important": false
+        },
+        {
+          "property": "--_cell-pad-inline",
+          "value": "var(--md-table-cell-padding-inline, 20px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table--no-dividers)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_divider",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:not(.md-table--hoverable))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_hover-layer",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__caption",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding",
+          "value": "12px var(--_cell-pad-inline)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-title-small-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-sys-typescale-title-small-font-size, 14px)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-title-small-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-title-small-line-height, 20px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__grid",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        },
+        {
+          "property": "grid-template-columns",
+          "value": "var(\n    --_columns-template,\n    var(--md-table-columns-template, var(--_derived-template, none))\n  )",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "stretch",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--_min-width, var(--md-table-min-width, max-content))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__frozen",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__head-scroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_head-bg, var(--md-sys-color-surface-container, #F3EDF7))",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "inset 0 -1px var(--_divider, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__body-scroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "var(--md-table-body-max-h, none)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:not([scrollbar='gutter'])) .md-table__body-scroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "scrollbar-width",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__body-scroll:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "2px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "-2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:not([scrollbar='gutter'])) .md-table__body-scroll::-webkit-scrollbar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([scrollbar='gutter']) .md-table__body-scroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "scrollbar-gutter",
+          "value": "stable",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([scrollbar='gutter']) .md-table__body-scroll::-webkit-scrollbar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "width",
+          "value": "10px",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "10px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([scrollbar='gutter']) .md-table__body-scroll::-webkit-scrollbar-thumb",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "var(--md-sys-color-outline, #79747E)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "999px",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "2px solid transparent",
+          "important": false
+        },
+        {
+          "property": "background-clip",
+          "value": "content-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([scrollbar='gutter']) .md-table__body-scroll::-webkit-scrollbar-thumb:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        },
+        {
+          "property": "background-clip",
+          "value": "content-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([scrollbar='gutter']) .md-table__vscroll,\n:host([scrollbar='gutter']) .md-table__hscroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__vscroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "3px",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "3",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__vscroll-thumb",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "999px",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 50%, transparent)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "touch-action",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__vscroll-thumb:hover,\n.md-table__vscroll-thumb:active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 60%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__hscroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "10px",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "margin-block",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__hscroll-thumb",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "40px",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--md-sys-color-outline, #79747E)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "999px",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "grab",
+          "important": false
+        },
+        {
+          "property": "touch-action",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--_fx-fast, 150ms ease)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__hscroll-thumb:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "var(--md-sys-color-outline, #79747E)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__hscroll-thumb:active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "grabbing",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__grid--head",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-inline-size",
+          "value": "max(100%, var(--_min-width, var(--md-table-min-width, 0px)))",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "max-content",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__grid--body",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-inline-size",
+          "value": "max(100%, var(--_min-width, var(--md-table-min-width, 0px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__bar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "16px",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 9999px)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "linear-gradient(\n    90deg,\n    var(--md-sys-color-surface-container-high, #ECE6F0) 25%,\n    var(--md-sys-color-surface-container, #F3EDF7) 37%,\n    var(--md-sys-color-surface-container-high, #ECE6F0) 63%\n  )",
+          "important": false
+        },
+        {
+          "property": "background-size",
+          "value": "400% 100%",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-table-shimmer 1.4s ease infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-table-shimmer",
+      "declarations": [
+        {
+          "property": "background-position",
+          "value": "100% 50%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-table-shimmer",
+      "declarations": [
+        {
+          "property": "background-position",
+          "value": "0 50%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table--loading-skeleton) ::slotted(md-table-body),\n:host(.md-table--loading-skeleton) ::slotted(md-table-foot)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__skeleton-row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "grid-column",
+          "value": "1 / -1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        },
+        {
+          "property": "grid-template-columns",
+          "value": "subgrid",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_row-h)",
+          "important": false
+        },
+        {
+          "property": "border-block-end",
+          "value": "1px solid var(--_divider)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__skeleton-row:last-child",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-block-end",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__skeleton-row .md-table__bar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline",
+          "value": "var(--_cell-pad-inline)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__loading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "3",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__scrim",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "var(--_head-h)",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--md-sys-color-surface, #FEF7FF) 55%, transparent)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__progress",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "var(--_head-h)",
+          "important": false
+        },
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__progress md-progress-indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--md-table-empty-min-height, 160px)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "32px var(--_cell-pad-inline)",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table--empty)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table--empty) .md-table__grid",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table--empty) .md-table__empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__body-scroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__body-scroll .md-table__empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__bar",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__vscroll-thumb,\n  .md-table__hscroll-thumb",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background",
+          "value": "ButtonText",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "1px solid ButtonText",
+          "important": false
+        },
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "--_divider",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table__sr-status",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "inset(50%)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Table",
+  "category": "Data Display",
+  "parent": null,
+  "description": "The composable table primitive. You author every row; the table owns the CSS-Grid layout, sticky and frozen headers, column pinning and visibility, sort and selection state, striping, expressive reorder motion, and the loading and empty states.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-table.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-table/md-table.tsx",
+    "css": "packages/core/src/components/md-table/md-table.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "caption",
+        "loading",
+        "empty",
+        "label",
+        "selection",
+        "sortBy",
+        "sortOrder"
+      ],
+      "events": [
+        "mdSortChange",
+        "mdSelectionChange"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "empty"
+      ],
+      "unsupportedProperties": [
+        "density",
+        "columnTemplate",
+        "columns",
+        "minWidth",
+        "stickyHeader",
+        "frozenHeader",
+        "keepHeight",
+        "scrollbar",
+        "pinMode",
+        "pinIcon",
+        "stickyFooter",
+        "striped",
+        "noDividers",
+        "hoverable",
+        "motion",
+        "loadingMode",
+        "loadingRows",
+        "summary",
+        "rowOffset",
+        "rowCount"
+      ],
+      "unsupportedEvents": [
+        "mdPinChange",
+        "mdColumnVisibilityChange",
+        "mdScroll"
+      ],
+      "unsupportedMethods": [
+        "getSelection",
+        "selectAll",
+        "deselectAll",
+        "toggleSelectAll",
+        "setSort",
+        "pinColumn",
+        "setColumnVisibility",
+        "animateNextChange"
+      ],
+      "unsupportedSlots": [
+        "head",
+        "loader",
+        "loading"
+      ],
+      "notes": [
+        "Native composed rows; sorts source row cell text/numbers by column and coordinates row selection. Event DOM references become IDs. Column pinning, spans, visibility and sticky headers remain unsupported.",
+        "mdSelectionChange includes count, total, values, all and indeterminate; header checkbox selects all eligible rows."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "caption",
+        "loading"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "density",
+        "columnTemplate",
+        "columns",
+        "minWidth",
+        "stickyHeader",
+        "frozenHeader",
+        "keepHeight",
+        "scrollbar",
+        "pinMode",
+        "pinIcon",
+        "stickyFooter",
+        "striped",
+        "noDividers",
+        "hoverable",
+        "motion",
+        "selection",
+        "sortBy",
+        "sortOrder",
+        "loadingMode",
+        "loadingRows",
+        "empty",
+        "label",
+        "summary",
+        "rowOffset",
+        "rowCount"
+      ],
+      "unsupportedEvents": [
+        "mdSortChange",
+        "mdSelectionChange",
+        "mdPinChange",
+        "mdColumnVisibilityChange",
+        "mdScroll"
+      ],
+      "unsupportedMethods": [
+        "getSelection",
+        "selectAll",
+        "deselectAll",
+        "toggleSelectAll",
+        "setSort",
+        "pinColumn",
+        "setColumnVisibility",
+        "animateNextChange"
+      ],
+      "unsupportedSlots": [
+        "empty",
+        "head",
+        "loader",
+        "loading"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

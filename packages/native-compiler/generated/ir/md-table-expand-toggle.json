@@ -1,0 +1,230 @@
+{
+  "tag": "md-table-expand-toggle",
+  "className": "MdTableExpandToggle",
+  "properties": [
+    {
+      "name": "buttonLabel",
+      "type": "string",
+      "default": "'Expand row'",
+      "defaultValue": "Expand row",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "button-label",
+      "optional": false,
+      "description": "Accessible label of the toggle button."
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "default": "'chevron_right'",
+      "defaultValue": "chevron_right",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "icon",
+      "optional": false,
+      "description": "Caret icon (Material Symbols ligature). The expanded rotation still\napplies (--md-table-expand-toggle-rotation, default 90deg) — pick a\n\"collapsed-pointing\" glyph like the default chevron_right, or pair e.g.\n\"expand_circle_right\" with a custom rotation."
+    }
+  ],
+  "state": [
+    {
+      "name": "expanded",
+      "type": "boolean",
+      "initializer": "false"
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [],
+  "cssParts": [],
+  "cssProperties": [
+    {
+      "name": "--md-table-expand-toggle-rotation",
+      "description": "Expanded rotation (default 90deg)"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-table-expand-toggle': true,\n          'md-table-expand-toggle--expanded': this.expanded,\n        }"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "md-icon-button",
+        "attributes": [
+          {
+            "name": "size",
+            "value": "xs"
+          },
+          {
+            "name": "icon",
+            "value": "this.icon"
+          },
+          {
+            "name": "aria-label",
+            "value": "this.buttonLabel"
+          },
+          {
+            "name": "aria-expanded",
+            "value": "this.expanded ? 'true' : 'false'"
+          },
+          {
+            "name": "onClick",
+            "value": "this.onClick"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [],
+  "source": {
+    "file": "packages/core/src/components/md-table-expand-toggle/md-table-expand-toggle.tsx",
+    "styleUrl": "md-table-expand-toggle.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "7613cc7b6f52e4550fc8c10607be669a0cdd80b4ca4c802d41c76a9a670350bc"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "md-icon-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-spring-spatial-fast-duration, 350ms)\n    var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.9))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-expand-toggle--expanded) md-icon-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "rotate(var(--md-table-expand-toggle-rotation, 90deg))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "md-icon-button",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-duration",
+          "value": "0.01ms",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Table Expand Toggle",
+  "category": "Data Display",
+  "parent": "md-table",
+  "description": "The chevron that expands a table row. A stateless wrapper around an md-icon-button that finds its owning md-table-row, toggles it on click, and rotates with the row's expanded state.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-table-expand-toggle.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-table-expand-toggle/md-table-expand-toggle.tsx",
+    "css": "packages/core/src/components/md-table-expand-toggle/md-table-expand-toggle.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "buttonLabel",
+        "icon"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Routes native internal awcExpand to containing row."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "buttonLabel"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "icon"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Standalone visual toggle; nested table row has its own bound expansion control."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

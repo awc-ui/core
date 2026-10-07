@@ -1,0 +1,2062 @@
+{
+  "tag": "md-chip",
+  "className": "MdChip",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "'assist' | 'filter' | 'input' | 'suggestion'",
+      "default": "'assist'",
+      "defaultValue": "assist",
+      "options": [
+        "assist",
+        "filter",
+        "input",
+        "suggestion"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Chip variant"
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "icon",
+      "optional": false,
+      "description": "Material Symbols icon name for the leading icon"
+    },
+    {
+      "name": "trailingIcon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "trailing-icon",
+      "optional": false,
+      "description": "Material Symbols icon name for the trailing icon (filter/input only)"
+    },
+    {
+      "name": "selected",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "selected",
+      "optional": false,
+      "description": "Whether the chip is selected (filter/input variants)"
+    },
+    {
+      "name": "selectable",
+      "type": "boolean",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "selectable",
+      "optional": true,
+      "description": "Whether clicking the chip body toggles `selected`. Defaults to true for\n`filter`/`input` variants. Set `selectable=\"false\"` for a token that is only\na display of a value (e.g. a multi-select's removable chips) — clicking the\nbody then does nothing and the ✕ remove button is the only action, so the\nchip doesn't flash a misleading \"active\" state."
+    },
+    {
+      "name": "appearance",
+      "type": "'outlined' | 'filled' | 'elevated'",
+      "default": "'outlined'",
+      "defaultValue": "outlined",
+      "options": [
+        "outlined",
+        "filled",
+        "elevated"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "appearance",
+      "optional": false,
+      "description": "Surface style of the chip. Distinct from `variant`, which selects the M3\nchip TYPE (assist / filter / input / suggestion); a chip has both.\n\n- `outlined` (default) — transparent container with a 1px outline.\n- `filled` — tonal container, no outline.\n- `elevated` — tonal container with elevation and no outline."
+    },
+    {
+      "name": "color",
+      "type": "| 'primary'\n    | 'secondary'\n    | 'tertiary'\n    | 'error'\n    | 'success'\n    | 'warning'\n    | 'info'\n    | (string & {})",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "color",
+      "optional": true,
+      "description": "Colour role applied to the chip's outline / label / container, depending on\n`appearance`. Omit for the neutral surface treatment.\n\nAny role name the THEME defines is accepted, not just a fixed list — the\nchip resolves `<name>` to the `--md-sys-color-<name>` /\n`-<name>-container` / `-on-<name>-container` family at runtime. So\n`color=\"brand\"` works as soon as a theme ships those tokens, and a name the\ntheme does not define degrades to the neutral treatment rather than\nrendering broken.\n\n`primary` | `secondary` | `tertiary` | `error` are the baseline M3 roles;\n`success` | `warning` | `info` ship in packages/tokens on the same tonal\nrecipe. The union below is a hint for editor autocomplete only — the `string`\narm is what makes custom roles work."
+    },
+    {
+      "name": "elevated",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "elevated",
+      "optional": false,
+      "description": "Whether the chip is elevated (adds shadow instead of outline)."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disables the chip"
+    },
+    {
+      "name": "softDisabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "soft-disabled",
+      "optional": false,
+      "description": "Soft-disabled: disabled visuals but remains focusable"
+    },
+    {
+      "name": "removable",
+      "type": "boolean",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "removable",
+      "optional": true,
+      "description": "When `true`, the chip renders a trailing remove (\"✕\") button and responds\nto Delete / Backspace from the chip itself. Works on every variant.\n\n`variant=\"input\"` is removable by default (per MD3 spec) — setting\n`removable=\"false\"` explicitly opts out of that behavior."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Label text — alternative to default slot"
+    },
+    {
+      "name": "contentAlign",
+      "type": "'start' | 'center' | 'end'",
+      "default": "'center'",
+      "defaultValue": "center",
+      "options": [
+        "start",
+        "center",
+        "end"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "content-align",
+      "optional": false,
+      "description": "Inline-axis alignment of the chip's content row — leading icon, label and\ntrailing icon together.\n\n`center` (the default) is a no-op on a normal chip, which shrink-wraps its\nlabel: the content box and the container are the same size, so there is\nnothing to align. It matters only once a layout gives the chip a width — a\ngrid column, `align-self: stretch`, an explicit `inline-size` — and then\ncentre is usually wrong. The label floats in the middle of a wide outlined\nbox and reads as an empty input rather than a chip, and a chip labelling\nsomething beneath it no longer shares a left edge with what it names.\n\n`start` reads left in LTR / right in RTL, `end` the reverse, `center` is\ndirection-agnostic. Use `::part(label)` for finer control."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "hasSlottedLeadingIcon",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedTrailingIcon",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdSelect",
+      "detail": "{ selected: boolean }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdRemove",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "leading-icon",
+      "description": "Custom leading icon"
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Custom trailing icon"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "Hover/press overlay"
+    },
+    {
+      "name": "outline",
+      "description": "Border element"
+    },
+    {
+      "name": "primary"
+    },
+    {
+      "name": "checkmark",
+      "description": "Filter chip checkmark"
+    },
+    {
+      "name": "icon",
+      "description": "Leading icon"
+    },
+    {
+      "name": "label",
+      "description": "Label text wrapper"
+    },
+    {
+      "name": "remove",
+      "description": "Input chip remove button"
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Trailing icon"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-chip-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-chip-container-color-selected",
+      "description": "Selected container background"
+    },
+    {
+      "name": "--md-chip-label-color",
+      "description": "Label text color"
+    },
+    {
+      "name": "--md-chip-label-color-selected",
+      "description": "Selected label text color"
+    },
+    {
+      "name": "--md-chip-icon-color",
+      "description": "Leading/trailing icon color"
+    },
+    {
+      "name": "--md-chip-icon-size",
+      "description": "Icon dimensions"
+    },
+    {
+      "name": "--md-chip-container-shape",
+      "description": "Border-radius override"
+    },
+    {
+      "name": "--md-chip-container-height",
+      "description": "Height override"
+    },
+    {
+      "name": "--md-chip-outline-color",
+      "description": "Outline color"
+    },
+    {
+      "name": "--md-chip-outline-width",
+      "description": "Outline width"
+    },
+    {
+      "name": "--md-chip-state-layer-color",
+      "description": "State layer color override"
+    },
+    {
+      "name": "--md-chip-elevation",
+      "description": "Box-shadow override"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "style",
+        "value": "this.colorVars"
+      },
+      {
+        "name": "class",
+        "value": "{\n          'md-chip': true,\n          [`md-chip--${this.variant}`]: true,\n          'md-chip--selected': this.selected && this.isSelectable,\n          // The deprecated `elevated` boolean resolves into `appearance`, and\n          // the legacy `md-chip--elevated` class is still emitted for that case\n          // so every existing rule keyed on it (disabled states, selected\n          // combinations) keeps applying untouched.\n          [`md-chip--appearance-${this.effectiveAppearance}`]: true,\n          'md-chip--elevated': this.effectiveAppearance === 'elevated',\n          [`md-chip--color-${this.color}`]: !!this.color,\n          'md-chip--disabled': isEffectivelyDisabled,\n          'md-chip--with-leading-icon': hasLeadingIcon || showCheckmark,\n          'md-chip--with-trailing-icon': hasTrailingIcon || showRemove,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "hostIsButton ? 'button' : 'group'"
+      },
+      {
+        "name": "aria-roledescription",
+        "value": "chip"
+      },
+      {
+        "name": "aria-pressed",
+        "value": "hostIsButton && this.isSelectable ? String(this.selected) : undefined"
+      },
+      {
+        "name": "aria-label",
+        "value": "hostIsButton ? undefined : chipLabel || undefined"
+      },
+      {
+        "name": "aria-disabled",
+        "value": "isEffectivelyDisabled ? 'true' : undefined"
+      },
+      {
+        "name": "tabindex",
+        "value": "hostIsButton ? (this.disabled ? '-1' : '0') : undefined"
+      },
+      {
+        "name": "onClick",
+        "value": "this.handleClick"
+      },
+      {
+        "name": "onKeyDown",
+        "value": "this.handleKeyDown"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "md-ripple",
+        "attributes": [
+          {
+            "name": "disabled",
+            "value": "isEffectivelyDisabled"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-chip__state-layer"
+          },
+          {
+            "name": "part",
+            "value": "state-layer"
+          },
+          {
+            "name": "aria-hidden",
+            "value": "true"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "!this.elevated && <span class=\"md-chip__outline\" part=\"outline\" aria-hidden=\"true\"></span>"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "renderPrimary && (\n          <span\n            class=\"md-chip__primary\"\n            part=\"primary\"\n            role=\"button\"\n            tabindex={this.disabled ? '-1' : '0'}\n            aria-labelledby=\"md-chip-label-text\"\n            aria-pressed={this.isSelectable ? String(this.selected) : undefined}\n            aria-disabled={isEffectivelyDisabled ? 'true' : undefined}\n          ></span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "showCheckmark && (\n          <span class=\"md-chip__checkmark\" part=\"checkmark\" aria-hidden=\"true\">\n            <svg viewBox=\"0 0 18 18\" fill=\"none\">\n              <path d=\"M6.75 12.127L3.623 9l-1.06 1.057L6.75 14.25l9-9-1.057-1.057L6.75 12.127z\" fill=\"currentColor\" />\n            </svg>\n          </span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "slot",
+        "attributes": [
+          {
+            "name": "name",
+            "value": "leading-icon"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "hasLeadingIcon && !showCheckmark && (\n            <span class=\"md-chip__icon material-symbols-outlined\" part=\"icon\" aria-hidden=\"true\">\n              {this.icon}\n            </span>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-chip__label"
+          },
+          {
+            "name": "part",
+            "value": "label"
+          },
+          {
+            "name": "id",
+            "value": "md-chip-label-text"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [],
+            "children": [
+              {
+                "kind": "expression",
+                "source": "this.label"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "showRemove ? (\n          <button\n            class=\"md-chip__remove\"\n            part=\"remove\"\n            type=\"button\"\n            tabindex={this.disabled ? '-1' : '0'}\n            aria-label={chipLabel ? `Remove ${chipLabel}` : 'Remove'}\n            disabled={isEffectivelyDisabled}\n            onClick={this.handleRemoveClick}\n            onKeyDown={this.handleRemoveKeyDown}\n          >\n            <slot name=\"trailing-icon\">\n              <svg viewBox=\"0 0 18 18\" fill=\"none\" aria-hidden=\"true\">\n                <path d=\"M14.25 4.808l-1.058-1.058L9 7.942 4.808 3.75 3.75 4.808 7.942 9 3.75 13.192l1.058 1.058L9 10.058l4.192 4.192 1.058-1.058L10.058 9l4.192-4.192z\" fill=\"currentColor\" />\n              </svg>\n            </slot>\n          </button>\n        ) : (\n          <slot name=\"trailing-icon\">\n            {hasTrailingIcon && (\n              <span class=\"md-chip__trailing-icon material-symbols-outlined\" part=\"trailing-icon\" aria-hidden=\"true\">\n                {this.trailingIcon}\n              </span>\n            )}\n          </slot>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 208
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 211
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 215
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 4
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-chip/md-chip.tsx",
+    "styleUrl": "md-chip.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "d871e106ce04e56f71d60b7cf1f39b5cfe0b69d047713ae10ea72b9aecc115e8"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-chip-container-color, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_container-color-selected",
+          "value": "var(--md-chip-container-color-selected, var(--md-sys-color-secondary-container))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-chip-label-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_label-color-selected",
+          "value": "var(--md-chip-label-color-selected, var(--md-sys-color-on-secondary-container))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-chip-icon-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-chip-icon-size, max(14px, calc(18px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-chip-container-shape, var(--md-sys-shape-corner-small, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_container-height",
+          "value": "var(--md-chip-container-height, 32px)",
+          "important": false
+        },
+        {
+          "property": "--_outline-color",
+          "value": "var(--md-chip-outline-color, var(--md-sys-color-outline))",
+          "important": false
+        },
+        {
+          "property": "--_outline-width",
+          "value": "var(--md-chip-outline-width, 1px)",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-chip-state-layer-color, var(--md-sys-color-on-surface))",
+          "important": false
+        },
+        {
+          "property": "--_elevation",
+          "value": "var(--md-chip-elevation, var(--md-sys-elevation-0, none))",
+          "important": false
+        },
+        {
+          "property": "--_c-main",
+          "value": "var(--md-sys-color-primary)",
+          "important": false
+        },
+        {
+          "property": "--_c-on-main",
+          "value": "var(--md-sys-color-on-primary)",
+          "important": false
+        },
+        {
+          "property": "--_c-container",
+          "value": "var(--md-sys-color-secondary-container)",
+          "important": false
+        },
+        {
+          "property": "--_c-on-container",
+          "value": "var(--md-sys-color-on-secondary-container)",
+          "important": false
+        },
+        {
+          "property": "--_padding-inline",
+          "value": "var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "--_gap",
+          "value": "var(--md-sys-spacing-gap-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(24px, calc(var(--_container-height) + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--_padding-inline)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_gap)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--_elevation)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "isolation",
+          "value": "isolate",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-large-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-label-large-letter-spacing, 0.1px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_label-color)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    box-shadow var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--with-leading-icon)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-inline-start",
+          "value": "var(--md-sys-spacing-inset-sm, 8px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--with-trailing-icon)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-inline-end",
+          "value": "var(--md-sys-spacing-inset-sm, 8px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([content-align='start'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "flex-start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([content-align='end'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "flex-end",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--assist)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-chip-icon-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-chip-label-color, var(--md-sys-color-on-surface))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--filter)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-chip-icon-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-chip-label-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--input)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_outline-color",
+          "value": "var(--md-chip-outline-color, var(--md-sys-color-outline-variant))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-chip-icon-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-chip-label-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--suggestion)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-chip-icon-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-chip-label-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--selected)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--_container-color-selected)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_label-color-selected)",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-chip-icon-color, var(--md-sys-color-on-secondary-container))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-sys-color-on-secondary-container)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--selected) .md-chip__outline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--elevated)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "var(--md-chip-elevation, var(--md-sys-elevation-1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--elevated) .md-chip__outline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--elevated.md-chip--selected)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "var(--md-chip-elevation, var(--md-sys-elevation-1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--appearance-outlined[color])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_outline-color",
+          "value": "var(--md-chip-outline-color, var(--_c-main))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-chip-label-color, var(--_c-main))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-chip-icon-color, var(--_c-main))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-chip-state-layer-color, var(--_c-main))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--appearance-filled),\n:host(.md-chip--appearance-elevated)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-chip-container-color, var(--md-sys-color-surface-container-high))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-chip-label-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-chip-icon-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--appearance-filled[color]),\n:host(.md-chip--appearance-elevated[color])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-chip-container-color, var(--_c-container))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-chip-label-color, var(--_c-on-container))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-chip-icon-color, var(--_c-on-container))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-chip-state-layer-color, var(--_c-on-container))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--appearance-filled) .md-chip__outline,\n:host(.md-chip--appearance-elevated) .md-chip__outline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--selected[color])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--_c-container)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_c-on-container)",
+          "important": false
+        },
+        {
+          "property": "--_label-color-selected",
+          "value": "var(--_c-on-container)",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-chip-icon-color, var(--_c-on-container))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--_c-on-container)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__outline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "var(--_outline-width) solid var(--_outline-color)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_state-layer-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short1, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover) .md-chip__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible) .md-chip__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-focus-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:active) .md-chip__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__primary",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__primary:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "-3px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__icon,\n.md-chip__trailing-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "slot[name=\"leading-icon\"],\nslot[name=\"trailing-icon\"]",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "contents",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot=\"leading-icon\"]),\n::slotted([slot=\"trailing-icon\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "fill",
+          "value": "currentColor",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__checkmark",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__checkmark svg",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__remove",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "18px",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "18px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__remove:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "2px solid var(--md-sys-color-secondary)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "1px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__remove svg",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__remove:disabled",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_elevation",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--disabled:not(.md-chip--selected):not(.md-chip--elevated)) .md-chip__outline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--disabled.md-chip--selected)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--disabled.md-chip--elevated:not(.md-chip--selected))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--disabled:hover) .md-chip__state-layer,\n:host(.md-chip--disabled:active) .md-chip__state-layer,\n:host(.md-chip--disabled:focus-visible) .md-chip__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_elevation",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled]) .md-chip__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__state-layer",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border",
+          "value": "1px solid ButtonText",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "ButtonFace",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "ButtonText",
+          "important": false
+        },
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__outline",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "ButtonText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "outline-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__primary:focus-visible",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "outline-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--selected)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "Highlight",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "HighlightText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-chip--disabled)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "GrayText",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "GrayText",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-chip__state-layer",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Chip",
+  "category": "Selection",
+  "parent": null,
+  "description": "A compact, contextual option — always part of a set. Four semantic variants (assist / filter / input / suggestion) cross with three surface appearances (outlined / filled / elevated), plus theme colour roles, optional selection and optional removal.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-chip.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-chip/md-chip.tsx",
+    "css": "packages/core/src/components/md-chip/md-chip.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "variant",
+        "icon",
+        "trailingIcon",
+        "selected",
+        "selectable",
+        "removable",
+        "label",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdClick",
+        "mdSelect",
+        "mdRemove"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "leading-icon",
+        "trailing-icon"
+      ],
+      "unsupportedProperties": [
+        "appearance",
+        "color",
+        "elevated",
+        "contentAlign",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "disabled",
+        "icon",
+        "label",
+        "removable",
+        "selectable",
+        "selected",
+        "softDisabled",
+        "variant"
+      ],
+      "events": [
+        "mdClick",
+        "mdRemove",
+        "mdSelect"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "trailingIcon",
+        "appearance",
+        "color",
+        "elevated",
+        "contentAlign",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "leading-icon",
+        "trailing-icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

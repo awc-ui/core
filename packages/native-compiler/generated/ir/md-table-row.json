@@ -1,0 +1,1005 @@
+{
+  "tag": "md-table-row",
+  "className": "MdTableRow",
+  "properties": [
+    {
+      "name": "rowgroup",
+      "type": "'head' | 'body' | 'foot'",
+      "default": "'body'",
+      "defaultValue": "body",
+      "options": [
+        "head",
+        "body",
+        "foot"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "rowgroup",
+      "optional": false,
+      "description": "Which rowgroup this row belongs to. Stamped automatically by the parent\n`<md-table>` (head / body / foot) — set it manually only when using rows\noutside a table."
+    },
+    {
+      "name": "selected",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "selected",
+      "optional": false,
+      "description": "Selected (highlighted) state. Reflected."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disabled — row receives no hover/click handlers."
+    },
+    {
+      "name": "selectable",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "selectable",
+      "optional": false,
+      "description": "Whether this row counts as selectable (used by `<md-table>` selection coordination)."
+    },
+    {
+      "name": "clickable",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "clickable",
+      "optional": false,
+      "description": "When true, treat the entire row as a button (Enter/Space activates `mdRowClick`)."
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": "Identifier attached to selection / click events. Defaults to row index."
+    },
+    {
+      "name": "expandable",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "expandable",
+      "optional": false,
+      "description": "Render an \"expandable details\" zone toggleable via `toggle()`."
+    },
+    {
+      "name": "expanded",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "expanded",
+      "optional": false,
+      "description": "Whether the expandable zone is open."
+    },
+    {
+      "name": "highlight",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "highlight",
+      "optional": false,
+      "description": "Highlights the row using primary-container (e.g. for the focused row)."
+    }
+  ],
+  "state": [
+    {
+      "name": "_hasExpandedSlot",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdRowClick",
+      "detail": "{ value: string; row: HTMLElement }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdRowSelectionChange",
+      "detail": "{ selected: boolean; value: string }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdRowExpandedChange",
+      "detail": "{ expanded: boolean }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "toggle",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "expanded"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "expanded"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-table-row-hover-color"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-table-row': true,\n          [`md-table-row--${this.rowgroup}`]: true,\n          'md-table-row--selected': this.selected,\n          'md-table-row--disabled': this.disabled,\n          'md-table-row--clickable': this.clickable,\n          'md-table-row--highlight': this.highlight,\n          'md-table-row--expandable': this.expandable,\n          'md-table-row--expanded': this.expanded,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "row"
+      },
+      {
+        "name": "aria-disabled",
+        "value": "this.disabled ? 'true' : null"
+      },
+      {
+        "name": "aria-expanded",
+        "value": "this.expandable ? (this.expanded ? 'true' : 'false') : null"
+      },
+      {
+        "name": "tabindex",
+        "value": "this.clickable && !this.disabled ? '0' : null"
+      },
+      {
+        "name": "onClick",
+        "value": "this.handleClick"
+      },
+      {
+        "name": "onKeyDown",
+        "value": "this.handleKeyDown"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "slot",
+        "attributes": [
+          {
+            "name": "onSlotchange",
+            "value": "() =>\n            // Cells slot into the ROW's shadow — cell additions/removals (e.g.\n            // a checkbox column appearing when selection turns on) are\n            // invisible to md-table without this relay (same non-composed\n            // slotchange rule as the rowgroups).\n            this.el.dispatchEvent(new CustomEvent('mdRowgroupSlotChange', { bubbles: true }))"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.expandable && (\n          <div\n            class={{\n              'md-table-row__expanded': true,\n              'md-table-row__expanded--open': this.expanded,\n            }}\n            part=\"expanded\"\n            // A row may only own cells/headers — expose the detail panel as a\n            // full-width CELL (role=region here was an axe-confirmed content\n            // model violation once the panel opened).\n            role=\"cell\"\n            aria-colspan={String(\n              Array.from(this.el.children).filter((c) => c.tagName === 'MD-TABLE-CELL').length || 1,\n            )}\n            aria-hidden={!this.expanded ? 'true' : null}\n            // inert while collapsed: the height animation only clips the\n            // panel visually — without inert, focusable content inside stays\n            // tab-reachable while invisible.\n            inert={!this.expanded}\n          >\n            <div class=\"md-table-row__expanded-sizer\">\n              <div class=\"md-table-row__expanded-inner\">\n                <slot name=\"expanded\" />\n              </div>\n            </div>\n          </div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 88
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 88
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 90
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 34
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-table-row/md-table-row.tsx",
+    "styleUrl": "md-table-row.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "081ee4b71aaa0be323f4009e81b5aa10128094ae3a7bcd444cb4146e8b6e79d6"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        },
+        {
+          "property": "grid-column",
+          "value": "1 / -1",
+          "important": false
+        },
+        {
+          "property": "grid-template-columns",
+          "value": "subgrid",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "stretch",
+          "important": false
+        },
+        {
+          "property": "border-block-end",
+          "value": "1px solid var(--_divider, transparent)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--_fx-fast, 150ms cubic-bezier(0.31, 0.94, 0.34, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_sticky-base",
+          "value": "var(--md-table-surface, var(--md-sys-color-surface, #FEF7FF))",
+          "important": false
+        },
+        {
+          "property": "--md-table-cell-sticky-bg",
+          "value": "var(--_sticky-base)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-stripe])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_sticky-base",
+          "value": "color-mix(\n    in srgb,\n    var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 50%),\n    var(--md-table-surface, var(--md-sys-color-surface, #FEF7FF))\n  )",
+          "important": false
+        },
+        {
+          "property": "--md-table-cell-sticky-bg",
+          "value": "var(--_sticky-base)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--selected)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_sticky-base",
+          "value": "var(--_row-selected-bg, var(--md-sys-color-secondary-container, #E8DEF8))",
+          "important": false
+        },
+        {
+          "property": "--md-table-cell-sticky-bg",
+          "value": "var(--_sticky-base)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--body:hover:not(.md-table-row--disabled))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-table-cell-sticky-bg",
+          "value": "color-mix(\n    in srgb,\n    var(--md-table-row-hover-color, var(--md-sys-color-on-surface, #1C1B1F))\n      calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),\n    var(--_sticky-base)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--head)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-table-cell-sticky-bg",
+          "value": "var(--_head-bg, var(--md-sys-color-surface-container, #F3EDF7))",
+          "important": false
+        },
+        {
+          "property": "--md-table-cell-sticky-transition",
+          "value": "0s",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--foot)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-table-cell-sticky-bg",
+          "value": "var(--_foot-bg, var(--md-sys-color-surface-container-low, #F7F2FA))",
+          "important": false
+        },
+        {
+          "property": "--md-table-cell-sticky-transition",
+          "value": "0s",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host::before",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_hover-layer, transparent)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--_fx-fast, 150ms cubic-bezier(0.31, 0.94, 0.34, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--body:hover:not(.md-table-row--disabled))::before",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--head)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_head-bg, var(--md-sys-color-surface-container, #F3EDF7))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--head)::before",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--foot)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_foot-bg, var(--md-sys-color-surface-container-low, #F7F2FA))",
+          "important": false
+        },
+        {
+          "property": "border-block-end",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "border-block-start",
+          "value": "1px solid var(--_divider, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-last])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-block-end",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-adjacent-foot])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-block-end",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--body) ::slotted(md-table-cell)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-table-cell-pin-display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--head) ::slotted(md-table-cell)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_cell-min-h",
+          "value": "var(--_head-h, 56px)",
+          "important": false
+        },
+        {
+          "property": "--_cell-color",
+          "value": "var(--_head-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_cell-weight",
+          "value": "var(--md-sys-typescale-title-small-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "--_cell-letter-spacing",
+          "value": "var(--md-sys-typescale-title-small-letter-spacing, 0.1px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--foot) ::slotted(md-table-cell)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_cell-weight",
+          "value": "var(--md-sys-typescale-title-small-font-weight, 500)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-stripe])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_stripe-color, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--selected)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_row-selected-bg, var(--md-sys-color-secondary-container, #E8DEF8))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--selected) ::slotted(md-table-cell)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_cell-color",
+          "value": "var(--_row-selected-color, var(--md-sys-color-on-secondary-container, #1E192B))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--highlight)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-primary-container, #EADDFF)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--highlight) ::slotted(md-table-cell)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_cell-color",
+          "value": "var(--md-sys-color-on-primary-container, #21005D)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--disabled) ::slotted(md-table-cell)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_cell-color",
+          "value": "color-mix(\n    in srgb,\n    var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%),\n    transparent\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--clickable)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "2px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "-2px",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-sticky].md-table-row--head)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "sticky",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-sticky].md-table-row--foot)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "sticky",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-row__expanded",
+      "context": null,
+      "declarations": [
+        {
+          "property": "grid-column",
+          "value": "1 / -1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        },
+        {
+          "property": "grid-template-rows",
+          "value": "0fr",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "visibility",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "grid-template-rows var(--md-sys-motion-duration-short4, 200ms)\n      var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),\n    opacity var(--md-sys-motion-duration-short4, 200ms)\n      var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),\n    visibility 0s linear var(--md-sys-motion-duration-short4, 200ms)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-row__expanded--open",
+      "context": null,
+      "declarations": [
+        {
+          "property": "grid-template-rows",
+          "value": "1fr",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "visibility",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "grid-template-rows var(--md-sys-motion-spring-spatial-default-duration, 500ms)\n      var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1)),\n    opacity var(--_fx-default, 200ms cubic-bezier(0.34, 0.8, 0.34, 1)),\n    visibility 0s",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-row__expanded-sizer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-row__expanded-inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding",
+          "value": "12px var(--_cell-pad-inline, 16px) 16px",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(-10px)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-short3, 150ms)\n      var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),\n    opacity var(--md-sys-motion-duration-short2, 100ms) linear",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-row__expanded--open .md-table-row__expanded-inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(0)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-spring-spatial-fast-duration, 350ms)\n      var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1)),\n    opacity var(--_fx-default, 200ms cubic-bezier(0.34, 0.8, 0.34, 1))",
+          "important": false
+        },
+        {
+          "property": "transition-delay",
+          "value": "60ms",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host,\n  :host::before,\n  .md-table-row__expanded,\n  .md-table-row__expanded-inner",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-duration",
+          "value": "0.01ms",
+          "important": true
+        },
+        {
+          "property": "transition-delay",
+          "value": "0s",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-block-end-color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--selected)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-row--selected) ::slotted(md-table-cell)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "--_cell-color",
+          "value": "HighlightText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Table Row",
+  "category": "Data Display",
+  "parent": "md-table",
+  "description": "One row of a md-table. A real grid box that spans the table's tracks and lays its md-table-cell children onto them with grid-template-columns: subgrid, so hover, stripes, dividers, selection tint, sticky rows and focus rings all paint on the row itself.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-table-row.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-table-row/md-table-row.tsx",
+    "css": "packages/core/src/components/md-table-row/md-table-row.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "selected",
+        "selectable",
+        "clickable",
+        "value",
+        "expandable",
+        "expanded",
+        "highlight",
+        "disabled"
+      ],
+      "events": [
+        "mdRowClick",
+        "mdRowSelectionChange",
+        "mdRowExpandedChange"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "expanded"
+      ],
+      "unsupportedProperties": [
+        "rowgroup"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "toggle"
+      ],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "clickable",
+        "disabled",
+        "expandable",
+        "expanded",
+        "selectable",
+        "selected",
+        "value"
+      ],
+      "events": [
+        "mdRowClick",
+        "mdRowExpandedChange",
+        "mdRowSelectionChange"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "expanded"
+      ],
+      "unsupportedProperties": [
+        "rowgroup",
+        "highlight"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "toggle"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

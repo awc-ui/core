@@ -1,0 +1,1921 @@
+{
+  "tag": "md-progress-indicator",
+  "className": "MdProgressIndicator",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "'circular' | 'linear'",
+      "default": "'linear'",
+      "defaultValue": "linear",
+      "options": [
+        "circular",
+        "linear"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Visual variant: linear (horizontal bar) or circular (ring)."
+    },
+    {
+      "name": "value",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": "Current progress value (0 to max)."
+    },
+    {
+      "name": "max",
+      "type": "number",
+      "default": "100",
+      "defaultValue": 100,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max",
+      "optional": false,
+      "description": "Maximum progress value."
+    },
+    {
+      "name": "indeterminate",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "indeterminate",
+      "optional": false,
+      "description": "Indeterminate mode — looping animation when progress is unknown."
+    },
+    {
+      "name": "thickness",
+      "type": "number",
+      "default": "4",
+      "defaultValue": 4,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "thickness",
+      "optional": false,
+      "description": "Track / stroke thickness in dp."
+    },
+    {
+      "name": "wave",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "wave",
+      "optional": false,
+      "description": "Enable the wavy (M3 Expressive) active indicator."
+    },
+    {
+      "name": "waveAmplitude",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "wave-amplitude",
+      "optional": false,
+      "description": "Wave amplitude (center-to-peak) in dp. `0` = auto per M3 spec\n(linear 3px, circular 1.6px)."
+    },
+    {
+      "name": "waveLength",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "wave-length",
+      "optional": false,
+      "description": "Wavelength (peak-to-peak) in dp. `0` = auto\n(linear 40px for both determinate + indeterminate, circular 15px)."
+    },
+    {
+      "name": "waveSpeed",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "wave-speed",
+      "optional": false,
+      "description": "Wave travel speed in dp/second. `0` = auto (= wavelength, i.e. one\nwavelength per second per the M3 default)."
+    },
+    {
+      "name": "size",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "size",
+      "optional": false,
+      "description": "Circular indicator outer size in dp. `0` = auto (non-wavy 40px,\nwavy 48px per the M3 expressive spec). Clamped to the M3 range 24–240px."
+    },
+    {
+      "name": "fourColor",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "four-color",
+      "optional": false,
+      "description": "Four-color cycling animation (circular indeterminate only)."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "'Progress'",
+      "defaultValue": "Progress",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Accessible label for screen readers."
+    },
+    {
+      "name": "complete",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "complete",
+      "optional": false,
+      "description": "Set to `true` to trigger the completion (\"closing TV\") animation. After it\nplays, the indicator self-hides (`visibility:hidden`) and emits `mdComplete` —\nEXCEPT the flat (non-wavy) circular variant, which instead rests showing its\nempty track ring (the active indicator erases away and the track fades in).\nNo-op on indeterminate indicators."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "reducedMotion",
+      "type": "boolean",
+      "initializer": "false"
+    },
+    {
+      "name": "_completing",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "_completed",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "_completedTrack",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "_fillComplete",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdComplete",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "track",
+      "description": "Background track (rect or SVG circle/path)"
+    },
+    {
+      "name": "stop-indicator",
+      "description": "Stop dot at track end (linear determinate)"
+    },
+    {
+      "name": "active-indicator",
+      "description": "Active progress fill"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-progress-indicator-active-indicator-color",
+      "description": "Active indicator fill"
+    },
+    {
+      "name": "--md-progress-indicator-active-indicator-shape",
+      "description": "Active indicator corner radius"
+    },
+    {
+      "name": "--md-progress-indicator-track-color",
+      "description": "Track background"
+    },
+    {
+      "name": "--md-progress-indicator-track-shape",
+      "description": "Track corner radius"
+    },
+    {
+      "name": "--md-progress-indicator-stop-indicator-color",
+      "description": "Stop dot color"
+    },
+    {
+      "name": "--md-progress-indicator-stop-indicator-shape",
+      "description": "Stop dot corner radius"
+    },
+    {
+      "name": "--md-progress-indicator-stop-indicator-size",
+      "description": "Stop dot diameter"
+    },
+    {
+      "name": "--md-progress-indicator-stop-indicator-trailing-space",
+      "description": "Space past the stop dot to the trailing edge (default 0)"
+    },
+    {
+      "name": "--md-progress-indicator-track-active-indicator-space",
+      "description": "Gap between track and active indicator (default 4px)"
+    },
+    {
+      "name": "--md-progress-indicator-four-color-1"
+    },
+    {
+      "name": "--md-progress-indicator-four-color-2"
+    },
+    {
+      "name": "--md-progress-indicator-four-color-3"
+    },
+    {
+      "name": "--md-progress-indicator-four-color-4"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-progress-indicator': true,\n          [`md-progress-indicator--${this.variant}`]: true,\n          'md-progress-indicator--indeterminate': this.indeterminate,\n          'md-progress-indicator--wave': this.wave,\n          'md-progress-indicator--four-color': this.fourColor,\n          'md-progress-indicator--completing': this._completing,\n          'md-progress-indicator--complete': this._completed,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "progressbar"
+      },
+      {
+        "name": "aria-label",
+        "value": "this.label || undefined"
+      },
+      {
+        "name": "aria-valuemin",
+        "value": "0"
+      },
+      {
+        "name": "aria-valuemax",
+        "value": "this.ariaValueMax"
+      },
+      {
+        "name": "aria-valuenow",
+        "value": "this.ariaValueNow"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.variant === 'circular' ? this.renderCircular() : this.renderLinear()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "Native visibility tracking must replace IntersectionObserver.",
+      "line": 187
+    },
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 248
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Window access requires a native adapter.",
+      "line": 319
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 388
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 457
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 75
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-progress-indicator/md-progress-indicator.tsx",
+    "styleUrl": "md-progress-indicator.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "f61e9dc0fb7d0e0a17965034b5a7f1579f6c03a34c96394cc256bb2bd221ead6"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_active-color",
+          "value": "var(--md-progress-indicator-active-indicator-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_active-shape",
+          "value": "var(--md-progress-indicator-active-indicator-shape, var(--_track-shape))",
+          "important": false
+        },
+        {
+          "property": "--_track-color",
+          "value": "var(--md-progress-indicator-track-color, var(--md-sys-color-secondary-container, #E8DEF8))",
+          "important": false
+        },
+        {
+          "property": "--_track-shape",
+          "value": "var(--md-progress-indicator-track-shape, var(--md-sys-shape-corner-full, 9999px))",
+          "important": false
+        },
+        {
+          "property": "--_stop-color",
+          "value": "var(--md-progress-indicator-stop-indicator-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_stop-shape",
+          "value": "var(--md-progress-indicator-stop-indicator-shape, var(--md-sys-shape-corner-full, 9999px))",
+          "important": false
+        },
+        {
+          "property": "--_stop-size",
+          "value": "var(--md-progress-indicator-stop-indicator-size, max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_four-color-1",
+          "value": "var(--md-progress-indicator-four-color-1, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_four-color-2",
+          "value": "var(--md-progress-indicator-four-color-2, var(--md-sys-color-primary-container, #EADDFF))",
+          "important": false
+        },
+        {
+          "property": "--_four-color-3",
+          "value": "var(--md-progress-indicator-four-color-3, var(--md-sys-color-tertiary, #7D5260))",
+          "important": false
+        },
+        {
+          "property": "--_four-color-4",
+          "value": "var(--md-progress-indicator-four-color-4, var(--md-sys-color-tertiary-container, #FFD8E4))",
+          "important": false
+        },
+        {
+          "property": "--_gap",
+          "value": "var(--md-progress-indicator-track-active-indicator-space, max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_stop-trailing-space",
+          "value": "var(--md-progress-indicator-stop-indicator-trailing-space, 0px)",
+          "important": false
+        },
+        {
+          "property": "--_thickness",
+          "value": "max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "--_linear-height",
+          "value": "max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "--_size",
+          "value": "max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-progress-indicator--linear)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_linear-height, 4px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__linear",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_track-shape)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__track",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "var(--_track-start, 0)",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-block",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_thickness, 4px)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_track-shape)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_track-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__track--full",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__track--determinate",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-block",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_fill-width, 0)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_thickness, 4px)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_active-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_active-shape)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__active--wave",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "var(--_linear-height, 10px)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_active-color)",
+          "important": false
+        },
+        {
+          "property": "mask-image",
+          "value": "var(--_wave-mask)",
+          "important": false
+        },
+        {
+          "property": "mask-size",
+          "value": "var(--_wave-mask-size)",
+          "important": false
+        },
+        {
+          "property": "mask-repeat",
+          "value": "repeat-x",
+          "important": false
+        },
+        {
+          "property": "mask-position",
+          "value": "left center",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-wave-travel var(--_wave-duration, 1000ms) linear infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-wave-travel",
+      "declarations": [
+        {
+          "property": "mask-position",
+          "value": "var(--_wave-length-px, 40px) center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__linear-wave-svg",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__linear-wave-path",
+      "context": null,
+      "declarations": [
+        {
+          "property": "fill",
+          "value": "var(--_active-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__stop",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "var(--_stop-trailing-space, 0)",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-block",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "min(var(--_stop-size), var(--_thickness, 4px))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "min(var(--_stop-size), var(--_thickness, 4px))",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_stop-shape)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_stop-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-block",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_thickness, 4px)",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "left center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar-inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_active-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_active-shape)",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar--primary",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "-145%",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-linear-primary-translate 2000ms linear infinite",
+          "important": false
+        },
+        {
+          "property": "animation-delay",
+          "value": "-1666ms",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar--primary > .md-progress-indicator__bar-inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-linear-primary-scale 2000ms linear infinite",
+          "important": false
+        },
+        {
+          "property": "animation-delay",
+          "value": "-1666ms",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar--secondary",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "-55%",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-linear-secondary-translate 2000ms linear infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar--secondary > .md-progress-indicator__bar-inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-linear-secondary-scale 2000ms linear infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-linear-primary-translate",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "20%",
+      "context": "@keyframes md-linear-primary-translate",
+      "declarations": [
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.5, 0, 0.7017, 0.4958)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "59.15%",
+      "context": "@keyframes md-linear-primary-translate",
+      "declarations": [
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.3024, 0.3814, 0.55, 0.9564)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(83.6714%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-linear-primary-translate",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(250%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-linear-primary-scale",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleX(0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "36.65%",
+      "context": "@keyframes md-linear-primary-scale",
+      "declarations": [
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.3347, 0.1248, 0.7858, 1)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scaleX(0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "69.15%",
+      "context": "@keyframes md-linear-primary-scale",
+      "declarations": [
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.06, 0.11, 0.6, 1)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scaleX(0.58)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-linear-primary-scale",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleX(0.62)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-linear-secondary-translate",
+      "declarations": [
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.15, 0, 0.5151, 0.4097)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "25%",
+      "context": "@keyframes md-linear-secondary-translate",
+      "declarations": [
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.3103, 0.2841, 0.8, 0.7337)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(37.6519%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "48.35%",
+      "context": "@keyframes md-linear-secondary-translate",
+      "declarations": [
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.4, 0.627, 0.6, 0.902)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(84.3862%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-linear-secondary-translate",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(160.278%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-linear-secondary-scale",
+      "declarations": [
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.205, 0.0571, 0.5766, 0.454)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scaleX(0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "19.15%",
+      "context": "@keyframes md-linear-secondary-scale",
+      "declarations": [
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.1523, 0.1964, 0.6484, 1.0043)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scaleX(0.4571)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "44.15%",
+      "context": "@keyframes md-linear-secondary-scale",
+      "declarations": [
+        {
+          "property": "animation-timing-function",
+          "value": "cubic-bezier(0.2578, -0.0032, 0.2118, 1.3818)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scaleX(0.58)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-linear-secondary-scale",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleX(0.62)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar--wave",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "var(--_linear-height, 10px)",
+          "important": false
+        },
+        {
+          "property": "mask-image",
+          "value": "var(--_wave-mask)",
+          "important": false
+        },
+        {
+          "property": "mask-size",
+          "value": "var(--_wave-mask-size)",
+          "important": false
+        },
+        {
+          "property": "mask-repeat",
+          "value": "repeat-x",
+          "important": false
+        },
+        {
+          "property": "mask-position",
+          "value": "left center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar--wave > .md-progress-indicator__bar-inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar-inner--ghost",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar--primary.md-progress-indicator__bar--wave",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-linear-primary-translate 2000ms linear infinite,\n    md-wave-travel var(--_wave-duration, 500ms) linear infinite",
+          "important": false
+        },
+        {
+          "property": "animation-delay",
+          "value": "-1666ms, 0ms",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar--secondary.md-progress-indicator__bar--wave",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-linear-secondary-translate 2000ms linear infinite,\n    md-wave-travel var(--_wave-duration, 500ms) linear infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context([dir=\"rtl\"]).md-progress-indicator--indeterminate .md-progress-indicator__linear,\n:host([dir=\"rtl\"]).md-progress-indicator--indeterminate .md-progress-indicator__linear",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleX(-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-progress-indicator--circular)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--_size, 40px)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_size, 40px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__circular",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__circular-track",
+      "context": null,
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "var(--_track-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__circular-track--determinate",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__circular-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "var(--_active-color)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__circular-active-path",
+      "context": null,
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "var(--_active-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))\n  .md-progress-indicator__circular",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-circular-rotate 1568ms linear infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))\n  .md-progress-indicator__circular-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-circular-dash 1333ms cubic-bezier(0.4, 0, 0.2, 1) infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))\n  .md-progress-indicator__circular-track--spinner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-circular-dash-track 1333ms cubic-bezier(0.4, 0, 0.2, 1) infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-circular-rotate",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "rotate(360deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-circular-dash",
+      "declarations": [
+        {
+          "property": "stroke-dasharray",
+          "value": "0.05 1",
+          "important": false
+        },
+        {
+          "property": "stroke-dashoffset",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "50%",
+      "context": "@keyframes md-circular-dash",
+      "declarations": [
+        {
+          "property": "stroke-dasharray",
+          "value": "0.70 1",
+          "important": false
+        },
+        {
+          "property": "stroke-dashoffset",
+          "value": "-0.18",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-circular-dash",
+      "declarations": [
+        {
+          "property": "stroke-dasharray",
+          "value": "0.05 1",
+          "important": false
+        },
+        {
+          "property": "stroke-dashoffset",
+          "value": "-0.92",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-circular-dash-track",
+      "declarations": [
+        {
+          "property": "stroke-dasharray",
+          "value": "var(--_spin-da-0, 0.81) var(--_spin-gap-0, 0.19)",
+          "important": false
+        },
+        {
+          "property": "stroke-dashoffset",
+          "value": "var(--_spin-do-0, -0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "50%",
+      "context": "@keyframes md-circular-dash-track",
+      "declarations": [
+        {
+          "property": "stroke-dasharray",
+          "value": "var(--_spin-da-50, 0.16) var(--_spin-gap-50, 0.84)",
+          "important": false
+        },
+        {
+          "property": "stroke-dashoffset",
+          "value": "var(--_spin-do-50, -0.95)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-circular-dash-track",
+      "declarations": [
+        {
+          "property": "stroke-dasharray",
+          "value": "var(--_spin-da-100, 0.81) var(--_spin-gap-100, 0.19)",
+          "important": false
+        },
+        {
+          "property": "stroke-dashoffset",
+          "value": "var(--_spin-do-100, -1.04)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-progress-indicator--four-color.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))\n  .md-progress-indicator__circular-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-circular-dash 1333ms cubic-bezier(0.4, 0, 0.2, 1) infinite,\n    md-four-color 5332ms linear infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%,    15%",
+      "context": "@keyframes md-four-color",
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "var(--_four-color-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "25%,   40%",
+      "context": "@keyframes md-four-color",
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "var(--_four-color-2)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "50%,   65%",
+      "context": "@keyframes md-four-color",
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "var(--_four-color-3)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "75%,   90%",
+      "context": "@keyframes md-four-color",
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "var(--_four-color-4)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-four-color",
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "var(--_four-color-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__active,\n  .md-progress-indicator__circular-active",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-duration",
+          "value": "0s",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__active--wave",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar--primary,\n  .md-progress-indicator__bar--primary > .md-progress-indicator__bar-inner,\n  .md-progress-indicator__bar--secondary,\n  .md-progress-indicator__bar--secondary > .md-progress-indicator__bar-inner",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation-duration",
+          "value": "6s",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar--primary,\n  .md-progress-indicator__bar--primary > .md-progress-indicator__bar-inner",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation-delay",
+          "value": "-4998ms",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar--primary.md-progress-indicator__bar--wave",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-linear-primary-translate 6s linear infinite",
+          "important": false
+        },
+        {
+          "property": "animation-delay",
+          "value": "-4998ms",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__bar--secondary.md-progress-indicator__bar--wave",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-linear-secondary-translate 6s linear infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))\n    .md-progress-indicator__circular",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation-duration",
+          "value": "4s",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))\n    .md-progress-indicator__circular-active,\n  :host(.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))\n    .md-progress-indicator__circular-track--spinner",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation-duration",
+          "value": "3s",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-progress-indicator--four-color.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))\n    .md-progress-indicator__circular-active",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation-duration",
+          "value": "3s, 16s",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-progress-indicator--circular.md-progress-indicator--indeterminate.md-progress-indicator--wave)\n    .md-progress-indicator__circular",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-circular-rotate 4s linear infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-linear-complete",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleY(1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "60%",
+      "context": "@keyframes md-linear-complete",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleY(0.1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-linear-complete",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleY(0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-progress-indicator--linear.md-progress-indicator--completing) .md-progress-indicator__linear",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-linear-complete 300ms cubic-bezier(0.2, 0, 1, 0.8) forwards",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-progress-indicator--complete)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "visibility",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__active,\n  .md-progress-indicator__active--wave,\n  .md-progress-indicator__bar,\n  .md-progress-indicator__stop",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__track",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__circular-track",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__circular-active,\n  .md-progress-indicator__circular-active-path",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-progress-indicator__linear-wave-path",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "fill",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Progress Indicator",
+  "category": "Communication",
+  "parent": null,
+  "description": "How far along an activity is. Linear or circular, determinate or indeterminate, with the M3 Expressive wave treatment and four-colour mode.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-progress-indicator.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-progress-indicator/md-progress-indicator.tsx",
+    "css": "packages/core/src/components/md-progress-indicator/md-progress-indicator.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "variant",
+        "value",
+        "max",
+        "indeterminate",
+        "thickness",
+        "size",
+        "label",
+        "complete"
+      ],
+      "events": [
+        "mdComplete"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "wave",
+        "waveAmplitude",
+        "waveLength",
+        "waveSpeed",
+        "fourColor",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Uses native determinate/indeterminate progress. Expressive wave/four-color animations not implemented."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "indeterminate",
+        "label",
+        "max",
+        "value",
+        "variant"
+      ],
+      "events": [
+        "mdComplete"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "thickness",
+        "wave",
+        "waveAmplitude",
+        "waveLength",
+        "waveSpeed",
+        "size",
+        "fourColor",
+        "complete",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

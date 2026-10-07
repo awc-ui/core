@@ -1,0 +1,3864 @@
+{
+  "tag": "md-time-picker",
+  "className": "MdTimePicker",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "MdTimePickerMode",
+      "default": "'input'",
+      "defaultValue": "input",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Picker mode shown when the dialog first opens. Defaults to `input` (keyboard-first); users can toggle to `dial` from the footer icon."
+    },
+    {
+      "name": "format",
+      "type": "MdTimePickerFormat",
+      "default": "'12h'",
+      "defaultValue": "12h",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "format",
+      "optional": false,
+      "description": "12-hour (with AM/PM) or 24-hour clock."
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "value",
+      "optional": false,
+      "description": "Selected time as a 24-hour `HH:MM` string (e.g. `\"14:30\"`)."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "name",
+      "optional": false,
+      "description": "Form field name — the picker is form-associated and submits its `value` under this name in `FormData`, like a native `<input type=\"time\">`."
+    },
+    {
+      "name": "min",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "min",
+      "optional": false,
+      "description": "Earliest selectable time as a 24-hour `HH:MM` string. A committed value before it fails constraint validation with `rangeUnderflow`."
+    },
+    {
+      "name": "max",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max",
+      "optional": false,
+      "description": "Latest selectable time as a 24-hour `HH:MM` string. A committed value after it fails constraint validation with `rangeOverflow`."
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "required",
+      "optional": false,
+      "description": "Requires a committed value for the host form to validate (`valueMissing` otherwise)."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "'Select time'",
+      "defaultValue": "Select time",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Trigger field label (acts as the floating label of the text-field-shaped trigger)."
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": "Helper text shown below the trigger. Hidden while an error is displayed."
+    },
+    {
+      "name": "error",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "error",
+      "optional": false,
+      "description": "Error state — paints the trigger with the error colour and shows `error-text`."
+    },
+    {
+      "name": "errorText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "error-text",
+      "optional": false,
+      "description": "Error message shown below the trigger when `error` is true."
+    },
+    {
+      "name": "reserveSupportingSpace",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "reserve-supporting-space",
+      "optional": false,
+      "description": "Always occupy the supporting-text line, even when there is no message, so a\nvalidation error does not push the content below it down. Forwarded to the\nembedded md-text-field. See that component for why it is opt-in."
+    },
+    {
+      "name": "headline",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "headline",
+      "optional": false,
+      "description": "Headline copy shown above the dial / inputs. Overrides the\nmode-specific defaults (`headline-input-label` / `headline-dial-label`)\nwhen set."
+    },
+    {
+      "name": "headlineInputLabel",
+      "type": "string",
+      "default": "'Enter time'",
+      "defaultValue": "Enter time",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "headline-input-label",
+      "optional": false,
+      "description": "Localized default headline for the input variant (used when `headline` is empty)."
+    },
+    {
+      "name": "headlineDialLabel",
+      "type": "string",
+      "default": "'Select time'",
+      "defaultValue": "Select time",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "headline-dial-label",
+      "optional": false,
+      "description": "Localized default headline for the dial variant (used when `headline` is empty)."
+    },
+    {
+      "name": "valueMissingLabel",
+      "type": "string",
+      "default": "'Please select a time.'",
+      "defaultValue": "Please select a time.",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-missing-label",
+      "optional": false,
+      "description": "Localized constraint-validation message when `required` and no time is committed."
+    },
+    {
+      "name": "rangeUnderflowLabel",
+      "type": "string",
+      "default": "'Please select a time at or after {min}.'",
+      "defaultValue": "Please select a time at or after {min}.",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "range-underflow-label",
+      "optional": false,
+      "description": "Localized validation message when the committed time is before `min`. `{min}` is substituted."
+    },
+    {
+      "name": "rangeOverflowLabel",
+      "type": "string",
+      "default": "'Please select a time at or before {max}.'",
+      "defaultValue": "Please select a time at or before {max}.",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "range-overflow-label",
+      "optional": false,
+      "description": "Localized validation message when the committed time is after `max`. `{max}` is substituted."
+    },
+    {
+      "name": "rangeOutsideLabel",
+      "type": "string",
+      "default": "'Please select a time at or after {min} or at or before {max}.'",
+      "defaultValue": "Please select a time at or after {min} or at or before {max}.",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "range-outside-label",
+      "optional": false,
+      "description": "Localized validation message for a reversed (overnight) `min`/`max` window when the time falls in the excluded middle. `{min}` and `{max}` are substituted."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disables the trigger and prevents the dialog from opening."
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "open",
+      "optional": false,
+      "description": "Whether the picker dialog is open. Two-way bindable / reflected."
+    },
+    {
+      "name": "minuteStep",
+      "type": "number",
+      "default": "1",
+      "defaultValue": 1,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "minute-step",
+      "optional": false,
+      "description": "Minute snap increment on the dial (1, 5, 10, 15, 30…). Inputs always accept 1-minute granularity."
+    },
+    {
+      "name": "cancelLabel",
+      "type": "string",
+      "default": "'Cancel'",
+      "defaultValue": "Cancel",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "cancel-label",
+      "optional": false,
+      "description": "Localized label for the Cancel action."
+    },
+    {
+      "name": "okLabel",
+      "type": "string",
+      "default": "'OK'",
+      "defaultValue": "OK",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "ok-label",
+      "optional": false,
+      "description": "Localized label for the confirm action."
+    },
+    {
+      "name": "hideTrigger",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "hide-trigger",
+      "optional": false,
+      "description": "When true the built-in field trigger is not rendered; open the dialog programmatically via `.show()`."
+    },
+    {
+      "name": "amLabel",
+      "type": "string",
+      "default": "'AM'",
+      "defaultValue": "AM",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "am-label",
+      "optional": false,
+      "description": "Localized AM label (12-hour mode)."
+    },
+    {
+      "name": "pmLabel",
+      "type": "string",
+      "default": "'PM'",
+      "defaultValue": "PM",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "pm-label",
+      "optional": false,
+      "description": "Localized PM label (12-hour mode)."
+    },
+    {
+      "name": "hourLabel",
+      "type": "string",
+      "default": "'Hour'",
+      "defaultValue": "Hour",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "hour-label",
+      "optional": false,
+      "description": "Localized accessible label for the Hour input field. Matches the\n[MD3 Time picker accessibility spec](https://m3.material.io/components/time-pickers/accessibility)\nwhich mandates an \"Hour\" label on the hour text input."
+    },
+    {
+      "name": "minuteLabel",
+      "type": "string",
+      "default": "'Minute'",
+      "defaultValue": "Minute",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "minute-label",
+      "optional": false,
+      "description": "Localized accessible label for the Minute input field. Matches the\n[MD3 Time picker accessibility spec](https://m3.material.io/components/time-pickers/accessibility)\nwhich mandates a \"Minute\" label on the minute text input."
+    },
+    {
+      "name": "toggleDialLabel",
+      "type": "string",
+      "default": "'Toggle dial picker'",
+      "defaultValue": "Toggle dial picker",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "toggle-dial-label",
+      "optional": false,
+      "description": "Localized accessible label for the mode-toggle icon button when the\npicker is currently in the *input* variant (clock icon shown — click\nto switch to the dial). Matches the MD3 accessibility spec entry\n\"Clock button → Toggle dial picker\"."
+    },
+    {
+      "name": "toggleInputLabel",
+      "type": "string",
+      "default": "'Toggle keyboard input'",
+      "defaultValue": "Toggle keyboard input",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "toggle-input-label",
+      "optional": false,
+      "description": "Localized accessible label for the mode-toggle icon button when the\npicker is currently in the *dial* variant (keyboard icon shown —\nclick to switch back to the input). Symmetric extension of the MD3\n\"Toggle dial picker\" naming pattern, since the spec only documents\nthe input-mode label explicitly."
+    },
+    {
+      "name": "periodLabel",
+      "type": "string",
+      "default": "'Period'",
+      "defaultValue": "Period",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "period-label",
+      "optional": false,
+      "description": "Localized accessible label for the AM/PM radio group container.\nWraps the two radio children; individual radio names come from\n`am-label` / `pm-label`."
+    },
+    {
+      "name": "periodLayout",
+      "type": "MdTimePickerPeriodLayout",
+      "default": "'vertical'",
+      "defaultValue": "vertical",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "period-layout",
+      "optional": false,
+      "description": "Layout for the AM/PM period selector. Has no effect when\n`format=\"24h\"` (the toggle is not rendered).\n\n- `vertical` — 52×72px stack next to the minute tile (default).\n- `horizontal` — 216×38px segmented button below HH:MM."
+    },
+    {
+      "name": "orientation",
+      "type": "MdTimePickerOrientation",
+      "default": "'vertical'",
+      "defaultValue": "vertical",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "orientation",
+      "optional": false,
+      "description": "Dialog orientation for the dial variant.\n\n- `vertical` (default) — single-column portrait layout (~328px wide).\n- `horizontal` — two-column landscape layout (~572px wide in both\n  12h and 24h modes since the HH/MM input tiles are 96px in either\n  format). Forces the AM/PM pill into the 216×38px horizontal\n  variant since the 52×72px vertical pill cannot share the left\n  column cleanly. Has no effect when `variant=\"input\"`."
+    },
+    {
+      "name": "responsive",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "responsive",
+      "optional": false,
+      "description": "Adaptive layout policy. Per the MD3 spec the picker should swap\norientation or variant based on the viewport so the dial never\nhas to scroll. When `responsive` is enabled the dialog\nautomatically:\n\n  • Falls back to `variant=\"input\"` when the viewport height is\n    too short to fit the 256px dial (default threshold: 460px),\n    matching the spec line \"Time pickers can fallback to the\n    input time picker when there isn't enough vertical real\n    estate to present the landscape orientation without\n    scrolling\".\n  • Promotes the dial variant to `orientation=\"horizontal\"`\n    when the viewport is wide enough for the 572/608px landscape\n    dialog (default threshold: width ≥ 720px AND width > height),\n    matching \"the time picker can change to landscape orientation\n    on larger breakpoints or when viewport height is limited\".\n\nThe `variant` / `orientation` props remain the *preference*\nthe picker tries to honor — adaptive overrides only kick in\nwhen the viewport literally cannot fit them. Default `false`\nfor backward compatibility; flip to `true` on new integrations\nto get the canonical MD3 adaptive layout."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "validationMessage",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "isOpen",
+      "type": "boolean",
+      "initializer": "false"
+    },
+    {
+      "name": "mode",
+      "type": "MdTimePickerMode",
+      "initializer": "'dial'"
+    },
+    {
+      "name": "selecting",
+      "type": "MdTimePickerSelection",
+      "initializer": "'hour'"
+    },
+    {
+      "name": "draftHours",
+      "type": "number",
+      "initializer": "12"
+    },
+    {
+      "name": "draftMinutes",
+      "type": "number",
+      "initializer": "0"
+    },
+    {
+      "name": "hourInputValue",
+      "type": "string",
+      "initializer": "''"
+    },
+    {
+      "name": "minuteInputValue",
+      "type": "string",
+      "initializer": "''"
+    },
+    {
+      "name": "hourInputError",
+      "type": "boolean",
+      "initializer": "false"
+    },
+    {
+      "name": "minuteInputError",
+      "type": "boolean",
+      "initializer": "false"
+    },
+    {
+      "name": "viewportWidth",
+      "type": "number",
+      "initializer": "0"
+    },
+    {
+      "name": "viewportHeight",
+      "type": "number",
+      "initializer": "0"
+    },
+    {
+      "name": "formDisabled",
+      "type": "boolean",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "MdTimePickerChangeDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdInput",
+      "detail": "MdTimePickerChangeDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdClose",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdModeChange",
+      "detail": "MdTimePickerModeChangeDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "hide",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "checkValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "reportValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "getValidity",
+      "parameters": [],
+      "returnType": "Promise<{ valid: boolean; validationMessage: string } & Partial<ValidityState>>"
+    }
+  ],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "period-am",
+      "description": "AM button"
+    },
+    {
+      "name": "period-pm",
+      "description": "PM button"
+    },
+    {
+      "name": "trigger",
+      "description": "Composed md-text-field that opens the dialog"
+    },
+    {
+      "name": "trigger-icon",
+      "description": "Schedule icon slotted into trigger's leading slot"
+    },
+    {
+      "name": "period-toggle",
+      "description": "AM/PM toggle group"
+    },
+    {
+      "name": "period-am-ripple"
+    },
+    {
+      "name": "period-pm-ripple"
+    },
+    {
+      "name": "dial-wrap",
+      "description": "Wrapper around the dial (dial variant only)"
+    },
+    {
+      "name": "dial",
+      "description": "Dial surface (drag target; dial variant only)"
+    },
+    {
+      "name": "dial-hand",
+      "description": "Selection hand (dial variant only)"
+    },
+    {
+      "name": "input-area",
+      "description": "Container for the typeable HH/MM input row"
+    },
+    {
+      "name": "input-hour",
+      "description": "HH text input tile"
+    },
+    {
+      "name": "input-minute",
+      "description": "MM text input tile"
+    },
+    {
+      "name": "time-area",
+      "description": "Dial-variant wrapper around input-area + the"
+    },
+    {
+      "name": "scrim",
+      "description": "Modal scrim"
+    },
+    {
+      "name": "dialog",
+      "description": "Dialog surface"
+    },
+    {
+      "name": "headline",
+      "description": "Headline label (\"Enter time\" / \"Select time\")"
+    },
+    {
+      "name": "body"
+    },
+    {
+      "name": "footer",
+      "description": "Footer with mode toggle + actions"
+    },
+    {
+      "name": "toggle-mode",
+      "description": "Icon button switching dial<->input"
+    },
+    {
+      "name": "actions",
+      "description": "Action button row (Cancel / OK)"
+    },
+    {
+      "name": "cancel-button",
+      "description": "Cancel button"
+    },
+    {
+      "name": "confirm-button",
+      "description": "OK (confirm) button"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-time-picker-trigger-color",
+      "description": "Trigger label/value color"
+    },
+    {
+      "name": "--md-time-picker-trigger-outline-color",
+      "description": "Trigger outline color"
+    },
+    {
+      "name": "--md-time-picker-trigger-hover-color",
+      "description": "Trigger leading-icon color on hover"
+    },
+    {
+      "name": "--md-time-picker-trigger-focus-color",
+      "description": "Trigger focus indicator color"
+    },
+    {
+      "name": "--md-time-picker-trigger-icon-color",
+      "description": "Trigger leading icon color"
+    },
+    {
+      "name": "--md-time-picker-dialog-color",
+      "description": "Dialog surface color"
+    },
+    {
+      "name": "--md-time-picker-dialog-on-color",
+      "description": "Dialog text color"
+    },
+    {
+      "name": "--md-time-picker-scrim-color",
+      "description": "Modal scrim color (rgba)"
+    },
+    {
+      "name": "--md-time-picker-headline-color",
+      "description": "Headline label color"
+    },
+    {
+      "name": "--md-time-picker-period-bg",
+      "description": "Period (AM/PM) container bg"
+    },
+    {
+      "name": "--md-time-picker-period-color",
+      "description": "Period (AM/PM) text color"
+    },
+    {
+      "name": "--md-time-picker-period-active-bg",
+      "description": "Period selected bg"
+    },
+    {
+      "name": "--md-time-picker-period-active-color",
+      "description": "Period selected color"
+    },
+    {
+      "name": "--md-time-picker-period-outline-color",
+      "description": "Period outline color"
+    },
+    {
+      "name": "--md-time-picker-period-hover-opacity",
+      "description": "Period state-layer opacity on hover (e.g. 8% / 12%)"
+    },
+    {
+      "name": "--md-time-picker-dial-bg",
+      "description": "Dial surface color"
+    },
+    {
+      "name": "--md-time-picker-dial-number-color",
+      "description": "Dial number text color"
+    },
+    {
+      "name": "--md-time-picker-dial-number-active-color",
+      "description": "Selected number color"
+    },
+    {
+      "name": "--md-time-picker-dial-hand-color",
+      "description": "Hand / centre-dot color"
+    },
+    {
+      "name": "--md-time-picker-input-bg",
+      "description": "HH/MM tile bg (inactive)"
+    },
+    {
+      "name": "--md-time-picker-input-color",
+      "description": "HH/MM tile text color (inactive)"
+    },
+    {
+      "name": "--md-time-picker-input-active-bg",
+      "description": "HH/MM tile bg when focused (default = primary-container)"
+    },
+    {
+      "name": "--md-time-picker-input-active-color",
+      "description": "HH/MM tile text when focused (default = on-primary-container)"
+    },
+    {
+      "name": "--md-time-picker-input-outline-color",
+      "description": "HH/MM tile resting outline color (default transparent)"
+    },
+    {
+      "name": "--md-time-picker-input-error-color",
+      "description": "Error outline / hint color"
+    },
+    {
+      "name": "--md-time-picker-input-hint-color",
+      "description": "\"Hour\" / \"Minute\" helper-label color"
+    },
+    {
+      "name": "--md-time-picker-input-separator-color",
+      "description": "Colon glyph between HH and MM"
+    },
+    {
+      "name": "--md-time-picker-input-hover-opacity",
+      "description": "HH/MM state-layer opacity (e.g. 8%)"
+    },
+    {
+      "name": "--md-time-picker-action-color",
+      "description": "Cancel label color"
+    },
+    {
+      "name": "--md-time-picker-action-primary-color",
+      "description": "OK label color"
+    },
+    {
+      "name": "--md-time-picker-action-cancel-bg",
+      "description": "Cancel button container color (default transparent — set to apply a tonal/filled style)"
+    },
+    {
+      "name": "--md-time-picker-action-confirm-bg",
+      "description": "OK button container color (default transparent — set to apply a tonal/filled style)"
+    },
+    {
+      "name": "--md-time-picker-toggle-icon-color",
+      "description": "Mode-toggle icon color"
+    },
+    {
+      "name": "--md-time-picker-toggle-bg",
+      "description": "Mode-toggle container color (default transparent)"
+    },
+    {
+      "name": "--md-time-picker-trigger-shape",
+      "description": "Trigger corner-radius (piped onto md-text-field)"
+    },
+    {
+      "name": "--md-time-picker-dialog-shape",
+      "description": "Dialog corner-radius"
+    },
+    {
+      "name": "--md-time-picker-input-shape",
+      "description": "HH/MM tile corner-radius (canonical name; --md-time-picker-time-display-shape kept as back-compat alias)"
+    },
+    {
+      "name": "--md-time-picker-period-shape",
+      "description": "AM/PM container corner-radius"
+    },
+    {
+      "name": "--md-time-picker-action-shape",
+      "description": "Cancel / OK button corner-radius (piped onto md-button)"
+    },
+    {
+      "name": "--md-time-picker-toggle-shape",
+      "description": "Mode-toggle corner-radius (piped onto md-icon-button)"
+    },
+    {
+      "name": "--md-time-picker-trigger-min-width",
+      "description": "Preferred intrinsic trigger width (default 240px)"
+    },
+    {
+      "name": "--md-time-picker-trigger-icon-size",
+      "description": "Trigger leading icon font-size (default 24px, tapers with density)"
+    },
+    {
+      "name": "--md-time-picker-dialog-padding",
+      "description": "Dialog internal padding (default 24px)"
+    },
+    {
+      "name": "--md-time-picker-dialog-min-width",
+      "description": "Dialog width in portrait / input variants (default 328px)"
+    },
+    {
+      "name": "--md-time-picker-dialog-horizontal-width-12h",
+      "description": "Horizontal dial dialog width in 12h mode (default 572px)"
+    },
+    {
+      "name": "--md-time-picker-dialog-horizontal-width-24h",
+      "description": "Horizontal dial dialog width in 24h mode (default 608px)"
+    },
+    {
+      "name": "--md-time-picker-input-width",
+      "description": "HH/MM tile inline-size (default 96px = 4/3 of the height; derived from the font unless set)"
+    },
+    {
+      "name": "--md-time-picker-input-height",
+      "description": "HH/MM tile block-size (default 72px = 1.6 x the font; derived from the font unless set)"
+    },
+    {
+      "name": "--md-time-picker-input-border-width",
+      "description": "HH/MM tile border width (default 2px)"
+    },
+    {
+      "name": "--md-time-picker-input-separator-width",
+      "description": "Colon column width (default 24px)"
+    },
+    {
+      "name": "--md-time-picker-input-hint-gap",
+      "description": "Gap between tile and \"Hour\" / \"Minute\" hint (default 4px)"
+    },
+    {
+      "name": "--md-time-picker-period-outline-width",
+      "description": "AM/PM container border width (default 1px)"
+    },
+    {
+      "name": "--md-time-picker-period-vertical-width",
+      "description": "AM/PM vertical-stack width (default 52px)"
+    },
+    {
+      "name": "--md-time-picker-period-vertical-height",
+      "description": "AM/PM vertical-stack height in dial variant (default 80px)"
+    },
+    {
+      "name": "--md-time-picker-period-vertical-height-input",
+      "description": "AM/PM vertical-stack height in input variant (default 72px)"
+    },
+    {
+      "name": "--md-time-picker-period-horizontal-width",
+      "description": "AM/PM horizontal-pill width (default 216px)"
+    },
+    {
+      "name": "--md-time-picker-period-horizontal-height",
+      "description": "AM/PM horizontal-pill height (default 38px)"
+    },
+    {
+      "name": "--md-time-picker-dial-size",
+      "description": "Dial face diameter (default 256px)"
+    },
+    {
+      "name": "--md-time-picker-dial-target-size",
+      "description": "Per-number touch-target diameter (default 48px)"
+    },
+    {
+      "name": "--md-time-picker-dial-center-size",
+      "description": "Centre-dot diameter (default 8px)"
+    },
+    {
+      "name": "--md-time-picker-dial-hand-width",
+      "description": "Hand-line stroke width (default 2px)"
+    },
+    {
+      "name": "--md-time-picker-hand-length",
+      "description": "Hand-line length override (default: computed — 100%, ~62% on the 24h inner ring)"
+    },
+    {
+      "name": "--md-time-picker-footer-gap",
+      "description": "Gap between mode-toggle and actions (default 8px)"
+    },
+    {
+      "name": "--md-time-picker-actions-gap",
+      "description": "Gap between Cancel and OK (default 8px)"
+    },
+    {
+      "name": "--md-time-picker-toggle-icon-size",
+      "description": "Mode-toggle icon font-size (default 24px, tapers with density)"
+    },
+    {
+      "name": "--md-time-picker-headline-spacing",
+      "description": "Margin below headline (default 20px)"
+    },
+    {
+      "name": "--md-time-picker-headline-font-size",
+      "description": "Headline font-size (default label-medium = 12px)"
+    },
+    {
+      "name": "--md-time-picker-headline-font-weight",
+      "description": "Headline font-weight (default 500)"
+    },
+    {
+      "name": "--md-time-picker-input-font-size",
+      "description": "HH/MM tile font-size (default display-medium = 45px)"
+    },
+    {
+      "name": "--md-time-picker-input-font-weight",
+      "description": "HH/MM tile font-weight (default 400)"
+    },
+    {
+      "name": "--md-time-picker-period-font-size",
+      "description": "AM/PM label font-size (default 14px)"
+    },
+    {
+      "name": "--md-time-picker-period-font-weight",
+      "description": "AM/PM label font-weight (default 500)"
+    },
+    {
+      "name": "--md-time-picker-dial-number-font-size",
+      "description": "Dial number font-size (default body-large = 16px)"
+    },
+    {
+      "name": "--md-time-picker-dial-number-font-weight",
+      "description": "Dial number resting font-weight (default 400)"
+    },
+    {
+      "name": "--md-time-picker-dial-number-active-font-weight",
+      "description": "Dial number active font-weight (default 500)"
+    },
+    {
+      "name": "--md-time-picker-dialog-enter-duration",
+      "description": "Dialog open animation duration (default 500ms)"
+    },
+    {
+      "name": "--md-time-picker-mode-swap-duration",
+      "description": "Dial⇄input swap animation duration (default 450ms)"
+    },
+    {
+      "name": "--md-time-picker-motion-easing",
+      "description": "Easing curve shared by both entry animations (default emphasized-decelerate)"
+    },
+    {
+      "name": "--md-time-picker-dialog-elevation",
+      "description": "Dialog box-shadow"
+    },
+    {
+      "name": "--md-time-picker-time-display-shape"
+    },
+    {
+      "name": "--md-time-picker-input-active-outline-color"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-time-picker': true,\n          [`md-time-picker--${this.variant}`]: true,\n          [`md-time-picker--format-${this.format}`]: true,\n          'md-time-picker--open': this.isOpen,\n          'md-time-picker--disabled': this.isDisabled,\n        }"
+      },
+      {
+        "name": "onKeyDown",
+        "value": "this.onHostKeyDown"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderTrigger()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderDialog()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "HTML_FORM",
+      "severity": "warning",
+      "message": "HTML form association requires explicit native form state.",
+      "line": 138
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 513
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 924
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Document access requires a native adapter.",
+      "line": 958
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 1081
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 1466
+    },
+    {
+      "code": "DOM_MUTATION",
+      "severity": "warning",
+      "message": "classList depends on browser semantics and requires a native adapter.",
+      "line": 1779
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 129
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-time-picker/md-time-picker.tsx",
+    "styleUrl": "md-time-picker.css",
+    "shadow": true,
+    "formAssociated": true,
+    "sha256": "7237e385bc8628e9f5e5d6b91bef0d90ed59095c0d5a102ca3b787169cb9ca53"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_trigger-color",
+          "value": "var(--md-time-picker-trigger-color, var(--md-sys-color-on-surface, #1c1b1f))",
+          "important": false
+        },
+        {
+          "property": "--_trigger-outline-color",
+          "value": "var(--md-time-picker-trigger-outline-color, var(--md-sys-color-outline, #79747e))",
+          "important": false
+        },
+        {
+          "property": "--_trigger-hover-color",
+          "value": "var(--md-time-picker-trigger-hover-color, var(--md-sys-color-on-surface, #1c1b1f))",
+          "important": false
+        },
+        {
+          "property": "--_trigger-focus-color",
+          "value": "var(--md-time-picker-trigger-focus-color, var(--md-sys-color-primary, #6750a4))",
+          "important": false
+        },
+        {
+          "property": "--_trigger-icon-color",
+          "value": "var(--md-time-picker-trigger-icon-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_dialog-color",
+          "value": "var(--md-time-picker-dialog-color, var(--md-sys-color-surface-container-high, #ece6f0))",
+          "important": false
+        },
+        {
+          "property": "--_dialog-on-color",
+          "value": "var(--md-time-picker-dialog-on-color, var(--md-sys-color-on-surface, #1c1b1f))",
+          "important": false
+        },
+        {
+          "property": "--_dialog-shape",
+          "value": "var(--md-time-picker-dialog-shape, var(--md-sys-shape-corner-extra-large, 28px))",
+          "important": false
+        },
+        {
+          "property": "--_dialog-elevation",
+          "value": "var(--md-time-picker-dialog-elevation, var(--md-sys-elevation-3, 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3)))",
+          "important": false
+        },
+        {
+          "property": "--_scrim-color",
+          "value": "var(--md-time-picker-scrim-color, rgba(0, 0, 0, 0.32))",
+          "important": false
+        },
+        {
+          "property": "--_headline-color",
+          "value": "var(--md-time-picker-headline-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_time-display-shape",
+          "value": "var(\n    --md-time-picker-input-shape,\n    var(--md-time-picker-time-display-shape, var(--md-sys-shape-corner-small, 8px))\n  )",
+          "important": false
+        },
+        {
+          "property": "--_period-bg",
+          "value": "var(--md-time-picker-period-bg, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_period-color",
+          "value": "var(--md-time-picker-period-color, var(--md-sys-color-on-surface, #1c1b1f))",
+          "important": false
+        },
+        {
+          "property": "--_period-active-bg",
+          "value": "var(--md-time-picker-period-active-bg, var(--md-sys-color-tertiary-container, #ffd8e4))",
+          "important": false
+        },
+        {
+          "property": "--_period-active-color",
+          "value": "var(--md-time-picker-period-active-color, var(--md-sys-color-on-tertiary-container, #370b1e))",
+          "important": false
+        },
+        {
+          "property": "--_period-outline-color",
+          "value": "var(--md-time-picker-period-outline-color, var(--md-sys-color-outline, #79747e))",
+          "important": false
+        },
+        {
+          "property": "--_dial-bg",
+          "value": "var(--md-time-picker-dial-bg, var(--md-sys-color-surface-container-highest, #e6e0e9))",
+          "important": false
+        },
+        {
+          "property": "--_dial-number-color",
+          "value": "var(--md-time-picker-dial-number-color, var(--md-sys-color-on-surface, #1c1b1f))",
+          "important": false
+        },
+        {
+          "property": "--_dial-number-active-color",
+          "value": "var(--md-time-picker-dial-number-active-color, var(--md-sys-color-on-primary, #ffffff))",
+          "important": false
+        },
+        {
+          "property": "--_dial-hand-color",
+          "value": "var(--md-time-picker-dial-hand-color, var(--md-sys-color-primary, #6750a4))",
+          "important": false
+        },
+        {
+          "property": "--_dial-target-size",
+          "value": "var(--md-time-picker-dial-target-size, 48px)",
+          "important": false
+        },
+        {
+          "property": "--_input-bg",
+          "value": "var(--md-time-picker-input-bg, var(--md-sys-color-surface-container-highest, #e6e0e9))",
+          "important": false
+        },
+        {
+          "property": "--_input-color",
+          "value": "var(--md-time-picker-input-color, var(--md-sys-color-on-surface, #1c1b1f))",
+          "important": false
+        },
+        {
+          "property": "--_input-outline-color",
+          "value": "var(--md-time-picker-input-outline-color, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_input-active-outline-color",
+          "value": "var(--md-time-picker-input-active-outline-color, var(--md-sys-color-primary, #6750a4))",
+          "important": false
+        },
+        {
+          "property": "--_input-error-color",
+          "value": "var(--md-time-picker-input-error-color, var(--md-sys-color-error, #b3261e))",
+          "important": false
+        },
+        {
+          "property": "--_input-hint-color",
+          "value": "var(--md-time-picker-input-hint-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_action-color",
+          "value": "var(--md-time-picker-action-color, var(--md-sys-color-primary, #6750a4))",
+          "important": false
+        },
+        {
+          "property": "--_action-primary-color",
+          "value": "var(--md-time-picker-action-primary-color, var(--md-sys-color-primary, #6750a4))",
+          "important": false
+        },
+        {
+          "property": "--_toggle-icon-color",
+          "value": "var(--md-time-picker-toggle-icon-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_dialog-padding",
+          "value": "var(--md-time-picker-dialog-padding, var(--md-sys-spacing-inset-xl, 24px))",
+          "important": false
+        },
+        {
+          "property": "--_dialog-min-width",
+          "value": "var(--md-time-picker-dialog-min-width, 328px)",
+          "important": false
+        },
+        {
+          "property": "--_dialog-horizontal-width-12h",
+          "value": "var(--md-time-picker-dialog-horizontal-width-12h, 572px)",
+          "important": false
+        },
+        {
+          "property": "--_dialog-horizontal-width-24h",
+          "value": "var(--md-time-picker-dialog-horizontal-width-24h, 608px)",
+          "important": false
+        },
+        {
+          "property": "--_dialog-enter-duration",
+          "value": "var(--md-time-picker-dialog-enter-duration, var(--md-sys-motion-duration-long2, 500ms))",
+          "important": false
+        },
+        {
+          "property": "--_mode-swap-duration",
+          "value": "var(--md-time-picker-mode-swap-duration, var(--md-sys-motion-duration-long1, 450ms))",
+          "important": false
+        },
+        {
+          "property": "--_motion-easing",
+          "value": "var(--md-time-picker-motion-easing, var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)))",
+          "important": false
+        },
+        {
+          "property": "--_trigger-min-width",
+          "value": "var(--md-time-picker-trigger-min-width, 240px)",
+          "important": false
+        },
+        {
+          "property": "--_trigger-icon-size",
+          "value": "var(--md-time-picker-trigger-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_trigger-shape",
+          "value": "var(--md-time-picker-trigger-shape, var(--md-sys-shape-corner-extra-small, 4px))",
+          "important": false
+        },
+        {
+          "property": "--_headline-font-size",
+          "value": "var(--md-time-picker-headline-font-size, max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_headline-font-weight",
+          "value": "var(--md-time-picker-headline-font-weight, var(--md-sys-typescale-label-medium-font-weight, 500))",
+          "important": false
+        },
+        {
+          "property": "--_headline-spacing",
+          "value": "var(--md-time-picker-headline-spacing, max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_input-height",
+          "value": "var(--md-time-picker-input-height, calc(var(--_input-font-size) * 1.6))",
+          "important": false
+        },
+        {
+          "property": "--_input-width",
+          "value": "var(--md-time-picker-input-width, calc(var(--_input-height) * 4 / 3))",
+          "important": false
+        },
+        {
+          "property": "--_input-border-width",
+          "value": "var(--md-time-picker-input-border-width, 2px)",
+          "important": false
+        },
+        {
+          "property": "--_input-font-size",
+          "value": "var(--md-time-picker-input-font-size, max(32px, calc(45px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_input-font-weight",
+          "value": "var(--md-time-picker-input-font-weight, var(--md-sys-typescale-display-medium-font-weight, 400))",
+          "important": false
+        },
+        {
+          "property": "--_input-active-bg",
+          "value": "var(--md-time-picker-input-active-bg, var(--md-sys-color-primary-container, #eaddff))",
+          "important": false
+        },
+        {
+          "property": "--_input-active-color",
+          "value": "var(--md-time-picker-input-active-color, var(--md-sys-color-on-primary-container, #21005d))",
+          "important": false
+        },
+        {
+          "property": "--_input-separator-color",
+          "value": "var(--md-time-picker-input-separator-color, var(--_dialog-on-color))",
+          "important": false
+        },
+        {
+          "property": "--_input-separator-width",
+          "value": "var(--md-time-picker-input-separator-width, 24px)",
+          "important": false
+        },
+        {
+          "property": "--_input-hint-gap",
+          "value": "var(--md-time-picker-input-hint-gap, var(--md-sys-spacing-gap-xs, 4px))",
+          "important": false
+        },
+        {
+          "property": "--_input-hover-opacity",
+          "value": "var(--md-time-picker-input-hover-opacity, 8%)",
+          "important": false
+        },
+        {
+          "property": "--_period-shape",
+          "value": "var(--md-time-picker-period-shape, var(--md-sys-shape-corner-small, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_period-outline-width",
+          "value": "var(--md-time-picker-period-outline-width, 1px)",
+          "important": false
+        },
+        {
+          "property": "--_period-vertical-width",
+          "value": "var(--md-time-picker-period-vertical-width, 52px)",
+          "important": false
+        },
+        {
+          "property": "--_period-vertical-height",
+          "value": "var(--md-time-picker-period-vertical-height, 80px)",
+          "important": false
+        },
+        {
+          "property": "--_period-vertical-height-input",
+          "value": "var(--md-time-picker-period-vertical-height-input, 72px)",
+          "important": false
+        },
+        {
+          "property": "--_period-horizontal-width",
+          "value": "var(--md-time-picker-period-horizontal-width, 216px)",
+          "important": false
+        },
+        {
+          "property": "--_period-horizontal-height",
+          "value": "var(--md-time-picker-period-horizontal-height, 38px)",
+          "important": false
+        },
+        {
+          "property": "--_period-font-size",
+          "value": "var(--md-time-picker-period-font-size, max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_period-font-weight",
+          "value": "var(--md-time-picker-period-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "--_period-hover-opacity",
+          "value": "var(--md-time-picker-period-hover-opacity, 8%)",
+          "important": false
+        },
+        {
+          "property": "--_dial-size",
+          "value": "var(--md-time-picker-dial-size, 256px)",
+          "important": false
+        },
+        {
+          "property": "--_dial-center-size",
+          "value": "var(--md-time-picker-dial-center-size, 8px)",
+          "important": false
+        },
+        {
+          "property": "--_dial-hand-width",
+          "value": "var(--md-time-picker-dial-hand-width, 2px)",
+          "important": false
+        },
+        {
+          "property": "--_dial-number-font-size",
+          "value": "var(--md-time-picker-dial-number-font-size, max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_dial-number-font-weight",
+          "value": "var(--md-time-picker-dial-number-font-weight, var(--md-sys-typescale-body-large-font-weight, 400))",
+          "important": false
+        },
+        {
+          "property": "--_dial-number-active-font-weight",
+          "value": "var(--md-time-picker-dial-number-active-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "--_footer-gap",
+          "value": "var(--md-time-picker-footer-gap, var(--md-sys-spacing-gap-sm, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_actions-gap",
+          "value": "var(--md-time-picker-actions-gap, var(--md-sys-spacing-gap-sm, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_action-shape",
+          "value": "var(--md-time-picker-action-shape, var(--md-sys-shape-corner-full, 9999px))",
+          "important": false
+        },
+        {
+          "property": "--_action-confirm-bg",
+          "value": "var(--md-time-picker-action-confirm-bg, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_action-cancel-bg",
+          "value": "var(--md-time-picker-action-cancel-bg, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_toggle-bg",
+          "value": "var(--md-time-picker-toggle-bg, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_toggle-icon-size",
+          "value": "var(--md-time-picker-toggle-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_toggle-shape",
+          "value": "var(--md-time-picker-toggle-shape, var(--md-sys-shape-corner-full, 9999px))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_dialog-on-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hide-trigger])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "contents",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([disabled])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "not-allowed",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_trigger-min-width)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-label-color",
+          "value": "var(--_trigger-icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-input-color",
+          "value": "var(--_trigger-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-outline-color",
+          "value": "var(--_trigger-outline-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-active-indicator-color",
+          "value": "var(--_trigger-focus-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-icon-color",
+          "value": "var(--_trigger-icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-container-shape",
+          "value": "var(--_trigger-shape)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__field--disabled",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "not-allowed",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__field-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons'), sans-serif",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_trigger-icon-size)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_trigger-icon-color)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__field:hover:not(.md-time-picker__field--disabled) .md-time-picker__field-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_trigger-hover-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-time-picker--open) .md-time-picker__field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-text-field-active-indicator-color",
+          "value": "var(--_trigger-focus-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-icon-color",
+          "value": "var(--_trigger-focus-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__scrim",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "fixed",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "var(--md-sys-z-index-popup, 1000)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_scrim-color)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-sys-spacing-inset-xl, 24px)",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-time-picker-scrim-in var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)) forwards",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-time-picker-scrim-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-time-picker-scrim-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dialog",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "var(--_dialog-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_dialog-on-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_dialog-shape)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--_dialog-elevation)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--_dialog-padding)",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "min(var(--_dialog-min-width), calc(100vw - 48px))",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "calc(100vh - 48px)",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "calc(100dvh - 48px)",
+          "important": false
+        },
+        {
+          "property": "overflow-y",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "overflow-x",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-time-picker-dialog-in var(--_dialog-enter-duration) var(--_motion-easing) both",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center top",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dialog--input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "width",
+          "value": "min(var(--_dialog-min-width), calc(100vw - 48px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dialog--horizontal",
+      "context": null,
+      "declarations": [
+        {
+          "property": "width",
+          "value": "min(var(--_dialog-horizontal-width-12h), calc(100vw - 48px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-time-picker--format-24h) .md-time-picker__dialog--horizontal",
+      "context": null,
+      "declarations": [
+        {
+          "property": "width",
+          "value": "min(var(--_dialog-horizontal-width-24h), calc(100vw - 48px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-time-picker-dialog-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(12px) scale(0.88)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-time-picker-dialog-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(0) scale(1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-time-picker-mode-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(8px) scale(0.96)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-time-picker-mode-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(0) scale(1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__headline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_headline-font-size)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--_headline-font-weight)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-label-medium-letter-spacing, 0.5px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-label-medium-line-height, 16px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_headline-color)",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "margin-block-end",
+          "value": "var(--_headline-spacing)",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__body",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__body--horizontal",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "row",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "column-gap",
+          "value": "52px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__time-area",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__body--horizontal .md-time-picker__dial-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__body--horizontal .md-time-picker__input-area",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-block-end",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__body--horizontal .md-time-picker__period--horizontal",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-block-start",
+          "value": "var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "margin-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "var(--_period-outline-width) solid var(--_period-outline-color)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period--vertical",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_period-shape)",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "var(--md-sys-spacing-inset-md, 12px)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_period-vertical-width)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_period-vertical-height)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input-area .md-time-picker__period--vertical",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "var(--_period-vertical-height-input)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period--horizontal",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "row",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_period-shape)",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "var(--md-sys-spacing-inset-md, 12px)",
+          "important": false
+        },
+        {
+          "property": "margin-block-end",
+          "value": "var(--md-sys-spacing-inset-xl, 24px)",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_period-horizontal-width)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_period-horizontal-height)",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period-btn",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 0",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_period-bg)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_period-color)",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "font",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_period-font-size)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--_period-font-weight)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "0.1px",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color 150ms var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    color 150ms var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period-btn-label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period--vertical .md-time-picker__period-btn",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "50%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period--horizontal .md-time-picker__period-btn",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period-btn:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--_period-color) var(--_period-hover-opacity), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period-btn--active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "var(--_period-active-bg)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_period-active-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period-btn--active:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--_period-active-color) var(--_period-hover-opacity), var(--_period-active-bg))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period-btn:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary, #625b71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period--vertical .md-time-picker__period-btn--am",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-block-end",
+          "value": "var(--_period-outline-width) solid var(--_period-outline-color)",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_period-shape) - var(--_period-outline-width))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_period-shape) - var(--_period-outline-width))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period--vertical .md-time-picker__period-btn--pm",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_period-shape) - var(--_period-outline-width))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_period-shape) - var(--_period-outline-width))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period--horizontal .md-time-picker__period-btn--am",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-inline-end",
+          "value": "var(--_period-outline-width) solid var(--_period-outline-color)",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_period-shape) - var(--_period-outline-width))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "calc(var(--_period-shape) - var(--_period-outline-width))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period--horizontal .md-time-picker__period-btn--pm",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-end-radius",
+          "value": "calc(var(--_period-shape) - var(--_period-outline-width))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_period-shape) - var(--_period-outline-width))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dial-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "margin-block-end",
+          "value": "var(--md-sys-spacing-inset-xl, 24px)",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-time-picker-mode-in\n    var(--_mode-swap-duration)\n    var(--_motion-easing)\n    both",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center top",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dial",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_dial-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_dial-size)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_dial-bg)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "touch-action",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([disabled]) .md-time-picker__dial",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.38",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dial-center",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_dial-center-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_dial-center-size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_dial-hand-color)",
+          "important": false
+        },
+        {
+          "property": "left",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "top",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translate(-50%, -50%)",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dial-hand",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "left",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "top",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "bottom",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "50% 100%",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "rotate(0deg)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform 200ms var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dial-hand-line",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "left",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "top",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "bottom",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_dial-hand-width)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--md-time-picker-hand-length, var(--_hand-length-dynamic, 100%))",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_dial-hand-color)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(-50%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dial-hand-tip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "left",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "top",
+          "value": "calc(100% - var(--md-time-picker-hand-length, var(--_hand-length-dynamic, 100%)))",
+          "important": false
+        },
+        {
+          "property": "bottom",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_dial-target-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_dial-target-size)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_dial-hand-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translate(-50%, -50%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dial-hand-dot",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dial-number",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_dial-target-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_dial-target-size)",
+          "important": false
+        },
+        {
+          "property": "margin-left",
+          "value": "calc(-1 * var(--_dial-target-size) / 2)",
+          "important": false
+        },
+        {
+          "property": "margin-top",
+          "value": "calc(-1 * var(--_dial-target-size) / 2)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, var(--md-sys-typescale-body-large-font, inherit))",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_dial-number-font-size)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--_dial-number-font-weight)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_dial-number-color)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "color 150ms var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "font-variant-numeric",
+          "value": "tabular-nums",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dial-number--inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_dial-number-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dial-number--active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_dial-number-active-color)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--_dial-number-active-font-weight)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input-area",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-block-end",
+          "value": "var(--md-sys-spacing-inset-xl, 24px)",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-time-picker-mode-in\n    var(--_mode-swap-duration)\n    var(--_motion-easing)\n    both",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center top",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input-time",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input-group",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_input-hint-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_input-font-size)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--_input-font-weight)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-display-medium-letter-spacing, 0)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_input-bg)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_input-color)",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "var(--_input-border-width) solid var(--_input-outline-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_time-display-shape)",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "16px",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_input-width)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_input-height)",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "font-variant-numeric",
+          "value": "tabular-nums",
+          "important": false
+        },
+        {
+          "property": "appearance",
+          "value": "textfield",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input::-webkit-outer-spin-button,\n.md-time-picker__input::-webkit-inner-spin-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "appearance",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--_input-color) var(--_input-hover-opacity), var(--_input-bg))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input:focus",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_input-bg)",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "var(--_input-active-outline-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input--active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "var(--_input-active-bg)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_input-active-color)",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input--active:focus",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "var(--_input-active-bg)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_input-active-color)",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "var(--_input-active-outline-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input--active:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "color-mix(\n    in srgb,\n    var(--_input-active-color) var(--_input-hover-opacity),\n    var(--_input-active-bg)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input--error,\n.md-time-picker__input--error:focus",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--_input-error-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_input-error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input-separator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_input-font-size)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--_input-font-weight)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_input-separator-color)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_input-separator-width)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_input-height)",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "flex-start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input-hint",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--md-sys-typescale-body-small-font-size, 12px)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-small-letter-spacing, 0.4px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_input-hint-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input--error ~ .md-time-picker__input-hint",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_input-error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__footer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "space-between",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_footer-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__toggle-mode",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-color",
+          "value": "var(--_toggle-icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--_toggle-icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "var(--_toggle-icon-size)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-color",
+          "value": "var(--_toggle-bg)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-shape",
+          "value": "var(--_toggle-shape)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__actions",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_actions-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__action-btn",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-button-label-color",
+          "value": "var(--_action-color)",
+          "important": false
+        },
+        {
+          "property": "--md-button-container-color",
+          "value": "var(--_action-cancel-bg)",
+          "important": false
+        },
+        {
+          "property": "--md-button-container-shape",
+          "value": "var(--_action-shape)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__action-btn--primary",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-button-label-color",
+          "value": "var(--_action-primary-color)",
+          "important": false
+        },
+        {
+          "property": "--md-button-container-color",
+          "value": "var(--_action-confirm-bg)",
+          "important": false
+        },
+        {
+          "property": "--md-button-container-shape",
+          "value": "var(--_action-shape)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__scrim,\n  .md-time-picker__dialog,\n  .md-time-picker__dial-wrap,\n  .md-time-picker__input-area,\n  .md-time-picker__dial-hand,\n  .md-time-picker__period-btn,\n  .md-time-picker__dial-number,\n  .md-time-picker__input",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "none",
+          "important": true
+        },
+        {
+          "property": "transition",
+          "value": "none",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__sr-status",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "-1px",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "inset(50%)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__dialog",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border",
+          "value": "1px solid CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period,\n  .md-time-picker__input,\n  .md-time-picker__dial",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border",
+          "value": "1px solid CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input:hover,\n  .md-time-picker__period-btn:hover",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background",
+          "value": "Canvas",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "CanvasText",
+          "important": false
+        },
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input:focus",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background",
+          "value": "Canvas",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "CanvasText",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "Highlight",
+          "important": false
+        },
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input--active,\n  .md-time-picker__input--active:hover,\n  .md-time-picker__input--active:focus,\n  .md-time-picker__period-btn--active,\n  .md-time-picker__period-btn--active:hover,\n  .md-time-picker__dial-hand-line,\n  .md-time-picker__dial-hand-tip,\n  .md-time-picker__dial-center",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background",
+          "value": "Highlight",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "HighlightText",
+          "important": false
+        },
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__input--error,\n  .md-time-picker__input--error:focus,\n  .md-time-picker__input--error:hover",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background",
+          "value": "Canvas",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "LinkText",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "LinkText",
+          "important": false
+        },
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period-btn:focus-visible",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "outline-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period--vertical .md-time-picker__period-btn--am",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-block-end-color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period--horizontal .md-time-picker__period-btn--am",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-inline-end-color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-time-picker__period-btn md-ripple",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context([data-theme='dark'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_scrim-color",
+          "value": "var(--md-time-picker-scrim-color, rgba(0, 0, 0, 0.6))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Time Picker",
+  "category": "Selection",
+  "parent": null,
+  "description": "Choose a time, by dial or by typing. 12h/24h formats, min/max bounds with templated validation messages, overnight ranges, and full constraint validation.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-time-picker.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-time-picker/md-time-picker.tsx",
+    "css": "packages/core/src/components/md-time-picker/md-time-picker.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "value",
+        "min",
+        "max",
+        "required",
+        "label",
+        "supportingText",
+        "error",
+        "errorText",
+        "headline",
+        "open",
+        "cancelLabel",
+        "okLabel",
+        "hideTrigger",
+        "valueMissingLabel",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdOpen",
+        "mdClose",
+        "mdCancel",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "variant",
+        "format",
+        "name",
+        "reserveSupportingSpace",
+        "headlineInputLabel",
+        "headlineDialLabel",
+        "rangeUnderflowLabel",
+        "rangeOverflowLabel",
+        "rangeOutsideLabel",
+        "minuteStep",
+        "amLabel",
+        "pmLabel",
+        "hourLabel",
+        "minuteLabel",
+        "toggleDialLabel",
+        "toggleInputLabel",
+        "periodLabel",
+        "periodLayout",
+        "orientation",
+        "responsive",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdModeChange"
+      ],
+      "unsupportedMethods": [
+        "show",
+        "hide",
+        "checkValidity",
+        "reportValidity",
+        "getValidity"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "System DatePicker replaces dial/input variants. Event dates serialize to ISO strings. MinuteStep/12-hour labels and overnight bounds are not supported."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "cancelLabel",
+        "disabled",
+        "error",
+        "errorText",
+        "format",
+        "headline",
+        "hideTrigger",
+        "label",
+        "max",
+        "min",
+        "minuteStep",
+        "okLabel",
+        "open",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdCancel",
+        "mdChange",
+        "mdClose",
+        "mdInput",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "variant",
+        "name",
+        "required",
+        "reserveSupportingSpace",
+        "headlineInputLabel",
+        "headlineDialLabel",
+        "valueMissingLabel",
+        "rangeUnderflowLabel",
+        "rangeOverflowLabel",
+        "rangeOutsideLabel",
+        "amLabel",
+        "pmLabel",
+        "hourLabel",
+        "minuteLabel",
+        "toggleDialLabel",
+        "toggleInputLabel",
+        "periodLabel",
+        "periodLayout",
+        "orientation",
+        "responsive",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdModeChange",
+        "mdValidityChange"
+      ],
+      "unsupportedMethods": [
+        "show",
+        "hide",
+        "checkValidity",
+        "reportValidity",
+        "getValidity"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Uses Material TimePicker; dialog native layout replaces docked web variants."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

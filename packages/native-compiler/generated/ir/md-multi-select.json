@@ -1,0 +1,2821 @@
+{
+  "tag": "md-multi-select",
+  "className": "MdMultiSelect",
+  "properties": [
+    {
+      "name": "valueMissingLabel",
+      "type": "string",
+      "default": "'Please select at least one option'",
+      "defaultValue": "Please select at least one option",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-missing-label",
+      "optional": false,
+      "description": "Localized constraint-validation message shown when `required` is unmet.\n`errorText` still wins when set, so an app-supplied inline message and the\nnative bubble stay in agreement."
+    },
+    {
+      "name": "reserveSupportingSpace",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "reserve-supporting-space",
+      "optional": false,
+      "description": "Always occupy the supporting-text line, even when there is no message, so a\nvalidation error does not push the content below it down. Forwarded to the\nembedded md-text-field. See that component for why it is opt-in."
+    },
+    {
+      "name": "variant",
+      "type": "'filled' | 'outlined'",
+      "default": "'outlined'",
+      "defaultValue": "outlined",
+      "options": [
+        "filled",
+        "outlined"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Visual variant — forwarded to the inner `md-text-field`."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Floating label / accessible name."
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "placeholder",
+      "optional": false,
+      "description": "Placeholder shown when nothing is selected."
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": "Supporting / helper text below the field."
+    },
+    {
+      "name": "error",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "error",
+      "optional": false,
+      "description": "Error state — forwarded to the inner field."
+    },
+    {
+      "name": "errorText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "error-text",
+      "optional": false,
+      "description": "Error text rendered in place of supporting text when `error` is set."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disabled — non-interactive."
+    },
+    {
+      "name": "softDisabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "soft-disabled",
+      "optional": false,
+      "description": "Soft-disabled — disabled visuals but still focusable."
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "required",
+      "optional": false,
+      "description": "Required (form validation parity)."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Density forwarded to the inner field."
+    },
+    {
+      "name": "options",
+      "type": "SelectOptionInit[] | string",
+      "default": "[]",
+      "defaultValue": [],
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "options",
+      "optional": false,
+      "description": "Programmatic options. Slotted `md-select-option` children take precedence.\n\nAccepts the array (property) or a **JSON string** (attribute), so a\nplain-HTML page can declare its data inline instead of reaching for a\nscript. Malformed JSON degrades to an empty list with a console warning."
+    },
+    {
+      "name": "virtualize",
+      "type": "'auto' | 'always' | 'never'",
+      "default": "'auto'",
+      "defaultValue": "auto",
+      "options": [
+        "auto",
+        "always",
+        "never"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "virtualize",
+      "optional": false,
+      "description": "Virtualization mode for large option lists (backed by a WASM data engine):\n  - `'auto'` (default): virtualize only above `VIRTUALIZE_THRESHOLD` rows.\n  - `'always'`: always virtualize.\n  - `'never'`: keep the classic DOM rendering.\nVirtualized rows render label + selection only (no per-row icon /\nsupporting text), assume a uniform row height, and disable \"Select all\"."
+    },
+    {
+      "name": "filterable",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "filterable",
+      "optional": false,
+      "description": "Show a search field in the menu header that filters via the WASM engine."
+    },
+    {
+      "name": "filterMode",
+      "type": "FilterMode",
+      "default": "'substring'",
+      "defaultValue": "substring",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "filter-mode",
+      "optional": false,
+      "description": "Filter strategy used by `filterable` / `setQuery`."
+    },
+    {
+      "name": "rowHeight",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "row-height",
+      "optional": true,
+      "description": "Fixed virtualized row height (px). Auto-measured from the first row if unset."
+    },
+    {
+      "name": "value",
+      "type": "string[]",
+      "default": "[]",
+      "defaultValue": [],
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": "Currently selected values."
+    },
+    {
+      "name": "maxSelected",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max-selected",
+      "optional": false,
+      "description": "Maximum number of selected items. `0` = unlimited."
+    },
+    {
+      "name": "showSelectAll",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "show-select-all",
+      "optional": false,
+      "description": "Render an inline \"Select all\" checkbox at the top of the menu."
+    },
+    {
+      "name": "selectAllLabel",
+      "type": "string",
+      "default": "'Select all'",
+      "defaultValue": "Select all",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "select-all-label",
+      "optional": false,
+      "description": "Label for the \"Select all\" item."
+    },
+    {
+      "name": "placement",
+      "type": "'bottom-start' | 'bottom-end' | 'top-start' | 'top-end'",
+      "default": "'bottom-start'",
+      "defaultValue": "bottom-start",
+      "options": [
+        "bottom-start",
+        "bottom-end",
+        "top-start",
+        "top-end"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "placement",
+      "optional": false,
+      "description": "Menu placement relative to the trigger — forwarded to `md-menu`."
+    },
+    {
+      "name": "maxHeight",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max-height",
+      "optional": true,
+      "description": "Max height of the dropdown menu (px), forwarded to `md-menu`. Virtualized\nlists fall back to 320 when unset (they need a bounded scroll viewport)."
+    },
+    {
+      "name": "matchTriggerWidth",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "match-trigger-width",
+      "optional": false,
+      "description": "Match the dropdown width to the trigger. When `false` the menu sizes to\ncontent. Maps to `md-menu`'s `match-anchor-width`. Default `true`."
+    },
+    {
+      "name": "displayMode",
+      "type": "'chips' | 'chips-inline' | 'count' | 'text'",
+      "default": "'chips'",
+      "defaultValue": "chips",
+      "options": [
+        "chips",
+        "chips-inline",
+        "count",
+        "text"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "display-mode",
+      "optional": false,
+      "description": "How selected values appear in the trigger:\n  - `'chips'` (default): removable chips in a region BELOW the field.\n  - `'chips-inline'`: removable chips INSIDE the trigger input, on a single\n    line — the field keeps its normal height and never grows; chips that\n    overflow are clipped (the open menu is the source of truth).\n  - `'count'`: \"{n} selected\".\n  - `'text'`: comma-joined labels."
+    },
+    {
+      "name": "chipOverflow",
+      "type": "'count' | 'wrap'",
+      "default": "'count'",
+      "defaultValue": "count",
+      "options": [
+        "count",
+        "wrap"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "chip-overflow",
+      "optional": false,
+      "description": "For `display-mode=\"chips-inline\"`, how the in-field chips handle running out\nof room:\n  - `'count'` (default): chips stay on ONE line; the field keeps its normal\n    height and the chips that don't fit collapse into a trailing `+N` counter\n    chip (click it — or the field — to open the menu and manage the full set).\n  - `'wrap'`: chips wrap onto new rows and the field grows to fit them."
+    },
+    {
+      "name": "chipPosition",
+      "type": "'bottom' | 'top' | 'left' | 'right'",
+      "default": "'bottom'",
+      "defaultValue": "bottom",
+      "options": [
+        "bottom",
+        "top",
+        "left",
+        "right"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "chip-position",
+      "optional": false,
+      "description": "Where the removable chips sit relative to the trigger, for `display-mode=\"chips\"`\n(ignored for `chips-inline`/`count`/`text`): `'bottom'` (default), `'top'`,\n`'left'`, or `'right'`. `left`/`right` place the chips beside the trigger and are\nthe natural pairing for `trigger=\"button\"`."
+    },
+    {
+      "name": "trigger",
+      "type": "'field' | 'button'",
+      "default": "'field'",
+      "defaultValue": "field",
+      "options": [
+        "field",
+        "button"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "trigger",
+      "optional": false,
+      "description": "Trigger style: `'field'` (default) is the readonly md-text-field; `'button'` is\na compact button (leading icon + label) that only opens the drawer — the\nselection shows as removable chips beside it (pair with `chip-position`\n`left`/`right`). The button always shows chips regardless of `display-mode`."
+    },
+    {
+      "name": "triggerIcon",
+      "type": "string",
+      "default": "'add'",
+      "defaultValue": "add",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "trigger-icon",
+      "optional": false,
+      "description": "Leading icon (Material Symbol name) for `trigger=\"button\"`."
+    },
+    {
+      "name": "triggerLabel",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "trigger-label",
+      "optional": false,
+      "description": "Button text for `trigger=\"button\"`. Falls back to `label`."
+    },
+    {
+      "name": "countFormatter",
+      "type": "(count: number) => string",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "count-formatter",
+      "optional": true,
+      "description": "Custom formatter for `display-mode=\"count\"`."
+    },
+    {
+      "name": "searchPlaceholder",
+      "type": "string",
+      "default": "'Search…'",
+      "defaultValue": "Search…",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "search-placeholder",
+      "optional": false,
+      "description": "Placeholder for the filter search input (localization)."
+    },
+    {
+      "name": "filterLabel",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "filter-label",
+      "optional": false,
+      "description": "Accessible label for the filter search input. Defaults to \"Filter {label}\"."
+    },
+    {
+      "name": "noResultsText",
+      "type": "string",
+      "default": "'No results'",
+      "defaultValue": "No results",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "no-results-text",
+      "optional": false,
+      "description": "Text shown when the filter matches no options (localization)."
+    },
+    {
+      "name": "noOptionsText",
+      "type": "string",
+      "default": "'No options'",
+      "defaultValue": "No options",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "no-options-text",
+      "optional": false,
+      "description": "Text shown when there are no options at all (localization)."
+    },
+    {
+      "name": "searchingLabel",
+      "type": "string",
+      "default": "'Searching'",
+      "defaultValue": "Searching",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "searching-label",
+      "optional": false,
+      "description": "Accessible label for the search spinner (localization)."
+    },
+    {
+      "name": "loadingText",
+      "type": "string",
+      "default": "'Loading…'",
+      "defaultValue": "Loading…",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "loading-text",
+      "optional": false,
+      "description": "Text shown in the trigger / menu while `loading` is true."
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "loading",
+      "optional": false,
+      "description": "Show a busy state: the trigger shows a spinner instead of the caret and the\nhost is `aria-busy`, and the menu shows a wavy progress bar instead of the\noption list. Use while an async dataset loads (e.g. before/around a large\n`loadOptions`). Replace the trigger spinner with the `loader` slot."
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "clearable",
+      "optional": false,
+      "description": "Show a clear (×) button in the trigger that removes all selections."
+    },
+    {
+      "name": "clearIcon",
+      "type": "string",
+      "default": "'close'",
+      "defaultValue": "close",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "clear-icon",
+      "optional": false,
+      "description": "Material Symbols glyph for the clear button."
+    },
+    {
+      "name": "clearLabel",
+      "type": "string",
+      "default": "'Clear selection'",
+      "defaultValue": "Clear selection",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "clear-label",
+      "optional": false,
+      "description": "Accessible label for the clear button (localization)."
+    },
+    {
+      "name": "dropdownIcon",
+      "type": "string",
+      "default": "'arrow_drop_down'",
+      "defaultValue": "arrow_drop_down",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "dropdown-icon",
+      "optional": false,
+      "description": "Caret glyph (Material Symbol) for the field trigger; rotates 180° when open.\nOverride the whole glyph with the `dropdown-icon` slot."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "name",
+      "optional": false,
+      "description": "Form name. Selected values submit as repeated `name=value` pairs."
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "open",
+      "optional": false,
+      "description": "Open state of the menu. Reflected so `:host([open])` rules apply."
+    }
+  ],
+  "state": [
+    {
+      "name": "validationMessage",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "optionsData",
+      "type": "SelectOptionData[]",
+      "initializer": "[]"
+    },
+    {
+      "name": "triggerId",
+      "type": "inferred",
+      "initializer": "`md-multi-select-${++multiSelectIdCounter}`"
+    },
+    {
+      "name": "hasTriggerLeading",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasTriggerTrailing",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "liveMessage",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "hasSlottedTrigger",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "query",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "inlineVisibleCount",
+      "type": "inferred",
+      "initializer": "Number.POSITIVE_INFINITY"
+    },
+    {
+      "name": "inlineOverflowCount",
+      "type": "inferred",
+      "initializer": "0"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "string[]",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdClose",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdRemove",
+      "detail": "string",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdClear",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "close",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "focusTrigger",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "reset",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "loadOptions",
+      "parameters": [
+        {
+          "name": "source",
+          "type": "SelectOptionInit[] | OptionRowSource"
+        }
+      ],
+      "returnType": "inferred"
+    },
+    {
+      "name": "setQuery",
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string"
+        }
+      ],
+      "returnType": "inferred"
+    },
+    {
+      "name": "getLabels",
+      "parameters": [
+        {
+          "name": "values",
+          "type": "string[]"
+        }
+      ],
+      "returnType": "Promise<Record<string, string>>"
+    },
+    {
+      "name": "getValidity",
+      "parameters": [],
+      "returnType": "Promise<{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }>"
+    },
+    {
+      "name": "checkValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "reportValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "setCustomValidity",
+      "parameters": [
+        {
+          "name": "message",
+          "type": "string"
+        }
+      ],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "trigger"
+    },
+    {
+      "name": "trigger-leading"
+    },
+    {
+      "name": "trigger-trailing"
+    },
+    {
+      "name": "loader"
+    },
+    {
+      "name": "dropdown-icon"
+    },
+    {
+      "name": "menu-header"
+    },
+    {
+      "name": "menu-loader"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "remove"
+    },
+    {
+      "name": "field"
+    },
+    {
+      "name": "loading-spinner"
+    },
+    {
+      "name": "clear"
+    },
+    {
+      "name": "caret-box"
+    },
+    {
+      "name": "caret"
+    },
+    {
+      "name": "field button"
+    },
+    {
+      "name": "button-desc"
+    },
+    {
+      "name": "chip"
+    },
+    {
+      "name": "chips"
+    },
+    {
+      "name": "overflow-chip"
+    },
+    {
+      "name": "listbox"
+    },
+    {
+      "name": "option-icon"
+    },
+    {
+      "name": "empty"
+    },
+    {
+      "name": "menu"
+    },
+    {
+      "name": "menu-header"
+    },
+    {
+      "name": "search-wrap"
+    },
+    {
+      "name": "search"
+    },
+    {
+      "name": "search-spinner"
+    },
+    {
+      "name": "select-all"
+    },
+    {
+      "name": "select-all-item"
+    },
+    {
+      "name": "loading-bar"
+    },
+    {
+      "name": "loading-progress"
+    },
+    {
+      "name": "frame"
+    },
+    {
+      "name": "live-region"
+    },
+    {
+      "name": "field-container"
+    },
+    {
+      "name": "field-input"
+    },
+    {
+      "name": "field-label"
+    },
+    {
+      "name": "chip-remove"
+    },
+    {
+      "name": "chip-label"
+    },
+    {
+      "name": "menu-surface"
+    },
+    {
+      "name": "empty-text"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-multi-select-min-width"
+    },
+    {
+      "name": "--md-multi-select-chip-gap"
+    },
+    {
+      "name": "--md-multi-select-chip-radius"
+    },
+    {
+      "name": "--md-multi-select-caret-color"
+    },
+    {
+      "name": "--md-multi-select-clear-color"
+    },
+    {
+      "name": "--md-multi-select-option-icon-size"
+    },
+    {
+      "name": "--md-multi-select-width"
+    },
+    {
+      "name": "--md-multi-select-frame-gap"
+    },
+    {
+      "name": "--md-multi-select-trigger-width"
+    },
+    {
+      "name": "--md-multi-select-inline-chips-block-start"
+    },
+    {
+      "name": "--md-multi-select-chip-height"
+    },
+    {
+      "name": "--md-multi-select-chip-outline"
+    },
+    {
+      "name": "--md-multi-select-clear-size"
+    },
+    {
+      "name": "--md-multi-select-clear-bg"
+    },
+    {
+      "name": "--md-multi-select-clear-radius"
+    },
+    {
+      "name": "--md-multi-select-clear-icon-size"
+    },
+    {
+      "name": "--md-multi-select-clear-hover-bg"
+    },
+    {
+      "name": "--md-multi-select-clear-focus-ring-width"
+    },
+    {
+      "name": "--md-multi-select-clear-focus-ring-color"
+    },
+    {
+      "name": "--md-multi-select-clear-focus-ring-offset"
+    },
+    {
+      "name": "--md-multi-select-caret-size"
+    },
+    {
+      "name": "--md-multi-select-caret-box-size"
+    },
+    {
+      "name": "--md-multi-select-loader-size"
+    },
+    {
+      "name": "--md-multi-select-spinner-size"
+    },
+    {
+      "name": "--md-multi-select-loading-padding"
+    },
+    {
+      "name": "--md-multi-select-empty-padding"
+    },
+    {
+      "name": "--md-multi-select-empty-color"
+    },
+    {
+      "name": "--md-multi-select-empty-font"
+    },
+    {
+      "name": "--md-multi-select-select-all-divider-width"
+    },
+    {
+      "name": "--md-multi-select-select-all-divider-color"
+    },
+    {
+      "name": "--md-multi-select-option-icon-color"
+    },
+    {
+      "name": "--md-multi-select-search-padding"
+    },
+    {
+      "name": "--md-multi-select-search-color"
+    },
+    {
+      "name": "--md-multi-select-search-bg"
+    },
+    {
+      "name": "--md-multi-select-search-border-width"
+    },
+    {
+      "name": "--md-multi-select-search-border-color"
+    },
+    {
+      "name": "--md-multi-select-search-placeholder-color"
+    },
+    {
+      "name": "--md-multi-select-search-spinner-size"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-multi-select': true,\n          [`md-multi-select--${this.variant}`]: true,\n          'md-multi-select--open': this.open,\n          'md-multi-select--disabled': this.disabled,\n          'md-multi-select--soft-disabled': this.softDisabled,\n          'md-multi-select--loading': this.loading,\n          [`md-multi-select--display-${this.displayMode}`]: true,\n          'md-multi-select--button': this.trigger === 'button' && !this.hasSlottedTrigger,\n          'md-multi-select--slotted-trigger': this.hasSlottedTrigger,\n          [`md-multi-select--chips-${this.chipPosition}`]:\n            this.trigger === 'button' ||\n            this.hasSlottedTrigger ||\n            this.displayMode === 'chips',\n        }"
+      },
+      {
+        "name": "aria-haspopup",
+        "value": "listbox"
+      },
+      {
+        "name": "aria-busy",
+        "value": "this.loading ? 'true' : undefined"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-multi-select__frame"
+          },
+          {
+            "name": "part",
+            "value": "frame"
+          },
+          {
+            "name": "ref",
+            "value": "(el) => (this.frameEl = el as HTMLElement)"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.renderTrigger()"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.renderChips()"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderInlineMeasure()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderMenu()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-multi-select__sr-live"
+          },
+          {
+            "name": "part",
+            "value": "live-region"
+          },
+          {
+            "name": "role",
+            "value": "status"
+          },
+          {
+            "name": "aria-live",
+            "value": "polite"
+          },
+          {
+            "name": "aria-atomic",
+            "value": "true"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.liveMessage"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-multi-select__options"
+          },
+          {
+            "name": "hidden",
+            "value": true
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "onSlotchange",
+                "value": "() => this.refreshOptions()"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "CALLABLE_PROP",
+      "severity": "warning",
+      "message": "Callable props require target-specific callback signatures.",
+      "line": 249
+    },
+    {
+      "code": "HTML_FORM",
+      "severity": "warning",
+      "message": "HTML form association requires explicit native form state.",
+      "line": 91
+    },
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "Native layout measurement must replace ResizeObserver.",
+      "line": 337
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 354
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 354
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 864
+    },
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 1301
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 1304
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 57
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-multi-select/md-multi-select.tsx",
+    "styleUrl": "md-multi-select.css",
+    "shadow": true,
+    "formAssociated": true,
+    "sha256": "a2e5859ca672f89c66f17cd107a6d5c8b642e48aeb04cacb0c55a48900e6b9c4"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-text-field-padding-inline-end",
+          "value": "var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "--_min-width",
+          "value": "var(--md-multi-select-min-width, 200px)",
+          "important": false
+        },
+        {
+          "property": "--_chip-gap",
+          "value": "var(--md-multi-select-chip-gap, var(--md-sys-spacing-gap-xs, 4px))",
+          "important": false
+        },
+        {
+          "property": "--_chip-radius",
+          "value": "var(--md-multi-select-chip-radius, 8px)",
+          "important": false
+        },
+        {
+          "property": "--_caret-color",
+          "value": "var(--md-multi-select-caret-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_clear-color",
+          "value": "var(--md-multi-select-clear-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_option-icon-size",
+          "value": "var(--md-multi-select-option-icon-size, 20px)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--md-multi-select-width, 100%)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--_min-width)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "vertical-align",
+          "value": "bottom",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-cursor",
+          "value": "pointer",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__field::part(input)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-multi-select--display-text) .md-multi-select__field::part(input)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-multi-select--disabled) .md-multi-select__field,\n:host(.md-multi-select--soft-disabled) .md-multi-select__field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "not-allowed",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-cursor",
+          "value": "not-allowed",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-multi-select--disabled) .md-multi-select__field::part(input),\n:host(.md-multi-select--soft-disabled) .md-multi-select__field::part(input)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "not-allowed",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__frame",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-multi-select-frame-gap, max(6px, calc(8px + var(--md-sys-density-scale, 0) * 0.5px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-multi-select--chips-top) .md-multi-select__frame",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "column-reverse",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-multi-select-frame-gap, max(6px, calc(16px + var(--md-sys-density-scale, 0) * 2.5px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-multi-select--chips-left) .md-multi-select__frame,\n:host(.md-multi-select--chips-right) .md-multi-select__frame",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-flow",
+          "value": "row nowrap",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "flex-start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-multi-select--chips-left) .md-multi-select__chips",
+      "context": null,
+      "declarations": [
+        {
+          "property": "order",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-multi-select--chips-left) .md-multi-select__field,\n:host(.md-multi-select--chips-right) .md-multi-select__field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--md-multi-select-trigger-width, max-content)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-multi-select--chips-left) ::slotted([slot='trigger']),\n:host(.md-multi-select--chips-right) ::slotted([slot='trigger'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--md-multi-select-trigger-width, max-content)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-multi-select--chips-left) .md-multi-select__chips,\n:host(.md-multi-select--chips-right) .md-multi-select__chips",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "0 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__chips",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-wrap",
+          "value": "wrap",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_chip-gap)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-multi-select--chips-bottom) .md-multi-select__chips,\n:host(.md-multi-select--chips-top) .md-multi-select__chips",
+      "context": null,
+      "declarations": [
+        {
+          "property": "contain",
+          "value": "inline-size",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__chips md-chip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-chip-container-shape",
+          "value": "var(--_chip-radius)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__button-desc",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-start",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "16px",
+          "important": false
+        },
+        {
+          "property": "font",
+          "value": "var(--md-sys-typescale-body-small, 400 12px/16px Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454f)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__button-desc--error",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-error, #b3261e)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__sr-live",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "-1px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "inset(50%)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__inline-chips",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-wrap",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_chip-gap)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__inline-chips--wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-wrap",
+          "value": "wrap",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        },
+        {
+          "property": "padding-block-start",
+          "value": "var(--md-multi-select-inline-chips-block-start, var(--md-sys-spacing-gap-xs, 4px))",
+          "important": false
+        },
+        {
+          "property": "row-gap",
+          "value": "var(--_chip-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__inline-chips md-chip,\n.md-multi-select__inline-measure md-chip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-chip-container-shape",
+          "value": "var(--_chip-radius)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__measure-clip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__inline-measure",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-wrap",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_chip-gap)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "max-content",
+          "important": false
+        },
+        {
+          "property": "visibility",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__overflow-chip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--md-multi-select-chip-height, 32px)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "1px solid var(--md-multi-select-chip-outline, var(--md-sys-color-outline-variant, #CAC4D0))",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_chip-radius)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        },
+        {
+          "property": "font",
+          "value": "500 var(--md-sys-typescale-label-large-size, 14px) / var(--md-sys-typescale-label-large-line-height, 20px)\n    var(--md-sys-typescale-label-large-font, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__overflow-chip:hover:not(:disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 8%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__overflow-chip:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "2px solid var(--md-sys-color-primary, #6750A4)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__clear",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--md-multi-select-clear-size, 28px)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--md-multi-select-clear-size, 28px)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--md-multi-select-clear-bg, transparent)",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-multi-select-clear-radius, 50%)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_clear-color)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-multi-select-clear-icon-size, 18px)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background var(--md-sys-motion-duration-short2, 100ms) ease",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__clear:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "var(--md-multi-select-clear-hover-bg,\n    color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__clear:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline-width",
+          "value": "var(--md-multi-select-clear-focus-ring-width, 2px)",
+          "important": false
+        },
+        {
+          "property": "outline-style",
+          "value": "solid",
+          "important": false
+        },
+        {
+          "property": "outline-color",
+          "value": "var(--md-multi-select-clear-focus-ring-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "var(--md-multi-select-clear-focus-ring-offset, 1px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__clear .material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--md-multi-select-clear-icon-size, 18px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__field .md-multi-select__caret-box",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__caret",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_caret-color)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-multi-select-caret-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-short4, 200ms)\n    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--md-multi-select-caret-box-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--md-multi-select-caret-box-size, 24px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-multi-select--open) .md-multi-select__caret",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "rotate(180deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__loader",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--md-multi-select-loader-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--md-multi-select-loader-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "--md-loading-indicator-size",
+          "value": "var(--md-multi-select-spinner-size, 22px)",
+          "important": false
+        },
+        {
+          "property": "--md-loading-indicator-shape-size",
+          "value": "var(--md-multi-select-spinner-size, 22px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__loading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--md-multi-select-loading-padding, var(--md-sys-spacing-inset-lg, 16px))",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--md-multi-select-loading-padding, var(--md-sys-spacing-inset-lg, 16px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__loading md-progress-indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-multi-select-empty-padding, var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-multi-select-empty-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "font",
+          "value": "var(--md-multi-select-empty-font, var(--md-sys-typescale-body-medium, 400 14px/20px Roboto, sans-serif))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__select-all",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "border-block-end",
+          "value": "var(--md-multi-select-select-all-divider-width, 1px) solid\n    var(--md-multi-select-select-all-divider-color, var(--md-sys-color-outline-variant, #cac4d0))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "md-menu::part(empty-text)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-multi-select-empty-padding, var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-multi-select-empty-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__option-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-multi-select-option-icon-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_option-icon-size)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_option-icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_option-icon-size)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__caret,\n  .md-multi-select__clear",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__caret",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__clear:focus-visible",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "outline-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__vspacer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__search-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__search",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-multi-select-search-padding, 12px 44px 12px 16px)",
+          "important": false
+        },
+        {
+          "property": "font",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-multi-select-search-color, var(--md-sys-color-on-surface, #1d1b20))",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--md-multi-select-search-bg, var(--md-sys-color-surface-container, #f3edf7))",
+          "important": false
+        },
+        {
+          "property": "border-bottom",
+          "value": "var(--md-multi-select-search-border-width, 1px) solid\n    var(--md-multi-select-search-border-color, var(--md-sys-color-outline-variant, #cac4d0))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__search::placeholder",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-multi-select-search-placeholder-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__search-spinner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "-12px",
+          "important": false
+        },
+        {
+          "property": "--md-loading-indicator-size",
+          "value": "var(--md-multi-select-search-spinner-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "--md-loading-indicator-shape-size",
+          "value": "18px",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Multi Select",
+  "category": "Selection",
+  "parent": null,
+  "description": "Pick several values from a list. Everything md-select does, plus multiple selection shown as removable chips / a count / plain text, an optional select-all row, a selection cap, and a field, button or fully custom trigger.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-multi-select.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-multi-select/md-multi-select.tsx",
+    "css": "packages/core/src/components/md-multi-select/md-multi-select.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "label",
+        "placeholder",
+        "supportingText",
+        "error",
+        "errorText",
+        "required",
+        "options",
+        "value",
+        "maxSelected",
+        "showSelectAll",
+        "selectAllLabel",
+        "displayMode",
+        "searchPlaceholder",
+        "noResultsText",
+        "noOptionsText",
+        "loadingText",
+        "loading",
+        "clearable",
+        "clearLabel",
+        "dropdownIcon",
+        "open",
+        "valueMissingLabel",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdChange",
+        "mdOpen",
+        "mdClose",
+        "mdRemove",
+        "mdClear",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "reserveSupportingSpace",
+        "variant",
+        "density",
+        "virtualize",
+        "filterable",
+        "filterMode",
+        "rowHeight",
+        "placement",
+        "maxHeight",
+        "matchTriggerWidth",
+        "chipOverflow",
+        "chipPosition",
+        "trigger",
+        "triggerIcon",
+        "triggerLabel",
+        "countFormatter",
+        "filterLabel",
+        "searchingLabel",
+        "clearIcon",
+        "name"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "close",
+        "focusTrigger",
+        "reset",
+        "loadOptions",
+        "setQuery",
+        "getLabels",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [
+        "",
+        "trigger",
+        "trigger-leading",
+        "trigger-trailing",
+        "loader",
+        "dropdown-icon",
+        "menu-header",
+        "menu-loader"
+      ],
+      "notes": [
+        "Selection supports chips, remove, clear, disabled options and maximum count; count/text layout and anchor placement differ."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "clearLabel",
+        "clearable",
+        "disabled",
+        "error",
+        "errorText",
+        "filterable",
+        "label",
+        "loading",
+        "maxHeight",
+        "maxSelected",
+        "noOptionsText",
+        "noResultsText",
+        "open",
+        "options",
+        "placeholder",
+        "searchPlaceholder",
+        "selectAllLabel",
+        "showSelectAll",
+        "softDisabled",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdClear",
+        "mdClose",
+        "mdOpen",
+        "mdRemove"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "valueMissingLabel",
+        "reserveSupportingSpace",
+        "variant",
+        "required",
+        "density",
+        "virtualize",
+        "filterMode",
+        "rowHeight",
+        "placement",
+        "matchTriggerWidth",
+        "displayMode",
+        "chipOverflow",
+        "chipPosition",
+        "trigger",
+        "triggerIcon",
+        "triggerLabel",
+        "countFormatter",
+        "filterLabel",
+        "searchingLabel",
+        "loadingText",
+        "clearIcon",
+        "dropdownIcon",
+        "name"
+      ],
+      "unsupportedEvents": [
+        "mdValidityChange"
+      ],
+      "unsupportedMethods": [
+        "show",
+        "close",
+        "focusTrigger",
+        "reset",
+        "loadOptions",
+        "setQuery",
+        "getLabels",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [
+        "trigger",
+        "trigger-leading",
+        "trigger-trailing",
+        "loader",
+        "dropdown-icon",
+        "menu-header",
+        "menu-loader"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

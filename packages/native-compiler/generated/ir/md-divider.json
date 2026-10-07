@@ -1,0 +1,472 @@
+{
+  "tag": "md-divider",
+  "className": "MdDivider",
+  "properties": [
+    {
+      "name": "inset",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "inset",
+      "optional": false,
+      "description": "Middle-inset: 16px margin on both sides"
+    },
+    {
+      "name": "insetStart",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "inset-start",
+      "optional": false,
+      "description": "Inset start only: 16px leading margin, 0px trailing"
+    },
+    {
+      "name": "insetEnd",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "inset-end",
+      "optional": false,
+      "description": "Inset end only: 0px leading margin, 16px trailing"
+    },
+    {
+      "name": "vertical",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "vertical",
+      "optional": false,
+      "description": "Vertical orientation"
+    }
+  ],
+  "state": [],
+  "events": [],
+  "methods": [],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "divider",
+      "description": "The divider element itself (host)"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-divider-color",
+      "description": "Divider line color"
+    },
+    {
+      "name": "--md-divider-thickness",
+      "description": "Line thickness (default 1px)"
+    },
+    {
+      "name": "--md-divider-inset-start",
+      "description": "Start-side inset margin"
+    },
+    {
+      "name": "--md-divider-inset-end",
+      "description": "End-side inset margin"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-divider': true,\n          'md-divider--inset': this.inset,\n          'md-divider--inset-start': this.insetStart,\n          'md-divider--inset-end': this.insetEnd,\n          'md-divider--vertical': this.vertical,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "separator"
+      },
+      {
+        "name": "aria-orientation",
+        "value": "this.vertical ? 'vertical' : 'horizontal'"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-divider__line"
+          },
+          {
+            "name": "part",
+            "value": "divider"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [],
+  "source": {
+    "file": "packages/core/src/components/md-divider/md-divider.tsx",
+    "styleUrl": "md-divider.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "6436b0cd42ee90a0a42287eae5e322fe81e604e4702699d5225ae48dfca17729"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-divider-color, var(--md-sys-color-outline-variant, #CAC4D0))",
+          "important": false
+        },
+        {
+          "property": "--_thickness",
+          "value": "var(--md-divider-thickness, 1px)",
+          "important": false
+        },
+        {
+          "property": "--_inset-start",
+          "value": "var(--md-divider-inset-start, 16px)",
+          "important": false
+        },
+        {
+          "property": "--_inset-end",
+          "value": "var(--md-divider-inset-end, 16px)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_thickness)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-divider__line",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_color)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-divider--inset) .md-divider__line",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "var(--_inset-start)",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "var(--_inset-end)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-divider--inset-start) .md-divider__line",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "var(--_inset-start)",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-divider--inset-end) .md-divider__line",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "var(--_inset-end)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-divider--vertical)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_thickness)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "1em",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "stretch",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-divider--vertical) .md-divider__line",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "stretch",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-divider--vertical.md-divider--inset) .md-divider__line",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "var(--_inset-start)",
+          "important": false
+        },
+        {
+          "property": "margin-block-end",
+          "value": "var(--_inset-end)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-divider--vertical.md-divider--inset-start) .md-divider__line",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "var(--_inset-start)",
+          "important": false
+        },
+        {
+          "property": "margin-block-end",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-divider--vertical.md-divider--inset-end) .md-divider__line",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-block-end",
+          "value": "var(--_inset-end)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-divider__line",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Divider",
+  "category": "Containment",
+  "parent": null,
+  "description": "A thin rule that separates content. Full-bleed or inset, horizontal or vertical. The host always exposes role=\"separator\" with a matching aria-orientation; the painted hairline lives inside the shadow root, so a page-level { margin: 0 } reset cannot wipe its insets.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-divider.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-divider/md-divider.tsx",
+    "css": "packages/core/src/components/md-divider/md-divider.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "inset",
+        "insetStart",
+        "insetEnd",
+        "vertical"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "inset",
+        "insetEnd",
+        "insetStart",
+        "vertical"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

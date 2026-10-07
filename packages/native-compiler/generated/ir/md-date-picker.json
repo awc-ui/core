@@ -1,0 +1,5234 @@
+{
+  "tag": "md-date-picker",
+  "className": "MdDatePicker",
+  "properties": [
+    {
+      "name": "valueMissingLabel",
+      "type": "string",
+      "default": "'Please choose a date.'",
+      "defaultValue": "Please choose a date.",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-missing-label",
+      "optional": false,
+      "description": "Localized constraint-validation message shown when `required` is unmet.\n\nA prop rather than a hardcoded string, matching md-time-picker's\n`value-missing-label`: components stay i18n-engine-agnostic and the\nconsumer localizes through its own dictionary. Native inputs get their\nmessage from the browser's locale for free; a form-associated custom\nelement supplies its own, so leaving this hardcoded would ship an\nEnglish-only form to every locale."
+    },
+    {
+      "name": "reserveSupportingSpace",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "reserve-supporting-space",
+      "optional": false,
+      "description": "Always occupy the supporting-text line, even when there is no message, so a\nvalidation error does not push the content below it down. Forwarded to the\nembedded md-text-field. See that component for why it is opt-in."
+    },
+    {
+      "name": "variant",
+      "type": "'modal' | 'modal-input' | 'docked'",
+      "default": "'modal-input'",
+      "defaultValue": "modal-input",
+      "options": [
+        "modal",
+        "modal-input",
+        "docked"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Presentation variant."
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "value",
+      "optional": false,
+      "description": "Selected date as ISO `YYYY-MM-DD`. Two-way bindable."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "'Date'",
+      "defaultValue": "Date",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Floating label / accessible name for the field."
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "placeholder",
+      "optional": false,
+      "description": "Placeholder shown inside the text-field input."
+    },
+    {
+      "name": "min",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "min",
+      "optional": false,
+      "description": "Earliest selectable date, inclusive, as ISO `YYYY-MM-DD`."
+    },
+    {
+      "name": "max",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max",
+      "optional": false,
+      "description": "Latest selectable date, inclusive, as ISO `YYYY-MM-DD`."
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "open",
+      "optional": false,
+      "description": "Whether the modal / docked panel is open. Two-way bindable."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disabled — blocks all interaction and removes from tab order."
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "required",
+      "optional": false,
+      "description": "Marks the field as required (for form-validation contexts)."
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "clearable",
+      "optional": false,
+      "description": "Show a clear (\"×\") button on the field trigger while a date is selected,\nwhich resets the value (same as calling `clear()`). Applies to the\n`modal-input` and `docked` variants."
+    },
+    {
+      "name": "clearLabel",
+      "type": "string",
+      "default": "'Clear date'",
+      "defaultValue": "Clear date",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "clear-label",
+      "optional": false,
+      "description": "Accessible label for the clear button."
+    },
+    {
+      "name": "error",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "error",
+      "optional": false,
+      "description": "Error state — paints the field with the error color and shows `error-text`."
+    },
+    {
+      "name": "errorText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "error-text",
+      "optional": false,
+      "description": "Error message shown below the field when `error` is true."
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": "Helper text shown below the field. Hidden while an error is displayed."
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "locale",
+      "optional": false,
+      "description": "BCP-47 locale for month/weekday names and date formatting."
+    },
+    {
+      "name": "dateSeparator",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "date-separator",
+      "optional": false,
+      "description": "Character between day, month, and year in the text field (display and\nparsing). Leave empty to use the locale default (e.g. `/` for `en-US`,\n`.` for `de-DE`). The `value` prop and `mdChange` / `mdSelected` events\nalways use ISO `YYYY-MM-DD` regardless of this setting."
+    },
+    {
+      "name": "fieldVariant",
+      "type": "'outlined' | 'filled'",
+      "default": "'outlined'",
+      "defaultValue": "outlined",
+      "options": [
+        "outlined",
+        "filled"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "field-variant",
+      "optional": false,
+      "description": "Visual variant of the trigger `md-text-field` (`modal-input` and `docked`).\nUse `filled` with `--md-date-picker-field-container-color` for branded fills."
+    },
+    {
+      "name": "firstDayOfWeek",
+      "type": "number",
+      "default": "-1",
+      "defaultValue": -1,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "first-day-of-week",
+      "optional": false,
+      "description": "First day of the week (0 = Sunday … 6 = Saturday). `-1` derives it from\nthe locale."
+    },
+    {
+      "name": "headline",
+      "type": "string",
+      "default": "'Select date'",
+      "defaultValue": "Select date",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "headline",
+      "optional": false,
+      "description": "Headline / supporting text shown at the top of the modal header."
+    },
+    {
+      "name": "cancelLabel",
+      "type": "string",
+      "default": "'Cancel'",
+      "defaultValue": "Cancel",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "cancel-label",
+      "optional": false,
+      "description": "Label of the cancel button in the modal action row."
+    },
+    {
+      "name": "okLabel",
+      "type": "string",
+      "default": "'OK'",
+      "defaultValue": "OK",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "ok-label",
+      "optional": false,
+      "description": "Label of the confirm button in the modal action row."
+    },
+    {
+      "name": "selectDateLabel",
+      "type": "string",
+      "default": "'Select date'",
+      "defaultValue": "Select date",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "select-date-label",
+      "optional": false,
+      "description": "Large headline when no date is staged in calendar mode."
+    },
+    {
+      "name": "enterDatesLabel",
+      "type": "string",
+      "default": "'Enter dates'",
+      "defaultValue": "Enter dates",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "enter-dates-label",
+      "optional": false,
+      "description": "Large headline shown in typed-entry (input) mode."
+    },
+    {
+      "name": "invalidDateLabel",
+      "type": "string",
+      "default": "'Invalid date'",
+      "defaultValue": "Invalid date",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "invalid-date-label",
+      "optional": false,
+      "description": "Default error when a typed date cannot be parsed or is out of range."
+    },
+    {
+      "name": "previousMonthLabel",
+      "type": "string",
+      "default": "'Previous month'",
+      "defaultValue": "Previous month",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "previous-month-label",
+      "optional": false,
+      "description": "Accessible label for the \"previous month\" nav chevron."
+    },
+    {
+      "name": "nextMonthLabel",
+      "type": "string",
+      "default": "'Next month'",
+      "defaultValue": "Next month",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "next-month-label",
+      "optional": false,
+      "description": "Accessible label for the \"next month\" nav chevron."
+    },
+    {
+      "name": "previousYearLabel",
+      "type": "string",
+      "default": "'Previous year'",
+      "defaultValue": "Previous year",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "previous-year-label",
+      "optional": false,
+      "description": "Accessible label for the \"previous year\" nav chevron."
+    },
+    {
+      "name": "nextYearLabel",
+      "type": "string",
+      "default": "'Next year'",
+      "defaultValue": "Next year",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "next-year-label",
+      "optional": false,
+      "description": "Accessible label for the \"next year\" nav chevron."
+    },
+    {
+      "name": "chooseMonthLabel",
+      "type": "string",
+      "default": "'Choose month'",
+      "defaultValue": "Choose month",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "choose-month-label",
+      "optional": false,
+      "description": "Accessible label for the docked month menu button."
+    },
+    {
+      "name": "chooseYearLabel",
+      "type": "string",
+      "default": "'Choose year'",
+      "defaultValue": "Choose year",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "choose-year-label",
+      "optional": false,
+      "description": "Accessible label for the docked year menu button."
+    },
+    {
+      "name": "chooseMonthYearLabel",
+      "type": "string",
+      "default": "'Choose a different month and year'",
+      "defaultValue": "Choose a different month and year",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "choose-month-year-label",
+      "optional": false,
+      "description": "Accessible label for the modal month/year toggle button."
+    },
+    {
+      "name": "chooseMonthAndYearLabel",
+      "type": "string",
+      "default": "'Choose month and year'",
+      "defaultValue": "Choose month and year",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "choose-month-and-year-label",
+      "optional": false,
+      "description": "Tooltip suffix on the modal month/year nav button."
+    },
+    {
+      "name": "toggleCalendarLabel",
+      "type": "string",
+      "default": "'Switch to calendar input'",
+      "defaultValue": "Switch to calendar input",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "toggle-calendar-label",
+      "optional": false,
+      "description": "Mode-toggle label when in typed-entry mode (switch to calendar)."
+    },
+    {
+      "name": "toggleTextLabel",
+      "type": "string",
+      "default": "'Switch to text input'",
+      "defaultValue": "Switch to text input",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "toggle-text-label",
+      "optional": false,
+      "description": "Mode-toggle label when in calendar mode (switch to text)."
+    },
+    {
+      "name": "openCalendarLabel",
+      "type": "string",
+      "default": "'Open calendar'",
+      "defaultValue": "Open calendar",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "open-calendar-label",
+      "optional": false,
+      "description": "Trigger calendar icon label when the panel is closed."
+    },
+    {
+      "name": "closeCalendarLabel",
+      "type": "string",
+      "default": "'Close calendar'",
+      "defaultValue": "Close calendar",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "close-calendar-label",
+      "optional": false,
+      "description": "Trigger calendar icon label when the panel is open."
+    },
+    {
+      "name": "calendarIcon",
+      "type": "string",
+      "default": "'calendar_today'",
+      "defaultValue": "calendar_today",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "calendar-icon",
+      "optional": false,
+      "description": "Material Symbols name for the trailing calendar toggle on the field.\nIgnored when a `calendar-icon` slot is provided."
+    },
+    {
+      "name": "yearGridLabel",
+      "type": "string",
+      "default": "'Year'",
+      "defaultValue": "Year",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "year-grid-label",
+      "optional": false,
+      "description": "Accessible label for the modal year-selection grid."
+    },
+    {
+      "name": "scrimDismissible",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "scrim-dismissible",
+      "optional": false,
+      "description": "Clicking the modal scrim closes the picker when true."
+    },
+    {
+      "name": "outsideClickDismissible",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "outside-click-dismissible",
+      "optional": false,
+      "description": "Clicking outside a DOCKED panel dismisses it (like `scrim-dismissible` for\nthe modal, which has a scrim to catch the click and a docked panel does not).\n\nSet `false` to keep the panel open until Cancel / OK / Esc — useful when the\npicker sits inside another popup whose own outside-click handling would\notherwise fight it, or when a stray click should not discard staged input.\n\nDismissing this way is a cancel: it emits `mdCancel` and discards staging,\nexactly as the modal scrim does."
+    },
+    {
+      "name": "commitOnSelect",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "commit-on-select",
+      "optional": false,
+      "description": "Commit a day the moment it is clicked, instead of staging it behind the\nCancel / OK row.\n\nBy default every variant STAGES a day click (`mdSelected`) and commits only\non OK (`mdChange`). With this set the two collapse into one interaction:\nthe click stages and commits together, the panel dismisses, and the built-in\naction row is not rendered at all — there is nothing left for it to confirm.\n\nSuits a low-stakes, reversible field. Keep the default when the choice is\nexpensive to get wrong and the user deserves an explicit confirm step."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "name",
+      "optional": false,
+      "description": "Form-association name attribute."
+    },
+    {
+      "name": "isDateDisabled",
+      "type": "(date: Date) => boolean",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "is-date-disabled",
+      "optional": true,
+      "description": "Predicate that disables individual dates (return `true` to disable)."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "validationMessage",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "focused",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "inputDraft",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "viewYear",
+      "type": "number",
+      "initializer": "new Date().getFullYear()"
+    },
+    {
+      "name": "viewMonth",
+      "type": "number",
+      "initializer": "new Date().getMonth()"
+    },
+    {
+      "name": "viewMode",
+      "type": "'calendar' | 'year'",
+      "initializer": "'calendar'"
+    },
+    {
+      "name": "inputMode",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "focusedDate",
+      "type": "Date",
+      "initializer": "new Date()"
+    },
+    {
+      "name": "pendingDate",
+      "type": "Date | null",
+      "initializer": "null"
+    },
+    {
+      "name": "hasSlottedHeader",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedActions",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedLeading",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedCalendarIcon",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "monthMenuOpen",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "yearMenuOpen",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "selectionMenuClosing",
+      "type": "'month' | 'year' | null",
+      "initializer": "null"
+    },
+    {
+      "name": "dockedCalendarBloom",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "gridSlideDirection",
+      "type": "'forward' | 'backward' | null",
+      "initializer": "null"
+    },
+    {
+      "name": "yearViewClosing",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "modalCalendarBloom",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "panelClosing",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "dockedPanelAlign",
+      "type": "'start' | 'end'",
+      "initializer": "'start'"
+    },
+    {
+      "name": "dockedPanelPlacement",
+      "type": "'below' | 'above'",
+      "initializer": "'below'"
+    },
+    {
+      "name": "dockedPanelMaxBlockSize",
+      "type": "string | null",
+      "initializer": "null"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "MdDatePickerChangeDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdSelected",
+      "detail": "MdDatePickerSelectedDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdInput",
+      "detail": "{ value: string }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdClose",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdViewChange",
+      "detail": "MdDatePickerViewChangeDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdMenuOpen",
+      "detail": "MdDatePickerMenuOpenDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdMenuSelect",
+      "detail": "MdDatePickerMenuSelectDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdModeChange",
+      "detail": "MdDatePickerModeChangeDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "close",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "clear",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "focusInput",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "getValidity",
+      "parameters": [],
+      "returnType": "Promise<{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }>"
+    },
+    {
+      "name": "checkValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "reportValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "setCustomValidity",
+      "parameters": [
+        {
+          "name": "message",
+          "type": "string"
+        }
+      ],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [
+    {
+      "name": "leading-icon",
+      "description": "Custom leading icon for the field"
+    },
+    {
+      "name": "calendar-icon",
+      "description": "Custom trailing calendar toggle icon (replaces calendar-icon prop)"
+    },
+    {
+      "name": "header",
+      "description": "Replaces the entire modal header"
+    },
+    {
+      "name": "actions",
+      "description": "Replaces the Cancel / OK action row"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "menu-caret"
+    },
+    {
+      "name": "year-grid-wrap",
+      "description": "Animated wrapper for modal year grid"
+    },
+    {
+      "name": "month-menu",
+      "description": "Docked inline baseline md-menu (month selection)"
+    },
+    {
+      "name": "year-menu",
+      "description": "Docked inline baseline md-menu (year selection)"
+    },
+    {
+      "name": "entry-input",
+      "description": "In-dialog outlined md-text-field (single modal input)"
+    },
+    {
+      "name": "field",
+      "description": "Text-field container (trigger)"
+    },
+    {
+      "name": "clear-button"
+    },
+    {
+      "name": "calendar-button",
+      "description": "Trailing calendar toggle button"
+    },
+    {
+      "name": "month-toggle",
+      "description": "Month-year menu button (opens year grid; modal; same as menu-button)"
+    },
+    {
+      "name": "nav",
+      "description": "Month label + prev/next nav row (also docked nav row)"
+    },
+    {
+      "name": "month-menu-button",
+      "description": "Docked month dropdown menu button (\"Aug ▾\")"
+    },
+    {
+      "name": "year-menu-button",
+      "description": "Docked year dropdown menu button (\"2025 ▾\")"
+    },
+    {
+      "name": "selection-divider",
+      "description": "Divider between docked nav and month/year menu"
+    },
+    {
+      "name": "month-menu-wrap"
+    },
+    {
+      "name": "year-menu-wrap"
+    },
+    {
+      "name": "calendar",
+      "description": "Calendar grid wrapper"
+    },
+    {
+      "name": "weekdays",
+      "description": "Weekday header row"
+    },
+    {
+      "name": "weekday",
+      "description": "A single weekday column header"
+    },
+    {
+      "name": "grid",
+      "description": "Day-cell grid"
+    },
+    {
+      "name": "week"
+    },
+    {
+      "name": "year-grid-scroll year-grid-viewport"
+    },
+    {
+      "name": "year-grid",
+      "description": "Year-selection grid (modal)"
+    },
+    {
+      "name": "year-row"
+    },
+    {
+      "name": "entry",
+      "description": "In-dialog text-entry region"
+    },
+    {
+      "name": "header",
+      "description": "Modal header region"
+    },
+    {
+      "name": "supporting",
+      "description": "Header supporting text"
+    },
+    {
+      "name": "headline",
+      "description": "Large selected-date headline"
+    },
+    {
+      "name": "mode-toggle",
+      "description": "Calendar / text-input switch button"
+    },
+    {
+      "name": "actions",
+      "description": "Cancel / OK action row"
+    },
+    {
+      "name": "cancel-button",
+      "description": "Cancel action"
+    },
+    {
+      "name": "ok-button",
+      "description": "Confirm action"
+    },
+    {
+      "name": "body",
+      "description": "Calendar / year / input body region"
+    },
+    {
+      "name": "docked-below-nav"
+    },
+    {
+      "name": "panel",
+      "description": "Dialog / docked popup surface"
+    },
+    {
+      "name": "modal",
+      "description": "Modal wrapper (scrim + panel)"
+    },
+    {
+      "name": "scrim",
+      "description": "Modal scrim overlay"
+    },
+    {
+      "name": "month-menu-viewport"
+    },
+    {
+      "name": "year-menu-viewport"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-date-picker-container-color",
+      "description": "Dialog / popup body background"
+    },
+    {
+      "name": "--md-date-picker-header-color",
+      "description": "Modal header background"
+    },
+    {
+      "name": "--md-date-picker-container-shape",
+      "description": "Dialog / popup corner radius"
+    },
+    {
+      "name": "--md-date-picker-field-color",
+      "description": "Text-field resting outline color"
+    },
+    {
+      "name": "--md-date-picker-field-focus-color",
+      "description": "Text-field focused outline / label color"
+    },
+    {
+      "name": "--md-date-picker-field-text-color",
+      "description": "Text-field input text color"
+    },
+    {
+      "name": "--md-date-picker-trigger-max-width",
+      "description": "Trigger field max inline size (360px; `none` lifts it)"
+    },
+    {
+      "name": "--md-date-picker-field-filled-pill",
+      "description": "Filled field: 1 for capsule/pill (all corners)"
+    },
+    {
+      "name": "--md-date-picker-field-supporting-color",
+      "description": "Supporting text below the field"
+    },
+    {
+      "name": "--md-date-picker-label-color",
+      "description": "Floating label color"
+    },
+    {
+      "name": "--md-date-picker-headline-color",
+      "description": "Modal headline (selected date) color"
+    },
+    {
+      "name": "--md-date-picker-supporting-color",
+      "description": "Header supporting-text color"
+    },
+    {
+      "name": "--md-date-picker-weekday-color",
+      "description": "Weekday column-header color"
+    },
+    {
+      "name": "--md-date-picker-day-color",
+      "description": "Day cell text color"
+    },
+    {
+      "name": "--md-date-picker-day-selected-color",
+      "description": "Selected day text color"
+    },
+    {
+      "name": "--md-date-picker-day-selected-bg",
+      "description": "Selected day container color"
+    },
+    {
+      "name": "--md-date-picker-day-selected-shape",
+      "description": "Selected day corner radius (overrides morph)"
+    },
+    {
+      "name": "--md-date-picker-day-today-shape",
+      "description": "Today ring corner radius"
+    },
+    {
+      "name": "--md-date-picker-today-outline-color",
+      "description": "Today's outline ring color"
+    },
+    {
+      "name": "--md-date-picker-day-outline-color",
+      "description": "Deprecated — unselected days are plain text"
+    },
+    {
+      "name": "--md-date-picker-action-color",
+      "description": "Cancel / OK action label color"
+    },
+    {
+      "name": "--md-date-picker-menu-color",
+      "description": "Docked month/year menu surface"
+    },
+    {
+      "name": "--md-date-picker-selection-bloom-duration",
+      "description": "Docked month/year menu bloom-in duration"
+    },
+    {
+      "name": "--md-date-picker-selection-bloom-easing",
+      "description": "Docked month/year menu bloom-in easing"
+    },
+    {
+      "name": "--md-date-picker-selection-bloom-out-duration",
+      "description": "Docked menu bloom-out on pick (default short4)"
+    },
+    {
+      "name": "--md-date-picker-calendar-bloom-duration",
+      "description": "Docked day grid bloom-in after pick (default medium2)"
+    },
+    {
+      "name": "--md-date-picker-grid-slide-duration",
+      "description": "Day grid month/year slide duration"
+    },
+    {
+      "name": "--md-date-picker-panel-bloom-out-duration",
+      "description": "Panel bloom-out on dismiss (default short4)"
+    },
+    {
+      "name": "--md-date-picker-scrim-color",
+      "description": "Modal scrim color"
+    },
+    {
+      "name": "--md-date-picker-icon-color",
+      "description": "Trailing / nav icon color"
+    },
+    {
+      "name": "--md-date-picker-panel-width",
+      "description": "Modal / docked popup panel inline size"
+    },
+    {
+      "name": "--md-date-picker-panel-max-block-size",
+      "description": "Modal / docked popup panel max block size"
+    },
+    {
+      "name": "--md-date-picker-docked-panel-width",
+      "description": "Docked popup panel inline size (overrides panel-width)"
+    },
+    {
+      "name": "--md-date-picker-year-inline-size",
+      "description": "Year grid cell inline size (modal)"
+    },
+    {
+      "name": "--md-date-picker-year-block-size",
+      "description": "Year grid cell block size (modal)"
+    },
+    {
+      "name": "--md-date-picker-year-grid-gap",
+      "description": "Year grid row/column gap (modal)"
+    },
+    {
+      "name": "--md-date-picker-year-grid-padding-inline",
+      "description": "Year grid inline padding (modal)"
+    },
+    {
+      "name": "--md-date-picker-year-grid-viewport-block-size",
+      "description": "Year grid scroll viewport block size (modal)"
+    },
+    {
+      "name": "--md-date-picker-day-outside-color"
+    },
+    {
+      "name": "--md-date-picker-icon-size"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-date-picker': true,\n          [`md-date-picker--${this.variant}`]: true,\n          'md-date-picker--open': panelOpen,\n          'md-date-picker--panel-closing': this.panelClosing,\n          'md-date-picker--disabled': this.disabled,\n          'md-date-picker--error': this.error || !!this.validationMessage,\n        }"
+      },
+      {
+        "name": "aria-disabled",
+        "value": "this.disabled ? 'true' : null"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.isDocked ? (\n          <div\n            class=\"md-date-picker__docked-anchor\"\n            ref={(el) => (this.dockedAnchorEl = el as HTMLElement)}\n          >\n            {this.renderTextFieldTrigger()}\n            {panelVisible && (\n              <div\n                class={{\n                  'md-date-picker__docked-popup': true,\n                  'md-date-picker__docked-popup--above':\n                    this.dockedPanelPlacement === 'above',\n                }}\n              >\n                {this.renderPanel(true)}\n              </div>\n            )}\n          </div>\n        ) : (\n          this.hasField && this.renderTextFieldTrigger()\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "panelVisible && !this.isDocked && this.renderModal()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "CALLABLE_PROP",
+      "severity": "warning",
+      "message": "Callable props require target-specific callback signatures.",
+      "line": 354
+    },
+    {
+      "code": "HTML_FORM",
+      "severity": "warning",
+      "message": "HTML form association requires explicit native form state.",
+      "line": 128
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 481
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 496
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 503
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 551
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Window access requires a native adapter.",
+      "line": 561
+    },
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 562
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 602
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 115
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-date-picker/md-date-picker.tsx",
+    "styleUrl": "md-date-picker.css",
+    "shadow": true,
+    "formAssociated": true,
+    "sha256": "83b689bc00c65a53cc203b05fd1e9e469fd5971486be49d63ba94a5a63511854"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_selection-bloom-duration",
+          "value": "var(\n    --md-date-picker-selection-bloom-duration,\n    var(--md-sys-motion-duration-long1, 450ms)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_selection-bloom-easing",
+          "value": "var(\n    --md-date-picker-selection-bloom-easing,\n    var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))\n  )",
+          "important": false
+        },
+        {
+          "property": "--_selection-bloom-out-duration",
+          "value": "var(\n    --md-date-picker-selection-bloom-out-duration,\n    var(--md-sys-motion-duration-short4, 200ms)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_calendar-bloom-duration",
+          "value": "var(\n    --md-date-picker-calendar-bloom-duration,\n    var(--md-sys-motion-duration-medium2, 300ms)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_grid-slide-duration",
+          "value": "var(\n    --md-date-picker-grid-slide-duration,\n    var(--md-sys-motion-duration-medium2, 300ms)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_grid-slide-easing",
+          "value": "var(\n    --md-sys-motion-easing-emphasized,\n    cubic-bezier(0.2, 0, 0, 1)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_panel-bloom-out-duration",
+          "value": "var(\n    --md-date-picker-panel-bloom-out-duration,\n    var(--md-sys-motion-duration-short4, 200ms)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_selection-bloom-out-easing",
+          "value": "var(\n    --md-sys-motion-easing-emphasized-accelerate,\n    cubic-bezier(0.3, 0, 0.8, 0.15)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_container-color",
+          "value": "var(--md-date-picker-container-color, var(--md-sys-color-surface))",
+          "important": false
+        },
+        {
+          "property": "--_header-color",
+          "value": "var(--md-date-picker-header-color, var(--md-sys-color-surface-container-high))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-date-picker-container-shape, var(--md-sys-shape-corner-extra-large, 28px))",
+          "important": false
+        },
+        {
+          "property": "--_field-color",
+          "value": "var(--md-date-picker-field-color, var(--md-sys-color-outline))",
+          "important": false
+        },
+        {
+          "property": "--_field-focus-color",
+          "value": "var(--md-date-picker-field-focus-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_field-text-color",
+          "value": "var(--md-date-picker-field-text-color, var(--md-sys-color-on-surface))",
+          "important": false
+        },
+        {
+          "property": "--_field-container-color",
+          "value": "var(\n    --md-date-picker-field-container-color,\n    var(--md-sys-color-surface-container-highest, #e6e0e9)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_field-container-shape",
+          "value": "var(\n    --md-date-picker-field-container-shape,\n    var(--md-sys-shape-corner-extra-small, 4px)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_field-supporting-color",
+          "value": "var(\n    --md-date-picker-field-supporting-color,\n    var(--md-sys-color-on-surface-variant)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-date-picker-label-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_headline-color",
+          "value": "var(--md-date-picker-headline-color, var(--md-sys-color-on-surface))",
+          "important": false
+        },
+        {
+          "property": "--_supporting-color",
+          "value": "var(--md-date-picker-supporting-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_weekday-color",
+          "value": "var(--md-date-picker-weekday-color, var(--md-sys-color-on-surface))",
+          "important": false
+        },
+        {
+          "property": "--_weekday-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "--_day-color",
+          "value": "var(--md-date-picker-day-color, var(--md-sys-color-on-surface))",
+          "important": false
+        },
+        {
+          "property": "--_day-outside-color",
+          "value": "var(--md-date-picker-day-outside-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_day-selected-color",
+          "value": "var(--md-date-picker-day-selected-color, var(--md-sys-color-on-primary))",
+          "important": false
+        },
+        {
+          "property": "--_day-selected-bg",
+          "value": "var(--md-date-picker-day-selected-bg, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_today-outline-color",
+          "value": "var(--md-date-picker-today-outline-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_action-color",
+          "value": "var(--md-date-picker-action-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_menu-color",
+          "value": "var(--md-date-picker-menu-color, var(--md-sys-color-surface-container-high))",
+          "important": false
+        },
+        {
+          "property": "--_scrim-color",
+          "value": "var(--md-date-picker-scrim-color, var(--md-sys-color-scrim, #000))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-date-picker-icon-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_panel-width",
+          "value": "var(--md-date-picker-panel-width, max(288px, calc(380px + var(--md-sys-density-scale, 0) * 20px)))",
+          "important": false
+        },
+        {
+          "property": "--_panel-max-block-size",
+          "value": "var(--md-date-picker-panel-max-block-size, 524px)",
+          "important": false
+        },
+        {
+          "property": "--_error-color",
+          "value": "var(--md-sys-color-error)",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-date-picker-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_day-size",
+          "value": "max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px))",
+          "important": false
+        },
+        {
+          "property": "--_year-inline-size",
+          "value": "var(--md-date-picker-year-inline-size, max(48px, calc(72px + var(--md-sys-density-scale, 0) * 6px)))",
+          "important": false
+        },
+        {
+          "property": "--_year-block-size",
+          "value": "var(--md-date-picker-year-block-size, max(24px, calc(36px + var(--md-sys-density-scale, 0) * 3px)))",
+          "important": false
+        },
+        {
+          "property": "--_year-grid-gap",
+          "value": "var(--md-date-picker-year-grid-gap, max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_year-grid-padding-inline",
+          "value": "var(--md-date-picker-year-grid-padding-inline, 30px)",
+          "important": false
+        },
+        {
+          "property": "--_year-grid-viewport-block-size",
+          "value": "var(--md-date-picker-year-grid-viewport-block-size, max(180px, calc(288px + var(--md-sys-density-scale, 0) * 24px)))",
+          "important": false
+        },
+        {
+          "property": "--_grid-gap",
+          "value": "max(2px, calc(6px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "--_caret-fade-duration",
+          "value": "var(--md-sys-motion-duration-short3, 150ms)",
+          "important": false
+        },
+        {
+          "property": "--_caret-fade-easing",
+          "value": "var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "var(--md-date-picker-trigger-max-width, 360px)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_field-text-color)",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-date-picker--docked)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-self",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "--_docked-panel-width",
+          "value": "var(--md-date-picker-docked-panel-width, max(calc(360px + var(--md-sys-density-scale, 0) * 10px), var(--_panel-width)))",
+          "important": false
+        },
+        {
+          "property": "--_docked-content-block-size",
+          "value": "calc(\n    var(--_weekday-size) + 16px + 6 * var(--_day-size) + 5 * var(--_grid-gap) + 8px\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-date-picker--modal)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "contents",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-date-picker--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.5",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__textfield,\n.md-date-picker__entry-textfield",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-outline-color",
+          "value": "var(--_field-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-input-color",
+          "value": "var(--_field-text-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-label-color",
+          "value": "var(--_label-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-active-indicator-color",
+          "value": "var(--_field-focus-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-supporting-text-color",
+          "value": "var(--_field-supporting-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-icon-color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-container-color",
+          "value": "var(--_field-container-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-container-shape",
+          "value": "var(--_field-container-shape)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-filled-pill",
+          "value": "var(--md-date-picker-field-filled-pill, 0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-date-picker--open) .md-date-picker__textfield",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-text-field-active-indicator-color",
+          "value": "var(--_field-focus-color)",
+          "important": false
+        },
+        {
+          "property": "--md-text-field-icon-color",
+          "value": "var(--_field-focus-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__docked-anchor",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__modal",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "fixed",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "var(--md-sys-z-index-modal, 1000)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__scrim",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--_scrim-color) 32%, transparent)",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-date-picker-fade-in var(--md-sys-motion-duration-short3, 150ms)\n    var(--md-sys-motion-easing-standard, ease)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__modal--closing .md-date-picker__scrim",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-fade-out\n    var(--_panel-bloom-out-duration)\n    var(--md-sys-motion-easing-standard, ease)\n    forwards",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_panel-width)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "calc(100vw - 32px)",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "min(\n    var(--_panel-max-block-size),\n    calc(100vh - 32px),\n    calc(100dvh - 32px)\n  )",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_field-text-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-3, 0 4px 8px 3px rgba(0, 0, 0, 0.15),\n    0 1px 3px rgba(0, 0, 0, 0.3))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel:not(.md-date-picker__panel--docked):not(.md-date-picker__panel--input-mode)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-date-picker-container-color, var(--md-sys-color-surface-container-high))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--input-mode:not(.md-date-picker__panel--docked)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-date-picker-container-color, var(--md-sys-color-surface-container-high))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel:not(.md-date-picker__panel--docked):not(.md-date-picker__panel--bloom-out)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-scale var(--md-sys-motion-duration-medium2, 300ms)\n    var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center top",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--docked.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-selection-bloom-in\n    var(--_selection-bloom-duration)\n    var(--_selection-bloom-easing)\n    both",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--bloom-out",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-panel-bloom-out\n    var(--_panel-bloom-out-duration)\n    var(--_selection-bloom-out-easing)\n    both",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center top",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-date-picker--panel-closing) .md-date-picker__panel",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel:focus,\n.md-date-picker__panel:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--docked",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-sys-color-surface-container-high)",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_docked-panel-width)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "calc(100vw - 32px)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "min(\n    var(--_panel-max-block-size),\n    calc(100vh - 32px),\n    calc(100dvh - 32px)\n  )",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "var(--md-sys-z-index-popup, 900)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--docked.md-date-picker__panel--align-end",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--docked.md-date-picker__panel--placement-above",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block-start",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "4px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__docked-popup",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__docked-popup--above",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block-start",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_docked-origin-inline-start",
+          "value": "left",
+          "important": false
+        },
+        {
+          "property": "--_docked-origin-inline-end",
+          "value": "right",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([dir='rtl']),\n:host-context([dir='rtl'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_docked-origin-inline-start",
+          "value": "right",
+          "important": false
+        },
+        {
+          "property": "--_docked-origin-inline-end",
+          "value": "left",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--docked.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "top var(--_docked-origin-inline-start)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--docked.md-date-picker__panel--align-end.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "top var(--_docked-origin-inline-end)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--docked.md-date-picker__panel--placement-above.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "bottom var(--_docked-origin-inline-start)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--docked.md-date-picker__panel--placement-above.md-date-picker__panel--align-end.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "bottom var(--_docked-origin-inline-end)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--docked.md-date-picker__panel--bloom-out",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "top var(--_docked-origin-inline-start)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--docked.md-date-picker__panel--align-end.md-date-picker__panel--bloom-out",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "top var(--_docked-origin-inline-end)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--docked.md-date-picker__panel--placement-above.md-date-picker__panel--bloom-out",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "bottom var(--_docked-origin-inline-start)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel--docked.md-date-picker__panel--placement-above.md-date-picker__panel--align-end.md-date-picker__panel--bloom-out",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "bottom var(--_docked-origin-inline-end)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__header",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-block-start",
+          "value": "var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "var(--md-sys-spacing-inset-md, 12px)",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "var(--md-sys-spacing-inset-xl, 24px)",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "var(--md-sys-spacing-inset-md, 12px)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_header-color)",
+          "important": false
+        },
+        {
+          "property": "border-block-end",
+          "value": "1px solid var(--md-sys-color-outline-variant)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__header-supporting",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-medium-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-label-medium-letter-spacing, 0.5px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_supporting-color)",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "max(4px, calc(36px + var(--md-sys-density-scale, 0) * 6px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__header-row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "space-between",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__headline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-headline-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-headline-large-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(30px, calc(40px + var(--md-sys-density-scale, 0) * 2.5px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-headline-large-letter-spacing, 0px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_headline-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__mode-toggle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "48px",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "48px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__body",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-start",
+          "value": "var(--md-sys-spacing-inset-md, 12px)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel:not(.md-date-picker__panel--docked) .md-date-picker__body",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__nav",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "space-between",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "48px",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--md-sys-spacing-inset-xs, 4px)",
+          "important": false
+        },
+        {
+          "property": "margin-block-end",
+          "value": "var(--md-sys-spacing-inset-xs, 4px)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__nav-buttons",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-xs, 4px)",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__nav md-icon-button.md-date-picker__nav-chevron",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__body--no-actions",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-end",
+          "value": "max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__body--docked,\n.md-date-picker__body--docked.md-date-picker__body--docked-selection",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-start",
+          "value": "max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__body--docked.md-date-picker__body--no-actions",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-end",
+          "value": "max(\n    0px,\n    calc(\n      max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px)) -\n        var(--md-sys-spacing-inset-sm, 8px)\n    )\n  )",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__docked-below-nav",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__selection-divider",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__body--docked-selection .md-date-picker__docked-below-nav,\n.md-date-picker__body--docked-selection .md-date-picker__selection-menu-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline",
+          "value": "-12px",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "calc(100% + 24px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__selection-divider::before",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-outline-variant)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__body--docked-selection .md-date-picker__selection-divider",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-selection-divider-in\n    var(--_selection-bloom-duration)\n    var(--_selection-bloom-easing)\n    both",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__body--docked-selection > .md-date-picker__selection-menu-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center top",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__body--docked-selection\n  > .md-date-picker__selection-menu-wrap:not(.md-date-picker__selection-menu-wrap--bloom-out)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-selection-bloom-in\n    var(--_selection-bloom-duration)\n    var(--_selection-bloom-easing)\n    both",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__selection-menu-wrap--bloom-out",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-selection-bloom-out\n    var(--_selection-bloom-out-duration)\n    var(--_selection-bloom-out-easing)\n    both",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center top",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__body--docked > .md-date-picker__calendar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "overflow-x",
+          "value": "clip",
+          "important": false
+        },
+        {
+          "property": "overflow-y",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__body--docked .md-date-picker__calendar--docked-bloom-in",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-docked-calendar-bloom-in\n    var(--_calendar-bloom-duration)\n    var(--_selection-bloom-easing)\n    both",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center top",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel:not(.md-date-picker__panel--docked)\n  .md-date-picker__calendar--content-bloom-in",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-docked-calendar-bloom-in\n    var(--_calendar-bloom-duration)\n    var(--_selection-bloom-easing)\n    both",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center top",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__docked-nav",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_nav-chevron-size",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_nav-focus-ring-gap",
+          "value": "5px",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "row",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "padding-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "30px",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__docked-nav .md-date-picker__nav-group",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "row",
+          "important": false
+        },
+        {
+          "property": "flex-wrap",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-xs, 4px)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__docked-nav md-icon-button.md-date-picker__directional-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__docked-nav .md-date-picker__nav-group--month",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "flex-start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__docked-nav .md-date-picker__nav-group--year",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "flex-end",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__nav-chevron-slot",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_nav-chevron-size, 40px)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_nav-chevron-size, 40px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__nav-chevron-slot > md-tooltip,\n.md-date-picker__nav-chevron-slot > .md-date-picker__nav-chevron-spacer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "visibility",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--_caret-fade-duration) var(--_caret-fade-easing),\n    visibility 0s linear var(--_caret-fade-duration)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__nav-chevron-slot > md-tooltip.md-date-picker__nav-chevron--visible,\n.md-date-picker__nav-chevron-slot\n  > .md-date-picker__nav-chevron-spacer.md-date-picker__nav-chevron--visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "visibility",
+          "value": "visible",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--_caret-fade-duration) var(--_caret-fade-easing),\n    visibility 0s linear 0s",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__nav-chevron-slot > md-tooltip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__nav-chevron-slot > md-tooltip.md-date-picker__nav-chevron--visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__nav-chevron-spacer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__icon-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "40px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "40px",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 9999px)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__icon-button:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__icon-button:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__menu-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "--md-button-label-color",
+          "value": "var(--md-sys-color-on-surface-variant)",
+          "important": false
+        },
+        {
+          "property": "--md-button-icon-size",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-sys-color-on-surface-variant)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__menu-button.md-button--sm",
+      "context": null,
+      "declarations": [
+        {
+          "property": "gap",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__menu-button.md-button--selected",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-button-container-color",
+          "value": "var(--md-sys-color-secondary-container)",
+          "important": false
+        },
+        {
+          "property": "--md-button-label-color",
+          "value": "var(--md-sys-color-on-secondary-container)",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-sys-color-on-secondary-container)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__menu-button::part(label)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-large-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-label-large-letter-spacing, 0.1px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__menu-button-tooltip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-tooltip-plain-max-inline-size",
+          "value": "max-content",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__menu-caret",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "20px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "20px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__menu-caret-glyph",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "visibility",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--_caret-fade-duration) var(--_caret-fade-easing),\n    visibility 0s linear var(--_caret-fade-duration)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__menu-caret-glyph--visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "visibility",
+          "value": "visible",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--_caret-fade-duration) var(--_caret-fade-easing),\n    visibility 0s linear 0s",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__selection-menu-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "margin-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__selection-menu",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "--md-menu-min-width",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "--md-menu-max-width",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "--md-menu-inline-surface-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "--md-menu-inline-fill-radius-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__selection-menu md-menu-item",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-menu-item-gap",
+          "value": "var(--md-sys-spacing-gap-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__selection-menu md-menu-item::part(headline)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-large-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-body-large-line-height, 24px)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-large-letter-spacing, 0.5px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__calendar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-end",
+          "value": "var(--md-sys-spacing-inset-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "overflow-x",
+          "value": "clip",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel:not(.md-date-picker__panel--docked) .md-date-picker__calendar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel:not(.md-date-picker__panel--docked) .md-date-picker__weekdays",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__weekdays,\n.md-date-picker__grid",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        },
+        {
+          "property": "grid-template-columns",
+          "value": "repeat(7, 1fr)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_grid-gap)",
+          "important": false
+        },
+        {
+          "property": "justify-items",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__weekdays",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-end",
+          "value": "var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__weekday-tooltip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_day-size)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__weekday",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_day-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_weekday-size)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-large-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-body-large-line-height, 24px)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-large-letter-spacing, 0.5px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_weekday-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__grid",
+      "context": null,
+      "declarations": [
+        {
+          "property": "grid-auto-rows",
+          "value": "var(--_day-size)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__week",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "contents",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__grid--slide-forward",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-grid-slide-forward\n    var(--_grid-slide-duration)\n    var(--_grid-slide-easing)\n    both",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__grid--slide-backward",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-grid-slide-backward\n    var(--_grid-slide-duration)\n    var(--_grid-slide-easing)\n    both",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-date-picker-grid-slide-forward",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(100%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-date-picker-grid-slide-forward",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-date-picker-grid-slide-backward",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(-100%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-date-picker-grid-slide-backward",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context([dir='rtl']) .md-date-picker__grid--slide-forward,\n:host([dir='rtl']) .md-date-picker__grid--slide-forward",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation-name",
+          "value": "md-date-picker-grid-slide-forward-rtl",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context([dir='rtl']) .md-date-picker__grid--slide-backward,\n:host([dir='rtl']) .md-date-picker__grid--slide-backward",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation-name",
+          "value": "md-date-picker-grid-slide-backward-rtl",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-date-picker-grid-slide-forward-rtl",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(-100%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-date-picker-grid-slide-forward-rtl",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-date-picker-grid-slide-backward-rtl",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(100%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-date-picker-grid-slide-backward-rtl",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__day,\n.md-date-picker__year",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-button-label-color",
+          "value": "var(--_day-color)",
+          "important": false
+        },
+        {
+          "property": "--md-button-container-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-large-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-body-large-line-height, 24px)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-large-letter-spacing, 0.5px)",
+          "important": false
+        },
+        {
+          "property": "font-variant-numeric",
+          "value": "tabular-nums",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__day::part(label),\n.md-date-picker__year::part(label)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "font",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "font-variant-numeric",
+          "value": "tabular-nums",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__day:focus-visible,\n.md-date-picker__year:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline-offset",
+          "value": "-1px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__day",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-button-min-width",
+          "value": "var(--_day-size)",
+          "important": false
+        },
+        {
+          "property": "--md-button-width",
+          "value": "var(--_day-size)",
+          "important": false
+        },
+        {
+          "property": "--md-button-min-height",
+          "value": "var(--_day-size)",
+          "important": false
+        },
+        {
+          "property": "--md-button-height",
+          "value": "var(--_day-size)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__day--today",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-button-container-shape",
+          "value": "var(--md-date-picker-day-today-shape, calc(var(--_day-size) / 2))",
+          "important": false
+        },
+        {
+          "property": "--md-button-label-color",
+          "value": "var(--_today-outline-color)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "0 0 0 1px var(--_today-outline-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__day--outside",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-button-label-color",
+          "value": "var(--_day-outside-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__day--selected,\n.md-date-picker__year--selected",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-button-container-color",
+          "value": "var(--_day-selected-bg)",
+          "important": false
+        },
+        {
+          "property": "--md-button-label-color",
+          "value": "var(--_day-selected-color)",
+          "important": false
+        },
+        {
+          "property": "--md-button-container-shape",
+          "value": "var(--md-date-picker-day-selected-shape)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__day--selected.md-date-picker__day--today",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__day--disabled,\n.md-date-picker__year--disabled",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-button-label-color",
+          "value": "color-mix(\n    in srgb,\n    var(--_day-color) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%),\n    transparent\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__year-grid-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center top",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__body--year-view .md-date-picker__year-grid-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline",
+          "value": "-12px",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "calc(100% + 24px)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel:not(.md-date-picker__panel--docked)\n  .md-date-picker__year-grid-wrap:not(.md-date-picker__year-grid-wrap--bloom-out)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-selection-bloom-in\n    var(--_selection-bloom-duration)\n    var(--_selection-bloom-easing)\n    both",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__year-grid-wrap--bloom-out",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-date-picker-selection-bloom-out\n    var(--_selection-bloom-out-duration)\n    var(--_selection-bloom-out-easing)\n    both",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__year-grid-scroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow-y",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel:not(.md-date-picker__panel--docked) .md-date-picker__year-grid-scroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-block-size",
+          "value": "var(--_year-grid-viewport-block-size)",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "var(--_year-grid-viewport-block-size)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__year-grid",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        },
+        {
+          "property": "grid-template-columns",
+          "value": "repeat(3, 1fr)",
+          "important": false
+        },
+        {
+          "property": "grid-auto-rows",
+          "value": "var(--_year-block-size)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_year-grid-gap)",
+          "important": false
+        },
+        {
+          "property": "padding-block-start",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--_year-grid-padding-inline)",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "16px",
+          "important": false
+        },
+        {
+          "property": "align-content",
+          "value": "start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__year-row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "contents",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__panel:not(.md-date-picker__panel--docked):not(.md-date-picker__panel--input-mode)\n  .md-date-picker__entry",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow-y",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-sys-spacing-inset-lg, 16px) var(--md-sys-spacing-inset-xl, 24px) var(--md-sys-spacing-inset-sm, 8px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__year",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-button-min-width",
+          "value": "var(--_year-inline-size)",
+          "important": false
+        },
+        {
+          "property": "--md-button-width",
+          "value": "var(--_year-inline-size)",
+          "important": false
+        },
+        {
+          "property": "--md-button-min-height",
+          "value": "var(--_year-block-size)",
+          "important": false
+        },
+        {
+          "property": "--md-button-height",
+          "value": "var(--_year-block-size)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__year:nth-child(3n + 1)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-self",
+          "value": "start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__year:nth-child(3n + 2)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-self",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__year:nth-child(3n)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-self",
+          "value": "end",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__entry",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-wrap",
+          "value": "wrap",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__body--input-mode",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-start",
+          "value": "var(--md-sys-spacing-inset-xl, 24px)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--md-sys-spacing-inset-xl, 24px)",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "var(--md-sys-spacing-inset-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__entry-error",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-basis",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__actions",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "flex-end",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px))",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--md-sys-spacing-inset-sm, 8px) var(--md-sys-spacing-inset-md, 12px)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__action-btn",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-button-label-color",
+          "value": "var(--_action-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__action-btn--primary",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-button-label-color",
+          "value": "var(--_action-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context([dir='rtl']) .md-date-picker__directional-icon .md-date-picker__icon,\n:host([dir='rtl']) .md-date-picker__directional-icon .md-date-picker__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleX(-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context([dir='rtl']) md-icon-button.md-date-picker__directional-icon,\n:host([dir='rtl']) md-icon-button.md-date-picker__directional-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleX(-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot='leading-icon'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "fill",
+          "value": "currentColor",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-theme='dark']),\n:host-context([data-theme='dark'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-date-picker-container-color, var(--md-sys-color-surface))",
+          "important": false
+        },
+        {
+          "property": "--_header-color",
+          "value": "var(--md-date-picker-header-color, var(--md-sys-color-surface-container-high))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-date-picker-selection-bloom-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(8px) scale(0.94)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-date-picker-selection-bloom-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(0) scale(1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-date-picker-selection-bloom-out",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(0) scale(1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-date-picker-selection-bloom-out",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(4px) scale(0.96)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-date-picker-selection-divider-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-date-picker-selection-divider-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-date-picker-docked-calendar-bloom-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(8px) scale(0.92)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-date-picker-docked-calendar-bloom-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(0) scale(1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-date-picker-fade-in",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-date-picker-fade-out",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-date-picker-fade-out",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-date-picker-scale",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scale(0.9)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-date-picker-panel-bloom-out",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(0) scale(1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-date-picker-panel-bloom-out",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(4px) scale(0.96)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__scrim,\n  .md-date-picker__modal--closing .md-date-picker__scrim,\n  .md-date-picker__panel:not(.md-date-picker__panel--docked),\n  .md-date-picker__panel--docked.md-date-picker__panel--bloom-in,\n  .md-date-picker__panel--bloom-out,\n  .md-date-picker__body--docked-selection .md-date-picker__selection-divider,\n  .md-date-picker__body--docked-selection\n    > .md-date-picker__selection-menu-wrap:not(.md-date-picker__selection-menu-wrap--bloom-out),\n  .md-date-picker__selection-menu-wrap--bloom-out,\n  .md-date-picker__panel:not(.md-date-picker__panel--docked)\n    .md-date-picker__year-grid-wrap:not(.md-date-picker__year-grid-wrap--bloom-out),\n  .md-date-picker__year-grid-wrap--bloom-out,\n  .md-date-picker__calendar--docked-bloom-in,\n  .md-date-picker__calendar--content-bloom-in,\n  .md-date-picker__grid--slide-forward,\n  .md-date-picker__grid--slide-backward",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-date-picker__nav-chevron-slot > md-tooltip,\n  .md-date-picker__nav-chevron-slot > .md-date-picker__nav-chevron-spacer,\n  .md-date-picker__menu-caret-glyph",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Date Picker",
+  "category": "Selection",
+  "parent": null,
+  "description": "Choose a date, by calendar or by typing. Modal, modal-input, or docked, with locale-aware formatting, min/max bounds, a custom disabled-date predicate, and full constraint validation.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-date-picker.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-date-picker/md-date-picker.tsx",
+    "css": "packages/core/src/components/md-date-picker/md-date-picker.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "value",
+        "label",
+        "min",
+        "max",
+        "open",
+        "required",
+        "clearable",
+        "clearLabel",
+        "error",
+        "errorText",
+        "supportingText",
+        "headline",
+        "cancelLabel",
+        "okLabel",
+        "commitOnSelect",
+        "valueMissingLabel",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdSelected",
+        "mdChange",
+        "mdOpen",
+        "mdClose",
+        "mdCancel",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "reserveSupportingSpace",
+        "variant",
+        "placeholder",
+        "locale",
+        "dateSeparator",
+        "fieldVariant",
+        "firstDayOfWeek",
+        "selectDateLabel",
+        "enterDatesLabel",
+        "invalidDateLabel",
+        "previousMonthLabel",
+        "nextMonthLabel",
+        "previousYearLabel",
+        "nextYearLabel",
+        "chooseMonthLabel",
+        "chooseYearLabel",
+        "chooseMonthYearLabel",
+        "chooseMonthAndYearLabel",
+        "toggleCalendarLabel",
+        "toggleTextLabel",
+        "openCalendarLabel",
+        "closeCalendarLabel",
+        "calendarIcon",
+        "yearGridLabel",
+        "scrimDismissible",
+        "outsideClickDismissible",
+        "name",
+        "isDateDisabled",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdViewChange",
+        "mdMenuOpen",
+        "mdMenuSelect",
+        "mdModeChange"
+      ],
+      "unsupportedMethods": [
+        "show",
+        "close",
+        "clear",
+        "focusInput",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [
+        "leading-icon",
+        "calendar-icon",
+        "header",
+        "actions"
+      ],
+      "notes": [
+        "System DatePicker replaces Material calendar and its month/year menus. Date objects serialize to ISO strings. Bounds are supported; predicate callbacks are not."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "cancelLabel",
+        "disabled",
+        "error",
+        "errorText",
+        "label",
+        "max",
+        "min",
+        "okLabel",
+        "open",
+        "scrimDismissible",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdCancel",
+        "mdChange",
+        "mdClose",
+        "mdOpen",
+        "mdSelected"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "valueMissingLabel",
+        "reserveSupportingSpace",
+        "variant",
+        "placeholder",
+        "required",
+        "clearable",
+        "clearLabel",
+        "locale",
+        "dateSeparator",
+        "fieldVariant",
+        "firstDayOfWeek",
+        "headline",
+        "selectDateLabel",
+        "enterDatesLabel",
+        "invalidDateLabel",
+        "previousMonthLabel",
+        "nextMonthLabel",
+        "previousYearLabel",
+        "nextYearLabel",
+        "chooseMonthLabel",
+        "chooseYearLabel",
+        "chooseMonthYearLabel",
+        "chooseMonthAndYearLabel",
+        "toggleCalendarLabel",
+        "toggleTextLabel",
+        "openCalendarLabel",
+        "closeCalendarLabel",
+        "calendarIcon",
+        "yearGridLabel",
+        "outsideClickDismissible",
+        "commitOnSelect",
+        "name",
+        "isDateDisabled",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdInput",
+        "mdViewChange",
+        "mdMenuOpen",
+        "mdMenuSelect",
+        "mdModeChange",
+        "mdValidityChange"
+      ],
+      "unsupportedMethods": [
+        "show",
+        "close",
+        "clear",
+        "focusInput",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [
+        "leading-icon",
+        "calendar-icon",
+        "header",
+        "actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Uses Material DatePicker; ISO date strings replace JavaScript Date objects in event details."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

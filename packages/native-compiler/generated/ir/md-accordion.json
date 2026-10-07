@@ -1,0 +1,1087 @@
+{
+  "tag": "md-accordion",
+  "className": "MdAccordion",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "'filled' | 'outlined'",
+      "default": "'filled'",
+      "defaultValue": "filled",
+      "options": [
+        "filled",
+        "outlined"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Visual variant. Both share the same expand/collapse mechanics.\n- `filled` (default) — each item is a tonal surface tile.\n- `outlined` — items share a single rounded chassis with an outline."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Density scale: `0` (default, 56 dp headers), `-1` (48 dp),\n`-2` (40 dp)."
+    },
+    {
+      "name": "elevation",
+      "type": "0 | 1 | 2 | 3 | 4 | 5",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "elevation",
+      "optional": false,
+      "description": "MD3 elevation level applied to the surface — `0` (default, flat)\nthrough `5` (highest). In the `filled` variant each item gets its\nown shadow; in the `outlined` variant the shadow is drawn on the\nshared chassis. Expanded items lift to the next elevation level\nfor an expressive \"lift off the page\" affordance."
+    },
+    {
+      "name": "reorderable",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "reorderable",
+      "optional": false,
+      "description": "Allow drag-to-reorder of items via the leading drag handles. Items\ncan also be reordered with `Alt + ArrowUp / ArrowDown` while the\nheader is focused. Disabled items can't be moved."
+    },
+    {
+      "name": "floating",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "floating",
+      "optional": false,
+      "description": "Render the accordion as a free-floating panel that can be dragged\nanywhere on the screen via the top drag-bar. The panel uses\n`position: fixed` and translates via CSS transform, so it lifts\nout of normal document flow."
+    },
+    {
+      "name": "initialX",
+      "type": "number",
+      "default": "24",
+      "defaultValue": 24,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "initial-x",
+      "optional": false,
+      "description": "Initial X translation (px) for floating panels — measured in\nPHYSICAL viewport coordinates from the top-left corner of the\nviewport, so a positive value always moves the panel to the\nright regardless of writing direction (LTR or RTL). Default: 24."
+    },
+    {
+      "name": "initialY",
+      "type": "number",
+      "default": "24",
+      "defaultValue": 24,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "initial-y",
+      "optional": false,
+      "description": "Initial Y translation (px) for floating panels — measured in\nphysical viewport coordinates from the top-left corner. Default: 24."
+    },
+    {
+      "name": "bringToFront",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "bring-to-front",
+      "optional": false,
+      "description": "When a floating accordion starts being dragged, bring it to the\nfront by bumping `z-index`. Disable if you manage stacking\nyourself."
+    },
+    {
+      "name": "exclusive",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "exclusive",
+      "optional": false,
+      "description": "Whether only one item may be expanded at a time. When `true`,\nexpanding an item collapses any other expanded item."
+    },
+    {
+      "name": "keepOneExpanded",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "keep-one-expanded",
+      "optional": false,
+      "description": "Require at least one item to remain expanded. APG variant: the\nimplementation does not permit the currently-open panel to be\ncollapsed when doing so would leave zero panels open. The locked-\nopen button advertises `aria-disabled=\"true\"`. Pairs naturally\nwith `exclusive` to enforce \"exactly one panel is always open\"."
+    },
+    {
+      "name": "headingLevel",
+      "type": "1 | 2 | 3 | 4 | 5 | 6",
+      "default": "3",
+      "defaultValue": 3,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "heading-level",
+      "optional": false,
+      "description": "ARIA heading level for each item's heading wrapper (`<h1>`–`<h6>`).\nPick the value matching the page's information architecture — e.g.\n`2` inside a top-level page section, `4` deep inside a card. APG:\n\"aria-level that is appropriate for the information architecture\nof the page\". Default `3`."
+    },
+    {
+      "name": "region",
+      "type": "'auto' | 'always' | 'never'",
+      "default": "'auto'",
+      "defaultValue": "auto",
+      "options": [
+        "auto",
+        "always",
+        "never"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "region",
+      "optional": false,
+      "description": "Region-role policy for panels:\n- `auto` (default) — applies `role=\"region\"` only when the item\n  count is at or below `region-threshold`, otherwise downgrades\n  to `role=\"group\"` to avoid landmark proliferation (per APG\n  recommendation for accordions with more than ~6 panels).\n- `always` — every panel is a landmark region.\n- `never` — no panel carries a region role (still labelled via\n  `aria-labelledby` though)."
+    },
+    {
+      "name": "regionThreshold",
+      "type": "number",
+      "default": "6",
+      "defaultValue": 6,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "region-threshold",
+      "optional": false,
+      "description": "Threshold above which `region=\"auto\"` downgrades panel roles\nfrom `region` to `group`. APG suggests ~6."
+    },
+    {
+      "name": "transition",
+      "type": "'expressive' | 'standard' | 'fade' | 'collapse' | 'none'",
+      "default": "'expressive'",
+      "defaultValue": "expressive",
+      "options": [
+        "expressive",
+        "standard",
+        "fade",
+        "collapse",
+        "none"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "transition",
+      "optional": false,
+      "description": "Motion preset applied when items expand and collapse. The prop\nis reflected so the item CSS can pick it up via\n`:host-context(md-accordion[transition=\"…\"])`.\n\n- `expressive` (default) — full MD3 Expressive choreography:\n   asymmetric easing (decelerate-on-open, accelerate-on-close),\n   spring-spatial chevron rotation, container shape & elevation\n   morph, leading-icon FILL-axis swap. Use for hero surfaces,\n   settings shells, anything that wants to feel premium.\n- `standard` — MD3 standard easing (symmetric `emphasized`) with\n   no spring overshoot. Container morph still happens. The\n   \"neutral\" preset — good default for dense product UI.\n- `fade` — content fades in/out alongside the height animation\n   using shorter `standard` easing. Chevron rotates without a\n   spring. Best for content-heavy panels (forms, long copy)\n   where the motion should be unobtrusive.\n- `collapse` — pure height collapse with simple `ease-in-out`\n   timing — no spring, no morph, no fade. The classic\n   \"browser disclosure\" look.\n- `none` — disables every transition (instant snap). Useful for\n   automated tests, screenshot harnesses, or environments where\n   motion is undesirable."
+    },
+    {
+      "name": "defaultExpanded",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "default-expanded",
+      "optional": false,
+      "description": "Comma-separated list of item indexes that should be expanded on\nfirst render. Items with `expanded` set in their own attribute\nalso count."
+    }
+  ],
+  "state": [
+    {
+      "name": "chassisX",
+      "type": "inferred",
+      "initializer": "0"
+    },
+    {
+      "name": "chassisY",
+      "type": "inferred",
+      "initializer": "0"
+    },
+    {
+      "name": "chassisDragging",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "dropPlaceholder",
+      "type": "{ top: number; height: number } | null",
+      "initializer": "null"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdToggle",
+      "detail": "{\n    index: number;\n    expanded: boolean;\n    expandedIndices: number[];\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdReorder",
+      "detail": "{\n    from: number;\n    to: number;\n    order: number[];\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdDragStart",
+      "detail": "MdAccordionDragDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdDragMove",
+      "detail": "MdAccordionDragDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdDragEnd",
+      "detail": "MdAccordionDragDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "drop-placeholder",
+      "description": "Ghost slot shown in the lifted item's vacated position"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-accordion-gap",
+      "description": "Gap between items in filled variant"
+    },
+    {
+      "name": "--md-accordion-outline-color",
+      "description": "Outlined variant border colour"
+    },
+    {
+      "name": "--md-accordion-container-shape",
+      "description": "Border-radius of the outer chassis"
+    },
+    {
+      "name": "--md-accordion-elevation",
+      "description": "Explicit elevation shadow override."
+    },
+    {
+      "name": "--md-accordion-floating-width",
+      "description": "Width of the floating panel"
+    },
+    {
+      "name": "--md-accordion-floating-bg",
+      "description": "Surface tint of the floating panel"
+    },
+    {
+      "name": "--md-accordion-floating-elevation",
+      "description": "Resting shadow for floating panel"
+    },
+    {
+      "name": "--md-accordion-floating-radius",
+      "description": "Corner radius of the floating chassis"
+    },
+    {
+      "name": "--md-accordion-drop-placeholder-color"
+    },
+    {
+      "name": "--md-accordion-drop-placeholder-outline-color"
+    },
+    {
+      "name": "--md-accordion-drop-placeholder-outline-width"
+    },
+    {
+      "name": "--md-accordion-drop-placeholder-shape"
+    },
+    {
+      "name": "--md-accordion-drop-placeholder-opacity"
+    },
+    {
+      "name": "--md-accordion-floating-elevation-active"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-accordion': true,\n          [`md-accordion--${this.variant}`]: true,\n          [`md-accordion--density-${Math.abs(this.density)}`]: this.density !== 0,\n          [`md-accordion--elevation-${this.elevation}`]: this.elevation > 0,\n          'md-accordion--floating': this.floating,\n          'md-accordion--floating-dragging': this.chassisDragging,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "presentation"
+      },
+      {
+        "name": "style",
+        "value": "floatingStyle"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.dropPlaceholder && (\n          <div\n            class=\"md-accordion__drop-placeholder\"\n            part=\"drop-placeholder\"\n            aria-hidden=\"true\"\n            style={{\n              transform: `translateY(${this.dropPlaceholder.top}px)`,\n              blockSize: `${this.dropPlaceholder.height}px`,\n            }}\n          ></div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "slot",
+        "attributes": [],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 438
+    },
+    {
+      "code": "DOM_MUTATION",
+      "severity": "warning",
+      "message": "classList depends on browser semantics and requires a native adapter.",
+      "line": 482
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 31
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-accordion/md-accordion.tsx",
+    "styleUrl": "md-accordion.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "1b4899d45048b83448f2700cf883c4e200d0147d731ab5bbaf11cf847b93565b"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_gap",
+          "value": "var(--md-accordion-gap, var(--md-sys-spacing-gap-sm, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_outline-color",
+          "value": "var(--md-accordion-outline-color, var(--md-sys-color-outline-variant, #CAC4D0))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-accordion-container-shape, max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_elevation",
+          "value": "var(--md-accordion-elevation, var(--md-sys-elevation-0, none))",
+          "important": false
+        },
+        {
+          "property": "--_elevation-easing",
+          "value": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_drop-placeholder-color",
+          "value": "var(--md-accordion-drop-placeholder-color, color-mix(in srgb, var(--md-sys-color-primary-container, #eaddff) 45%, transparent))",
+          "important": false
+        },
+        {
+          "property": "--_drop-placeholder-outline-color",
+          "value": "var(--md-accordion-drop-placeholder-outline-color, color-mix(in srgb, var(--md-sys-color-primary, #6750a4) 55%, transparent))",
+          "important": false
+        },
+        {
+          "property": "--_drop-placeholder-outline-width",
+          "value": "var(--md-accordion-drop-placeholder-outline-width, 2px)",
+          "important": false
+        },
+        {
+          "property": "--_drop-placeholder-shape",
+          "value": "var(--md-accordion-drop-placeholder-shape, var(--_container-shape))",
+          "important": false
+        },
+        {
+          "property": "--_drop-placeholder-opacity",
+          "value": "var(--md-accordion-drop-placeholder-opacity, 1)",
+          "important": false
+        },
+        {
+          "property": "--_elevation-duration",
+          "value": "var(--md-sys-motion-duration-medium2, 300ms)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion__drop-placeholder",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_drop-placeholder-shape)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_drop-placeholder-color)",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "var(--_drop-placeholder-outline-width) dashed var(--_drop-placeholder-outline-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "var(--_drop-placeholder-opacity)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion__drop-placeholder",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--elevation-1)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "var(--md-accordion-elevation, var(--md-sys-elevation-1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--elevation-2)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "var(--md-accordion-elevation, var(--md-sys-elevation-2))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--elevation-3)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "var(--md-accordion-elevation, var(--md-sys-elevation-3))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--elevation-4)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "var(--md-accordion-elevation, var(--md-sys-elevation-4))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--elevation-5)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "var(--md-accordion-elevation, var(--md-sys-elevation-5))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--filled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "row-gap",
+          "value": "var(--_gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--filled) ::slotted(md-accordion-item)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--outlined)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border",
+          "value": "1px solid var(--_outline-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--_elevation)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "box-shadow var(--_elevation-duration) var(--_elevation-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--outlined) ::slotted(md-accordion-item)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "border-block-end",
+          "value": "1px solid var(--_outline-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--outlined) ::slotted(md-accordion-item:last-child)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-block-end",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([transition='none']),\n:host([transition='none']) *",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": true
+        },
+        {
+          "property": "animation-duration",
+          "value": "0.001ms",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--floating)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_floating-bg",
+          "value": "var(--md-accordion-floating-bg, var(--md-sys-color-surface-container-low, #F7F2F9))",
+          "important": false
+        },
+        {
+          "property": "--_floating-elevation",
+          "value": "var(--md-accordion-floating-elevation, var(--md-sys-elevation-3, 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.3)))",
+          "important": false
+        },
+        {
+          "property": "--_floating-elevation-active",
+          "value": "var(--md-accordion-floating-elevation-active, var(--md-sys-elevation-5, 0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px 0 rgba(0, 0, 0, 0.3)))",
+          "important": false
+        },
+        {
+          "property": "--_floating-width",
+          "value": "var(--md-accordion-floating-width, 360px)",
+          "important": false
+        },
+        {
+          "property": "--_floating-radius",
+          "value": "var(--md-accordion-floating-radius, var(--md-sys-shape-corner-large, 16px))",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "fixed",
+          "important": false
+        },
+        {
+          "property": "top",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "left",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1000",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_floating-width)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "calc(100vw - 16px)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_floating-bg)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_floating-radius)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--_floating-elevation)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "will-change",
+          "value": "transform",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "box-shadow var(--_elevation-duration) var(--_elevation-easing),\n    border-radius var(--_elevation-duration) var(--_elevation-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--floating)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--_floating-width)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--floating-dragging)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "var(--_floating-elevation-active)",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "top left",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "grabbing",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--floating-dragging) ::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--floating.md-accordion--filled) ::slotted(md-accordion-item)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "--md-accordion-item-container-shape",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "--md-accordion-item-container-shape-expanded",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "--md-accordion-item-container-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "--md-accordion-item-elevation",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "--md-accordion-item-elevation-expanded",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--floating.md-accordion--outlined)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--floating)",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion--floating)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border",
+          "value": "1px solid CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Accordion",
+  "category": "Containment",
+  "parent": null,
+  "description": "Progressive disclosure for a set of sections. Groups md-accordion-item children, coordinates which are expanded, wires their heading level and panel roles, and adds optional drag/keyboard reordering plus a draggable floating panel mode.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-accordion.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-accordion/md-accordion.tsx",
+    "css": "packages/core/src/components/md-accordion/md-accordion.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "exclusive",
+        "keepOneExpanded",
+        "defaultExpanded",
+        "density"
+      ],
+      "events": [
+        "mdToggle"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "elevation",
+        "reorderable",
+        "floating",
+        "initialX",
+        "initialY",
+        "bringToFront",
+        "headingLevel",
+        "region",
+        "regionThreshold",
+        "transition"
+      ],
+      "unsupportedEvents": [
+        "mdReorder",
+        "mdDragStart",
+        "mdDragMove",
+        "mdDragEnd"
+      ],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Coordinates child expansion, exclusive mode and keep-one-open. Dragging/reorder/floating/window positioning not implemented."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "defaultExpanded",
+        "exclusive",
+        "keepOneExpanded"
+      ],
+      "events": [
+        "mdToggle"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "density",
+        "elevation",
+        "reorderable",
+        "floating",
+        "initialX",
+        "initialY",
+        "bringToFront",
+        "headingLevel",
+        "region",
+        "regionThreshold",
+        "transition"
+      ],
+      "unsupportedEvents": [
+        "mdReorder",
+        "mdDragStart",
+        "mdDragMove",
+        "mdDragEnd"
+      ],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native exclusive and keep-one-expanded coordination with comma-separated defaultExpanded indices. Reorder and floating drag remain unsupported."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

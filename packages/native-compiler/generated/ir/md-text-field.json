@@ -1,0 +1,4585 @@
+{
+  "tag": "md-text-field",
+  "className": "MdTextField",
+  "properties": [
+    {
+      "name": "reserveSupportingSpace",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "reserve-supporting-space",
+      "optional": false,
+      "description": "Always occupy the supporting-text line, even when there is no message.\n\nThe row is otherwise rendered only when there is something to show, so the\nfirst validation error CREATES a line and shoves everything below it down —\nthe whole form jumps as you tab through it. Reserving the space is opt-in\nbecause a field with no message would otherwise carry an empty line\neverywhere, including dense and inline layouts. createFormController turns\nit on automatically for the fields it manages, since those are exactly the\nones whose messages appear and disappear."
+    },
+    {
+      "name": "variant",
+      "type": "'filled' | 'outlined'",
+      "default": "'filled'",
+      "defaultValue": "filled",
+      "options": [
+        "filled",
+        "outlined"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "variant",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": "NOT reflected: typed values (incl. passwords) must never appear as a DOM attribute."
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "placeholder",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "type",
+      "type": "string",
+      "default": "'text'",
+      "defaultValue": "text",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "type",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "name",
+      "optional": false,
+      "description": "Form field name (host attribute — ElementInternals submits under it)."
+    },
+    {
+      "name": "pattern",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "pattern",
+      "optional": false,
+      "description": "Constraint validation (forwarded to the inner input; surfaced via ElementInternals)."
+    },
+    {
+      "name": "minLength",
+      "type": "number | undefined",
+      "default": "",
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "min-length",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "min",
+      "type": "string | number | undefined",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "min",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "max",
+      "type": "string | number | undefined",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "step",
+      "type": "string | number | undefined",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "step",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "autocomplete",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "autocomplete",
+      "optional": false,
+      "description": "Input behavior passthrough (password managers / mobile keyboards)."
+    },
+    {
+      "name": "inputMode",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "inputmode",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "enterKeyHint",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "enterkeyhint",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "autoCapitalize",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "autocapitalize",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "spellcheck",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "spellcheck",
+      "optional": false,
+      "description": "Spell checking is enabled by default, matching the native DOM boolean property."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "readOnly",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "readonly",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "required",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "error",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "error",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "errorText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "error-text",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "prefixText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "prefix-text",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "suffixText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "suffix-text",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "maxLength",
+      "type": "number | undefined",
+      "default": "",
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "max-length",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "clearable",
+      "type": "'internal' | 'external' | false",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "clearable",
+      "optional": false,
+      "description": "Show a clear icon button. 'internal' clears the value directly; 'external' emits mdClear and leaves value control to the consumer."
+    },
+    {
+      "name": "passwordToggle",
+      "type": "'internal' | 'external' | false",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "password-toggle",
+      "optional": false,
+      "description": "Show a password visibility toggle. 'internal' toggles the input type directly; 'external' emits mdPasswordToggle and leaves type control to the consumer."
+    },
+    {
+      "name": "showPasswordLabel",
+      "type": "string",
+      "default": "'Show password'",
+      "defaultValue": "Show password",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "show-password-label",
+      "optional": false,
+      "description": "Accessible name for the password toggle while the value is concealed."
+    },
+    {
+      "name": "hidePasswordLabel",
+      "type": "string",
+      "default": "'Hide password'",
+      "defaultValue": "Hide password",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "hide-password-label",
+      "optional": false,
+      "description": "Accessible name for the password toggle while the value is revealed."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Density scale: 0 (default 56px), -1 (52px), -2 (48px), -3 (44px)."
+    },
+    {
+      "name": "multiline",
+      "type": "'auto-grow' | 'fixed' | false",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "multiline",
+      "optional": false,
+      "description": "Multi-line mode.\n- false: single-line <input> (default)\n- 'auto-grow': <textarea> that expands as content grows (multi-line field)\n- 'fixed': <textarea> with fixed height that scrolls (text area)"
+    },
+    {
+      "name": "rows",
+      "type": "number | undefined",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "rows",
+      "optional": false,
+      "description": "Number of visible text rows for multiline modes. Defaults to 2 for auto-grow, 4 for fixed."
+    },
+    {
+      "name": "speechToText",
+      "type": "'internal' | 'external' | false",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "speech-to-text",
+      "optional": false,
+      "description": "Speech-to-text via Web Speech API.\n- 'internal': manages recognition internally, appends transcript to value\n- 'external': emits mdSpeechResult on mic click, letting the consumer handle recognition"
+    },
+    {
+      "name": "speechLang",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "speech-lang",
+      "optional": false,
+      "description": "Language/locale for internal speech recognition (e.g. 'en-US', 'de-DE'). Defaults to browser locale."
+    },
+    {
+      "name": "restrict",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "restrict",
+      "optional": false,
+      "description": "Restrict input to allowed characters.\nPresets: 'numeric', 'integer', 'decimal', 'alpha', 'alphanumeric'.\nCustom: a regex character class string, e.g. '[0-9+() -]'."
+    },
+    {
+      "name": "formatter",
+      "type": "(value: string) => string",
+      "default": "",
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "formatter",
+      "optional": true,
+      "description": "Formats the raw value for display.\nSet via JS: `el.formatter = (v) => Number(v).toLocaleString()`."
+    },
+    {
+      "name": "parser",
+      "type": "(displayValue: string) => string",
+      "default": "",
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "parser",
+      "optional": true,
+      "description": "Parses the display value back to a raw value.\nSet via JS: `el.parser = (v) => v.replace(/[^0-9.-]/g, '')`."
+    },
+    {
+      "name": "formatOn",
+      "type": "'blur' | 'input'",
+      "default": "'blur'",
+      "defaultValue": "blur",
+      "options": [
+        "blur",
+        "input"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "format-on",
+      "optional": false,
+      "description": "When to apply the formatter.\n- 'blur': format on blur, show raw value on focus (default)\n- 'input': format on every keystroke (live formatting)"
+    },
+    {
+      "name": "focusBorderWidth",
+      "type": "number",
+      "default": "3",
+      "defaultValue": 3,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "focus-border-width",
+      "optional": false,
+      "description": "Border width when focused: 1, 2, or 3 pixels."
+    },
+    {
+      "name": "appearFocused",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "appear-focused",
+      "optional": false,
+      "description": "Force the field to render in its focused visual state regardless of the\nunderlying input's actual focus. Use when the field acts as an *anchor*\nfor a popover, dialog, or menu, and the OS focus has moved into that\nsurface — for example the `md-time-picker` keeps its trigger field in\nthe focused look while the picker modal is open, so the trigger and\nthe modal read as one connected control.\n\nVisual-only: affects the notched-outline width / colour, the floating\nlabel position, and the leading-icon colour through md-text-field's\nexisting `.md-text-field--focused` rules. Does NOT alter formatter /\nblur-format behaviour (those keep tracking real focus events), so\n`formatOn=\"blur\"` still flips between formatted and raw on real\nfocus/blur even while `appear-focused` is on."
+    },
+    {
+      "name": "chipsWrap",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "chips-wrap",
+      "optional": false,
+      "description": "When leading `chips` are slotted, allow them to WRAP onto multiple rows so\nthe field grows to fit them. Default `false`: chips stay on a single line and\nthe field keeps its normal height (the consumer, e.g. md-multi-select, is\nresponsible for handling overflow — clipping or a \"+N\" counter)."
+    },
+    {
+      "name": "debounce",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "debounce",
+      "optional": false,
+      "description": "Debounce delay (ms) for the mdSearch event. Emits after the user stops typing for this duration. 0 = disabled."
+    },
+    {
+      "name": "throttle",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "throttle",
+      "optional": false,
+      "description": "Throttle interval (ms) for the mdSearch event. Emits at most once per interval while typing. 0 = disabled."
+    },
+    {
+      "name": "inputRole",
+      "type": "'' | 'combobox'",
+      "default": "''",
+      "defaultValue": "",
+      "options": [
+        "",
+        "combobox"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "input-role",
+      "optional": false,
+      "description": "Promote the inner input to a WAI-ARIA **combobox**, for a composite that\nowns the popup (md-autocomplete). The role has to live on the real textbox\n— the one AT reads when it has focus — and this field renders it, so the\nowner cannot put it there itself.\n\nWhitelisted to `combobox`: it is the only role an owner has a legitimate\nreason to place on a text input, and an open-ended role prop here would let\na consumer lie about the control."
+    },
+    {
+      "name": "inputExpanded",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "input-expanded",
+      "optional": false,
+      "description": "Expanded state of the owner's popup. Emitted only with `input-role=\"combobox\"`,\nwhere `aria-expanded` is an allowed attribute (it is not on a bare textbox)."
+    },
+    {
+      "name": "inputAriaAutocomplete",
+      "type": "'' | 'none' | 'inline' | 'list' | 'both'",
+      "default": "''",
+      "defaultValue": "",
+      "options": [
+        "",
+        "none",
+        "inline",
+        "list",
+        "both"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "input-aria-autocomplete",
+      "optional": false,
+      "description": "`aria-autocomplete` for the combobox — how typing relates to the popup."
+    }
+  ],
+  "state": [
+    {
+      "name": "focused",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "formDisabled",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "autofilled",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hostAriaLabel",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "passwordVisible",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedLeading",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedChips",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedTrailing",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasTrailingIconButton",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "listening",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "displayValue",
+      "type": "string",
+      "initializer": "''"
+    },
+    {
+      "name": "validationMessage",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "formatterEpoch",
+      "type": "inferred",
+      "initializer": "0"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdInput",
+      "detail": "string",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdChange",
+      "detail": "string",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdSearch",
+      "detail": "string",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdClear",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdPasswordToggle",
+      "detail": "{ visible: boolean }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdSpeechResult",
+      "detail": "{ transcript: string; listening: boolean }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "setFocus",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "select",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "getInputElement",
+      "parameters": [],
+      "returnType": "Promise<HTMLInputElement | HTMLTextAreaElement | null>"
+    },
+    {
+      "name": "getValidity",
+      "parameters": [],
+      "returnType": "Promise<{ valid: boolean; validationMessage: string; flags: Record<string, boolean> }>"
+    },
+    {
+      "name": "setCustomValidity",
+      "parameters": [
+        {
+          "name": "message",
+          "type": "string"
+        }
+      ],
+      "returnType": "inferred"
+    },
+    {
+      "name": "checkValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "reportValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    }
+  ],
+  "slots": [
+    {
+      "name": "leading-icon",
+      "description": "Custom leading icon (overrides nothing — pure decoration)"
+    },
+    {
+      "name": "chips"
+    },
+    {
+      "name": "clear-icon",
+      "description": "Custom clear-button glyph (replaces the default \"cancel\" icon)"
+    },
+    {
+      "name": "password-toggle-icon",
+      "description": "Custom password-toggle glyph"
+    },
+    {
+      "name": "speech-icon",
+      "description": "Custom microphone glyph"
+    },
+    {
+      "name": "error-icon",
+      "description": "Custom error-state icon (replaces the default filled \"error\")"
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Custom trailing icon"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "input",
+      "description": "The native input / textarea"
+    },
+    {
+      "name": "container",
+      "description": "Field container (state layer + input row)"
+    },
+    {
+      "name": "label",
+      "description": "Floating label"
+    },
+    {
+      "name": "chips"
+    },
+    {
+      "name": "supporting-text",
+      "description": "Supporting / error text line"
+    },
+    {
+      "name": "counter",
+      "description": "Character counter"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-text-field-container-color",
+      "description": "Filled-variant container background"
+    },
+    {
+      "name": "--md-text-field-input-color",
+      "description": "Input text colour"
+    },
+    {
+      "name": "--md-text-field-label-color",
+      "description": "Resting label colour"
+    },
+    {
+      "name": "--md-text-field-active-indicator-color",
+      "description": "Filled bottom line + outlined border on focus"
+    },
+    {
+      "name": "--md-text-field-outline-color",
+      "description": "Outlined-variant resting border"
+    },
+    {
+      "name": "--md-text-field-error-color",
+      "description": "Error accent (label, indicator, icon, helper)"
+    },
+    {
+      "name": "--md-text-field-supporting-text-color",
+      "description": "Supporting text + character counter"
+    },
+    {
+      "name": "--md-text-field-icon-color",
+      "description": "Leading / trailing / clear / password / speech icons"
+    },
+    {
+      "name": "--md-text-field-icon-size",
+      "description": "All glyph sizes (24px; tapers with"
+    },
+    {
+      "name": "--md-text-field-optical-nudge",
+      "description": "Outlined only: px the input text is"
+    },
+    {
+      "name": "--md-text-field-container-shape",
+      "description": "Border-radius for both variants"
+    },
+    {
+      "name": "--md-text-field-filled-pill",
+      "description": "Filled only: 1 rounds all corners (pill);"
+    },
+    {
+      "name": "--md-text-field-cursor",
+      "description": "Cursor over the field (default: text)"
+    },
+    {
+      "name": "--md-text-field-focus-border-width",
+      "description": "Border thickness on focus (1, 2, or 3 px)"
+    },
+    {
+      "name": "--md-text-field-focus-inset",
+      "description": "Inset of the focus ring (default 0 — it"
+    },
+    {
+      "name": "--md-text-field-padding-inline-start"
+    },
+    {
+      "name": "--md-text-field-padding-inline-end"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-text-field': true,\n          [`md-text-field--${this.variant}`]: true,\n          'md-text-field--focused': this.focused || this.appearFocused,\n          'md-text-field--error': this.hasError,\n          'md-text-field--disabled': this.isDisabled,\n          'md-text-field--with-leading': hasLeading,\n          'md-text-field--with-trailing': hasTrailing,\n          // Only so the stylesheet can suppress the UA's own `type=search`\n          // cross when this field already draws one of its own.\n          'md-text-field--clearable': showClear,\n          'md-text-field--with-chips': this.hasSlottedChips,\n          'md-text-field--floating': this.isFloating,\n          'md-text-field--without-label': !this.label,\n          [`md-text-field--density${this.density}`]: this.density !== 0,\n          'md-text-field--multiline': !!this.multiline,\n          'md-text-field--auto-grow': this.multiline === 'auto-grow',\n          'md-text-field--textarea': this.multiline === 'fixed',\n          'md-text-field--listening': this.listening,\n        }"
+      },
+      {
+        "name": "style",
+        "value": "Number(this.focusBorderWidth) !== 3 ? {\n          // Only inline when the prop deviates — unconditional inline styles\n          // made the documented custom properties dead (clobbered every render).\n          '--md-text-field-focus-border-width': `${Number(this.focusBorderWidth)}px`,\n          '--md-text-field-focus-inset': `${-(Number(this.focusBorderWidth) - 1)}px`,\n        } : undefined"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-text-field__container"
+          },
+          {
+            "name": "part",
+            "value": "container"
+          },
+          {
+            "name": "data-md-anchor-box",
+            "value": "supportRowIsBlank ? '' : null"
+          },
+          {
+            "name": "onClick",
+            "value": "this.handleContainerClick"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "div",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-text-field__state-layer"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-text-field__icon md-text-field__icon--leading"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              },
+              {
+                "name": "style",
+                "value": "{ display: hasLeading ? undefined : 'none' }"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "slot",
+                "attributes": [
+                  {
+                    "name": "name",
+                    "value": "leading-icon"
+                  }
+                ],
+                "children": []
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "div",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-text-field__input-wrap"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "expression",
+                "source": "this.label && (\n              <label class=\"md-text-field__label\" part=\"label\" htmlFor={`${this.uid}-input`}>{this.label}</label>\n            )"
+              },
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "div",
+                "attributes": [
+                  {
+                    "name": "class",
+                    "value": "md-text-field__input-row"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "span",
+                    "attributes": [
+                      {
+                        "name": "class",
+                        "value": "md-text-field__chips"
+                      },
+                      {
+                        "name": "part",
+                        "value": "chips"
+                      },
+                      {
+                        "name": "style",
+                        "value": "{ display: this.hasSlottedChips ? undefined : 'none' }"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": ""
+                      },
+                      {
+                        "kind": "element",
+                        "tag": "slot",
+                        "attributes": [
+                          {
+                            "name": "name",
+                            "value": "chips"
+                          }
+                        ],
+                        "children": []
+                      },
+                      {
+                        "kind": "text",
+                        "value": ""
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "expression",
+                    "source": "this.prefixText && this.isFloating && (\n                <span class=\"md-text-field__prefix\">{this.prefixText}</span>\n              )"
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "expression",
+                    "source": "this.renderInputElement()"
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "expression",
+                    "source": "this.suffixText && this.isFloating && (\n                <span class=\"md-text-field__suffix\">{this.suffixText}</span>\n              )"
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "showClear && (\n            <button\n              type=\"button\"\n              class={{\n                'md-text-field__clear': true,\n                'md-text-field__clear--disabled': clearDisabled,\n                'md-text-field__clear--empty': !this.value,\n              }}\n              disabled={clearDisabled}\n              onClick={this.handleClear}\n              aria-label=\"Clear\"\n            >\n              <slot name=\"clear-icon\">\n                <span class=\"material-symbols-outlined\" aria-hidden=\"true\">cancel</span>\n              </slot>\n            </button>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "showPasswordToggle && (\n            <button\n              type=\"button\"\n              class={{\n                'md-text-field__password-toggle': true,\n                'md-text-field__password-toggle--disabled': this.isDisabled,\n              }}\n              disabled={this.isDisabled}\n              onClick={this.handlePasswordToggle}\n              aria-label={isPasswordRevealed ? this.hidePasswordLabel : this.showPasswordLabel}\n              aria-pressed={isPasswordRevealed ? 'true' : 'false'}\n            >\n              <slot name=\"password-toggle-icon\">\n                <span class=\"material-symbols-outlined\" aria-hidden=\"true\">{passwordIcon}</span>\n              </slot>\n            </button>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "showSpeech && (\n            <button\n              type=\"button\"\n              class={{\n                'md-text-field__speech': true,\n                'md-text-field__speech--listening': this.listening,\n                'md-text-field__speech--disabled': this.isDisabled,\n              }}\n              disabled={this.isDisabled || this.readOnly}\n              onClick={this.handleSpeechToggle}\n              aria-label={this.listening ? 'Stop listening' : 'Start voice input'}\n              aria-pressed={this.listening ? 'true' : 'false'}\n            >\n              <slot name=\"speech-icon\">\n                <span class=\"material-symbols-outlined\" aria-hidden=\"true\">\n                  {this.listening ? 'hearing' : 'mic'}\n                </span>\n              </slot>\n            </button>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.hasError && (\n            <span class=\"md-text-field__error-icon\" aria-hidden=\"true\">\n              <slot name=\"error-icon\">\n                <span class=\"material-symbols-outlined\" style={{ fontVariationSettings: \"'FILL' 1\" }}>error</span>\n              </slot>\n            </span>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "{\n              'md-text-field__icon': !this.hasTrailingIconButton,\n              'md-text-field__icon--trailing': !this.hasTrailingIconButton,\n              'md-text-field__trailing-icon-button': this.hasTrailingIconButton,\n            }"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "this.hasTrailingIconButton ? null : 'true'"
+              },
+              {
+                "name": "style",
+                "value": "{ display: this.hasSlottedTrailing ? undefined : 'none' }"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "slot",
+                "attributes": [
+                  {
+                    "name": "name",
+                    "value": "trailing-icon"
+                  }
+                ],
+                "children": []
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.variant === 'filled' && <div class=\"md-text-field__indicator\"></div>"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.variant === 'outlined' && (\n            <fieldset class=\"md-text-field__fieldset\">\n              {/* Only cut a notch when there's a label to notch around — an empty\n                  active legend still reserves `padding-inline`, leaving a blank\n                  gap in the top border (e.g. a label-less pagination select). */}\n              <legend\n                class={{\n                  'md-text-field__legend': true,\n                  'md-text-field__legend--active': this.isFloating && !!this.label,\n                }}\n              >\n                <span>{this.label}</span>\n              </legend>\n            </fieldset>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "(supportText || charCount || this.reserveSupportingSpace) && (\n          <div class=\"md-text-field__support-row\">\n            <span\n              id={`${this.uid}-support`}\n              part=\"supporting-text\"\n              role={this.hasError ? 'alert' : undefined}\n              class={{ 'md-text-field__support-text': true, 'md-text-field__support-text--error': this.hasError }}\n            >\n              {/* A zero-width space holds the line box open when reserving, so\n                  the row has height before any message exists. An empty span\n                  would collapse and defeat the reservation. */}\n              {supportText || (this.reserveSupportingSpace ? '\\u200B' : '')}\n            </span>\n            {charCount && <span id={`${this.uid}-counter`} part=\"counter\" class=\"md-text-field__counter\">{charCount}</span>}\n          </div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "CALLABLE_PROP",
+      "severity": "warning",
+      "message": "Callable props require target-specific callback signatures.",
+      "line": 105
+    },
+    {
+      "code": "HTML_FORM",
+      "severity": "warning",
+      "message": "HTML form association requires explicit native form state.",
+      "line": 155
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedNodes depends on browser semantics and requires a native adapter.",
+      "line": 275
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 288
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 606
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Window access requires a native adapter.",
+      "line": 1017
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 13
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-text-field/md-text-field.tsx",
+    "styleUrl": "md-text-field.css",
+    "shadow": true,
+    "formAssociated": true,
+    "sha256": "864ce96c7dadd22754140c18b40c89b2986f7902bb393359e2daae1cf68a09d5"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-text-field-container-color, var(--md-sys-color-surface-container-highest, #E6E0E9))",
+          "important": false
+        },
+        {
+          "property": "--_input-color",
+          "value": "var(--md-text-field-input-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-text-field-label-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_active-indicator-color",
+          "value": "var(--md-text-field-active-indicator-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_outline-color",
+          "value": "var(--md-text-field-outline-color, var(--md-sys-color-outline, #79747E))",
+          "important": false
+        },
+        {
+          "property": "--_error-color",
+          "value": "var(--md-text-field-error-color, var(--md-sys-color-error, #B3261E))",
+          "important": false
+        },
+        {
+          "property": "--_supporting-text-color",
+          "value": "var(--md-text-field-supporting-text-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-text-field-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_text-inset",
+          "value": "calc(var(--md-sys-spacing-inset-lg, 16px) + 7px)",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-text-field-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-text-field-container-shape, var(--md-sys-shape-corner-extra-small, 4px))",
+          "important": false
+        },
+        {
+          "property": "--_filled-pill",
+          "value": "var(--md-text-field-filled-pill, 0)",
+          "important": false
+        },
+        {
+          "property": "--_filled-block-end-radius",
+          "value": "calc(var(--_filled-pill) * var(--_container-shape))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "stretch",
+          "important": false
+        },
+        {
+          "property": "min-height",
+          "value": "calc(56px + var(--md-sys-density-scale, 0) * 4px)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "var(--md-text-field-cursor, text)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--filled) .md-text-field__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_filled-block-end-radius)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_filled-block-end-radius)",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "max(2px, calc(8px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "var(--md-text-field-padding-inline-start, var(--_text-inset))",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "var(--md-text-field-padding-inline-end, var(--_text-inset))",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--filled.md-text-field--focused) .md-text-field__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--outlined) .md-text-field__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "max(2px, calc(8px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "var(--md-text-field-padding-inline-start, var(--_text-inset))",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "var(--md-text-field-padding-inline-end, var(--_text-inset))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--outlined) .md-text-field__input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "var(--md-text-field-optical-nudge, 0px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--clearable) .md-text-field__input::-webkit-search-cancel-button,\n:host(.md-text-field--clearable) .md-text-field__input::-webkit-search-decoration",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--filled:hover:not(.md-text-field--disabled)) .md-text-field__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--outlined) .md-text-field__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__input-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "min-width",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--filled) .md-text-field__input-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "flex-end",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--filled.md-text-field--without-label:not(.md-text-field--multiline)) .md-text-field__input-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__input-row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__chips",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "flex-wrap",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--with-chips:not([chips-wrap])) .md-text-field__chips",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--with-chips) .md-text-field__input-row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-wrap",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--with-chips:not([chips-wrap])) .md-text-field__input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "0 1 0",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--with-chips) .md-text-field__input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 0 40px",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "40px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--with-chips[chips-wrap]) .md-text-field__input-row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-wrap",
+          "value": "wrap",
+          "important": false
+        },
+        {
+          "property": "row-gap",
+          "value": "6px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([chips-wrap]) .md-text-field__chips",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-wrap",
+          "value": "wrap",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-large-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-large-tracking, 0.5px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_input-color)",
+          "important": false
+        },
+        {
+          "property": "caret-color",
+          "value": "var(--_active-indicator-color)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "var(--md-text-field-cursor, text)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "min-width",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__input::placeholder",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_label-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error) .md-text-field__input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "caret-color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__input--textarea",
+      "context": null,
+      "declarations": [
+        {
+          "property": "resize",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "break-word",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__input--auto-grow",
+      "context": null,
+      "declarations": [
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__input--fixed",
+      "context": null,
+      "declarations": [
+        {
+          "property": "overflow-y",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--multiline) .md-text-field__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-items",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "min-height",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--multiline) .md-text-field__input-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "flex-start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--multiline.md-text-field--filled) .md-text-field__input-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-content",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "padding-block-start",
+          "value": "20px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--multiline) .md-text-field__input-row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-items",
+          "value": "flex-start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--filled.md-text-field--floating.md-text-field--with-chips:not(.md-text-field--without-label))\n  .md-text-field__input-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-start",
+          "value": "max(12px, calc(16px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--multiline:not(.md-text-field--auto-grow)) .md-text-field__icon,\n:host(.md-text-field--multiline:not(.md-text-field--auto-grow)) .md-text-field__trailing-icon-button,\n:host(.md-text-field--multiline:not(.md-text-field--auto-grow)) .md-text-field__clear,\n:host(.md-text-field--multiline:not(.md-text-field--auto-grow)) .md-text-field__password-toggle,\n:host(.md-text-field--multiline:not(.md-text-field--auto-grow)) .md-text-field__speech",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-self",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "16px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--auto-grow) .md-text-field__icon,\n:host(.md-text-field--auto-grow) .md-text-field__trailing-icon-button,\n:host(.md-text-field--auto-grow) .md-text-field__clear,\n:host(.md-text-field--auto-grow) .md-text-field__password-toggle,\n:host(.md-text-field--auto-grow) .md-text-field__speech",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_label-color)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "top var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),\n    inset-inline-start var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),\n    font-size var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),\n    line-height var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),\n    transform var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),\n    background-color var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),\n    padding var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),\n    color var(--md-sys-motion-duration-short2, 100ms) ease",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "max-width",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--filled) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "top",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(-50%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--multiline:not(.md-text-field--floating)) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "top",
+          "value": "28px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--multiline.md-text-field--outlined:not(.md-text-field--floating)) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "top",
+          "value": "12px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--multiline.md-text-field--filled:not(.md-text-field--floating)) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "top",
+          "value": "32px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--filled.md-text-field--floating) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "top",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(0)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(11px, calc(var(--md-sys-typescale-body-small-size, 12px) + var(--md-sys-density-scale, 0) * 0.25px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(12px, calc(var(--md-sys-typescale-body-small-line-height, 16px) + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--outlined) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "top",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(-50%)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--outlined.md-text-field--floating) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "top",
+          "value": "calc(-8px - var(--md-sys-density-scale, 0) * 1px)",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(-50%)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(12px, calc(16px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'].md-text-field--filled.md-text-field--floating) .md-text-field__label,\n:host([density='-2'].md-text-field--filled.md-text-field--floating) .md-text-field__label,\n:host([density='-3'].md-text-field--filled.md-text-field--floating) .md-text-field__label,\n:host([density='-4'].md-text-field--filled.md-text-field--floating) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "11px",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "top",
+          "value": "1px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'].md-text-field--filled.md-text-field--floating) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "top",
+          "value": "-2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'].md-text-field--outlined.md-text-field--floating) .md-text-field__label,\n:host([density='-4'].md-text-field--outlined.md-text-field--floating) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "top",
+          "value": "-4px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--filled) .md-text-field__input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(24px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--outlined.md-text-field--floating.md-text-field--with-leading) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "calc(-1 * (var(--_icon-size) + var(--md-sys-spacing-gap-lg, 16px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled):not(.md-text-field--error)) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled).md-text-field--error) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-error-container, #8C1D18)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--focused) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_active-indicator-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__prefix,\n.md-text-field__suffix",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_supporting-text-color)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "color var(--md-sys-motion-duration-short2, 100ms) ease",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__prefix",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-end",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__suffix",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled)) .md-text-field__prefix,\n:host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled)) .md-text-field__suffix",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "color var(--md-sys-motion-duration-short2, 100ms) ease",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__icon ::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__icon--leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-end",
+          "value": "var(--md-sys-spacing-gap-lg, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__icon--trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__trailing-icon-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__error-icon + .md-text-field__trailing-icon-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "4px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled)) .md-text-field__icon--leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled):not(.md-text-field--error)) .md-text-field__icon--trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error) .md-text-field__icon--trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error) .md-text-field__icon--trailing ::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__clear",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "var(--md-sys-spacing-gap-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "color var(--md-sys-motion-duration-short2, 100ms) ease,\n    opacity var(--md-sys-motion-duration-short2, 100ms) ease",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__clear ::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__clear:hover:not(:disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__clear:focus-visible,\n.md-text-field__password-toggle:focus-visible,\n.md-text-field__speech:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "2px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "-6px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__clear--disabled",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.38",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error) .md-text-field__clear:not(:disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__password-toggle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "var(--md-sys-spacing-gap-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "color var(--md-sys-motion-duration-short2, 100ms) ease",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__password-toggle ::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__password-toggle:hover:not(:disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__password-toggle--disabled",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.38",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error) .md-text-field__password-toggle:not(:disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__speech",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "var(--md-sys-spacing-gap-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "color var(--md-sys-motion-duration-short2, 100ms) ease",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__speech ::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__speech:hover:not(:disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__speech--listening",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_error-color)",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-speech-pulse 1.2s ease-in-out infinite",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__speech--disabled",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.38",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error) .md-text-field__speech:not(:disabled):not(.md-text-field__speech--listening)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%, 100%",
+      "context": "@keyframes md-speech-pulse",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "50%",
+      "context": "@keyframes md-speech-pulse",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0.4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__error-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "var(--md-sys-spacing-gap-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__error-icon ::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": true
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--multiline:not(.md-text-field--auto-grow)) .md-text-field__error-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-self",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "16px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--auto-grow) .md-text-field__error-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "calc(1 - var(--_filled-pill))",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "height var(--md-sys-motion-duration-short2, 100ms) ease,\n    background-color var(--md-sys-motion-duration-short2, 100ms) ease,\n    opacity var(--md-sys-motion-duration-short2, 100ms) ease",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--focused) .md-text-field__indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "height",
+          "value": "var(--md-text-field-focus-border-width, 3px)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_active-indicator-color)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "height var(--md-sys-motion-duration-short2, 100ms) ease",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error) .md-text-field__indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error.md-text-field--focused) .md-text-field__indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "height",
+          "value": "var(--md-text-field-focus-border-width, 3px)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_error-color)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "height var(--md-sys-motion-duration-short2, 100ms) ease",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled):not(.md-text-field--error)) .md-text-field__indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "height",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled).md-text-field--error) .md-text-field__indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "height",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-on-error-container, #8C1D18)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__fieldset",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "calc(\n    var(--md-text-field-padding-inline-start, var(--_text-inset)) -\n      1px - var(--_legend-inline-padding, 4px)\n  )",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "calc(\n    var(--md-text-field-padding-inline-end, var(--_text-inset)) -\n      1px - var(--_legend-inline-padding, 4px)\n  )",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "1px solid var(--_outline-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "border-color var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--focused) .md-text-field__fieldset",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--_active-indicator-color)",
+          "important": false
+        },
+        {
+          "property": "border-width",
+          "value": "var(--md-text-field-focus-border-width, 3px)",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "var(--md-text-field-focus-inset, 0)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error) .md-text-field__fieldset",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error.md-text-field--focused) .md-text-field__fieldset",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--_error-color)",
+          "important": false
+        },
+        {
+          "property": "border-width",
+          "value": "var(--md-text-field-focus-border-width, 3px)",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "var(--md-text-field-focus-inset, 0)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled):not(.md-text-field--error)) .md-text-field__fieldset",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled).md-text-field--error) .md-text-field__fieldset",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--md-sys-color-on-error-container, #8C1D18)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__legend",
+      "context": null,
+      "declarations": [
+        {
+          "property": "max-inline-size",
+          "value": "calc(100% - 16px)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "max-width",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "max-width var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),\n    padding-inline var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__legend--active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "max-width",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--_legend-inline-padding, 4px)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "max-width var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),\n    padding-inline var(--md-sys-motion-duration-medium1, 200ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__legend span",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "visibility",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__support-row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "space-between",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "4px 16px 0",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "16px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__support-text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_supporting-text-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__support-text--error",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__counter",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_supporting-text-color)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--disabled) .md-text-field__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--disabled.md-text-field--filled) .md-text-field__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 4%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--disabled) .md-text-field__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 38%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--disabled) .md-text-field__input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 38%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--disabled) .md-text-field__indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 38%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--disabled) .md-text-field__fieldset",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 12%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--disabled) .md-text-field__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 38%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--disabled) .md-text-field__icon ::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--disabled) .md-text-field__support-text,\n:host(.md-text-field--disabled) .md-text-field__counter",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 38%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--disabled) .md-text-field__prefix,\n:host(.md-text-field--disabled) .md-text-field__suffix",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 38%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-tf-autofill-start",
+      "declarations": [
+        {
+          "property": "--md-tf-autofill",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-tf-autofill-cancel",
+      "declarations": [
+        {
+          "property": "--md-tf-autofill",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__input:-webkit-autofill",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation-name",
+          "value": "md-tf-autofill-start",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "0 0 0 1000px var(--_container-color, #E6E1E6) inset",
+          "important": false
+        },
+        {
+          "property": "-webkit-text-fill-color",
+          "value": "var(--md-text-field-input-color, var(--md-sys-color-on-surface, #1D1B20))",
+          "important": false
+        },
+        {
+          "property": "caret-color",
+          "value": "var(--md-text-field-input-color, var(--md-sys-color-on-surface, #1D1B20))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__input:not(:-webkit-autofill)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation-name",
+          "value": "md-tf-autofill-cancel",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__label,\n  .md-text-field__indicator,\n  .md-text-field__state-layer,\n  .md-text-field__fieldset,\n  .md-text-field__legend,\n  .md-text-field__legend > span,\n  .md-text-field__container",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-duration",
+          "value": "0.01ms",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__speech--listening,\n  .md-text-field__speech--listening *",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "none",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--filled) .md-text-field__container,\n  :host(.md-text-field--filled.md-text-field--focused) .md-text-field__container,\n  :host(.md-text-field--filled.md-text-field--disabled) .md-text-field__container,\n  :host(.md-text-field--outlined) .md-text-field__container,\n  .md-text-field__container",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border",
+          "value": "1px solid ButtonText",
+          "important": false
+        },
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "Field",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "FieldText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--focused) .md-text-field__indicator",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__input",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "caret-color",
+          "value": "FieldText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--filled.md-text-field--disabled) .md-text-field__indicator",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--outlined.md-text-field--disabled) .md-text-field__fieldset",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--focused) .md-text-field__label,\n  :host(.md-text-field--error) .md-text-field__label,\n  :host(.md-text-field--disabled) .md-text-field__label",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "FieldText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--disabled) .md-text-field__label,\n  :host(.md-text-field--disabled) .md-text-field__input",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error) .md-text-field__indicator",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "LinkText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__input",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background",
+          "value": "Field",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "FieldText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--focused) .md-text-field__container",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "2px solid Highlight",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "1px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--error) .md-text-field__container",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "LinkText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--disabled) .md-text-field__container,\n  :host(.md-text-field--disabled) .md-text-field__input",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "GrayText",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__support-text,\n  .md-text-field__counter",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__support-text--error",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "LinkText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__label,\n  .md-text-field__prefix,\n  .md-text-field__suffix,\n  .md-text-field__icon,\n  .md-text-field__clear,\n  .md-text-field__password-toggle,\n  .md-text-field__speech",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "FieldText",
+          "important": false
+        },
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__error-icon",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "LinkText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__indicator",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "FieldText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--outlined) .md-text-field__container",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--outlined) .md-text-field__fieldset",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "ButtonText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--outlined.md-text-field--error) .md-text-field__fieldset",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "LinkText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled):not(.md-text-field--error)) .md-text-field__label,\n  :host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled).md-text-field--error) .md-text-field__label,\n  :host(:hover) .md-text-field__prefix,\n  :host(:hover) .md-text-field__suffix,\n  :host(:hover) .md-text-field__icon",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "FieldText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled).md-text-field--error) .md-text-field__label",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "LinkText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled):not(.md-text-field--error)) .md-text-field__indicator,\n  :host(:hover:not(.md-text-field--focused)) .md-text-field__indicator",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "FieldText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-text-field--focused):not(.md-text-field--disabled).md-text-field--error) .md-text-field__indicator",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "LinkText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover) .md-text-field__clear,\n  :host(:hover) .md-text-field__password-toggle,\n  :host(:hover) .md-text-field__speech",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "FieldText",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-text-field--outlined) .md-text-field__input:-webkit-autofill",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "0 0 0 1000px var(--md-sys-color-surface, #FEF7FF) inset",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__clear,\n.md-text-field__password-toggle,\n.md-text-field__speech",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-inline-size",
+          "value": "40px",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "40px",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "-6px",
+          "important": false
+        },
+        {
+          "property": "margin-block",
+          "value": "-8px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-text-field__clear--empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "visibility",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Text Field",
+  "category": "Text Inputs",
+  "parent": null,
+  "description": "The library's single text-entry primitive. Filled and outlined variants, single-line or multiline, with optional clear / password-toggle / speech-to-text affordances, display masking via formatter/parser, a debounced/throttled search event, and the full constraint-validation API through ElementInternals.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-text-field.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-text-field/md-text-field.tsx",
+    "css": "packages/core/src/components/md-text-field/md-text-field.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "label",
+        "value",
+        "placeholder",
+        "type",
+        "readOnly",
+        "required",
+        "error",
+        "errorText",
+        "supportingText",
+        "prefixText",
+        "suffixText",
+        "maxLength",
+        "clearable",
+        "passwordToggle",
+        "showPasswordLabel",
+        "hidePasswordLabel",
+        "multiline",
+        "rows",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdSearch",
+        "mdClear",
+        "mdPasswordToggle",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [
+        "leading-icon",
+        "trailing-icon"
+      ],
+      "unsupportedProperties": [
+        "reserveSupportingSpace",
+        "variant",
+        "name",
+        "pattern",
+        "minLength",
+        "min",
+        "max",
+        "step",
+        "autocomplete",
+        "inputMode",
+        "enterKeyHint",
+        "autoCapitalize",
+        "spellcheck",
+        "density",
+        "speechToText",
+        "speechLang",
+        "restrict",
+        "formatter",
+        "parser",
+        "formatOn",
+        "focusBorderWidth",
+        "appearFocused",
+        "chipsWrap",
+        "debounce",
+        "throttle",
+        "inputRole",
+        "inputExpanded",
+        "inputAriaAutocomplete"
+      ],
+      "unsupportedEvents": [
+        "mdSpeechResult"
+      ],
+      "unsupportedMethods": [
+        "setFocus",
+        "select",
+        "getInputElement",
+        "getValidity",
+        "setCustomValidity",
+        "checkValidity",
+        "reportValidity"
+      ],
+      "unsupportedSlots": [
+        "chips",
+        "clear-icon",
+        "password-toggle-icon",
+        "speech-icon",
+        "error-icon"
+      ],
+      "notes": [
+        "Native keyboard input and secure entry. Change commits on submit; HTML validity flags beyond required, JS formatter/parser/restrict and speech recognition remain unsupported.",
+        "clearable/passwordToggle external modes emit intent without mutating native state; internal and boolean true modes perform the change."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "clearable",
+        "disabled",
+        "error",
+        "errorText",
+        "hidePasswordLabel",
+        "label",
+        "maxLength",
+        "multiline",
+        "passwordToggle",
+        "placeholder",
+        "prefixText",
+        "readOnly",
+        "required",
+        "rows",
+        "showPasswordLabel",
+        "suffixText",
+        "supportingText",
+        "type",
+        "value",
+        "variant"
+      ],
+      "events": [
+        "mdChange",
+        "mdClear",
+        "mdInput",
+        "mdPasswordToggle",
+        "mdSearch"
+      ],
+      "methods": [],
+      "slots": [
+        "trailing-icon"
+      ],
+      "unsupportedProperties": [
+        "reserveSupportingSpace",
+        "name",
+        "pattern",
+        "minLength",
+        "min",
+        "max",
+        "step",
+        "autocomplete",
+        "inputMode",
+        "enterKeyHint",
+        "autoCapitalize",
+        "spellcheck",
+        "density",
+        "speechToText",
+        "speechLang",
+        "restrict",
+        "formatter",
+        "parser",
+        "formatOn",
+        "focusBorderWidth",
+        "appearFocused",
+        "chipsWrap",
+        "debounce",
+        "throttle",
+        "inputRole",
+        "inputExpanded",
+        "inputAriaAutocomplete"
+      ],
+      "unsupportedEvents": [
+        "mdSpeechResult",
+        "mdValidityChange"
+      ],
+      "unsupportedMethods": [
+        "setFocus",
+        "select",
+        "getInputElement",
+        "getValidity",
+        "setCustomValidity",
+        "checkValidity",
+        "reportValidity"
+      ],
+      "unsupportedSlots": [
+        "leading-icon",
+        "chips",
+        "clear-icon",
+        "password-toggle-icon",
+        "speech-icon",
+        "error-icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

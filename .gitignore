@@ -1,8 +1,8 @@
 # Dependencies
-node_modules/
+node_modules
 
 # Build output
-dist/
+dist
 dist.bak/
 www/
 hydrate/
@@ -68,6 +68,15 @@ packages/core/main-llm.md
 
 # Local Netlify folder
 .netlify
+
+# Native compiler playground build products and per-machine settings.
+.build/
+.swiftpm/
+.gradle/
+**/build/
+local.properties
+xcuserdata/
+*.xcuserstate
 
 # Rebuilt from the canonical standalone starters during core build.
 packages/core/bin/templates/

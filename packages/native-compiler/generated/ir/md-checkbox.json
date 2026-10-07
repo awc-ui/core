@@ -1,0 +1,1818 @@
+{
+  "tag": "md-checkbox",
+  "className": "MdCheckbox",
+  "properties": [
+    {
+      "name": "valueMissingLabel",
+      "type": "string",
+      "default": "'Please check this box if you want to proceed.'",
+      "defaultValue": "Please check this box if you want to proceed.",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-missing-label",
+      "optional": false,
+      "description": "Localized constraint-validation message shown when `required` is unmet.\n\nA prop rather than a hardcoded string, matching md-time-picker's\n`value-missing-label`: components stay i18n-engine-agnostic and the\nconsumer localizes through its own dictionary. Native inputs get their\nmessage from the browser's locale for free; a form-associated custom\nelement supplies its own, so leaving this hardcoded would ship an\nEnglish-only form to every locale."
+    },
+    {
+      "name": "error",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "error",
+      "optional": false,
+      "description": "Show the supporting line in the error colour."
+    },
+    {
+      "name": "errorText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "error-text",
+      "optional": false,
+      "description": "Supporting / error message shown beneath the control.\n\nA checkbox previously had nowhere to put a message, so a failed `required`\ncould only surface as the browser's own validation balloon — visually\nunrelated to the field, and gone the moment you click away. This gives it\nthe same inline supporting line md-text-field has.\n\nThe host is a fixed-size touch target, so the line is positioned OUT of\nthat box rather than laid out inside it; see the CSS for why that cannot\nsimply be a flex child."
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": "Supporting text shown when there is no error."
+    },
+    {
+      "name": "checked",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "checked",
+      "optional": false,
+      "description": "Whether the checkbox is checked"
+    },
+    {
+      "name": "indeterminate",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "indeterminate",
+      "optional": false,
+      "description": "Whether the checkbox is in the indeterminate (mixed) state"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disables the checkbox"
+    },
+    {
+      "name": "softDisabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "soft-disabled",
+      "optional": false,
+      "description": "Soft-disabled: disabled visuals but remains focusable for discoverability"
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "required",
+      "optional": false,
+      "description": "Whether the checkbox is required in a form"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "name",
+      "optional": false,
+      "description": "Form name"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "default": "'on'",
+      "defaultValue": "on",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": "Form value submitted when checked"
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "validationMessage",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "invalid",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "prevChecked",
+      "type": "boolean",
+      "initializer": "false"
+    },
+    {
+      "name": "prevIndeterminate",
+      "type": "boolean",
+      "initializer": "false"
+    },
+    {
+      "name": "pressed",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "{ checked: boolean; indeterminate: boolean }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "getValidity",
+      "parameters": [],
+      "returnType": "Promise<{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }>"
+    },
+    {
+      "name": "checkValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "reportValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "setCustomValidity",
+      "parameters": [
+        {
+          "name": "message",
+          "type": "string"
+        }
+      ],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "target"
+    },
+    {
+      "name": "state-layer",
+      "description": "Hover / focus / press overlay"
+    },
+    {
+      "name": "container",
+      "description": "The 18px checkbox box"
+    },
+    {
+      "name": "icon",
+      "description": "The SVG icon (checkmark or dash)"
+    },
+    {
+      "name": "supporting-text"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-checkbox-container-color",
+      "description": "Unchecked container (transparent)"
+    },
+    {
+      "name": "--md-checkbox-selected-container-color",
+      "description": "Checked / indeterminate fill"
+    },
+    {
+      "name": "--md-checkbox-outline-color",
+      "description": "Border color (unchecked)"
+    },
+    {
+      "name": "--md-checkbox-outline-width",
+      "description": "Border width"
+    },
+    {
+      "name": "--md-checkbox-icon-color",
+      "description": "Checkmark / dash color"
+    },
+    {
+      "name": "--md-checkbox-container-shape",
+      "description": "Container corner radius"
+    },
+    {
+      "name": "--md-checkbox-container-size",
+      "description": "Container size"
+    },
+    {
+      "name": "--md-checkbox-icon-size",
+      "description": "Icon size"
+    },
+    {
+      "name": "--md-checkbox-state-layer-size",
+      "description": "State-layer diameter"
+    },
+    {
+      "name": "--md-checkbox-state-layer-color",
+      "description": "State-layer color (unchecked)"
+    },
+    {
+      "name": "--md-checkbox-selected-state-layer-color",
+      "description": "State-layer color (checked/indeterminate)"
+    },
+    {
+      "name": "--md-checkbox-touch-target-size"
+    },
+    {
+      "name": "--md-checkbox-supporting-text-color"
+    },
+    {
+      "name": "--md-checkbox-error-text-color"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-checkbox': true,\n          'md-checkbox--checked': this.checked && !this.indeterminate,\n          'md-checkbox--indeterminate': this.indeterminate,\n          'md-checkbox--disabled': isEffectivelyDisabled,\n          'md-checkbox--selected': isSelected,\n          'md-checkbox--unselected': !isSelected,\n          'md-checkbox--pressed': this.pressed,\n          'md-checkbox--prev-unselected': !this.prevChecked && !this.prevIndeterminate,\n          'md-checkbox--has-support': !!supportingMessage,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "checkbox"
+      },
+      {
+        "name": "aria-invalid",
+        "value": "this.invalid || hasError ? 'true' : undefined"
+      },
+      {
+        "name": "aria-checked",
+        "value": "this.ariaCheckedValue"
+      },
+      {
+        "name": "aria-disabled",
+        "value": "isEffectivelyDisabled ? 'true' : undefined"
+      },
+      {
+        "name": "aria-required",
+        "value": "this.required ? 'true' : undefined"
+      },
+      {
+        "name": "tabindex",
+        "value": "decorative ? null : this.disabled ? '-1' : '0'"
+      },
+      {
+        "name": "onPointerDown",
+        "value": "this.handlePointerDown"
+      },
+      {
+        "name": "onPointerUp",
+        "value": "this.handlePointerUp"
+      },
+      {
+        "name": "onPointerLeave",
+        "value": "this.handlePointerUp"
+      },
+      {
+        "name": "onPointerCancel",
+        "value": "this.handlePointerUp"
+      },
+      {
+        "name": "onClick",
+        "value": "this.handleClick"
+      },
+      {
+        "name": "onKeyDown",
+        "value": "this.handleKeyDown"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-checkbox__target"
+          },
+          {
+            "name": "part",
+            "value": "target"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-checkbox__ripple-layer"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "md-ripple",
+                "attributes": [
+                  {
+                    "name": "disabled",
+                    "value": "isEffectivelyDisabled"
+                  }
+                ],
+                "children": []
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-checkbox__state-layer"
+              },
+              {
+                "name": "part",
+                "value": "state-layer"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-checkbox__container"
+              },
+              {
+                "name": "part",
+                "value": "container"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "span",
+                "attributes": [
+                  {
+                    "name": "class",
+                    "value": "md-checkbox__icon"
+                  },
+                  {
+                    "name": "part",
+                    "value": "icon"
+                  },
+                  {
+                    "name": "aria-hidden",
+                    "value": "true"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "span",
+                    "attributes": [
+                      {
+                        "name": "class",
+                        "value": "material-symbols-outlined"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": ""
+                      },
+                      {
+                        "kind": "expression",
+                        "source": "this.indeterminate ? 'remove' : 'check'"
+                      },
+                      {
+                        "kind": "text",
+                        "value": ""
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "supportingMessage && (\n          <span\n            id={`${this.uid}-support`}\n            ref={(el) => { this.supportEl = el; }}\n            part=\"supporting-text\"\n            role={hasError ? 'alert' : undefined}\n            class={{\n              'md-checkbox__support': true,\n              'md-checkbox__support--error': hasError,\n            }}\n          >\n            {supportingMessage}\n          </span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "HTML_FORM",
+      "severity": "warning",
+      "message": "HTML form association requires explicit native form state.",
+      "line": 113
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 26
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-checkbox/md-checkbox.tsx",
+    "styleUrl": "md-checkbox.css",
+    "shadow": true,
+    "formAssociated": true,
+    "sha256": "cbf66c4279d0dd846a43806e58081427d316fe9df2ab939d582ede6dc070a8e0"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-checkbox-container-color, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_selected-container-color",
+          "value": "var(--md-checkbox-selected-container-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_outline-color",
+          "value": "var(--md-checkbox-outline-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_outline-width",
+          "value": "var(--md-checkbox-outline-width, 2px)",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-checkbox-icon-color, var(--md-sys-color-on-primary))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-checkbox-container-shape, 2px)",
+          "important": false
+        },
+        {
+          "property": "--_container-size",
+          "value": "var(--md-checkbox-container-size, max(14px, calc(18px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-checkbox-icon-size, max(14px, calc(18px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_touch-size",
+          "value": "max(32px, calc(var(--md-checkbox-touch-target-size, 48px) + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-size",
+          "value": "var(--md-checkbox-state-layer-size, min(40px, var(--_touch-size)))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-checkbox-state-layer-color, var(--md-sys-color-on-surface))",
+          "important": false
+        },
+        {
+          "property": "--_selected-state-layer-color",
+          "value": "var(--md-checkbox-selected-state-layer-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_touch-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_touch-size)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 50%)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "vertical-align",
+          "value": "middle",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_state-layer-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--selected)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_selected-state-layer-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__native",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__ripple-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_state-layer-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_state-layer-size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 50%)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--disabled) .md-checkbox__ripple-layer,\n:host([soft-disabled]) .md-checkbox__ripple-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_state-layer-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_state-layer-size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 50%)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_state-layer-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short1, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--unselected:hover) .md-checkbox__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--unselected:focus-visible) .md-checkbox__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-focus-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--unselected:active) .md-checkbox__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--selected) .md-checkbox__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_selected-state-layer-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--selected:hover) .md-checkbox__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--selected:focus-visible) .md-checkbox__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-focus-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--selected:active) .md-checkbox__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "2px solid var(--md-sys-color-secondary)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "calc((var(--_state-layer-size) - var(--_touch-size)) / 2)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_container-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_container-size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "var(--_outline-width) solid var(--_outline-color)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    border-color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    transform var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--selected) .md-checkbox__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_selected-container-color)",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "var(--_selected-container-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--pressed) .md-checkbox__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scale(0.82)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    border-color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    transform var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([aria-invalid=\"true\"]) .md-checkbox__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--md-sys-color-error)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([aria-invalid=\"true\"].md-checkbox--selected) .md-checkbox__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-error)",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "var(--md-sys-color-error)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__icon .material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        },
+        {
+          "property": "font-variation-settings",
+          "value": "'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-checkbox-glyph-in",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scale(0)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "60%",
+      "context": "@keyframes md-checkbox-glyph-in",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scale(1.18)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-checkbox-glyph-in",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scale(1)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--checked) .md-checkbox__icon .material-symbols-outlined,\n:host(.md-checkbox--indeterminate) .md-checkbox__icon .material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-checkbox-glyph-in\n    var(--md-sys-motion-duration-short2, 200ms)\n    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)) both",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--unselected) .md-checkbox__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--selected) .md-checkbox__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--disabled.md-checkbox--unselected) .md-checkbox__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--disabled.md-checkbox--selected) .md-checkbox__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--disabled.md-checkbox--selected) .md-checkbox__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-surface)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--disabled) .md-checkbox__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled].md-checkbox--unselected) .md-checkbox__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled].md-checkbox--selected) .md-checkbox__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled].md-checkbox--selected) .md-checkbox__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-surface)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled]) .md-checkbox__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__container,\n  .md-checkbox__state-layer",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__icon .material-symbols-outlined",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__container",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "ButtonText",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "ButtonFace",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--selected) .md-checkbox__container",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "Highlight",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--selected) .md-checkbox__icon",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "HighlightText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "outline-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--disabled) .md-checkbox__container",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "GrayText",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--disabled.md-checkbox--selected) .md-checkbox__container",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "GrayText",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__state-layer",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__target",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_touch-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_touch-size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 50%)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-checkbox--has-support)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_touch-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__support",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "calc((var(--_touch-size) - var(--_container-size)) / 2)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "max-content",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "min(60ch, calc(100vw - 48px))",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "anywhere",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-small-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-checkbox-supporting-text-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-checkbox__support--error",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-checkbox-error-text-color, var(--md-sys-color-error, #B3261E))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Checkbox",
+  "category": "Selection",
+  "parent": null,
+  "description": "Select none, one, or many from a related set. Tri-state (checked / unchecked / indeterminate), form-associated via ElementInternals, with the full constraint-validation API and its own supporting/error line.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-checkbox.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-checkbox/md-checkbox.tsx",
+    "css": "packages/core/src/components/md-checkbox/md-checkbox.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "checked",
+        "indeterminate",
+        "required",
+        "value",
+        "error",
+        "errorText",
+        "supportingText",
+        "valueMissingLabel",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdChange",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "name",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "checked",
+        "disabled",
+        "error",
+        "errorText",
+        "indeterminate",
+        "softDisabled",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "valueMissingLabel",
+        "required",
+        "name",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdValidityChange"
+      ],
+      "unsupportedMethods": [
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

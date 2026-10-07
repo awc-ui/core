@@ -1,0 +1,1835 @@
+{
+  "tag": "md-organization-chart",
+  "className": "MdOrganizationChart",
+  "properties": [
+    {
+      "name": "nodes",
+      "type": "NodeInput",
+      "default": "[]",
+      "defaultValue": [],
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "nodes",
+      "optional": false,
+      "description": "The organization tree. Accepts an `OrgChartNode[]` (property) or a JSON\nstring (attribute). Multiple roots are supported (rendered side by side)."
+    },
+    {
+      "name": "selectionMode",
+      "type": "'none' | 'single' | 'multiple'",
+      "default": "'none'",
+      "defaultValue": "none",
+      "options": [
+        "none",
+        "single",
+        "multiple"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "selection-mode",
+      "optional": false,
+      "description": "Selection behaviour:\n  - `'none'`     — nodes are not selectable (default).\n  - `'single'`   — one node at a time.\n  - `'multiple'` — any number of nodes."
+    },
+    {
+      "name": "selectedIds",
+      "type": "string[]",
+      "default": "[]",
+      "defaultValue": [],
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "selected-ids",
+      "optional": false,
+      "description": "Selected node ids (controlled + initial). Kept in sync as the user selects."
+    },
+    {
+      "name": "collapsible",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "collapsible",
+      "optional": false,
+      "description": "Show expand/collapse togglers on nodes that have children."
+    },
+    {
+      "name": "orientation",
+      "type": "'vertical' | 'horizontal'",
+      "default": "'vertical'",
+      "defaultValue": "vertical",
+      "options": [
+        "vertical",
+        "horizontal"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "orientation",
+      "optional": false,
+      "description": "Layout direction of the tree:\n  - `'vertical'`   — top-down (default).\n  - `'horizontal'` — left-to-right; RTL mirrors it right-to-left.\n\nOnly the visual layout changes — the tree's ARIA semantics and keyboard\nmodel (Arrow Left/Right = collapse/expand, Up/Down = move) are unchanged."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "'Organization chart'",
+      "defaultValue": "Organization chart",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Accessible name for the tree (localisable)."
+    },
+    {
+      "name": "expandLabel",
+      "type": "string",
+      "default": "'Expand'",
+      "defaultValue": "Expand",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "expand-label",
+      "optional": false,
+      "description": "Toggler accessible label when a node is collapsed (localisable)."
+    },
+    {
+      "name": "collapseLabel",
+      "type": "string",
+      "default": "'Collapse'",
+      "defaultValue": "Collapse",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "collapse-label",
+      "optional": false,
+      "description": "Toggler accessible label when a node is expanded (localisable)."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "collapsed",
+      "type": "inferred",
+      "initializer": "new Set<string>()"
+    },
+    {
+      "name": "selection",
+      "type": "inferred",
+      "initializer": "new Set<string>()"
+    },
+    {
+      "name": "activeId",
+      "type": "inferred",
+      "initializer": "''"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSelectionChange",
+      "detail": "OrgChartSelectionChangeDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdNodeToggle",
+      "detail": "OrgChartToggleDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "empty",
+      "description": "Custom empty-state content"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "Hover / selected overlay"
+    },
+    {
+      "name": "avatar",
+      "description": "The md-avatar"
+    },
+    {
+      "name": "name",
+      "description": "Primary label"
+    },
+    {
+      "name": "title",
+      "description": "Secondary label"
+    },
+    {
+      "name": "toggle",
+      "description": "Expand / collapse affordance"
+    },
+    {
+      "name": "group",
+      "description": "A role=\"group\" child list"
+    },
+    {
+      "name": "viewport",
+      "description": "Scroll/pan container"
+    },
+    {
+      "name": "empty",
+      "description": "Empty-state container"
+    },
+    {
+      "name": "tree",
+      "description": "The role=\"tree\" root list"
+    },
+    {
+      "name": "avatar-image",
+      "description": "The avatar's <img> (exported)"
+    }
+  ],
+  "cssProperties": [],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-org-chart': true,\n          'md-org-chart--empty': empty,\n        }"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-org-chart__viewport"
+          },
+          {
+            "name": "part",
+            "value": "viewport"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "empty ? (\n            <div class=\"md-org-chart__empty\" part=\"empty\" role=\"status\">\n              <slot name=\"empty\">No data</slot>\n            </div>\n          ) : (\n            <ul\n              role=\"tree\"\n              class=\"md-org-chart__tree\"\n              part=\"tree\"\n              aria-label={this.label}\n              aria-multiselectable={\n                this.selectionMode === 'multiple' ? 'true' : undefined\n              }\n            >\n              {roots.map((root, i) => this.renderNode(root, 1, i + 1, roots.length))}\n            </ul>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "Native layout measurement must replace ResizeObserver.",
+      "line": 150
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
+      "line": 252
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 252
+    },
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 298
+    },
+    {
+      "code": "DOM_MUTATION",
+      "severity": "warning",
+      "message": "classList depends on browser semantics and requires a native adapter.",
+      "line": 507
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 554
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Document access requires a native adapter.",
+      "line": 718
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 80
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-organization-chart/md-organization-chart.tsx",
+    "styleUrl": "md-organization-chart.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "10381b6fde6fec4a037fc0bf4f8d17f813ba11d94f1a5db87a67dd031bd3c62b"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_connector-color",
+          "value": "var(--md-org-chart-connector-color, var(--md-sys-color-outline-variant, #c4c7c5))",
+          "important": false
+        },
+        {
+          "property": "--_connector-width",
+          "value": "var(--md-org-chart-connector-width, 1.5px)",
+          "important": false
+        },
+        {
+          "property": "--_node-color",
+          "value": "var(--md-org-chart-node-color, var(--md-sys-color-surface-container-low, #f7f2fa))",
+          "important": false
+        },
+        {
+          "property": "--_node-outline",
+          "value": "var(--md-org-chart-node-outline-color, var(--md-sys-color-outline-variant, #c4c7c5))",
+          "important": false
+        },
+        {
+          "property": "--_node-outline-width",
+          "value": "var(--md-org-chart-node-outline-width, 1px)",
+          "important": false
+        },
+        {
+          "property": "--_node-shape",
+          "value": "var(--md-org-chart-node-shape, var(--md-sys-shape-corner-medium, 12px))",
+          "important": false
+        },
+        {
+          "property": "--_node-min-width",
+          "value": "var(--md-org-chart-node-min-width, 176px)",
+          "important": false
+        },
+        {
+          "property": "--_node-max-width",
+          "value": "var(--md-org-chart-node-max-width, 260px)",
+          "important": false
+        },
+        {
+          "property": "--_selected-color",
+          "value": "var(--md-org-chart-selected-color, var(--md-sys-color-primary, #6750a4))",
+          "important": false
+        },
+        {
+          "property": "--_focus-ring-color",
+          "value": "var(--md-org-chart-focus-ring-color, var(--md-sys-color-secondary, #625b71))",
+          "important": false
+        },
+        {
+          "property": "--_toggle-size",
+          "value": "var(--md-org-chart-toggle-size, max(20px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-org-chart-state-layer-color, var(--md-sys-color-on-surface, #1d1b20))",
+          "important": false
+        },
+        {
+          "property": "--_accent",
+          "value": "var(--md-sys-color-primary, #6750a4)",
+          "important": false
+        },
+        {
+          "property": "--_level-gap",
+          "value": "var(--md-org-chart-level-gap, max(24px, calc(28px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_sibling-gap",
+          "value": "var(--md-org-chart-sibling-gap, max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_duration",
+          "value": "var(--md-org-chart-duration, var(--md-sys-motion-duration-medium2, 300ms))",
+          "important": false
+        },
+        {
+          "property": "--_easing",
+          "value": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_line",
+          "value": "var(--_connector-width) solid var(--_connector-color)",
+          "important": false
+        },
+        {
+          "property": "--_elbow",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1d1b20)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-medium-font-family, Roboto, system-ui, sans-serif)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__viewport",
+      "context": null,
+      "declarations": [
+        {
+          "property": "overflow",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "8px 8px calc(var(--_toggle-size) / 2 + 10px)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__tree,\n.md-org-chart__group",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "list-style",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__tree",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "max-content",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-start",
+          "value": "var(--_level-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__branch",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "padding-block-start",
+          "value": "var(--_level-gap)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "calc(var(--_sibling-gap) / 2)",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__branch::before,\n.md-org-chart__branch::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_level-gap)",
+          "important": false
+        },
+        {
+          "property": "border-block-start",
+          "value": "var(--_line)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__branch::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-end",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "border-inline-start",
+          "value": "var(--_line)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__branch:only-child::before,\n.md-org-chart__branch:only-child::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__branch:only-child",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-start",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__branch:first-child::before,\n.md-org-chart__branch:last-child::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__branch:last-child::before",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-inline-end",
+          "value": "var(--_line)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_elbow)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__branch:first-child::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_elbow)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group::before",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_level-gap)",
+          "important": false
+        },
+        {
+          "property": "border-inline-start",
+          "value": "var(--_line)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group[data-trail]::before,\n.md-org-chart__branch--on-path::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-inline-start-color",
+          "value": "var(--_selected-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__branch--on-path:last-child::before",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-inline-end-color",
+          "value": "var(--_selected-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group[data-trail-run]::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "top",
+          "value": "var(--_level-gap)",
+          "important": false
+        },
+        {
+          "property": "left",
+          "value": "var(--_trail-x)",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_trail-w)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_level-gap)",
+          "important": false
+        },
+        {
+          "property": "border-top",
+          "value": "var(--_connector-width) solid var(--_selected-color)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group[data-trail-dir='end']::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-right",
+          "value": "var(--_connector-width) solid var(--_selected-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group[data-trail-dir='start']::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-left",
+          "value": "var(--_connector-width) solid var(--_selected-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group[data-trail-elbow][data-trail-dir='end']::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_elbow)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group[data-trail-elbow][data-trail-dir='start']::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_elbow)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__tree > .md-org-chart__branch",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-start",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__tree > .md-org-chart__branch::before,\n.md-org-chart__tree > .md-org-chart__branch::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__node",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px))",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "max(6px, calc(10px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "max(8px, calc(14px + var(--md-sys-density-scale, 0) * 1.5px))",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--_node-min-width)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "var(--_node-max-width)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_node-shape)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_node-color)",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "var(--_node-outline-width) solid var(--_node-outline)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1d1b20)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "border-color var(--_duration) var(--_easing),\n    box-shadow var(--_duration) var(--_easing),\n    \n    z-index 0s linear var(--md-sys-motion-duration-short2, 100ms)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__node:hover,\n.md-org-chart__node:focus-within",
+      "context": null,
+      "declarations": [
+        {
+          "property": "z-index",
+          "value": "4",
+          "important": false
+        },
+        {
+          "property": "transition-delay",
+          "value": "0s",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__node--selectable",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__node--selectable:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-1, 0 1px 3px 1px rgba(0, 0, 0, 0.15))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__node--selected",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--_selected-color)",
+          "important": false
+        },
+        {
+          "property": "border-width",
+          "value": "calc(var(--_node-outline-width) + 1px)",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "calc(max(6px, calc(10px + var(--md-sys-density-scale, 0) * 1px)) - 1px)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "calc(max(8px, calc(14px + var(--md-sys-density-scale, 0) * 1.5px)) - 1px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__node--selected.md-org-chart__node--selectable:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "0 0 0 1px var(--_selected-color),\n    var(--md-sys-elevation-1, 0 1px 3px 1px rgba(0, 0, 0, 0.15))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__branch:focus-visible > .md-org-chart__node",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--_focus-ring-color)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__ripple",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-ripple-color",
+          "value": "var(--_selected-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_state-layer-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--_duration) var(--_easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__node--selectable:hover > .md-org-chart__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__node--selectable:active > .md-org-chart__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__node--selected > .md-org-chart__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0.08",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_selected-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__avatar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        },
+        {
+          "property": "--md-avatar-container-color",
+          "value": "var(--md-sys-color-primary-container, #eaddff)",
+          "important": false
+        },
+        {
+          "property": "--md-avatar-label-color",
+          "value": "var(--md-sys-color-on-primary-container, #21005d)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__name",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-title-small-font-family, Roboto, system-ui, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "600",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1d1b20)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__title",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454f)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__toggle-tip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "calc(-1 * var(--_toggle-size) / 2)",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "calc(50% - var(--_toggle-size) / 2)",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "3",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__toggle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-container-color",
+          "value": "var(--md-sys-color-surface-container-high, #ece6f0)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "var(--_toggle-size)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "var(--_toggle-size)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "calc(var(--_toggle-size) * 0.66)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-org-chart-grow",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(-8px) scale(0.96)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-org-chart-grow",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-org-chart-grow var(--_duration) var(--_easing)",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "top center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding",
+          "value": "32px 16px",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454f)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-sys-typescale-body-medium-size, 14px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__tree,\n:host([orientation='horizontal']) .md-org-chart__group",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__group",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "var(--_level-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__branch",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "row",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "calc(var(--_sibling-gap) / 2)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--_level-gap) 0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__branch:only-child,\n:host([orientation='horizontal']) .md-org-chart__tree > .md-org-chart__branch",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-inline-start",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__branch::before,\n:host([orientation='horizontal']) .md-org-chart__branch::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_level-gap)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "border-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-inline-start",
+          "value": "var(--_line)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__branch::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "border-block-start",
+          "value": "var(--_line)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__branch:first-child::before,\n:host([orientation='horizontal']) .md-org-chart__branch:last-child::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__branch:last-child::before",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-inline-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-block-end",
+          "value": "var(--_line)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_elbow)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__branch:first-child::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_elbow)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__group::before",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_level-gap)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-block-start",
+          "value": "var(--_line)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__toggle-tip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block-end",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "calc(50% - var(--_toggle-size) / 2)",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "calc(-1 * var(--_toggle-size) / 2)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__viewport",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding",
+          "value": "8px calc(var(--_toggle-size) / 2 + 10px) 8px 8px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-org-chart-grow-h",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(-8px) scale(0.96)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-org-chart-grow-h",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__group",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation-name",
+          "value": "md-org-chart-grow-h",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "left center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__node,\n  .md-org-chart__toggle-icon,\n  .md-org-chart__state-layer",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Organization Chart",
+  "category": "Data Display",
+  "parent": null,
+  "description": "A tree of avatar cards joined by connectors. Renders a hierarchy — reporting lines, categories, taxonomies — with collapsible branches, optional selection and the full WAI-ARIA tree keyboard model.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-organization-chart.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-organization-chart/md-organization-chart.tsx",
+    "css": "packages/core/src/components/md-organization-chart/md-organization-chart.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "nodes",
+        "selectionMode",
+        "selectedIds",
+        "collapsible",
+        "label",
+        "expandLabel",
+        "collapseLabel"
+      ],
+      "events": [
+        "mdSelectionChange",
+        "mdNodeToggle"
+      ],
+      "methods": [],
+      "slots": [
+        "empty"
+      ],
+      "unsupportedProperties": [
+        "orientation",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native indented tree. Horizontal node layout and browser keyboard roving-focus scheme are not implemented."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "collapseLabel",
+        "collapsible",
+        "expandLabel",
+        "label",
+        "nodes",
+        "selectedIds",
+        "selectionMode"
+      ],
+      "events": [
+        "mdNodeToggle",
+        "mdSelectionChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "orientation",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "empty"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native indented tree with accessible cards; horizontal connector layout is not yet ported.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

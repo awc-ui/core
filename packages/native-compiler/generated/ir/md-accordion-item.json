@@ -1,0 +1,2897 @@
+{
+  "tag": "md-accordion-item",
+  "className": "MdAccordionItem",
+  "properties": [
+    {
+      "name": "headline",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "headline",
+      "optional": false,
+      "description": "Header text (or use the `headline` slot)."
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": "Optional small caption below the headline."
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "icon",
+      "optional": false,
+      "description": "Optional leading-icon (Material Symbols shorthand)."
+    },
+    {
+      "name": "expanded",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "expanded",
+      "optional": false,
+      "description": "Whether the item is expanded. Two-way bindable."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disable interaction."
+    },
+    {
+      "name": "headingLevel",
+      "type": "1 | 2 | 3 | 4 | 5 | 6",
+      "default": "3",
+      "defaultValue": 3,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "heading-level",
+      "optional": false,
+      "description": "ARIA heading level (`aria-level`) for the item's heading wrapper.\nRenders a native `<h1>`–`<h6>` so the implicit semantics match the\npage's information architecture. Per WAI-ARIA APG: \"an element with\nrole heading that has a value set for aria-level that is\nappropriate for the information architecture of the page\".\n\nSet per-item, or let the parent `<md-accordion heading-level>`\npropagate the same value to every item."
+    },
+    {
+      "name": "collapsible",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "collapsible",
+      "optional": false,
+      "description": "Whether the item can be collapsed when it is expanded. Set to\n`false` to implement the APG variant where the accordion does not\npermit a panel to be collapsed — the open button then advertises\n`aria-disabled=\"true\"`, and Enter / Space / click no longer toggle\nit. Typically managed by the parent's `keep-one-expanded` mode."
+    },
+    {
+      "name": "regionRole",
+      "type": "| 'region'\n    | 'group'\n    | 'none'",
+      "default": "'region'",
+      "defaultValue": "region",
+      "options": [
+        "region",
+        "group",
+        "none"
+      ],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "region-role",
+      "optional": false,
+      "description": "Role applied to the accordion panel. APG recommends `region` for\nstructural clarity, but warns against using it when more than ~6\npanels can be open at once (landmark proliferation). The parent\n`<md-accordion region>` orchestrates this automatically.\n\n- `region` (default) — full landmark semantics.\n- `group` — semantically a group but not a landmark.\n- `none` — drop the role entirely (still labelled via aria-labelledby)."
+    },
+    {
+      "name": "contentMaxHeight",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "content-max-height",
+      "optional": false,
+      "description": "Cap the panel body's block-size (e.g. `\"220px\"`, `\"40vh\"`). When set,\nthe content region becomes a scroll container instead of growing to\nfit — and, crucially, it is made keyboard-focusable (`tabindex=\"0\"`)\nso keyboard-only users can scroll it. A scrollable region whose\ncontent isn't itself focusable is otherwise unreachable without a\npointer (WCAG 2.1.1 — axe `scrollable-region-focusable`). Its\naccessible name comes from the enclosing labelled panel region.\n\nPrefer this over hand-rolling a slotted `overflow:auto` wrapper: an\nauthored scroll `<div>` lives in light DOM the component can't make\nfocusable, so it would trip the same axe rule. Leave empty (default)\nfor a panel that grows to fit its content."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "hasSlottedHeadline",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedTrailingIcon",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedLeadingIcon",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdItemToggle",
+      "detail": "{ expanded: boolean; index: number }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdItemRequestFocus",
+      "detail": "{\n    direction: 'next' | 'prev' | 'first' | 'last';\n    from: number;\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdItemRequestReorder",
+      "detail": "{\n    direction: 'up' | 'down';\n    from: number;\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "toggle",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "focusHeader",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "leading-icon",
+      "description": "Custom leading icon."
+    },
+    {
+      "name": "headline",
+      "description": "Replace the headline text with custom markup."
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Custom trailing icon (chevron)."
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "chassis-handle",
+      "description": "Hit area for the chassis-drag affordance on the"
+    },
+    {
+      "name": "chassis-handle-bar"
+    },
+    {
+      "name": "heading",
+      "description": "The h3 that wraps the header button."
+    },
+    {
+      "name": "header",
+      "description": "The clickable header button."
+    },
+    {
+      "name": "state-layer",
+      "description": "Hover/focus/press overlay."
+    },
+    {
+      "name": "drag-handle",
+      "description": "Drag grip shown only when the parent"
+    },
+    {
+      "name": "leading-icon",
+      "description": "Leading icon container."
+    },
+    {
+      "name": "headline",
+      "description": "Headline text."
+    },
+    {
+      "name": "supporting-text",
+      "description": "Supporting caption."
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Trailing chevron container."
+    },
+    {
+      "name": "panel",
+      "description": "The region containing the content."
+    },
+    {
+      "name": "content",
+      "description": "Inner content wrapper (padding lives here)."
+    },
+    {
+      "name": "content-inner"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-accordion-item-container-color",
+      "description": "Item background"
+    },
+    {
+      "name": "--md-accordion-item-container-shape",
+      "description": "Border-radius (filled variant)"
+    },
+    {
+      "name": "--md-accordion-item-header-color",
+      "description": "Header bg in resting state"
+    },
+    {
+      "name": "--md-accordion-item-header-color-expanded",
+      "description": "Header bg when expanded."
+    },
+    {
+      "name": "--md-accordion-item-headline-color",
+      "description": "Headline text colour"
+    },
+    {
+      "name": "--md-accordion-item-headline-color-expanded",
+      "description": "Color when expanded"
+    },
+    {
+      "name": "--md-accordion-item-supporting-color",
+      "description": "Supporting-text colour"
+    },
+    {
+      "name": "--md-accordion-item-icon-color",
+      "description": "Leading & trailing icon colour"
+    },
+    {
+      "name": "--md-accordion-item-icon-color-expanded",
+      "description": "Icon color when expanded"
+    },
+    {
+      "name": "--md-accordion-item-state-layer-color",
+      "description": "Hover/focus/press overlay"
+    },
+    {
+      "name": "--md-accordion-item-header-padding",
+      "description": "Inline padding for header"
+    },
+    {
+      "name": "--md-accordion-item-content-padding",
+      "description": "Inline padding for content area"
+    },
+    {
+      "name": "--md-accordion-item-header-min-height",
+      "description": "Minimum block-size of header"
+    },
+    {
+      "name": "--md-accordion-item-expand-duration",
+      "description": "Open animation duration"
+    },
+    {
+      "name": "--md-accordion-item-collapse-duration",
+      "description": "Close animation duration"
+    },
+    {
+      "name": "--md-accordion-item-elevation",
+      "description": "Box-shadow override."
+    },
+    {
+      "name": "--md-accordion-item-elevation-expanded",
+      "description": "Shadow when the item is"
+    },
+    {
+      "name": "--md-accordion-item-chassis-handle-color",
+      "description": "Glyph colour of the small"
+    },
+    {
+      "name": "--md-accordion-item-chassis-handle-bg-hover",
+      "description": "Tint shown behind the grip"
+    },
+    {
+      "name": "--md-accordion-item-container-color-dragging",
+      "description": "Opaque fill applied to a"
+    },
+    {
+      "name": "--md-accordion-item-container-shape-dragging",
+      "description": "Border-radius applied to a"
+    },
+    {
+      "name": "--md-accordion-item-container-shape-expanded"
+    },
+    {
+      "name": "--md-accordion-item-state-layer-color-expanded"
+    },
+    {
+      "name": "--md-accordion-item-container-color-expanded"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-accordion-item': true,\n          'md-accordion-item--expanded': this.expanded,\n          'md-accordion-item--disabled': this.disabled,\n        }"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-accordion-item__chassis-handle"
+          },
+          {
+            "name": "part",
+            "value": "chassis-handle"
+          },
+          {
+            "name": "data-accordion-chassis-drag",
+            "value": "true"
+          },
+          {
+            "name": "role",
+            "value": "presentation"
+          },
+          {
+            "name": "aria-hidden",
+            "value": "true"
+          },
+          {
+            "name": "onClick",
+            "value": "this.handleDragHandleClick"
+          },
+          {
+            "name": "onKeyDown",
+            "value": "this.handleDragHandleKeyDown"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-accordion-item__chassis-handle-bar"
+              },
+              {
+                "name": "part",
+                "value": "chassis-handle-bar"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "HeadingTag",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-accordion-item__heading"
+          },
+          {
+            "name": "part",
+            "value": "heading"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "button",
+            "attributes": [
+              {
+                "name": "id",
+                "value": "this.headerId"
+              },
+              {
+                "name": "class",
+                "value": "md-accordion-item__header"
+              },
+              {
+                "name": "part",
+                "value": "header"
+              },
+              {
+                "name": "type",
+                "value": "button"
+              },
+              {
+                "name": "aria-expanded",
+                "value": "String(this.expanded)"
+              },
+              {
+                "name": "aria-controls",
+                "value": "this.contentId"
+              },
+              {
+                "name": "aria-disabled",
+                "value": "this.ariaDisabledHeader ? 'true' : undefined"
+              },
+              {
+                "name": "disabled",
+                "value": "this.disabled"
+              },
+              {
+                "name": "onClick",
+                "value": "this.handleHeaderClick"
+              },
+              {
+                "name": "onKeyDown",
+                "value": "this.handleHeaderKeyDown"
+              },
+              {
+                "name": "ref",
+                "value": "(el) => (this.headerEl = el)"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "md-ripple",
+                "attributes": [
+                  {
+                    "name": "disabled",
+                    "value": "this.disabled"
+                  }
+                ],
+                "children": []
+              },
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "span",
+                "attributes": [
+                  {
+                    "name": "class",
+                    "value": "md-accordion-item__state-layer"
+                  },
+                  {
+                    "name": "part",
+                    "value": "state-layer"
+                  },
+                  {
+                    "name": "aria-hidden",
+                    "value": "true"
+                  }
+                ],
+                "children": []
+              },
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "span",
+                "attributes": [
+                  {
+                    "name": "class",
+                    "value": "md-accordion-item__drag-handle"
+                  },
+                  {
+                    "name": "part",
+                    "value": "drag-handle"
+                  },
+                  {
+                    "name": "data-accordion-drag-handle",
+                    "value": "true"
+                  },
+                  {
+                    "name": "aria-hidden",
+                    "value": "true"
+                  },
+                  {
+                    "name": "onClick",
+                    "value": "this.handleDragHandleClick"
+                  },
+                  {
+                    "name": "onKeyDown",
+                    "value": "this.handleDragHandleKeyDown"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "span",
+                    "attributes": [
+                      {
+                        "name": "class",
+                        "value": "material-symbols-outlined md-accordion-item__drag-handle-icon"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "drag_indicator"
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "expression",
+                "source": "hasLeading && (\n              <span class=\"md-accordion-item__leading\" part=\"leading-icon\" aria-hidden=\"true\">\n                <slot name=\"leading-icon\">\n                  {this.icon && (\n                    <span class=\"material-symbols-outlined md-accordion-item__icon\">\n                      {this.icon}\n                    </span>\n                  )}\n                </slot>\n              </span>\n            )"
+              },
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "span",
+                "attributes": [
+                  {
+                    "name": "class",
+                    "value": "md-accordion-item__text"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "span",
+                    "attributes": [
+                      {
+                        "name": "class",
+                        "value": "md-accordion-item__headline"
+                      },
+                      {
+                        "name": "part",
+                        "value": "headline"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": ""
+                      },
+                      {
+                        "kind": "element",
+                        "tag": "slot",
+                        "attributes": [
+                          {
+                            "name": "name",
+                            "value": "headline"
+                          }
+                        ],
+                        "children": [
+                          {
+                            "kind": "expression",
+                            "source": "this.headline"
+                          }
+                        ]
+                      },
+                      {
+                        "kind": "text",
+                        "value": ""
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "expression",
+                    "source": "(this.supportingText || this.hasSlottedHeadline) && this.supportingText && (\n                <span class=\"md-accordion-item__supporting\" part=\"supporting-text\">\n                  {this.supportingText}\n                </span>\n              )"
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "span",
+                "attributes": [
+                  {
+                    "name": "class",
+                    "value": "md-accordion-item__trailing"
+                  },
+                  {
+                    "name": "part",
+                    "value": "trailing-icon"
+                  },
+                  {
+                    "name": "aria-hidden",
+                    "value": "true"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "slot",
+                    "attributes": [
+                      {
+                        "name": "name",
+                        "value": "trailing-icon"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": ""
+                      },
+                      {
+                        "kind": "element",
+                        "tag": "svg",
+                        "attributes": [
+                          {
+                            "name": "class",
+                            "value": "md-accordion-item__chevron"
+                          },
+                          {
+                            "name": "viewBox",
+                            "value": "0 0 24 24"
+                          },
+                          {
+                            "name": "width",
+                            "value": "24"
+                          },
+                          {
+                            "name": "height",
+                            "value": "24"
+                          },
+                          {
+                            "name": "fill",
+                            "value": "currentColor"
+                          },
+                          {
+                            "name": "aria-hidden",
+                            "value": "true"
+                          }
+                        ],
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": ""
+                          },
+                          {
+                            "kind": "element",
+                            "tag": "path",
+                            "attributes": [
+                              {
+                                "name": "d",
+                                "value": "M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"
+                              }
+                            ],
+                            "children": []
+                          },
+                          {
+                            "kind": "text",
+                            "value": ""
+                          }
+                        ]
+                      },
+                      {
+                        "kind": "text",
+                        "value": ""
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "id",
+            "value": "this.contentId"
+          },
+          {
+            "name": "class",
+            "value": "md-accordion-item__panel"
+          },
+          {
+            "name": "part",
+            "value": "panel"
+          },
+          {
+            "name": "role",
+            "value": "this.regionRole === 'none' ? undefined : this.regionRole"
+          },
+          {
+            "name": "aria-labelledby",
+            "value": "this.headerId"
+          },
+          {
+            "name": "aria-hidden",
+            "value": "this.expanded ? 'false' : 'true'"
+          },
+          {
+            "name": "inert",
+            "value": "!this.expanded"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "div",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-accordion-item__content"
+              },
+              {
+                "name": "part",
+                "value": "content"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "div",
+                "attributes": [
+                  {
+                    "name": "class",
+                    "value": "{\n                'md-accordion-item__content-inner': true,\n                'md-accordion-item__content-inner--scroll': scrollable,\n              }"
+                  },
+                  {
+                    "name": "part",
+                    "value": "content-inner"
+                  },
+                  {
+                    "name": "tabindex",
+                    "value": "scrollable ? '0' : undefined"
+                  },
+                  {
+                    "name": "style",
+                    "value": "scrollable ? { maxBlockSize: this.contentMaxHeight } : undefined"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "slot",
+                    "attributes": [],
+                    "children": []
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 160
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 160
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 165
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 17
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-accordion-item/md-accordion-item.tsx",
+    "styleUrl": "md-accordion-item.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "2b7d7d227a4d3913e2941695f1ce005f51382e8eea7b68ae27c0a78ed1995a20"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-accordion-item-container-color, var(--md-sys-color-surface-container-low, #F7F2FA))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-accordion-item-container-shape, var(--md-sys-shape-corner-medium, 12px))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape-expanded",
+          "value": "var(--md-accordion-item-container-shape-expanded, var(--md-sys-shape-corner-large, 16px))",
+          "important": false
+        },
+        {
+          "property": "--_header-color",
+          "value": "var(--md-accordion-item-header-color, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_header-color-expanded",
+          "value": "var(--md-accordion-item-header-color-expanded, var(--md-sys-color-secondary-container, #E8DEF8))",
+          "important": false
+        },
+        {
+          "property": "--_headline-color",
+          "value": "var(--md-accordion-item-headline-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        },
+        {
+          "property": "--_headline-color-expanded",
+          "value": "var(--md-accordion-item-headline-color-expanded, var(--md-sys-color-on-secondary-container, #1D192B))",
+          "important": false
+        },
+        {
+          "property": "--_supporting-color",
+          "value": "var(--md-accordion-item-supporting-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-accordion-item-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color-expanded",
+          "value": "var(--md-accordion-item-icon-color-expanded, var(--md-sys-color-on-secondary-container, #1D192B))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-accordion-item-state-layer-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color-expanded",
+          "value": "var(--md-accordion-item-state-layer-color-expanded, var(--md-sys-color-on-secondary-container, #1D192B))",
+          "important": false
+        },
+        {
+          "property": "--_header-padding",
+          "value": "var(--md-accordion-item-header-padding, max(4px, calc(16px + var(--md-sys-density-scale, 0) * 2px)) max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_content-padding",
+          "value": "var(--md-accordion-item-content-padding, max(8px, calc(20px + var(--md-sys-density-scale, 0) * 2px)) max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_header-min-height",
+          "value": "var(--md-accordion-item-header-min-height, max(40px, calc(64px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_expand-duration",
+          "value": "var(--md-accordion-item-expand-duration, var(--md-sys-motion-duration-medium3, 350ms))",
+          "important": false
+        },
+        {
+          "property": "--_collapse-duration",
+          "value": "var(--md-accordion-item-collapse-duration, var(--md-sys-motion-duration-short4, 200ms))",
+          "important": false
+        },
+        {
+          "property": "--_expand-easing",
+          "value": "var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "important": false
+        },
+        {
+          "property": "--_collapse-easing",
+          "value": "var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15))",
+          "important": false
+        },
+        {
+          "property": "--_state-easing",
+          "value": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_spring-easing",
+          "value": "var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00))",
+          "important": false
+        },
+        {
+          "property": "--_spring-duration",
+          "value": "var(--md-sys-motion-spring-spatial-default-duration, 500ms)",
+          "important": false
+        },
+        {
+          "property": "--_elevation",
+          "value": "var(--md-accordion-item-elevation, var(--md-sys-elevation-0, none))",
+          "important": false
+        },
+        {
+          "property": "--_elevation-expanded",
+          "value": "var(--md-accordion-item-elevation-expanded, var(--_elevation))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--_elevation)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "border-radius var(--_expand-duration) var(--_expand-easing),\n    background-color var(--_expand-duration) var(--_expand-easing),\n    box-shadow var(--_expand-duration) var(--_expand-easing)",
+          "important": false
+        },
+        {
+          "property": "will-change",
+          "value": "border-radius",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion.md-accordion--filled.md-accordion--elevation-1)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "var(--md-accordion-item-elevation, var(--md-sys-elevation-1))",
+          "important": false
+        },
+        {
+          "property": "--_elevation-expanded",
+          "value": "var(--md-accordion-item-elevation-expanded, var(--md-sys-elevation-2))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion.md-accordion--filled.md-accordion--elevation-2)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "var(--md-accordion-item-elevation, var(--md-sys-elevation-2))",
+          "important": false
+        },
+        {
+          "property": "--_elevation-expanded",
+          "value": "var(--md-accordion-item-elevation-expanded, var(--md-sys-elevation-3))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion.md-accordion--filled.md-accordion--elevation-3)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "var(--md-accordion-item-elevation, var(--md-sys-elevation-3))",
+          "important": false
+        },
+        {
+          "property": "--_elevation-expanded",
+          "value": "var(--md-accordion-item-elevation-expanded, var(--md-sys-elevation-4))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion.md-accordion--filled.md-accordion--elevation-4)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "var(--md-accordion-item-elevation, var(--md-sys-elevation-4))",
+          "important": false
+        },
+        {
+          "property": "--_elevation-expanded",
+          "value": "var(--md-accordion-item-elevation-expanded, var(--md-sys-elevation-5))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion.md-accordion--filled.md-accordion--elevation-5)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "var(--md-accordion-item-elevation, var(--md-sys-elevation-5))",
+          "important": false
+        },
+        {
+          "property": "--_elevation-expanded",
+          "value": "var(--md-accordion-item-elevation-expanded, var(--md-sys-elevation-5))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion.md-accordion--outlined)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_elevation",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "--_elevation-expanded",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--expanded)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "calc(var(--_container-shape) + var(--md-sys-shape-morph-enabled, 1) * (var(--_container-shape-expanded) - var(--_container-shape)))",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-accordion-item-container-color-expanded,\n    var(--md-sys-color-surface-container, #F3EDF7))",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--_elevation-expanded)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion.md-accordion--outlined)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-shape",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "--_container-shape-expanded",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-accordion-item-container-color, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__heading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "font",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__header",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_header-min-height)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--_header-padding)",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_header-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_headline-color)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-title-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-title-medium-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-title-medium-letter-spacing, 0.15px)",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "start",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--_expand-duration) var(--_expand-easing),\n    color var(--_spring-duration) var(--_spring-easing),\n    border-radius var(--_expand-duration) var(--_expand-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_state-layer-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-spring-effects-default-duration, 200ms) var(--_state-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__header:hover .md-accordion-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__header:focus-visible .md-accordion-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-focus-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__header:active .md-accordion-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--expanded) .md-accordion-item__header",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_header-color-expanded)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_headline-color-expanded)",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_container-shape-expanded)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_container-shape-expanded)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--expanded) .md-accordion-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_state-layer-color-expanded)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__header:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "-3px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__header:disabled,\n:host(.md-accordion-item--disabled) .md-accordion-item__header",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "not-allowed",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "color-mix(in srgb, var(--_headline-color) 38%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--disabled) .md-accordion-item__state-layer,\n:host(.md-accordion-item--disabled) md-ripple",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--disabled.md-accordion-item--expanded) .md-accordion-item__header",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "color-mix(\n    in srgb,\n    var(--_header-color-expanded) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%),\n    transparent\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__drag-handle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "-4px",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "grab",
+          "important": false
+        },
+        {
+          "property": "touch-action",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.55",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--_spring-duration) var(--_spring-easing),\n    transform var(--_spring-duration) var(--_spring-easing),\n    color var(--_spring-duration) var(--_spring-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__drag-handle:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_headline-color-expanded)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scale(1.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__drag-handle:active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "grabbing",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__drag-handle-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(16px, calc(22px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "font-variation-settings",
+          "value": "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion[reorderable]) .md-accordion-item__drag-handle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--disabled) .md-accordion-item__drag-handle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__chassis-handle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "3",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "52px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "16px",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "999px",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "grab",
+          "important": false
+        },
+        {
+          "property": "touch-action",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--_spring-duration) var(--_spring-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-chassis-handle]) .md-accordion-item__chassis-handle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__chassis-handle:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(\n    --md-accordion-item-chassis-handle-bg-hover,\n    color-mix(in srgb, var(--_state-layer-color) 10%, transparent)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__chassis-handle:active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "grabbing",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(\n    --md-accordion-item-chassis-handle-bg-hover,\n    color-mix(in srgb, var(--_state-layer-color) 16%, transparent)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__chassis-handle-bar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "32px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "999px",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(\n    --md-accordion-item-chassis-handle-color,\n    var(--md-sys-color-on-surface-variant, #49454F)\n  )",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.45",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "inline-size var(--_spring-duration) var(--_spring-easing),\n    opacity var(--_spring-duration) var(--_spring-easing),\n    background-color var(--_expand-duration) var(--_expand-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__chassis-handle:hover .md-accordion-item__chassis-handle-bar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0.9",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "38px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__chassis-handle:active .md-accordion-item__chassis-handle-bar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "40px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion.md-accordion--floating-dragging)\n  .md-accordion-item__chassis-handle-bar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "40px",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(\n    --md-accordion-item-chassis-handle-color,\n    var(--md-sys-color-primary, #6750A4)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--expanded) .md-accordion-item__chassis-handle-bar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(\n    --md-accordion-item-chassis-handle-color,\n    var(--md-sys-color-on-secondary-container, #1D192B)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__chassis-handle-bar",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "CanvasText",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--dragging)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "z-index",
+          "value": "10",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "grabbing",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(\n    --md-accordion-item-container-color-dragging,\n    var(--md-sys-color-surface-container-low, #F7F2F9)\n  )",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(\n    --md-accordion-item-container-shape-dragging,\n    var(--md-sys-shape-corner-medium, 12px)\n  )",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-4,\n      0px 6px 10px 4px rgba(0, 0, 0, 0.15),\n      0px 2px 3px rgba(0, 0, 0, 0.3))",
+          "important": true
+        },
+        {
+          "property": "transition",
+          "value": "none",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--dragging) .md-accordion-item__header",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--dragging) .md-accordion-item__drag-handle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color-expanded)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--shifting)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-short3, 200ms) var(--_state-easing)",
+          "important": false
+        },
+        {
+          "property": "will-change",
+          "value": "transform",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "color var(--_spring-duration) var(--_spring-easing),\n    transform var(--_spring-duration) var(--_spring-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--expanded) .md-accordion-item__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_icon-color-expanded)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scale(1.05)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "font-variation-settings",
+          "value": "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "font-variation-settings var(--_spring-duration) var(--_spring-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--expanded) .md-accordion-item__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-variation-settings",
+          "value": "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__headline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__supporting",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_supporting-color)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-small-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-small-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-small-letter-spacing, 0.4px)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--_spring-duration) var(--_spring-easing),\n    color var(--_spring-duration) var(--_spring-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--expanded) .md-accordion-item__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "rotate(180deg)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color-expanded)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([dir=\"rtl\"]) .md-accordion-item__trailing,\n:host-context([dir=\"rtl\"]) .md-accordion-item__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([dir=\"rtl\"].md-accordion-item--expanded) .md-accordion-item__trailing,\n:host-context([dir=\"rtl\"]).md-accordion-item--expanded .md-accordion-item__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "rotate(180deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__panel",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        },
+        {
+          "property": "grid-template-rows",
+          "value": "0fr",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "grid-template-rows var(--_collapse-duration) var(--_collapse-easing),\n    opacity var(--_collapse-duration) var(--_collapse-easing)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--expanded) .md-accordion-item__panel",
+      "context": null,
+      "declarations": [
+        {
+          "property": "grid-template-rows",
+          "value": "1fr",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "grid-template-rows var(--_expand-duration) var(--_expand-easing),\n    opacity var(--_expand-duration) var(--_expand-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__content-inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding",
+          "value": "var(--_content-padding)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_supporting-color)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-medium-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(-4px)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--_expand-duration) var(--_expand-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--expanded) .md-accordion-item__content-inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateY(0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__content-inner--scroll",
+      "context": null,
+      "declarations": [
+        {
+          "property": "overflow-x",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "overflow-y",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__content-inner--scroll:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "-3px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion[transition='standard'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_expand-easing",
+          "value": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_collapse-easing",
+          "value": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_spring-easing",
+          "value": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_state-easing",
+          "value": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_spring-duration",
+          "value": "var(--md-sys-motion-duration-medium2, 300ms)",
+          "important": false
+        },
+        {
+          "property": "--_expand-duration",
+          "value": "var(--md-accordion-item-expand-duration, var(--md-sys-motion-duration-medium2, 300ms))",
+          "important": false
+        },
+        {
+          "property": "--_collapse-duration",
+          "value": "var(--md-accordion-item-collapse-duration, var(--md-sys-motion-duration-medium2, 300ms))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion[transition='fade'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_expand-easing",
+          "value": "var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_collapse-easing",
+          "value": "var(--md-sys-motion-easing-standard, cubic-bezier(0.4, 0, 1, 1))",
+          "important": false
+        },
+        {
+          "property": "--_spring-easing",
+          "value": "var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_state-easing",
+          "value": "var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_spring-duration",
+          "value": "var(--md-sys-motion-duration-short3, 175ms)",
+          "important": false
+        },
+        {
+          "property": "--_expand-duration",
+          "value": "var(--md-accordion-item-expand-duration, var(--md-sys-motion-duration-medium2, 300ms))",
+          "important": false
+        },
+        {
+          "property": "--_collapse-duration",
+          "value": "var(--md-accordion-item-collapse-duration, var(--md-sys-motion-duration-short4, 200ms))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion[transition='fade']) .md-accordion-item__content-inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion[transition='collapse'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_expand-easing",
+          "value": "cubic-bezier(0, 0, 0.2, 1)",
+          "important": false
+        },
+        {
+          "property": "--_collapse-easing",
+          "value": "cubic-bezier(0.4, 0, 1, 1)",
+          "important": false
+        },
+        {
+          "property": "--_spring-easing",
+          "value": "cubic-bezier(0, 0, 0.2, 1)",
+          "important": false
+        },
+        {
+          "property": "--_state-easing",
+          "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+          "important": false
+        },
+        {
+          "property": "--_spring-duration",
+          "value": "var(--md-sys-motion-duration-medium2, 300ms)",
+          "important": false
+        },
+        {
+          "property": "--_expand-duration",
+          "value": "var(--md-accordion-item-expand-duration, var(--md-sys-motion-duration-medium2, 300ms))",
+          "important": false
+        },
+        {
+          "property": "--_collapse-duration",
+          "value": "var(--md-accordion-item-collapse-duration, var(--md-sys-motion-duration-medium2, 300ms))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion[transition='collapse']) .md-accordion-item__panel,\n:host-context(md-accordion[transition='collapse'].md-accordion-item--expanded)\n  .md-accordion-item__panel",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion[transition='collapse']) .md-accordion-item__content-inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(md-accordion[transition='none']),\n:host-context(md-accordion[transition='none']) *,\n:host-context(md-accordion[transition='none']) *::before,\n:host-context(md-accordion[transition='none']) *::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": true
+        },
+        {
+          "property": "animation-duration",
+          "value": "0.001ms",
+          "important": true
+        },
+        {
+          "property": "animation-iteration-count",
+          "value": "1",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ":host,\n  .md-accordion-item__header,\n  .md-accordion-item__state-layer,\n  .md-accordion-item__leading,\n  .md-accordion-item__icon,\n  .md-accordion-item__trailing,\n  .md-accordion-item__panel,\n  .md-accordion-item__content",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-duration",
+          "value": "0.01ms",
+          "important": true
+        },
+        {
+          "property": "animation",
+          "value": "none",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-accordion-item--expanded) .md-accordion-item__leading",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border",
+          "value": "1px solid CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__header:focus-visible",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "outline-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-accordion-item__state-layer",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Accordion Item",
+  "category": "Containment",
+  "parent": "md-accordion",
+  "description": "One collapsible section: a header button and the panel it controls. The header carries a headline, optional supporting text and leading/trailing icons; the panel holds your slotted content and is inert while collapsed.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-accordion-item.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-accordion-item/md-accordion-item.tsx",
+    "css": "packages/core/src/components/md-accordion-item/md-accordion-item.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "headline",
+        "supportingText",
+        "icon",
+        "expanded",
+        "collapsible",
+        "density",
+        "disabled"
+      ],
+      "events": [
+        "mdItemToggle"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "leading-icon",
+        "headline",
+        "trailing-icon"
+      ],
+      "unsupportedProperties": [
+        "headingLevel",
+        "regionRole",
+        "contentMaxHeight"
+      ],
+      "unsupportedEvents": [
+        "mdItemRequestFocus",
+        "mdItemRequestReorder"
+      ],
+      "unsupportedMethods": [
+        "toggle",
+        "focusHeader"
+      ],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "collapsible",
+        "disabled",
+        "expanded",
+        "headline",
+        "icon",
+        "supportingText"
+      ],
+      "events": [
+        "mdItemToggle"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "headingLevel",
+        "regionRole",
+        "contentMaxHeight",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdItemRequestFocus",
+        "mdItemRequestReorder"
+      ],
+      "unsupportedMethods": [
+        "toggle",
+        "focusHeader"
+      ],
+      "unsupportedSlots": [
+        "leading-icon",
+        "headline",
+        "trailing-icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

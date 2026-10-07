@@ -1,0 +1,1205 @@
+{
+  "tag": "md-stepper",
+  "className": "MdStepper",
+  "properties": [
+    {
+      "name": "orientation",
+      "type": "'horizontal' | 'vertical'",
+      "default": "'horizontal'",
+      "defaultValue": "horizontal",
+      "options": [
+        "horizontal",
+        "vertical"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "orientation",
+      "optional": false,
+      "description": "Layout orientation."
+    },
+    {
+      "name": "indicator",
+      "type": "'numbered' | 'dot'",
+      "default": "'numbered'",
+      "defaultValue": "numbered",
+      "options": [
+        "numbered",
+        "dot"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "indicator",
+      "optional": false,
+      "description": "Indicator style: `numbered` circles or minimal `dot`s."
+    },
+    {
+      "name": "variant",
+      "type": "'default' | 'mobile'",
+      "default": "'default'",
+      "defaultValue": "default",
+      "options": [
+        "default",
+        "mobile"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Layout variant:\n- `default` — the full step row (headers + connectors).\n- `mobile` — a compact MUI-style bar for narrow screens: **Back**, a centered\n  progress (dots for `indicator=\"dot\"`, else a \"Step N of M\" caption), and\n  **Continue / Finish**. The step headers are hidden; put the active step's\n  panel in the `content` slot and swap it on `mdStepChange`."
+    },
+    {
+      "name": "mode",
+      "type": "'linear' | 'non-linear'",
+      "default": "'linear'",
+      "defaultValue": "linear",
+      "options": [
+        "linear",
+        "non-linear"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "mode",
+      "optional": false,
+      "description": "- `linear` (default) — steps must be completed in order; future steps are\n  not reachable until the prior ones are done or optional (an `editable`\n  completed step can always be revisited).\n- `non-linear` — any step can be selected."
+    },
+    {
+      "name": "active",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "active",
+      "optional": false,
+      "description": "Index of the active step. Two-way bindable. Out-of-range values clamp."
+    },
+    {
+      "name": "autoComplete",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "auto-complete",
+      "optional": false,
+      "description": "When advancing (via `next()` or a step's built-in Continue button), mark the\nstep being left as `completed`. Default `true`. Turn off to fully control\ncompletion yourself."
+    },
+    {
+      "name": "nav",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "nav",
+      "optional": false,
+      "description": "Show the built-in **Back / Continue** navigation (default `true`) so users\nalways have a clear way to move through the flow:\n- vertical → the buttons sit under each active step (Material wizard style),\n- horizontal → a single button bar below the stepper.\nSet `nav=\"false\"` to drive navigation entirely yourself (clicking steps,\n`next()` / `prev()`, or your own controls)."
+    },
+    {
+      "name": "readonly",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "readonly",
+      "optional": false,
+      "description": "Render the stepper as a **status trail**: something to read, not to drive.\nEvery step header stops being a button — no click, no keyboard activation,\nno ripple, no hover state layer, no tab stop, no `role=\"button\"` — while\n`aria-current` still says which stage it is on. Not the same as\n`nav=\"false\"`, which only hides the Back / Continue bar."
+    },
+    {
+      "name": "nextDisabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "next-disabled",
+      "optional": false,
+      "description": "Disable the built-in **Continue / Finish** button without disabling Back or\nthe whole step. Bind this to your current step's form validity to gate\nadvancement declaratively (the most common wizard need). Step clicks and the\n`next()`/`goTo()` methods are unaffected — use `mode=\"linear\"` and/or\n`mdBeforeChange` for those."
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "loading",
+      "optional": false,
+      "description": "Put the built-in **Continue / Finish** button into a loading state (spinner +\ninteractive-disabled) and disable **Back**, for async submit-on-Continue\n(prevents double-submit). Toggle it around your `await` — typically inside an\n`mdBeforeChange` handler that `preventDefault()`s, does async work, then\ncommits by setting `active`."
+    },
+    {
+      "name": "lazy",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "lazy",
+      "optional": false,
+      "description": "Only mount the **active** vertical step's content panel; inactive panels are\nremoved from layout and the a11y tree (no collapse animation). Use for\nwizards with heavy per-step content. Note: slotted custom elements stay\n*connected* in the light DOM — for full teardown, conditionally render the\ncontent in your framework."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "'Progress'",
+      "defaultValue": "Progress",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Accessible name for the navigation landmark."
+    },
+    {
+      "name": "stepWord",
+      "type": "string",
+      "default": "'Step'",
+      "defaultValue": "Step",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "step-word",
+      "optional": false,
+      "description": "Localized word for \"Step\" in each step's announced name (\"Step 2 of 4\")."
+    },
+    {
+      "name": "ofWord",
+      "type": "string",
+      "default": "'of'",
+      "defaultValue": "of",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "of-word",
+      "optional": false,
+      "description": "Localized word for \"of\" in each step's announced name (\"Step 2 of 4\")."
+    },
+    {
+      "name": "completedWord",
+      "type": "string",
+      "default": "'completed'",
+      "defaultValue": "completed",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "completed-word",
+      "optional": false,
+      "description": "Localized word announced for a completed step (\"…, completed\")."
+    },
+    {
+      "name": "currentWord",
+      "type": "string",
+      "default": "'current'",
+      "defaultValue": "current",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "current-word",
+      "optional": false,
+      "description": "Localized word announced for the current step (\"…, current\")."
+    },
+    {
+      "name": "errorWord",
+      "type": "string",
+      "default": "'error'",
+      "defaultValue": "error",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "error-word",
+      "optional": false,
+      "description": "Localized word announced for a step in error (\"…, error: message\")."
+    },
+    {
+      "name": "optionalWord",
+      "type": "string",
+      "default": "'Optional'",
+      "defaultValue": "Optional",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "optional-word",
+      "optional": false,
+      "description": "Caption + announced word for optional steps."
+    },
+    {
+      "name": "nextLabel",
+      "type": "string",
+      "default": "'Continue'",
+      "defaultValue": "Continue",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "next-label",
+      "optional": false,
+      "description": "Label for the built-in Continue button."
+    },
+    {
+      "name": "backLabel",
+      "type": "string",
+      "default": "'Back'",
+      "defaultValue": "Back",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "back-label",
+      "optional": false,
+      "description": "Label for the built-in Back button."
+    },
+    {
+      "name": "finishLabel",
+      "type": "string",
+      "default": "'Finish'",
+      "defaultValue": "Finish",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "finish-label",
+      "optional": false,
+      "description": "Label for the built-in Continue button on the last step."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "stepCount",
+      "type": "inferred",
+      "initializer": "0"
+    },
+    {
+      "name": "liveMessage",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "errorMessage",
+      "type": "inferred",
+      "initializer": "''"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdBeforeChange",
+      "detail": "{ index: number; previous: number }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdStepChange",
+      "detail": "{ index: number; previous: number }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdComplete",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "next",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "prev",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "goTo",
+      "parameters": [
+        {
+          "name": "index",
+          "type": "number"
+        }
+      ],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "reset",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "content",
+      "description": "Active-step panel for horizontal / mobile steppers — rendered"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "list"
+    },
+    {
+      "name": "content"
+    },
+    {
+      "name": "nav"
+    },
+    {
+      "name": "mobile-nav"
+    },
+    {
+      "name": "mobile-progress"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-stepper-gap",
+      "description": "Spacing between steps (vertical orientation only)."
+    },
+    {
+      "name": "--md-stepper-step-count"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-stepper': true,\n          [`md-stepper--${this.orientation}`]: true,\n          [`md-stepper--indicator-${this.indicator}`]: true,\n          [`md-stepper--mode-${this.mode}`]: true,\n          'md-stepper--mobile': mobile,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "navigation"
+      },
+      {
+        "name": "aria-label",
+        "value": "this.label"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-stepper__live"
+          },
+          {
+            "name": "aria-live",
+            "value": "polite"
+          },
+          {
+            "name": "role",
+            "value": "status"
+          }
+        ],
+        "children": [
+          {
+            "kind": "expression",
+            "source": "this.liveMessage"
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-stepper__live"
+          },
+          {
+            "name": "aria-live",
+            "value": "assertive"
+          },
+          {
+            "name": "role",
+            "value": "alert"
+          }
+        ],
+        "children": [
+          {
+            "kind": "expression",
+            "source": "this.errorMessage"
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "ol",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-stepper__list"
+          },
+          {
+            "name": "part",
+            "value": "list"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "onSlotchange",
+                "value": "this.handleSlotChange"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-stepper__content"
+          },
+          {
+            "name": "part",
+            "value": "content"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "name",
+                "value": "content"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.nav && !mobile && this.orientation === 'horizontal' && this.stepCount > 0 && (\n          <div class=\"md-stepper__nav\" part=\"nav\">\n            <md-button\n              variant=\"text\"\n              size=\"sm\"\n              disabled={this.active <= 0 || this.loading}\n              onClick={this.handleFooterBack}\n            >\n              {this.backLabel}\n            </md-button>\n            <md-button\n              variant=\"filled\"\n              size=\"sm\"\n              loading={this.loading}\n              disabled={this.nextDisabled || this.loading}\n              onClick={() => this.next()}\n            >\n              {this.active >= this.stepCount - 1 ? this.finishLabel : this.nextLabel}\n            </md-button>\n          </div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.nav && mobile && this.stepCount > 0 && (\n          <div class=\"md-stepper__mobile\" part=\"mobile-nav\">\n            <md-button\n              variant=\"text\"\n              size=\"sm\"\n              disabled={this.active <= 0 || this.loading}\n              onClick={this.handleFooterBack}\n            >\n              {this.backLabel}\n            </md-button>\n            <div\n              class=\"md-stepper__mobile-progress\"\n              part=\"mobile-progress\"\n              aria-hidden={this.indicator === 'dot' ? 'true' : undefined}\n            >\n              {this.indicator === 'dot'\n                ? this.steps.map((s, i) => (\n                    <span\n                      class={{\n                        'md-stepper__mobile-dot': true,\n                        'is-active': i === this.active,\n                        'is-done': i < this.active || !!s.completed,\n                      }}\n                    ></span>\n                  ))\n                : <span class=\"md-stepper__mobile-text\">{`${this.stepWord} ${this.active + 1} ${this.ofWord} ${this.stepCount}`}</span>}\n            </div>\n            <md-button\n              variant=\"filled\"\n              size=\"sm\"\n              loading={this.loading}\n              disabled={this.nextDisabled || this.loading}\n              onClick={() => this.next()}\n            >\n              {this.active >= this.stepCount - 1 ? this.finishLabel : this.nextLabel}\n            </md-button>\n          </div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 402
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 488
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 488
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 46
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-stepper/md-stepper.tsx",
+    "styleUrl": "md-stepper.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "151c46202a24a71052e35f37c1b84827512f97180fb8e0f6645c59837d6c8851"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__live",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "-1px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "inset(50%)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__list",
+      "context": null,
+      "declarations": [
+        {
+          "property": "list-style",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-stepper--horizontal[data-panel-mode='step']) .md-stepper__list",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        },
+        {
+          "property": "grid-template-columns",
+          "value": "repeat(var(--md-stepper-step-count, 1), 1fr)",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-stepper--horizontal) .md-stepper__list",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "row",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "flex-start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-stepper--vertical) .md-stepper__list",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-stepper-gap, 0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__content ::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "var(--md-sys-spacing-inset-xl, 24px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__nav",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "flex-end",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-stepper--mobile) .md-stepper__list",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__mobile",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "var(--md-sys-spacing-gap-lg, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__mobile-progress",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__mobile-text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-sys-typescale-label-large-font-size, 14px)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-large-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-label-large-line-height, 20px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__mobile-dot",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 9999px)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-step-connector-color, var(--md-sys-color-outline, #79747E))",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--md-sys-motion-spring-effects-default-duration, 200ms) var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00)),\n    transform var(--md-sys-motion-spring-spatial-default-duration, 500ms) var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__mobile-dot.is-done",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-step-active-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__mobile-dot.is-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-step-active-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scale(1.5)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__mobile-dot",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-duration",
+          "value": "0.01ms",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__mobile-dot.is-active",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__mobile-dot",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "GrayText",
+          "important": false
+        },
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-stepper__mobile-dot.is-done,\n  .md-stepper__mobile-dot.is-active",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Stepper",
+  "category": "Navigation",
+  "parent": null,
+  "description": "A sequential process broken into ordered steps. Owns the active index, the built-in navigation and whether the user may jump ahead, and pushes layout plus every localized word down to its slotted md-step children.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-stepper.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-stepper/md-stepper.tsx",
+    "css": "packages/core/src/components/md-stepper/md-stepper.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "active",
+        "autoComplete",
+        "nav",
+        "readonly",
+        "nextDisabled",
+        "loading",
+        "mode",
+        "label",
+        "nextLabel",
+        "backLabel",
+        "finishLabel"
+      ],
+      "events": [
+        "mdBeforeChange",
+        "mdStepChange",
+        "mdComplete"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "orientation",
+        "indicator",
+        "variant",
+        "lazy",
+        "stepWord",
+        "ofWord",
+        "completedWord",
+        "currentWord",
+        "errorWord",
+        "optionalWord",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "next",
+        "prev",
+        "goTo",
+        "reset"
+      ],
+      "unsupportedSlots": [
+        "content"
+      ],
+      "notes": [
+        "Native linear/nonlinear progression. mdBeforeChange is an observation; it cannot cancel via preventDefault. Layout is vertical in this adapter."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "active",
+        "backLabel",
+        "finishLabel",
+        "loading",
+        "nextDisabled",
+        "nextLabel",
+        "readonly"
+      ],
+      "events": [
+        "mdBeforeChange",
+        "mdComplete",
+        "mdStepChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "orientation",
+        "indicator",
+        "variant",
+        "mode",
+        "autoComplete",
+        "nav",
+        "lazy",
+        "label",
+        "stepWord",
+        "ofWord",
+        "completedWord",
+        "currentWord",
+        "errorWord",
+        "optionalWord",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "next",
+        "prev",
+        "goTo",
+        "reset"
+      ],
+      "unsupportedSlots": [
+        "content"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

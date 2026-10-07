@@ -1,0 +1,15 @@
+{
+  "name": "@awc-ui/native-compiler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Source-contract compiler and native adapters for AWC UI",
+  "bin": { "awc-native": "./src/cli.mjs" },
+  "scripts": {
+    "build": "node src/cli.mjs build",
+    "check": "node src/cli.mjs check",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": { "typescript": "^5.4.0", "postcss": "^8.5.28" },
+  "engines": { "node": ">=20" }
+}

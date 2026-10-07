@@ -1,0 +1,1001 @@
+{
+  "tag": "md-meter",
+  "className": "MdMeter",
+  "properties": [
+    {
+      "name": "value",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": "Current value. Clamped into `[min, max]` for ARIA, geometry and formatting."
+    },
+    {
+      "name": "min",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "min",
+      "optional": false,
+      "description": "Lower bound of the range."
+    },
+    {
+      "name": "max",
+      "type": "number",
+      "default": "100",
+      "defaultValue": 100,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max",
+      "optional": false,
+      "description": "Upper bound of the range."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Accessible name (`aria-label`) of the meter. Also the visible header label\nwhen `show-label` is set. Pass already-localized text."
+    },
+    {
+      "name": "showLabel",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "show-label",
+      "optional": false,
+      "description": "Renders the `label` text in a header row above the track."
+    },
+    {
+      "name": "showValue",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "show-value",
+      "optional": false,
+      "description": "Renders the formatted value in the header row above the track,\nend-aligned. The visible span is `aria-hidden` — screen readers announce\nthe same string via `aria-valuetext` on the host instead."
+    },
+    {
+      "name": "valueText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-text",
+      "optional": false,
+      "description": "Overrides the formatted value text entirely — both `aria-valuetext` and\nthe visible header value (when `show-value` is set). Use it when neither\nthe default percent format nor `formatOptions` can express the reading\n(e.g. \"3 of 10 seats\")."
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "locale",
+      "optional": false,
+      "description": "BCP-47 locale for `Intl.NumberFormat` output (the formatted value text).\nEmpty string = the runtime's default locale. This prop exists ONLY for\nIntl-computed output; translatable copy (`label`) is a plain text prop."
+    },
+    {
+      "name": "formatOptions",
+      "type": "Intl.NumberFormatOptions",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "format-options",
+      "optional": true,
+      "description": "`Intl.NumberFormatOptions` for the value text (JS-only object prop — set\nit as a property, not an attribute). When provided, the CLAMPED value is\nformatted with it (`{ style: 'unit', unit: 'gigabyte' }`, currency, plain\nnumber…). When omitted, the value's position in the range is formatted as\na locale-aware percentage — the default, because a meter answers \"how\nfull\", which a bare number cannot say without its bounds alongside it."
+    },
+    {
+      "name": "color",
+      "type": "| 'primary'\n    | 'secondary'\n    | 'tertiary'\n    | 'error'\n    | 'success'\n    | 'warning'\n    | 'info'\n    | (string & {})",
+      "default": "'primary'",
+      "defaultValue": "primary",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "color",
+      "optional": false,
+      "description": "Colour role applied to the fill and track. Any role name the THEME defines\nis accepted, not just the listed ones — the meter resolves `<name>` to the\n`--md-sys-color-<name>` / `-<name>-container` pair at runtime, so\n`color=\"brand\"` works as soon as a theme ships those tokens.\n\nThe default (`primary`) keeps md-progress-indicator's neutral look:\nprimary fill on a secondary-container track. Every other role paints\n`<role>` fill on a `<role>-container` track."
+    },
+    {
+      "name": "variant",
+      "type": "'linear' | 'circular'",
+      "default": "'linear'",
+      "defaultValue": "linear",
+      "options": [
+        "linear",
+        "circular"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Shape of the reading.\n\n- `linear` (default) — a horizontal bar, full width of its container.\n- `circular` — a ring. `show-value` puts the value in the middle of it and\n  `show-label` captions it underneath, instead of the bar's header row.\n\nThe ring does NOT mirror under `dir=\"rtl\"`: it fills clockwise in every\nlocale, matching Material's circular progress (and a clock face)."
+    },
+    {
+      "name": "size",
+      "type": "number",
+      "default": "48",
+      "defaultValue": 48,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "size",
+      "optional": false,
+      "description": "Ring diameter in dp — circular only, ignored by the bar. Clamped to\n24…240 like md-progress-indicator, and tapered by density through the\n`--md-meter-size` hook."
+    },
+    {
+      "name": "thickness",
+      "type": "number",
+      "default": "4",
+      "defaultValue": 4,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "thickness",
+      "optional": false,
+      "description": "Track thickness in dp. Density-scaled (0.5px per rung), floored at 2px."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [],
+  "events": [],
+  "methods": [],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "circular",
+      "description": "The ring's box (circular variant only)"
+    },
+    {
+      "name": "track",
+      "description": "Background track / ring (the full range)"
+    },
+    {
+      "name": "indicator",
+      "description": "Value fill inside the track / the value arc"
+    },
+    {
+      "name": "value",
+      "description": "Header value text (rendered when `show-value`)"
+    },
+    {
+      "name": "label",
+      "description": "Header label text (rendered when `show-label`)"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-meter-indicator-color",
+      "description": "Fill colour (defaults to the `color` role)"
+    },
+    {
+      "name": "--md-meter-track-color",
+      "description": "Track background (defaults to the role's container)"
+    },
+    {
+      "name": "--md-meter-track-shape",
+      "description": "Track + fill corner radius (default corner-full pill)"
+    },
+    {
+      "name": "--md-meter-height",
+      "description": "Track thickness (overrides the `thickness` prop)"
+    },
+    {
+      "name": "--md-meter-label-color",
+      "description": "Header label text colour"
+    },
+    {
+      "name": "--md-meter-value-color",
+      "description": "Header value text colour"
+    },
+    {
+      "name": "--md-meter-size",
+      "description": "Ring diameter (circular variant)"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-meter': true,\n          'md-meter--with-header': withHeader,\n          'md-meter--circular': circular,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "meter"
+      },
+      {
+        "name": "aria-label",
+        "value": "this.label || undefined"
+      },
+      {
+        "name": "aria-valuemin",
+        "value": "String(this.saneMin)"
+      },
+      {
+        "name": "aria-valuemax",
+        "value": "String(this.saneMax)"
+      },
+      {
+        "name": "aria-valuenow",
+        "value": "String(this.clampedValue)"
+      },
+      {
+        "name": "aria-valuetext",
+        "value": "text"
+      },
+      {
+        "name": "style",
+        "value": "this.hostStyle"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "circular && this.renderCircular(text)"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "withHeader && (\n          <div class=\"md-meter__header\" aria-hidden=\"true\">\n            {this.showLabel && (\n              <span class=\"md-meter__label\" part=\"label\">\n                {this.label}\n              </span>\n            )}\n            {this.showValue && (\n              <span class=\"md-meter__value\" part=\"value\">\n                {text}\n              </span>\n            )}\n          </div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "!circular && (\n          <div class=\"md-meter__track\" part=\"track\" aria-hidden=\"true\">\n            <div\n              class=\"md-meter__indicator\"\n              part=\"indicator\"\n              style={{ '--_fill-pct': `${this.percentage}%` }}\n            />\n          </div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [],
+  "source": {
+    "file": "packages/core/src/components/md-meter/md-meter.tsx",
+    "styleUrl": "md-meter.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "3fb46243a71d389045364b2872576bb18ffad569cd6e20848a7e3e4d29aab9a0"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_c-main",
+          "value": "var(--md-sys-color-primary, #6750A4)",
+          "important": false
+        },
+        {
+          "property": "--_c-container",
+          "value": "var(--md-sys-color-secondary-container, #E8DEF8)",
+          "important": false
+        },
+        {
+          "property": "--_indicator-color",
+          "value": "var(--md-meter-indicator-color, var(--_c-main))",
+          "important": false
+        },
+        {
+          "property": "--_track-color",
+          "value": "var(--md-meter-track-color, var(--_c-container))",
+          "important": false
+        },
+        {
+          "property": "--_track-shape",
+          "value": "var(--md-meter-track-shape, var(--md-sys-shape-corner-full, 9999px))",
+          "important": false
+        },
+        {
+          "property": "--_thickness",
+          "value": "var(--md-meter-height, max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_size",
+          "value": "var(--md-meter-size, max(24px, calc(48px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-meter-label-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        },
+        {
+          "property": "--_value-color",
+          "value": "var(--md-meter-value-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__header",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "baseline",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "space-between",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "margin-block-end",
+          "value": "max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-medium-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(14px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-medium-letter-spacing, 0.25px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_label-color)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__value",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-medium-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(12px, calc(16px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-label-medium-letter-spacing, 0.5px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_value-color)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "font-variant-numeric",
+          "value": "tabular-nums",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__track",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_thickness)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_track-shape)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_track-color)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_fill-pct, 0%)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_indicator-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "inline-size var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([variant='circular'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "max-content",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__circular",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_size)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__ring",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__ring-track",
+      "context": null,
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "var(--_track-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__ring-indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "var(--_indicator-color)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "stroke-dashoffset var(--md-sys-motion-duration-medium2, 300ms)\n      var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    opacity var(--md-sys-motion-duration-short4, 200ms) linear",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__center",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "calc(var(--_size) * 0.26)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-medium-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_value-color)",
+          "important": false
+        },
+        {
+          "property": "font-variant-numeric",
+          "value": "tabular-nums",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "calc(var(--_size) * 0.18)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__caption",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-medium-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(14px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-medium-letter-spacing, 0.25px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_label-color)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "calc(var(--_size) * 2)",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__indicator,\n  .md-meter__ring-indicator",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__indicator",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__track",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__ring-indicator",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-meter__ring-track",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "stroke",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Meter",
+  "category": "Communication",
+  "parent": null,
+  "description": "A read-only graphical display of a numeric value within a known range. Storage used, quota consumed, password strength, battery level. role=\"meter\" with the full ARIA value contract on the host, value clamping, Intl-driven formatting (locale-aware percent by default), and MD3 semantic status colors.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-meter.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-meter/md-meter.tsx",
+    "css": "packages/core/src/components/md-meter/md-meter.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "value",
+        "min",
+        "max",
+        "label",
+        "showLabel",
+        "showValue",
+        "valueText",
+        "variant",
+        "size",
+        "thickness"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "locale",
+        "formatOptions",
+        "color",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "label",
+        "max",
+        "min",
+        "showLabel",
+        "showValue",
+        "value",
+        "valueText",
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "locale",
+        "formatOptions",
+        "color",
+        "size",
+        "thickness",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

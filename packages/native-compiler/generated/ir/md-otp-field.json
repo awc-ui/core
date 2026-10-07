@@ -1,0 +1,1316 @@
+{
+  "tag": "md-otp-field",
+  "className": "MdOtpField",
+  "properties": [
+    {
+      "name": "length",
+      "type": "number",
+      "default": "6",
+      "defaultValue": 6,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "length",
+      "optional": false,
+      "description": "Number of character cells."
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": "The current code. Mutable, deliberately NOT reflected — entered codes\nmust never appear as a DOM attribute (value privacy, like md-text-field).\nProgrammatic writes run through the same sanitizing pipeline as typing."
+    },
+    {
+      "name": "validationType",
+      "type": "'numeric' | 'alpha' | 'alphanumeric' | 'none'",
+      "default": "'numeric'",
+      "defaultValue": "numeric",
+      "options": [
+        "numeric",
+        "alpha",
+        "alphanumeric",
+        "none"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "validation-type",
+      "optional": false,
+      "description": "Which characters are accepted. `none` accepts anything (still whitespace-stripped)."
+    },
+    {
+      "name": "transform",
+      "type": "'none' | 'uppercase'",
+      "default": "'none'",
+      "defaultValue": "none",
+      "options": [
+        "none",
+        "uppercase"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "transform",
+      "optional": false,
+      "description": "Case normalization as an attribute value, not a callback (attributes\ncan't carry functions): `uppercase` upper-cases every accepted character\n(recovery-code entry)."
+    },
+    {
+      "name": "mask",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "mask",
+      "optional": false,
+      "description": "Obscure the entered characters (cells render as `type=\"password\"`)."
+    },
+    {
+      "name": "autoSubmit",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "auto-submit",
+      "optional": false,
+      "description": "Submit the owning form (`requestSubmit()`) when the code becomes complete."
+    },
+    {
+      "name": "groupSize",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "group-size",
+      "optional": false,
+      "description": "Chunk the cells into groups of this size with a separator between groups. 0 = ungrouped."
+    },
+    {
+      "name": "inputMode",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "inputmode",
+      "optional": false,
+      "description": "Virtual-keyboard hint override. Empty derives from `validationType`\n(`numeric` → `numeric`, everything else → `text`)."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "name",
+      "optional": false,
+      "description": "Form field name — ElementInternals submits the code under it."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disables every cell."
+    },
+    {
+      "name": "readOnly",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "readonly",
+      "optional": false,
+      "description": "Value not user-changeable; cells stay focusable and arrow-navigable."
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "required",
+      "optional": false,
+      "description": "The code must be complete before the owning form submits."
+    },
+    {
+      "name": "error",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "error",
+      "optional": false,
+      "description": "Error visual state — colors cells and swaps supporting text to `errorText`."
+    },
+    {
+      "name": "errorText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "error-text",
+      "optional": false,
+      "description": "Translatable error message; replaces `supportingText` while `error` is true."
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": "Translatable supporting text shown under the cells."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "'One-time code'",
+      "defaultValue": "One-time code",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Accessible group label (translatable). Rendered as `aria-label` on the cell group."
+    },
+    {
+      "name": "cellLabelTemplate",
+      "type": "string",
+      "default": "'Character {index} of {length}'",
+      "defaultValue": "Character {index} of {length}",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "cell-label-template",
+      "optional": false,
+      "description": "Per-cell `aria-label` template (translatable). `{index}` is 1-based,\n`{length}` is the cell count."
+    },
+    {
+      "name": "valueMissingLabel",
+      "type": "string",
+      "default": "'Please enter the complete code.'",
+      "defaultValue": "Please enter the complete code.",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-missing-label",
+      "optional": false,
+      "description": "Translatable constraint-validation message when `required` and empty."
+    },
+    {
+      "name": "incompleteLabel",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "incomplete-label",
+      "optional": false,
+      "description": "When non-empty AND `required`, a started-but-incomplete code is also\ninvalid, reported with this message. Empty (default) = only a fully empty\nrequired field blocks submission."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal a\nglobal `data-density` ancestor sets; local wins. 0 = default, -4 = compact."
+    },
+    {
+      "name": "reserveSupportingSpace",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "reserve-supporting-space",
+      "optional": false,
+      "description": "Always reserve the supporting-text line so error text causes no layout jump."
+    }
+  ],
+  "state": [
+    {
+      "name": "validationMessage",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "formDisabled",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdInput",
+      "detail": "string",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdChange",
+      "detail": "string",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdComplete",
+      "detail": "MdOtpFieldCompleteDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdInvalidInput",
+      "detail": "MdOtpFieldInvalidDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "MdOtpFieldValidityDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "setFocus",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "clear",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "getValidity",
+      "parameters": [],
+      "returnType": "Promise<MdOtpFieldValidityDetail>"
+    },
+    {
+      "name": "setCustomValidity",
+      "parameters": [
+        {
+          "name": "message",
+          "type": "string"
+        }
+      ],
+      "returnType": "inferred"
+    },
+    {
+      "name": "checkValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "reportValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    }
+  ],
+  "slots": [
+    {
+      "name": "separator",
+      "description": "Custom separator content between cell groups (falls back to a"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "separator",
+      "description": "Each group separator wrapper"
+    },
+    {
+      "name": "cell",
+      "description": "Every character input"
+    },
+    {
+      "name": "cells",
+      "description": "The cell row (role=\"group\" container)"
+    },
+    {
+      "name": "supporting-text",
+      "description": "Supporting / error text line"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-otp-field-cell-width",
+      "description": "Cell inline size (48px, tapers with density, 32px floor)"
+    },
+    {
+      "name": "--md-otp-field-cell-height",
+      "description": "Cell block size (56px, tapers with density, 40px floor)"
+    },
+    {
+      "name": "--md-otp-field-cell-gap",
+      "description": "Gap between cells (spacing-gap-sm token)"
+    },
+    {
+      "name": "--md-otp-field-cell-shape",
+      "description": "Cell corner radius (shape-corner-small)"
+    },
+    {
+      "name": "--md-otp-field-outline-color",
+      "description": "Resting cell border colour"
+    },
+    {
+      "name": "--md-otp-field-focus-color",
+      "description": "Focused cell border + caret colour"
+    },
+    {
+      "name": "--md-otp-field-font-size",
+      "description": "Cell glyph size (24px, tapers with density, 16px floor)"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-otp-field': true,\n          'md-otp-field--disabled': disabled,\n          'md-otp-field--readonly': this.readOnly,\n          'md-otp-field--error': this.error || !!this.validationMessage,\n          'md-otp-field--masked': this.mask,\n        }"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-otp-field__cells"
+          },
+          {
+            "name": "part",
+            "value": "cells"
+          },
+          {
+            "name": "role",
+            "value": "group"
+          },
+          {
+            "name": "aria-label",
+            "value": "this.label || undefined"
+          },
+          {
+            "name": "dir",
+            "value": "ltr"
+          },
+          {
+            "name": "ref",
+            "value": "(el?: HTMLElement) => {\n            this.cellsEl = el;\n          }"
+          },
+          {
+            "name": "onFocusout",
+            "value": "this.handleFocusOut"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "nodes"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "showSupport && (\n          <div class=\"md-otp-field__support-row\">\n            <span\n              id={`${this.uid}-support`}\n              part=\"supporting-text\"\n              role={(this.error || !!this.validationMessage) && supportText ? 'alert' : undefined}\n              class={{\n                'md-otp-field__support-text': true,\n                'md-otp-field__support-text--error': this.error || !!this.validationMessage,\n              }}\n            >\n              {supportText || '\\u200B'}\n            </span>\n          </div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "HTML_FORM",
+      "severity": "warning",
+      "message": "HTML form association requires explicit native form state.",
+      "line": 66
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 52
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-otp-field/md-otp-field.tsx",
+    "styleUrl": "md-otp-field.css",
+    "shadow": true,
+    "formAssociated": true,
+    "sha256": "ae8dba3214d3cb52652f6d7fc32a919785ec3ccf6f7721540f68d3b36492f8fe"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_cell-width",
+          "value": "var(--md-otp-field-cell-width, max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_cell-height",
+          "value": "var(--md-otp-field-cell-height, max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_cell-gap",
+          "value": "var(--md-otp-field-cell-gap, var(--md-sys-spacing-gap-sm, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_cell-shape",
+          "value": "var(--md-otp-field-cell-shape, var(--md-sys-shape-corner-small, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_outline-color",
+          "value": "var(--md-otp-field-outline-color, var(--md-sys-color-outline, #79747E))",
+          "important": false
+        },
+        {
+          "property": "--_focus-color",
+          "value": "var(--md-otp-field-focus-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_font-size",
+          "value": "var(--md-otp-field-font-size, max(16px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_error-color",
+          "value": "var(--md-sys-color-error, #B3261E)",
+          "important": false
+        },
+        {
+          "property": "--_text-color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        },
+        {
+          "property": "--_support-color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__cells",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-wrap",
+          "value": "wrap",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_cell-gap)",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__cell",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_cell-width)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_cell-height)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "1px solid var(--_outline-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_cell-shape)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_text-color)",
+          "important": false
+        },
+        {
+          "property": "caret-color",
+          "value": "var(--_focus-color)",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_font-size)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-headline-small-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "border-color var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__cell:hover:not(:focus):not(:disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--md-sys-color-on-surface, #1C1B1F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__cell:focus",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--_focus-color)",
+          "important": false
+        },
+        {
+          "property": "border-width",
+          "value": "3px",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-otp-field--error) .md-otp-field__cell",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--_error-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_error-color)",
+          "important": false
+        },
+        {
+          "property": "caret-color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-otp-field--error) .md-otp-field__cell:hover:not(:focus):not(:disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--md-sys-color-on-error-container, #8C1D18)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-otp-field--error) .md-otp-field__cell:focus",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--_error-color)",
+          "important": false
+        },
+        {
+          "property": "border-width",
+          "value": "3px",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-otp-field--readonly) .md-otp-field__cell:hover:not(:focus)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--_outline-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-otp-field--readonly.md-otp-field--error) .md-otp-field__cell:hover:not(:focus)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-otp-field--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__cell:disabled",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-otp-field--disabled) .md-otp-field__support-text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-otp-field--disabled) .md-otp-field__separator-dot",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__separator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_support-color)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__separator-dot",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "max(6px, calc(8px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(6px, calc(8px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 9999px)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_outline-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__support-row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-start",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "4px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__support-text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_support-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__support-text--error",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_error-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__cell",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-duration",
+          "value": "0.01ms",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__cell",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "ButtonText",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "Field",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "FieldText",
+          "important": false
+        },
+        {
+          "property": "caret-color",
+          "value": "FieldText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__cell:focus",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__cell:hover:not(:focus):not(:disabled)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-otp-field--error) .md-otp-field__cell",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "LinkText",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "FieldText",
+          "important": false
+        },
+        {
+          "property": "caret-color",
+          "value": "FieldText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-otp-field--error) .md-otp-field__cell:focus,\n  :host(.md-otp-field--error) .md-otp-field__cell:hover:not(:focus):not(:disabled)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "LinkText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__cell:disabled",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "GrayText",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__support-text",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__support-text--error",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "LinkText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-otp-field--disabled) .md-otp-field__support-text",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-otp-field__separator-dot",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "OTP Field",
+  "category": "Text Inputs",
+  "parent": null,
+  "description": "One-time-code entry. Renders length real cells in its own shadow root (it owns the inputs, so every cell carries full ARIA), routes all entry — typing, paste, SMS autofill — through one sanitizing pipeline, and participates in forms via ElementInternals with the full constraint-validation API. No hidden input, no wrapper md-text-field.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-otp-field.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-otp-field/md-otp-field.tsx",
+    "css": "packages/core/src/components/md-otp-field/md-otp-field.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "length",
+        "value",
+        "validationType",
+        "transform",
+        "mask",
+        "readOnly",
+        "required",
+        "error",
+        "errorText",
+        "supportingText",
+        "label",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdComplete",
+        "mdInvalidInput",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "autoSubmit",
+        "groupSize",
+        "inputMode",
+        "name",
+        "cellLabelTemplate",
+        "valueMissingLabel",
+        "incompleteLabel",
+        "density",
+        "reserveSupportingSpace"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "setFocus",
+        "clear",
+        "getValidity",
+        "setCustomValidity",
+        "checkValidity",
+        "reportValidity"
+      ],
+      "unsupportedSlots": [
+        "separator"
+      ],
+      "notes": [
+        "Single native one-time-code input with visual cells, sanitation, paste handling and completion. Per-cell focus and autoSubmit differ from web."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "disabled",
+        "error",
+        "errorText",
+        "label",
+        "length",
+        "mask",
+        "readOnly",
+        "required",
+        "supportingText",
+        "transform",
+        "validationType",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdComplete",
+        "mdInput",
+        "mdInvalidInput"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "autoSubmit",
+        "groupSize",
+        "inputMode",
+        "name",
+        "cellLabelTemplate",
+        "valueMissingLabel",
+        "incompleteLabel",
+        "density",
+        "reserveSupportingSpace"
+      ],
+      "unsupportedEvents": [
+        "mdValidityChange"
+      ],
+      "unsupportedMethods": [
+        "setFocus",
+        "clear",
+        "getValidity",
+        "setCustomValidity",
+        "checkValidity",
+        "reportValidity"
+      ],
+      "unsupportedSlots": [
+        "separator"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Uses a native constrained text entry; separated cells, grouping and automatic form submission are not yet ported."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

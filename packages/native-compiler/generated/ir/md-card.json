@@ -1,0 +1,1321 @@
+{
+  "tag": "md-card",
+  "className": "MdCard",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "'elevated' | 'filled' | 'outlined'",
+      "default": "'elevated'",
+      "defaultValue": "elevated",
+      "options": [
+        "elevated",
+        "filled",
+        "outlined"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Visual style variant"
+    },
+    {
+      "name": "interactive",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "interactive",
+      "optional": false,
+      "description": "Makes the card interactive (clickable, with ripple and state layers).\n\nWhen the card's own content has no focusable controls the host exposes\n`role=\"button\"` + `tabindex` and is keyboard-activatable. If the content\n*does* include its own focusable controls (buttons, links, form fields,\ninteractive `md-*` components) the host does not claim `role=\"button\"` —\nthat would be a `nested-interactive` a11y violation — and instead stays a\nplain container that is still mouse-clickable (emits `mdClick`) while the\ninner controls remain the keyboard tab stops."
+    },
+    {
+      "name": "dragEnabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "drag-enabled",
+      "optional": false,
+      "description": "Enables pointer-event-based drag on the card"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disables the card — only meaningful when interactive"
+    },
+    {
+      "name": "softDisabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "soft-disabled",
+      "optional": false,
+      "description": "Soft-disabled: disabled visuals but remains focusable — only meaningful when interactive"
+    },
+    {
+      "name": "ripple",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "ripple",
+      "optional": false,
+      "description": "Whether the ripple effect is enabled when interactive"
+    },
+    {
+      "name": "fullWidth",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "full-width",
+      "optional": false,
+      "description": "When `true` the card stretches to 100% of its container's inline-size.\nPair with the `--md-card-max-width` custom property to cap the fluid\nwidth (useful inside dashboards and responsive grids)."
+    },
+    {
+      "name": "fullHeight",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "full-height",
+      "optional": false,
+      "description": "When `true` the card stretches to 100% of its container's block-size.\nThe parent must have a definite block-size (e.g. a fixed height row in\na CSS grid, or a flex item with `align-items: stretch`) for `100%` to\nresolve."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "dragging",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasInteractiveContent",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "MouseEvent",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdDragStart",
+      "detail": "MdCardDragDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdDragMove",
+      "detail": "MdCardDragDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdDragEnd",
+      "detail": "MdCardDragDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "Hover/press overlay (interactive only)"
+    },
+    {
+      "name": "outline",
+      "description": "Border element (outlined variant only)"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-card-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-card-container-shape",
+      "description": "Border-radius override"
+    },
+    {
+      "name": "--md-card-container-elevation",
+      "description": "Box-shadow override"
+    },
+    {
+      "name": "--md-card-outline-color",
+      "description": "Outline color (outlined variant)"
+    },
+    {
+      "name": "--md-card-outline-width",
+      "description": "Outline width (outlined variant)"
+    },
+    {
+      "name": "--md-card-state-layer-color",
+      "description": "State layer color override"
+    },
+    {
+      "name": "--md-card-width",
+      "description": "Explicit inline-size (default: auto)"
+    },
+    {
+      "name": "--md-card-min-width",
+      "description": "Minimum inline-size"
+    },
+    {
+      "name": "--md-card-max-width",
+      "description": "Maximum inline-size"
+    },
+    {
+      "name": "--md-card-height",
+      "description": "Explicit block-size (default: auto)"
+    },
+    {
+      "name": "--md-card-min-height",
+      "description": "Minimum block-size"
+    },
+    {
+      "name": "--md-card-max-height",
+      "description": "Maximum block-size"
+    },
+    {
+      "name": "--md-card-padding"
+    },
+    {
+      "name": "--md-card-gap"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-card': true,\n          [`md-card--${this.variant}`]: true,\n          'md-card--interactive': this.interactive,\n          'md-card--draggable': this.dragEnabled,\n          'md-card--disabled': this.interactive && isEffectivelyDisabled,\n          'md-card--dragged': this.dragging,\n          'md-card--full-width': this.fullWidth,\n          'md-card--full-height': this.fullHeight,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "actsAsButton ? 'button' : undefined"
+      },
+      {
+        "name": "aria-disabled",
+        "value": "actsAsButton && isEffectivelyDisabled ? 'true' : undefined"
+      },
+      {
+        "name": "aria-grabbed",
+        "value": "this.dragEnabled ? (this.dragging ? 'true' : 'false') : undefined"
+      },
+      {
+        "name": "tabindex",
+        "value": "actsAsButton ? (this.disabled ? '-1' : '0') : undefined"
+      },
+      {
+        "name": "onClick",
+        "value": "this.handleClick"
+      },
+      {
+        "name": "onKeyDown",
+        "value": "this.handleKeyDown"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "(this.interactive || this.dragEnabled) && this.ripple && <md-ripple disabled={isEffectivelyDisabled}></md-ripple>"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "(this.interactive || this.dragEnabled) && <span class=\"md-card__state-layer\" part=\"state-layer\" aria-hidden=\"true\"></span>"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.variant === 'outlined' && <span class=\"md-card__outline\" part=\"outline\" aria-hidden=\"true\"></span>"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "slot",
+        "attributes": [
+          {
+            "name": "onSlotchange",
+            "value": "this.detectInteractiveContent"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 106
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 227
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
+      "line": 277
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 19
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-card/md-card.tsx",
+    "styleUrl": "md-card.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "311f4cc82e75a4f3d65d5e04366cc47685a5d750fd91e8aee1c9ee883298751f"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-card-container-color, var(--md-sys-color-surface-container-low))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-card-container-shape, var(--md-sys-shape-corner-medium, max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px))))",
+          "important": false
+        },
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-card-container-elevation, var(--md-sys-elevation-1))",
+          "important": false
+        },
+        {
+          "property": "--_outline-color",
+          "value": "var(--md-card-outline-color, var(--md-sys-color-outline-variant))",
+          "important": false
+        },
+        {
+          "property": "--_outline-width",
+          "value": "var(--md-card-outline-width, 1px)",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-card-state-layer-color, var(--md-sys-color-on-surface))",
+          "important": false
+        },
+        {
+          "property": "--_width",
+          "value": "var(--md-card-width, auto)",
+          "important": false
+        },
+        {
+          "property": "--_min-width",
+          "value": "var(--md-card-min-width, auto)",
+          "important": false
+        },
+        {
+          "property": "--_max-width",
+          "value": "var(--md-card-max-width, none)",
+          "important": false
+        },
+        {
+          "property": "--_height",
+          "value": "var(--md-card-height, auto)",
+          "important": false
+        },
+        {
+          "property": "--_min-height",
+          "value": "var(--md-card-min-height, auto)",
+          "important": false
+        },
+        {
+          "property": "--_max-height",
+          "value": "var(--md-card-max-height, none)",
+          "important": false
+        },
+        {
+          "property": "--_padding",
+          "value": "var(--md-card-padding, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_gap",
+          "value": "var(--md-card-gap, max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--_padding)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_gap)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_width)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--_min-width)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "var(--_max-width)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_height)",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_min-height)",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "var(--_max-height)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--_container-elevation)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-medium-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-medium-letter-spacing, 0.25px)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "box-shadow var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    background-color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--full-width)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_width",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--full-height)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_height",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--elevated)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-card-container-color, var(--md-sys-color-surface-container-low))",
+          "important": false
+        },
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-card-container-elevation, var(--md-sys-elevation-1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--filled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-card-container-color, var(--md-sys-color-surface-container-highest))",
+          "important": false
+        },
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-card-container-elevation, var(--md-sys-elevation-0, none))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--outlined)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-card-container-color, var(--md-sys-color-surface))",
+          "important": false
+        },
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-card-container-elevation, var(--md-sys-elevation-0, none))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-card__outline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "var(--_outline-width) solid var(--_outline-color)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--interactive)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--draggable)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "grab",
+          "important": false
+        },
+        {
+          "property": "touch-action",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--interactive.md-card--draggable)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "grab",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--dragged)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "grabbing",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-card__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_state-layer-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short1, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--interactive:hover) .md-card__state-layer,\n:host(.md-card--draggable:hover) .md-card__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--interactive:focus-visible) .md-card__state-layer,\n:host(.md-card--draggable:focus-visible) .md-card__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-focus-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--interactive:active) .md-card__state-layer,\n:host(.md-card--draggable:active) .md-card__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--dragged) .md-card__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-dragged-state-layer-opacity, 0.16)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--elevated.md-card--interactive:hover),\n:host(.md-card--elevated.md-card--draggable:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-2)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--elevated.md-card--interactive:focus-visible),\n:host(.md-card--elevated.md-card--draggable:focus-visible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--elevated.md-card--interactive:active),\n:host(.md-card--elevated.md-card--draggable:active)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--elevated.md-card--dragged)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-4)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--filled.md-card--interactive:hover),\n:host(.md-card--filled.md-card--draggable:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--filled.md-card--interactive:focus-visible),\n:host(.md-card--filled.md-card--draggable:focus-visible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--filled.md-card--interactive:active),\n:host(.md-card--filled.md-card--draggable:active)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--filled.md-card--dragged)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-3)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--outlined.md-card--interactive:hover),\n:host(.md-card--outlined.md-card--draggable:hover)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--outlined.md-card--interactive:focus-visible),\n:host(.md-card--outlined.md-card--draggable:focus-visible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--outlined.md-card--interactive:active),\n:host(.md-card--outlined.md-card--draggable:active)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--outlined.md-card--dragged)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-3)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--outlined.md-card--interactive:focus-visible) .md-card__outline,\n:host(.md-card--outlined.md-card--draggable:focus-visible) .md-card__outline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--md-sys-color-on-surface)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--outlined.md-card--dragged) .md-card__outline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--md-sys-color-outline-variant)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--interactive:focus-visible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": true
+        },
+        {
+          "property": "--_container-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--disabled.md-card--outlined) .md-card__outline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--disabled:hover) .md-card__state-layer,\n:host(.md-card--disabled:active) .md-card__state-layer,\n:host(.md-card--disabled:focus-visible) .md-card__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": true
+        },
+        {
+          "property": "--_container-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled]) .md-card__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-card__state-layer",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border",
+          "value": "1px solid ButtonText",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "ButtonFace",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "ButtonText",
+          "important": false
+        },
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-card__outline",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "ButtonText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--interactive:focus-visible)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "outline-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--disabled)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "GrayText",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "GrayText",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-card--disabled) .md-card__outline",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-card__state-layer",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Card",
+  "category": "Containment",
+  "parent": null,
+  "description": "A container for related content and actions about a single subject. Three variants (elevated, filled, outlined), an optional interactive mode with ripple and state layers, and an optional pointer-drag gesture that reports movement but never reorders anything itself.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-card.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-card/md-card.tsx",
+    "css": "packages/core/src/components/md-card/md-card.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "variant",
+        "interactive",
+        "fullWidth",
+        "density",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "dragEnabled",
+        "ripple",
+        "fullHeight"
+      ],
+      "unsupportedEvents": [
+        "mdDragStart",
+        "mdDragMove",
+        "mdDragEnd"
+      ],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native rounded surface; DOM MutationObserver role inference and draggable positioning are not implemented."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "disabled",
+        "fullWidth",
+        "interactive",
+        "softDisabled",
+        "variant"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "dragEnabled",
+        "ripple",
+        "fullHeight",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdDragStart",
+        "mdDragMove",
+        "mdDragEnd"
+      ],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

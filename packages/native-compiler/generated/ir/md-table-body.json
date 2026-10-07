@@ -1,0 +1,158 @@
+{
+  "tag": "md-table-body",
+  "className": "MdTableBody",
+  "properties": [
+    {
+      "name": "presentational",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "presentational",
+      "optional": false,
+      "description": ""
+    }
+  ],
+  "state": [],
+  "events": [],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [],
+  "cssProperties": [],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "md-table-body"
+      },
+      {
+        "name": "role",
+        "value": "this.presentational ? 'presentation' : 'rowgroup'"
+      },
+      {
+        "name": "data-md-rowgroup",
+        "value": "body"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "slot",
+        "attributes": [
+          {
+            "name": "onSlotchange",
+            "value": "() =>\n            // Row mutations happen inside THIS shadow slot — slotchange is not\n            // composed, so md-table would never see reorders (a sorted row\n            // kept its stale data-last stamp, losing its divider). Relay as a\n            // bubbling light-DOM event the table listens for.\n            this.el.dispatchEvent(new CustomEvent('mdRowgroupSlotChange', { bubbles: true }))"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [],
+  "source": {
+    "file": "packages/core/src/components/md-table-body/md-table-body.tsx",
+    "styleUrl": "md-table-body.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "a0c8397b3e22100b98d392fd8fc4bf9855a4c96f5f9dcc2f2b5f5db37528bc27"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "contents",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Table Body",
+  "category": "Data Display",
+  "parent": "md-table",
+  "description": "The data rowgroup — for md-table. A marker element that groups the data rows. md-table reads it to decide which rows are body rows (striping, selection and hover apply only to them), and it is the group the built-in FLIP motion animates. It has no author-settable props and no box of its own.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-table-body.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-table-body/md-table-body.tsx",
+    "css": "packages/core/src/components/md-table-body/md-table-body.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "presentational"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "presentational"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

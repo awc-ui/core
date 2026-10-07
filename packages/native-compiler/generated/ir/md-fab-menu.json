@@ -1,0 +1,766 @@
+{
+  "tag": "md-fab-menu",
+  "className": "MdFabMenu",
+  "properties": [
+    {
+      "name": "open",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "open",
+      "optional": false,
+      "description": "Whether the menu is open."
+    },
+    {
+      "name": "anchor",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "anchor",
+      "optional": false,
+      "description": "ID of the anchor FAB element to position relative to."
+    },
+    {
+      "name": "variant",
+      "type": "'primary' | 'secondary' | 'tertiary'",
+      "default": "'primary'",
+      "defaultValue": "primary",
+      "options": [
+        "primary",
+        "secondary",
+        "tertiary"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Color set for the menu.\nControls the FAB's open-state color (vibrant) and item container color (softer)."
+    },
+    {
+      "name": "placement",
+      "type": "'up' | 'down' | 'auto'",
+      "default": "'up'",
+      "defaultValue": "up",
+      "options": [
+        "up",
+        "down",
+        "auto"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "placement",
+      "optional": false,
+      "description": "Direction items fan out from the FAB.\n- 'up': items stack above the FAB (default, standard bottom-right placement)\n- 'down': items stack below the FAB\n- 'auto': detect based on available viewport space"
+    },
+    {
+      "name": "quick",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "quick",
+      "optional": false,
+      "description": "Skip open/close animation."
+    },
+    {
+      "name": "menuLabel",
+      "type": "string",
+      "default": "'Actions'",
+      "defaultValue": "Actions",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "menu-label",
+      "optional": false,
+      "description": "Accessible name for the popup itself (the `role=\"menu\"` container).\n\nA prop rather than a hardcoded string, matching how every other\nuser-facing string in the library is localised: components stay\ni18n-engine-agnostic and the consumer resolves the text from its own\ndictionary. The default is English, so a translated app must set it."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "closing",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "effectivePlacement",
+      "type": "'up' | 'down'",
+      "initializer": "'up'"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdOpen",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdClose",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "whenClosed",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "close",
+      "parameters": [],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [],
+  "cssProperties": [
+    {
+      "name": "--md-fab-menu-item-container-color",
+      "description": "Item background (cascades to children)"
+    },
+    {
+      "name": "--md-fab-menu-item-label-color",
+      "description": "Item label + icon color (cascades)"
+    },
+    {
+      "name": "--md-fab-menu-item-gap",
+      "description": "Gap between items (default 4px)"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-fab-menu': true,\n          'md-fab-menu--open': this.open,\n          'md-fab-menu--closing': this.closing,\n          [`md-fab-menu--${this.variant}`]: true,\n          [`md-fab-menu--${this.effectivePlacement}`]: true,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "menu"
+      },
+      {
+        "name": "id",
+        "value": "this.menuId"
+      },
+      {
+        "name": "aria-label",
+        "value": "this.menuLabel"
+      },
+      {
+        "name": "aria-orientation",
+        "value": "vertical"
+      },
+      {
+        "name": "aria-hidden",
+        "value": "(!this.open && !this.closing) ? 'true' : 'false'"
+      },
+      {
+        "name": "onKeyDown",
+        "value": "this.handleKeyDown"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-fab-menu__container"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "div",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-fab-menu__items"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "slot",
+                "attributes": [],
+                "children": []
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Document access requires a native adapter.",
+      "line": 234
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 399
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 407
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 407
+    },
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 411
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 482
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 19
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-fab-menu/md-fab-menu.tsx",
+    "styleUrl": "md-fab-menu.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "1e5dfaaf67ac865a77ac597df16f739bfe4facebe74bba502f3bb6239bd2fb57"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "fixed",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "var(--md-sys-z-index-popup, 1000)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--open),\n:host(.md-fab-menu--closing)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-fab-menu__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "fixed",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "end",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--up) .md-fab-menu__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--up) .md-fab-menu__items",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column-reverse",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "end",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-fab-menu-item-gap, var(--md-sys-spacing-gap-xs, 4px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--down) .md-fab-menu__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--down) .md-fab-menu__items",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "end",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-fab-menu-item-gap, var(--md-sys-spacing-gap-xs, 4px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--primary)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-fab-menu-item-container-color",
+          "value": "var(--md-sys-color-primary-container)",
+          "important": false
+        },
+        {
+          "property": "--md-fab-menu-item-label-color",
+          "value": "var(--md-sys-color-on-primary-container)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--secondary)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-fab-menu-item-container-color",
+          "value": "var(--md-sys-color-secondary-container)",
+          "important": false
+        },
+        {
+          "property": "--md-fab-menu-item-label-color",
+          "value": "var(--md-sys-color-on-secondary-container)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--tertiary)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-fab-menu-item-container-color",
+          "value": "var(--md-sys-color-tertiary-container)",
+          "important": false
+        },
+        {
+          "property": "--md-fab-menu-item-label-color",
+          "value": "var(--md-sys-color-on-tertiary-container)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-fab-menu__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scaleY(0.8)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),\n    transform var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--up) .md-fab-menu__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "bottom right",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--down) .md-fab-menu__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform-origin",
+          "value": "top right",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--open) .md-fab-menu__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--open) .md-fab-menu__container",
+      "context": "@starting-style ",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scaleY(0.8)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-fab-menu--closing) .md-fab-menu__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scaleY(0.8)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),\n    transform var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-fab-menu__container,\n  :host(.md-fab-menu--open) .md-fab-menu__container,\n  :host(.md-fab-menu--closing) .md-fab-menu__container",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "FAB Menu",
+  "category": "Actions",
+  "parent": null,
+  "description": "A FAB that fans out into 2–6 related actions. Anchors to an existing md-fab by id, morphs that FAB's icon to close while open, and manages the popup's ARIA wiring, roving focus, and dismissal.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-fab-menu.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-fab-menu/md-fab-menu.tsx",
+    "css": "packages/core/src/components/md-fab-menu/md-fab-menu.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "open",
+        "menuLabel"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "anchor",
+        "variant",
+        "placement",
+        "quick",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "whenClosed",
+        "close"
+      ],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "menuLabel",
+        "open"
+      ],
+      "events": [
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "anchor",
+        "variant",
+        "placement",
+        "quick",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "whenClosed",
+        "close"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

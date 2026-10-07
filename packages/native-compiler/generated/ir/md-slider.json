@@ -1,0 +1,3414 @@
+{
+  "tag": "md-slider",
+  "className": "MdSlider",
+  "properties": [
+    {
+      "name": "min",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "min",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "max",
+      "type": "number",
+      "default": "100",
+      "defaultValue": 100,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "value",
+      "type": "number",
+      "default": "50",
+      "defaultValue": 50,
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "step",
+      "type": "number",
+      "default": "1",
+      "defaultValue": 1,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "step",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "name",
+      "optional": false,
+      "description": "Form field name. Without it the slider still works, it just submits\nnothing — same as a native input with no `name`."
+    },
+    {
+      "name": "nameStart",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "name-start",
+      "optional": false,
+      "description": "Range mode submits TWO values, which one name cannot express. By default\nboth go under `name` (read them with `formData.getAll(name)`); set these to\ngive each end its own key. Ignored outside `range`."
+    },
+    {
+      "name": "nameEnd",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "name-end",
+      "optional": false,
+      "description": "See `nameStart`."
+    },
+    {
+      "name": "variant",
+      "type": "'standard' | 'centered'",
+      "default": "'standard'",
+      "defaultValue": "standard",
+      "options": [
+        "standard",
+        "centered"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Single-thumb layout: `standard` fills from min; `centered` fills from range midpoint to value."
+    },
+    {
+      "name": "range",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "range",
+      "optional": false,
+      "description": "Dual-thumb range"
+    },
+    {
+      "name": "stops",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "stops",
+      "optional": false,
+      "description": "Stop / tick marks at each step."
+    },
+    {
+      "name": "valueStart",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "value-start",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "valueEnd",
+      "type": "number",
+      "default": "100",
+      "defaultValue": 100,
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "value-end",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "size",
+      "type": "'xs' | 'sm' | 'md' | 'lg' | 'xl'",
+      "default": "'xs'",
+      "defaultValue": "xs",
+      "options": [
+        "xs",
+        "sm",
+        "md",
+        "lg",
+        "xl"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "size",
+      "optional": false,
+      "description": "Expressive size (default XS per MD3 spec)"
+    },
+    {
+      "name": "orientation",
+      "type": "'horizontal' | 'vertical'",
+      "default": "'horizontal'",
+      "defaultValue": "horizontal",
+      "options": [
+        "horizontal",
+        "vertical"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "orientation",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "fullHeight",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "full-height",
+      "optional": false,
+      "description": "Make a **vertical** slider fill its parent's block size (responsive height)\ninstead of the fixed `--md-slider-track-length`. The parent needs a definite\nheight; otherwise it falls back to the track-length floor so it never\ncollapses. (Horizontal sliders are already full-width by default.)"
+    },
+    {
+      "name": "valueIndicator",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "value-indicator",
+      "optional": false,
+      "description": "Show value label at thumb(s)"
+    },
+    {
+      "name": "labeled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "labeled",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "insetIcon",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "inset-icon",
+      "optional": false,
+      "description": "Standard slider only: inset icon area (use `icon` or `inset-icon` slot)"
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "icon",
+      "optional": false,
+      "description": "Material Symbols name when `inset-icon` and no slotted icon"
+    },
+    {
+      "name": "sliderAriaLabel",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "aria-label",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "ariaLabelStart",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-start",
+      "optional": false,
+      "description": "Accessible label for the range-start thumb (becomes the thumb input's\n`aria-label`; overrides `aria-label`). NB: a plain (non-`aria-`) attribute\nname — `aria-label-start` is not a valid ARIA attribute and would just\npollute the host with an invalid `aria-*`."
+    },
+    {
+      "name": "ariaLabelEnd",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-end",
+      "optional": false,
+      "description": "Accessible label for the range-end thumb (becomes the thumb input's `aria-label`)."
+    },
+    {
+      "name": "valueText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-text",
+      "optional": false,
+      "description": "Human-readable text alternative for the current value (single slider). Mapped to `aria-valuetext`."
+    },
+    {
+      "name": "valueStartText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-start-text",
+      "optional": false,
+      "description": "Human-readable text for the range-start value. Mapped to `aria-valuetext` on the start thumb."
+    },
+    {
+      "name": "valueEndText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-end-text",
+      "optional": false,
+      "description": "Human-readable text for the range-end value. Mapped to `aria-valuetext` on the end thumb."
+    },
+    {
+      "name": "controlled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "controlled",
+      "optional": false,
+      "description": "When `true`, the slider never mutates `value` / `valueStart` / `valueEnd` on user interaction.\nListen to `mdInput` (continuous) and `mdChange` (committed) events and write the props back yourself.\nDuring a drag gesture the slider uses internal live state for smooth visuals."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "keyFocusedThumb",
+      "type": "'single' | 'start' | 'end' | null",
+      "initializer": "null"
+    },
+    {
+      "name": "pressingThumb",
+      "type": "'single' | 'start' | 'end' | null",
+      "initializer": "null"
+    },
+    {
+      "name": "_liveValue",
+      "type": "number | null",
+      "initializer": "null"
+    },
+    {
+      "name": "_liveStart",
+      "type": "number | null",
+      "initializer": "null"
+    },
+    {
+      "name": "_liveEnd",
+      "type": "number | null",
+      "initializer": "null"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdInput",
+      "detail": "MdSliderValueDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdChange",
+      "detail": "MdSliderValueDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdFocus",
+      "detail": "MdSliderThumbDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdBlur",
+      "detail": "MdSliderThumbDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdDragStart",
+      "detail": "MdSliderDragDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdDragEnd",
+      "detail": "MdSliderDragDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "inset-icon",
+      "description": "— Custom icon (standard slider only; use with inset-icon)"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "surface",
+      "description": "Outer container"
+    },
+    {
+      "name": "track",
+      "description": "Track container (clips corners)"
+    },
+    {
+      "name": "track-inactive",
+      "description": "Inactive track segment"
+    },
+    {
+      "name": "track-active",
+      "description": "Active (filled) track segment"
+    },
+    {
+      "name": "inset",
+      "description": "Inset icon area"
+    },
+    {
+      "name": "thumb-knob",
+      "description": "Thumb knob element"
+    },
+    {
+      "name": "state-layer",
+      "description": "State layer overlay"
+    },
+    {
+      "name": "value-indicator",
+      "description": "Value label bubble"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-slider-track-length",
+      "description": "Vertical track length (block axis)"
+    },
+    {
+      "name": "--md-slider-active-color",
+      "description": "Active track fill"
+    },
+    {
+      "name": "--md-slider-inactive-color",
+      "description": "Inactive track fill"
+    },
+    {
+      "name": "--md-slider-track-shape",
+      "description": "Track border-radius"
+    },
+    {
+      "name": "--md-slider-track-height",
+      "description": "Track cross-axis thickness"
+    },
+    {
+      "name": "--md-slider-tick-active-color",
+      "description": "Stop dot under thumb (hidden)"
+    },
+    {
+      "name": "--md-slider-tick-filled-color",
+      "description": "Stop dots on filled (active) track"
+    },
+    {
+      "name": "--md-slider-tick-inactive-color",
+      "description": "Stop dots on empty (inactive) track"
+    },
+    {
+      "name": "--md-slider-thumb-color",
+      "description": "Thumb knob fill"
+    },
+    {
+      "name": "--md-slider-thumb-width",
+      "description": "Thumb inline size"
+    },
+    {
+      "name": "--md-slider-thumb-height",
+      "description": "Thumb block size"
+    },
+    {
+      "name": "--md-slider-value-bg",
+      "description": "Value indicator background"
+    },
+    {
+      "name": "--md-slider-value-color",
+      "description": "Value indicator text"
+    },
+    {
+      "name": "--md-slider-value-shape",
+      "description": "Value indicator border-radius"
+    },
+    {
+      "name": "--md-slider-value-font-family",
+      "description": "Value indicator font family"
+    },
+    {
+      "name": "--md-slider-value-font-size",
+      "description": "Value indicator font size"
+    },
+    {
+      "name": "--md-slider-value-font-weight",
+      "description": "Value indicator font weight"
+    },
+    {
+      "name": "--md-slider-value-line-height",
+      "description": "Value indicator line height"
+    },
+    {
+      "name": "--md-slider-value-padding-inline",
+      "description": "Value indicator horizontal padding"
+    },
+    {
+      "name": "--md-slider-value-padding-block",
+      "description": "Value indicator vertical padding"
+    },
+    {
+      "name": "--md-slider-inset-icon-color",
+      "description": "Inset icon color (defaults to tick-inactive-color)"
+    },
+    {
+      "name": "--md-slider-inset-icon-active-color",
+      "description": "Inset icon color when over the active track segment"
+    },
+    {
+      "name": "--md-slider-min-track-length"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-slider': true,\n          [`md-slider--size-${this.size}`]: true,\n          'md-slider--vertical': vertical,\n          'md-slider--horizontal': !vertical,\n          'md-slider--centered': this.isCentered,\n          'md-slider--range': this.range,\n          'md-slider--stops': this.showStops,\n          'md-slider--inset': insetArea,\n          'md-slider--disabled': this.disabled,\n        }"
+      },
+      {
+        "name": "aria-orientation",
+        "value": "vertical ? 'vertical' : 'horizontal'"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-slider__surface"
+          },
+          {
+            "name": "part",
+            "value": "surface"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "div",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-slider__rail"
+              },
+              {
+                "name": "onPointerDown",
+                "value": "this.range ? this.onRangeRailPointerDown : vertical ? this.onVerticalRailPointerDown : undefined"
+              },
+              {
+                "name": "onPointerMove",
+                "value": "this.range ? this.onRangeRailPointerMove : vertical ? this.onVerticalRailPointerMove : undefined"
+              },
+              {
+                "name": "onPointerUp",
+                "value": "this.range ? this.onRangeRailPointerUp : vertical ? this.onVerticalRailPointerUp : undefined"
+              },
+              {
+                "name": "onPointerCancel",
+                "value": "this.range ? this.onRangeRailPointerUp : vertical ? this.onVerticalRailPointerUp : undefined"
+              },
+              {
+                "name": "onLostPointerCapture",
+                "value": "this.range ? this.onRangeRailLostPointerCapture : vertical ? this.onVerticalRailLostPointerCapture : undefined"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "div",
+                "attributes": [
+                  {
+                    "name": "class",
+                    "value": "md-slider__track"
+                  },
+                  {
+                    "name": "part",
+                    "value": "track"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "div",
+                    "attributes": [
+                      {
+                        "name": "class",
+                        "value": "md-slider__track-inactive"
+                      },
+                      {
+                        "name": "part",
+                        "value": "track-inactive"
+                      }
+                    ],
+                    "children": []
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "div",
+                    "attributes": [
+                      {
+                        "name": "class",
+                        "value": "md-slider__track-active"
+                      },
+                      {
+                        "name": "part",
+                        "value": "track-active"
+                      }
+                    ],
+                    "children": []
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "expression",
+                    "source": "this.showStops && <div class=\"md-slider__ticks\">{this.getTickMarks()}</div>"
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  },
+                  {
+                    "kind": "expression",
+                    "source": "insetArea && (\n                <span\n                  class={{ 'md-slider__inset': true, 'md-slider__inset--on-active': this.insetOnActive }}\n                  part=\"inset\"\n                  aria-hidden=\"true\"\n                >\n                  <slot name=\"inset-icon\">\n                    {this.icon ? (\n                      <span class=\"md-slider__inset-font material-symbols-outlined\">{this.icon}</span>\n                    ) : null}\n                  </slot>\n                </span>\n              )"
+                  },
+                  {
+                    "kind": "text",
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "expression",
+                "source": "this.range\n            ? [\n                <div\n                  class={{\n                    'md-slider__thumb': true,\n                    'md-slider__thumb--start': true,\n                    'md-slider__thumb--focus-visible': this.keyFocusedThumb === 'start',\n                    'md-slider__thumb--pressing': this.pressingThumb === 'start',\n                  }}\n                  style={{\n                    ...(!vertical ? { insetInlineStart: 'var(--_start-pct)' } : {}),\n                  }}\n                >\n                  <span class=\"md-slider__thumb-knob\" part=\"thumb-knob\"></span>\n                  <span class=\"md-slider__state-layer\" part=\"state-layer\" aria-hidden=\"true\"></span>\n                  {bubble && (\n                    <span class=\"md-slider__value-indicator\" part=\"value-indicator\">\n                      {this.formatValue(vs)}\n                    </span>\n                  )}\n                </div>,\n                <div\n                  class={{\n                    'md-slider__thumb': true,\n                    'md-slider__thumb--end': true,\n                    'md-slider__thumb--focus-visible': this.keyFocusedThumb === 'end',\n                    'md-slider__thumb--pressing': this.pressingThumb === 'end',\n                  }}\n                  style={{\n                    ...(!vertical ? { insetInlineStart: 'var(--_end-pct)' } : {}),\n                  }}\n                >\n                  <span class=\"md-slider__thumb-knob\" part=\"thumb-knob\"></span>\n                  <span class=\"md-slider__state-layer\" part=\"state-layer\" aria-hidden=\"true\"></span>\n                  {bubble && (\n                    <span class=\"md-slider__value-indicator\" part=\"value-indicator\">\n                      {this.formatValue(ve)}\n                    </span>\n                  )}\n                </div>,\n                this.wrapInputShell(\n                  vertical,\n                  <input\n                    type=\"range\"\n                    class=\"md-slider__input md-slider__input--start\"\n                    min={this.min}\n                    max={this.max}\n                    step={this.step}\n                    value={vs}\n                    disabled={this.disabled}\n                    aria-label={this.inputAriaLabel(false, 'start')}\n                    aria-valuemin={this.min}\n                    aria-valuemax={this.max}\n                    aria-valuenow={vs}\n                    aria-valuetext={this.valueStartText || undefined}\n                    aria-orientation={vertical ? 'vertical' : 'horizontal'}\n                    {...orientVertical}\n                    onInput={(e) => this.handleInput(e, true)}\n                    onChange={(e) => this.handleChange(e, true)}\n                    onFocus={this.onInputFocus('start')}\n                    onBlur={this.onInputBlur('start')}\n                    onKeyDown={this.onInputKeyDown('start')}\n                    onKeyUp={this.onInputKeyUp('start')}\n                    onPointerDown={this.onInputPointerDown('start')}\n                    onPointerUp={this.onInputPointerUp('start')}\n                  />,\n                ),\n                this.wrapInputShell(\n                  vertical,\n                  <input\n                    type=\"range\"\n                    class=\"md-slider__input md-slider__input--end\"\n                    min={this.min}\n                    max={this.max}\n                    step={this.step}\n                    value={ve}\n                    disabled={this.disabled}\n                    aria-label={this.inputAriaLabel(false, 'end')}\n                    aria-valuemin={this.min}\n                    aria-valuemax={this.max}\n                    aria-valuenow={ve}\n                    aria-valuetext={this.valueEndText || undefined}\n                    aria-orientation={vertical ? 'vertical' : 'horizontal'}\n                    {...orientVertical}\n                    onInput={(e) => this.handleInput(e, false)}\n                    onChange={(e) => this.handleChange(e, false)}\n                    onFocus={this.onInputFocus('end')}\n                    onBlur={this.onInputBlur('end')}\n                    onKeyDown={this.onInputKeyDown('end')}\n                    onKeyUp={this.onInputKeyUp('end')}\n                    onPointerDown={this.onInputPointerDown('end')}\n                    onPointerUp={this.onInputPointerUp('end')}\n                  />,\n                ),\n              ]\n            : [\n                <div\n                  class={{\n                    'md-slider__thumb': true,\n                    'md-slider__thumb--focus-visible': this.keyFocusedThumb === 'single',\n                    'md-slider__thumb--pressing': this.pressingThumb === 'single',\n                  }}\n                  style={{\n                    ...(!vertical ? { insetInlineStart: 'var(--_value-pct)' } : {}),\n                  }}\n                >\n                  <span class=\"md-slider__thumb-knob\" part=\"thumb-knob\"></span>\n                  <span class=\"md-slider__state-layer\" part=\"state-layer\" aria-hidden=\"true\"></span>\n                  {bubble && (\n                    <span class=\"md-slider__value-indicator\" part=\"value-indicator\">\n                      {this.formatValue(val)}\n                    </span>\n                  )}\n                </div>,\n                this.wrapInputShell(\n                  vertical,\n                  <input\n                    type=\"range\"\n                    class=\"md-slider__input\"\n                    min={this.min}\n                    max={this.max}\n                    step={this.step}\n                    value={val}\n                    disabled={this.disabled}\n                    aria-label={this.inputAriaLabel(true)}\n                    aria-valuemin={this.min}\n                    aria-valuemax={this.max}\n                    aria-valuenow={val}\n                    aria-valuetext={this.valueText || undefined}\n                    aria-orientation={vertical ? 'vertical' : 'horizontal'}\n                    {...orientVertical}\n                    onInput={(e) => this.handleInput(e)}\n                    onChange={(e) => this.handleChange(e)}\n                    onFocus={this.onInputFocus('single')}\n                    onBlur={this.onInputBlur('single')}\n                    onKeyDown={this.onInputKeyDown('single')}\n                    onKeyUp={this.onInputKeyUp('single')}\n                    onPointerDown={this.onInputPointerDown('single')}\n                    onPointerUp={this.onInputPointerUp('single')}\n                  />,\n                ),\n              ]"
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "HTML_FORM",
+      "severity": "warning",
+      "message": "HTML form association requires explicit native form state.",
+      "line": 66
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 513
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 513
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 515
+    },
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 521
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 44
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-slider/md-slider.tsx",
+    "styleUrl": "md-slider.css",
+    "shadow": true,
+    "formAssociated": true,
+    "sha256": "278285315af4bc0d51a64cb0a820364e3addbb41eea76d24bc37f3926d0a2893"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "row",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_surface-min-block)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        },
+        {
+          "property": "--md-slider-track-length",
+          "value": "200px",
+          "important": false
+        },
+        {
+          "property": "--md-slider-active-color",
+          "value": "var(--md-sys-color-primary)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-inactive-color",
+          "value": "var(--md-sys-color-secondary-container)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-tick-active-color",
+          "value": "var(--md-sys-color-primary)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-tick-filled-color",
+          "value": "var(--md-sys-color-on-primary)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-tick-inactive-color",
+          "value": "var(--md-sys-color-on-secondary-container)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-thumb-color",
+          "value": "var(--md-sys-color-primary)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-value-bg",
+          "value": "var(--md-sys-color-inverse-surface)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-value-color",
+          "value": "var(--md-sys-color-inverse-on-surface)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-inset-icon-color",
+          "value": "var(--md-slider-tick-inactive-color)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-inset-icon-active-color",
+          "value": "var(--md-slider-tick-filled-color)",
+          "important": false
+        },
+        {
+          "property": "--_value-pct",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "--_center-pct",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "--_active-start-pct",
+          "value": "0%",
+          "important": false
+        },
+        {
+          "property": "--_active-width-pct",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "--_start-pct",
+          "value": "0%",
+          "important": false
+        },
+        {
+          "property": "--_end-pct",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "--_center-gap",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "--_active-track",
+          "value": "var(--md-slider-active-color)",
+          "important": false
+        },
+        {
+          "property": "--_inactive-track",
+          "value": "var(--md-slider-inactive-color)",
+          "important": false
+        },
+        {
+          "property": "--_thumb-fill",
+          "value": "var(--md-slider-thumb-color)",
+          "important": false
+        },
+        {
+          "property": "--_tick-active",
+          "value": "var(--md-slider-tick-active-color)",
+          "important": false
+        },
+        {
+          "property": "--_tick-filled",
+          "value": "var(--md-slider-tick-filled-color)",
+          "important": false
+        },
+        {
+          "property": "--_tick-inactive",
+          "value": "var(--md-slider-tick-inactive-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "stretch",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--_vertical-min-inline)",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--md-slider-track-length)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([full-height].md-slider--vertical)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--md-slider-min-track-length, 88px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--size-xs)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_track-thickness-default",
+          "value": "16px",
+          "important": false
+        },
+        {
+          "property": "--_thumb-block-default",
+          "value": "max(24px, calc(44px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_thumb-inline-default",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "--_track-radius-default",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "--_track-thumb-gap",
+          "value": "6px",
+          "important": false
+        },
+        {
+          "property": "--_track-inside-corner",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "--_inset-icon-size",
+          "value": "0px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--size-sm)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_track-thickness-default",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "--_thumb-block-default",
+          "value": "max(24px, calc(44px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_thumb-inline-default",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "--_track-radius-default",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "--_track-thumb-gap",
+          "value": "6px",
+          "important": false
+        },
+        {
+          "property": "--_track-inside-corner",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "--_inset-icon-size",
+          "value": "0px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--size-md)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_track-thickness-default",
+          "value": "40px",
+          "important": false
+        },
+        {
+          "property": "--_thumb-block-default",
+          "value": "max(24px, calc(52px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_thumb-inline-default",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "--_track-radius-default",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "--_track-thumb-gap",
+          "value": "6px",
+          "important": false
+        },
+        {
+          "property": "--_track-inside-corner",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "--_inset-icon-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--size-lg)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_track-thickness-default",
+          "value": "56px",
+          "important": false
+        },
+        {
+          "property": "--_thumb-block-default",
+          "value": "max(24px, calc(68px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_thumb-inline-default",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "--_track-radius-default",
+          "value": "16px",
+          "important": false
+        },
+        {
+          "property": "--_track-thumb-gap",
+          "value": "6px",
+          "important": false
+        },
+        {
+          "property": "--_track-inside-corner",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "--_inset-icon-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--size-xl)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_track-thickness-default",
+          "value": "96px",
+          "important": false
+        },
+        {
+          "property": "--_thumb-block-default",
+          "value": "max(24px, calc(108px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_thumb-inline-default",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "--_track-radius-default",
+          "value": "28px",
+          "important": false
+        },
+        {
+          "property": "--_track-thumb-gap",
+          "value": "6px",
+          "important": false
+        },
+        {
+          "property": "--_track-inside-corner",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "--_inset-icon-size",
+          "value": "32px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_track-thickness",
+          "value": "var(--md-slider-track-height, max(8px, calc(var(--_track-thickness-default) + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_track-radius",
+          "value": "var(--md-slider-track-shape, var(--_track-radius-default))",
+          "important": false
+        },
+        {
+          "property": "--_thumb-block",
+          "value": "var(--md-slider-thumb-height, var(--_thumb-block-default))",
+          "important": false
+        },
+        {
+          "property": "--_thumb-inline",
+          "value": "var(--md-slider-thumb-width, var(--_thumb-inline-default))",
+          "important": false
+        },
+        {
+          "property": "--_tick-size",
+          "value": "max(4px, calc(var(--_track-thickness) * 0.12))",
+          "important": false
+        },
+        {
+          "property": "--_tick-pad",
+          "value": "calc(4px + var(--_tick-size) / 2)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_surface-min-block",
+          "value": "var(--_thumb-block)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_surface-min-block",
+          "value": "var(--md-slider-track-length)",
+          "important": false
+        },
+        {
+          "property": "--_vertical-min-inline",
+          "value": "max(var(--_track-thickness), var(--_thumb-block))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__inset",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-slider-inset-icon-color)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_inset-icon-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_inset-icon-size, 24px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal) .md-slider__inset",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(-50%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical) .md-slider__inset",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block-end",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "calc(-0.5 * var(--_inset-icon-size, 24px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__inset--on-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-slider-inset-icon-active-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__inset-font",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons'), sans-serif",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_inset-icon-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot='inset-icon'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_inset-icon-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_inset-icon-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_inset-icon-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "fill",
+          "value": "currentColor",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "row",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_surface-min-block)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical) .md-slider__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--md-slider-track-length)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__rail",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_surface-min-block)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--range) .md-slider__rail,\n:host(.md-slider--vertical) .md-slider__rail",
+      "context": null,
+      "declarations": [
+        {
+          "property": "touch-action",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--range) .md-slider__input,\n:host(.md-slider--vertical) .md-slider__input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical) .md-slider__rail",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "max(var(--_track-thickness), var(--_thumb-block))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--md-slider-track-length)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([full-height].md-slider--vertical) .md-slider__surface",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([full-height].md-slider--vertical) .md-slider__rail",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([full-height].md-slider--vertical) .md-slider__input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__track",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_track-radius)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal) .md-slider__track",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(-50%)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_track-thickness)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical) .md-slider__track",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "calc(-0.5 * var(--_track-thickness))",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_track-thickness)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__track-inactive",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_inactive-track)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__track-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_active-track)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal:not(.md-slider--centered):not(.md-slider--range)) .md-slider__track-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "max(0px, calc(var(--_value-pct) - var(--_track-thumb-gap)))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal:not(.md-slider--centered):not(.md-slider--range)) .md-slider__track-inactive",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "calc(var(--_value-pct) + var(--_track-thumb-gap))",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical:not(.md-slider--centered):not(.md-slider--range)) .md-slider__track-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(0px, calc(var(--_value-pct) - var(--_track-thumb-gap)))",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical:not(.md-slider--centered):not(.md-slider--range)) .md-slider__track-inactive",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(0px, calc(100% - var(--_value-pct) - var(--_track-thumb-gap)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal.md-slider--centered) .md-slider__track-inactive",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "max(0px, calc(var(--_active-start-pct) - var(--_centered-start-gap)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal.md-slider--centered) .md-slider__track::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "calc(var(--_active-start-pct) + var(--_active-width-pct) + var(--_centered-end-gap))",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_inactive-track)",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal.md-slider--centered) .md-slider__track-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "calc(var(--_active-start-pct) + var(--_centered-start-gap))",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "max(0px, calc(var(--_active-width-pct) - var(--_centered-start-gap) - var(--_centered-end-gap)))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical.md-slider--centered) .md-slider__track-inactive",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(0px, calc(var(--_active-start-pct) - var(--_centered-start-gap)))",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical.md-slider--centered) .md-slider__track::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(0px, calc(100% - var(--_active-start-pct) - var(--_active-width-pct) - var(--_centered-end-gap)))",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_inactive-track)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical.md-slider--centered) .md-slider__track-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "calc(var(--_active-start-pct) + var(--_centered-start-gap))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(0px, calc(var(--_active-width-pct) - var(--_centered-start-gap) - var(--_centered-end-gap)))",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal.md-slider--range) .md-slider__track-inactive",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "max(0px, calc(var(--_start-pct) - var(--_track-thumb-gap)))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal.md-slider--range) .md-slider__track::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "calc(var(--_end-pct) + var(--_track-thumb-gap))",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_inactive-track)",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal.md-slider--range) .md-slider__track-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "calc(var(--_start-pct) + var(--_track-thumb-gap))",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "max(0px, calc(var(--_end-pct) - var(--_start-pct) - 2 * var(--_track-thumb-gap)))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical.md-slider--range) .md-slider__track-inactive",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(0px, calc(var(--_start-pct) - var(--_track-thumb-gap)))",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical.md-slider--range) .md-slider__track::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "content",
+          "value": "''",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(0px, calc(100% - var(--_end-pct) - var(--_track-thumb-gap)))",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_inactive-track)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical.md-slider--range) .md-slider__track-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "calc(var(--_start-pct) + var(--_track-thumb-gap))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(0px, calc(var(--_end-pct) - var(--_start-pct) - 2 * var(--_track-thumb-gap)))",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_track-inside-corner)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__ticks",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal) .md-slider__tick",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "calc(-0.5 * var(--_tick-size))",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "calc(-0.5 * var(--_tick-size))",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical) .md-slider__tick",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "calc(-0.5 * var(--_tick-size))",
+          "important": false
+        },
+        {
+          "property": "margin-block-end",
+          "value": "calc(-0.5 * var(--_tick-size))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__tick",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--_tick-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_tick-size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__tick--on-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_tick-active)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__tick--on-filled",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_tick-filled)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__tick--on-inactive",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_tick-inactive)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__thumb",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_thumb-inline)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_thumb-block)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal) .md-slider__thumb",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(-50%)",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "calc(-0.5 * var(--_thumb-inline))",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "var(--_value-pct)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal) .md-slider__thumb--start",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "var(--_start-pct)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal) .md-slider__thumb--end",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "var(--_end-pct)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical) .md-slider__thumb",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--_thumb-block)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_thumb-inline)",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "calc(var(--_value-pct) - var(--_thumb-inline) / 2)",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "calc(-0.5 * var(--_thumb-block))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical) .md-slider__thumb--start",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block-end",
+          "value": "calc(var(--_start-pct) - var(--_thumb-inline) / 2)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical) .md-slider__thumb--end",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block-end",
+          "value": "calc(var(--_end-pct) - var(--_thumb-inline) / 2)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__thumb-knob",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_thumb-inline)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_thumb-block)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 9999px)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_thumb-fill)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "inline-size var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),\n    block-size var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical) .md-slider__thumb-knob",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--_thumb-block)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_thumb-inline)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:not(.md-slider--disabled)) .md-slider__thumb--pressing > .md-slider__thumb-knob",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "calc(var(--_thumb-block) * 1.05)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical:not(.md-slider--disabled)) .md-slider__thumb--pressing > .md-slider__thumb-knob",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "calc(var(--_thumb-block) * 1.05)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__thumb--focus-visible > .md-slider__thumb-knob",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__value-indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "3",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "max(28px, calc(48px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "max(24px, calc(44px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--md-slider-value-padding-block, var(--md-sys-spacing-inset-md, 12px))",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--md-slider-value-padding-inline, var(--md-sys-spacing-inset-lg, 16px))",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--md-slider-value-bg)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-slider-value-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-slider-value-shape, var(--md-sys-shape-corner-full, 9999px))",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-slider-value-font-family, var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif))",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-slider-value-font-size, var(--md-sys-typescale-label-medium-size, 12px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-slider-value-font-weight, var(--md-sys-typescale-label-medium-weight, 500))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-slider-value-line-height, var(--md-sys-typescale-label-medium-line-height, 16px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-label-medium-letter-spacing, 0.5px)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--horizontal) .md-slider__value-indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-block-end",
+          "value": "calc(100% + 4px)",
+          "important": false
+        },
+        {
+          "property": "left",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(-50%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical) .md-slider__value-indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline-start",
+          "value": "calc(100% + 4px)",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(50%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([value-indicator].md-slider--horizontal),\n:host([labeled].md-slider--horizontal)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-start",
+          "value": "var(\n    --md-slider-value-indicator-reserve,\n    calc(max(24px, calc(44px + var(--md-sys-density-scale, 0) * 4px)) + 4px)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([value-indicator].md-slider--vertical),\n:host([labeled].md-slider--vertical)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-inline-end",
+          "value": "var(\n    --md-slider-value-indicator-reserve,\n    calc(max(28px, calc(48px + var(--md-sys-density-scale, 0) * 4px)) + 4px)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__input-shell",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical) .md-slider__input-shell",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--vertical) .md-slider__input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--md-slider-track-length)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(44px, var(--_state-layer-size))",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "rotate(-90deg)",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-slider__input--start,\n.md-slider__input--end",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "not-allowed",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-disabled-content-opacity)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--disabled) .md-slider__track-inactive",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "color-mix(\n    in srgb,\n    var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%),\n    var(--md-sys-color-surface)\n  )",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--disabled) .md-slider__track-active,\n:host(.md-slider--disabled) .md-slider__thumb-knob",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "color-mix(\n    in srgb,\n    var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%),\n    transparent\n  )",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--stops) .md-slider__track-active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "inline-size var(--md-sys-motion-spring-spatial-fast-duration, 350ms) var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.90)),\n    block-size var(--md-sys-motion-spring-spatial-fast-duration, 350ms) var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.90)),\n    inset-inline-start var(--md-sys-motion-spring-spatial-fast-duration, 350ms) var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.90)),\n    inset-block-end var(--md-sys-motion-spring-spatial-fast-duration, 350ms) var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.90))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-slider--stops) .md-slider__tick",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-spring-effects-default-duration, 200ms) var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00)),\n    background-color var(--md-sys-motion-spring-effects-default-duration, 200ms) var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Slider",
+  "category": "Selection",
+  "parent": null,
+  "description": "Choose a value, or a range, along a continuum. Horizontal or vertical, single or two-thumb range, discrete steps with tick marks, value indicators, and an optional inset icon that travels with the handle.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-slider.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-slider/md-slider.tsx",
+    "css": "packages/core/src/components/md-slider/md-slider.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "min",
+        "max",
+        "value",
+        "step",
+        "range",
+        "valueStart",
+        "valueEnd",
+        "labeled",
+        "valueIndicator",
+        "icon",
+        "sliderAriaLabel",
+        "ariaLabelStart",
+        "ariaLabelEnd",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdDragStart",
+        "mdDragEnd"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "name",
+        "nameStart",
+        "nameEnd",
+        "variant",
+        "stops",
+        "size",
+        "orientation",
+        "fullHeight",
+        "insetIcon",
+        "valueText",
+        "valueStartText",
+        "valueEndText",
+        "controlled",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdFocus",
+        "mdBlur"
+      ],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "inset-icon"
+      ],
+      "notes": [
+        "Range uses two accessible native sliders. Vertical layout, centered track, tick marks and DOM thumb metadata are not implemented.",
+        "Range value events retain source value plus valueStart/valueEnd. Drag events include value fields and thumb single/start/end."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "disabled",
+        "labeled",
+        "max",
+        "min",
+        "range",
+        "sliderAriaLabel",
+        "step",
+        "value",
+        "valueEnd",
+        "valueIndicator",
+        "valueStart",
+        "valueText"
+      ],
+      "events": [
+        "mdChange",
+        "mdInput"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "name",
+        "nameStart",
+        "nameEnd",
+        "variant",
+        "stops",
+        "size",
+        "orientation",
+        "fullHeight",
+        "insetIcon",
+        "icon",
+        "ariaLabelStart",
+        "ariaLabelEnd",
+        "valueStartText",
+        "valueEndText",
+        "controlled",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdFocus",
+        "mdBlur",
+        "mdDragStart",
+        "mdDragEnd"
+      ],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "inset-icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Horizontal Compose slider/range slider; vertical, custom icons and drag event parity remain unsupported."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

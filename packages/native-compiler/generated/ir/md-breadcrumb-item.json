@@ -1,0 +1,1024 @@
+{
+  "tag": "md-breadcrumb-item",
+  "className": "MdBreadcrumbItem",
+  "properties": [
+    {
+      "name": "href",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "href",
+      "optional": false,
+      "description": "Destination URL. When empty the item renders as a plain span."
+    },
+    {
+      "name": "target",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "target",
+      "optional": false,
+      "description": "Anchor `target` attribute (e.g. `_blank`)."
+    },
+    {
+      "name": "rel",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "rel",
+      "optional": false,
+      "description": "Anchor `rel` attribute."
+    },
+    {
+      "name": "current",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "current",
+      "optional": false,
+      "description": "When `true`, mark this item as the current page. Usually the parent\n`md-breadcrumbs` auto-sets this on the last child, but explicit\noverride is supported."
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "icon",
+      "optional": false,
+      "description": "Optional leading icon (Material Symbols shorthand)."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disable the item — renders without an anchor and is not focusable."
+    },
+    {
+      "name": "collapsed",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "collapsed",
+      "optional": false,
+      "description": "Marks this item as part of the collapsed middle section. Usually\nset by the parent `md-breadcrumbs` when `max-items` is exceeded.\nDeclared as a public prop (instead of just a `data-*` attribute) so\nStencil re-renders the item when the parent toggles its visibility."
+    },
+    {
+      "name": "itemIndex",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "item-index",
+      "optional": false,
+      "description": "Position in the trail (0-indexed). Set automatically by the parent\n`md-breadcrumbs`. Exposed as a reactive prop so children re-render\nthe leading separator when their position changes."
+    },
+    {
+      "name": "itemTotal",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "item-total",
+      "optional": false,
+      "description": "Total number of items in the trail. Set automatically by the parent."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "hasSlottedIcon",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedLabel",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSelect",
+      "detail": "MdBreadcrumbSelectDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "icon"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "separator",
+      "description": "Glyph rendered before this item (when not first)."
+    },
+    {
+      "name": "icon",
+      "description": "Leading icon container."
+    },
+    {
+      "name": "label",
+      "description": "Label text wrapper."
+    },
+    {
+      "name": "static",
+      "description": "The span (when current or no href)."
+    },
+    {
+      "name": "link",
+      "description": "The anchor (when an href is set and not current)."
+    },
+    {
+      "name": "state-layer",
+      "description": "Hover/focus/press overlay."
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-breadcrumb-item-link-color",
+      "description": "Link text colour"
+    },
+    {
+      "name": "--md-breadcrumb-item-current-color",
+      "description": "Current-page text colour"
+    },
+    {
+      "name": "--md-breadcrumb-item-current-bg",
+      "description": "Current-page pill background"
+    },
+    {
+      "name": "--md-breadcrumb-item-disabled-color",
+      "description": "Disabled text colour"
+    },
+    {
+      "name": "--md-breadcrumb-item-hover-color",
+      "description": "Hover-state text colour"
+    },
+    {
+      "name": "--md-breadcrumb-item-state-layer-color",
+      "description": "Hover/focus/press overlay colour"
+    },
+    {
+      "name": "--md-breadcrumb-item-gap",
+      "description": "Gap between icon + label"
+    },
+    {
+      "name": "--md-breadcrumb-item-padding",
+      "description": "Interactive padding"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-breadcrumb-item': true,\n          'md-breadcrumb-item--current': this.isCurrent,\n          'md-breadcrumb-item--disabled': this.disabled,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "listitem"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderLeadingSeparator()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderInner()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 132
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 132
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 136
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 32
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-breadcrumb-item/md-breadcrumb-item.tsx",
+    "styleUrl": "md-breadcrumb-item.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "50bf1ae4a4e27072ca49ea8d139860ad6821b6500788dd9e68b348eda4c50ae6"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_link-color",
+          "value": "var(--md-breadcrumb-item-link-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_current-color",
+          "value": "var(--md-breadcrumb-item-current-color, var(--md-sys-color-on-secondary-container, #1D192B))",
+          "important": false
+        },
+        {
+          "property": "--_current-bg",
+          "value": "var(--md-breadcrumb-item-current-bg, var(--md-sys-color-secondary-container, #E8DEF8))",
+          "important": false
+        },
+        {
+          "property": "--_disabled-color",
+          "value": "var(--md-breadcrumb-item-disabled-color, color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 61%, transparent))",
+          "important": false
+        },
+        {
+          "property": "--_hover-color",
+          "value": "var(--md-breadcrumb-item-hover-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-breadcrumb-item-state-layer-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        },
+        {
+          "property": "--_gap",
+          "value": "var(--md-breadcrumb-item-gap, calc(6px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "--_padding",
+          "value": "var(--md-breadcrumb-item-padding, calc(8px + var(--md-sys-density-scale, 0) * 2px) max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_motion-duration",
+          "value": "var(--md-sys-motion-spring-effects-default-duration, 200ms)",
+          "important": false
+        },
+        {
+          "property": "--_motion-easing",
+          "value": "var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00))",
+          "important": false
+        },
+        {
+          "property": "--_spring-easing",
+          "value": "var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.90))",
+          "important": false
+        },
+        {
+          "property": "--_spring-duration",
+          "value": "var(--md-sys-motion-spring-spatial-fast-duration, 350ms)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-breadcrumbs-gap, var(--md-sys-spacing-gap-sm, 8px))",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-large-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-label-large-letter-spacing, 0.1px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-breadcrumb-item--collapsed)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__separator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-breadcrumbs-separator-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.7",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--_motion-duration) var(--_motion-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__link,\n.md-breadcrumb-item__static",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_gap)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--_padding)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 9999px)",
+          "important": false
+        },
+        {
+          "property": "text-decoration",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_link-color)",
+          "important": false
+        },
+        {
+          "property": "font",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "isolation",
+          "value": "isolate",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "color var(--_motion-duration) var(--_motion-easing),\n    background-color var(--_motion-duration) var(--_motion-easing),\n    transform var(--_spring-duration) var(--_spring-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_state-layer-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--_motion-duration) var(--_motion-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__link:hover .md-breadcrumb-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__link:focus-visible .md-breadcrumb-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-focus-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__link:active .md-breadcrumb-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.12)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__link:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_hover-color)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(2px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([dir=\"rtl\"]) .md-breadcrumb-item__link:hover,\n:host-context([dir=\"rtl\"]) .md-breadcrumb-item__link:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateX(-2px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__link:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-breadcrumb-item--current) .md-breadcrumb-item__static",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_current-bg)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_current-color)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "600",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-breadcrumb-item--disabled) .md-breadcrumb-item__static,\n:host(.md-breadcrumb-item--disabled) .md-breadcrumb-item__link",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_disabled-color)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "not-allowed",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-breadcrumb-item--disabled) md-ripple,\n:host(.md-breadcrumb-item--disabled) .md-breadcrumb-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "18px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "18px",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "currentColor",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__icon .material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(14px, calc(18px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "font-variation-settings",
+          "value": "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "font-variation-settings var(--_spring-duration) var(--_spring-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-breadcrumb-item--current) .md-breadcrumb-item__icon .material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-variation-settings",
+          "value": "'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "32ch",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__link,\n  .md-breadcrumb-item__static,\n  .md-breadcrumb-item__icon .material-symbols-outlined,\n  .md-breadcrumb-item__separator,\n  .md-breadcrumb-item__state-layer",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-duration",
+          "value": "0.01ms",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__link:hover",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__link",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "LinkText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-breadcrumb-item--current) .md-breadcrumb-item__static",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "CanvasText",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "Canvas",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "1px solid CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-breadcrumb-item__state-layer",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Breadcrumb Item",
+  "category": "Navigation",
+  "parent": "md-breadcrumbs",
+  "description": "One crumb in the trail. A link to an ancestor, or the non-interactive current page, plus the separator that precedes it.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-breadcrumb-item.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-breadcrumb-item/md-breadcrumb-item.tsx",
+    "css": "packages/core/src/components/md-breadcrumb-item/md-breadcrumb-item.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "href",
+        "current",
+        "icon",
+        "itemIndex",
+        "disabled"
+      ],
+      "events": [
+        "mdSelect"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "icon"
+      ],
+      "unsupportedProperties": [
+        "target",
+        "rel",
+        "collapsed",
+        "itemTotal",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native event has index and href; DOM MouseEvent omitted."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "collapsed",
+        "current",
+        "disabled",
+        "href",
+        "icon"
+      ],
+      "events": [
+        "mdSelect"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "target",
+        "rel",
+        "itemIndex",
+        "itemTotal",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

@@ -1,0 +1,4420 @@
+{
+  "tag": "md-list-item",
+  "className": "MdListItem",
+  "properties": [
+    {
+      "name": "type",
+      "type": "MdListItemType",
+      "default": "'text'",
+      "defaultValue": "text",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "type",
+      "optional": false,
+      "description": "Behavior of the row.\n\n- `text` (default): non-interactive content row. No focus, no ripple,\n  no click event. Use for static labels and section headers.\n- `button`: focusable, ripples, fires `mdClick` on activation.\n- `link`: same as `button` but also navigates to `href` in `target`.\n\nWhen the row sits inside an `md-list` with `selection-mode` set, the\nrow becomes focusable + clickable regardless of `type` so users can\npick from a list of plain rows without authoring extra props."
+    },
+    {
+      "name": "headline",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "headline",
+      "optional": false,
+      "description": "Headline text. Overridden by `slot=\"headline\"`."
+    },
+    {
+      "name": "overline",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "overline",
+      "optional": false,
+      "description": "Overline text shown above the headline. Overridden by `slot=\"overline\"`."
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": "Supporting text below the headline. Overridden by `slot=\"supporting-text\"`."
+    },
+    {
+      "name": "trailingSupportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "trailing-supporting-text",
+      "optional": false,
+      "description": "Trailing supporting text on the right. Overridden by `slot=\"trailing-supporting-text\"`."
+    },
+    {
+      "name": "leadingIcon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "leading-icon",
+      "optional": false,
+      "description": "Material Symbols name for the leading slot (24 dp container, 18 dp icon)."
+    },
+    {
+      "name": "trailingIcon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "trailing-icon",
+      "optional": false,
+      "description": "Material Symbols name for the trailing slot (24 dp icon)."
+    },
+    {
+      "name": "leadingAvatar",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "leading-avatar",
+      "optional": false,
+      "description": "Avatar image URL — forwarded to an internal `md-avatar` rendered in\nthe leading slot. Falls back to `leadingAvatarName` / `leadingAvatarLabel`\nif the image fails to load."
+    },
+    {
+      "name": "leadingAvatarAlt",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "leading-avatar-alt",
+      "optional": false,
+      "description": "Alt text for `leadingAvatar`. Also surfaced as the avatar's accessible label."
+    },
+    {
+      "name": "leadingAvatarName",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "leading-avatar-name",
+      "optional": false,
+      "description": "Full name forwarded to the internal `md-avatar` so it can auto-derive\ninitials when no image is available (`\"Ada Lovelace\"` → `\"AL\"`).\nWhen both this and `leadingAvatarLabel` are empty the avatar falls\nback to a `person` icon."
+    },
+    {
+      "name": "leadingAvatarLabel",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "leading-avatar-label",
+      "optional": false,
+      "description": "Explicit initials shown by the internal `md-avatar`. Overrides the\n`leadingAvatarName` parsing. Used for \"C\", \"JD\" style labels."
+    },
+    {
+      "name": "leadingImage",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "leading-image",
+      "optional": false,
+      "description": "Image thumbnail URL (56 dp square by default)."
+    },
+    {
+      "name": "leadingImageAlt",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "leading-image-alt",
+      "optional": false,
+      "description": "Alt text for `leadingImage`."
+    },
+    {
+      "name": "lines",
+      "type": "1 | 2 | 3",
+      "default": "1",
+      "defaultValue": 1,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "lines",
+      "optional": false,
+      "description": "Number of text rows. Auto-detected when 1 + content suggests more\n(overline → 2-line, overline + supporting → 3-line). Set explicitly\nto override the auto-promotion."
+    },
+    {
+      "name": "href",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "href",
+      "optional": false,
+      "description": "Link href. Honored when `type='link'`."
+    },
+    {
+      "name": "target",
+      "type": "string",
+      "default": "'_self'",
+      "defaultValue": "_self",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "target",
+      "optional": false,
+      "description": "Link target. Honored when `type='link'`."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disables interaction, removes from tab order, and dims content to 38 % opacity."
+    },
+    {
+      "name": "softDisabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "soft-disabled",
+      "optional": false,
+      "description": "Visually disabled but remains focusable for discoverability. Does not emit activation events."
+    },
+    {
+      "name": "selected",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "selected",
+      "optional": false,
+      "description": "Selected state. Toggled by `md-list` when `selection-mode` is on."
+    },
+    {
+      "name": "expandable",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "expandable",
+      "optional": false,
+      "description": "Turns the row into a single-level collapsible disclosure. When `true`:\n  - a trailing **`md-icon-button`** caret renders after any author-supplied\n    trailing content. It is the disclosure control: it carries\n    `aria-expanded` + `aria-controls`, gets the icon-button pill/squircle\n    shape morph when selected (expanded), and its `expand_more` glyph\n    rotates 180° (points up) when expanded.\n  - the `expanded-content` slot reveals one level of flat `md-list-item`\n    child rows (not a nested `md-list` chassis) inline below the parent\n    with an MD3 expressive open (emphasized-decelerate) / retract\n    (emphasized-accelerate) height + opacity animation.\n  - clicking the row body also toggles the panel as a convenience; the\n    caret button additionally toggles on Enter / Space when focused.\n  - ArrowRight expands, ArrowLeft collapses (when the row itself is\n    focusable, e.g. `type=\"button\"` / reorderable rows)."
+    },
+    {
+      "name": "expanded",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "expanded",
+      "optional": false,
+      "description": "Reflects/controls the expanded state of an `expandable` row."
+    },
+    {
+      "name": "tabbable",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "tabbable",
+      "optional": false,
+      "description": "Whether this item is the currently tabbable one in its parent list.\nManaged by `md-list`'s roving tabindex. Standalone items leave this\nas `true` and become focusable when `type !== 'text'`."
+    },
+    {
+      "name": "rovingFocusVisible",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "roving-focus-visible",
+      "optional": false,
+      "description": "When `true`, paints the keyboard-focus ring even if the row does not\nhold DOM focus (e.g. toolbar buttons drove `activateNext()`). Set\nimperatively by `md-list` during programmatic / arrow-key navigation —\nnot on initial load."
+    },
+    {
+      "name": "selectionMode",
+      "type": "'none' | 'single-select' | 'multi-select'",
+      "default": "'none'",
+      "defaultValue": "none",
+      "options": [
+        "none",
+        "single-select",
+        "multi-select"
+      ],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "selection-mode",
+      "optional": false,
+      "description": "Selection mode propagated from parent `md-list`. Set imperatively by\nthe parent — authors should not need to touch this directly. When\nnon-`none`, the item becomes focusable + clickable regardless of\n`type` and renders with `role=\"option\"` + `aria-selected`."
+    },
+    {
+      "name": "interactionMode",
+      "type": "'single-action' | 'multi-action'",
+      "default": "'single-action'",
+      "defaultValue": "single-action",
+      "options": [
+        "single-action",
+        "multi-action"
+      ],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "interaction-mode",
+      "optional": false,
+      "description": "Interaction mode propagated from parent `md-list`. Set imperatively by\nthe parent — authors should not need to touch this directly.\n\n- `single-action`: the whole row is one primary action.\n- `multi-action`: trailing slot may host secondary controls (icon\n  buttons, switches) that keep their own focus/click semantics."
+    },
+    {
+      "name": "containerRole",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "container-role",
+      "optional": false,
+      "description": "The resolved ARIA role of the parent `md-list` container, propagated\nimperatively by that parent — authors should not touch this. It lets a row\nadapt its own role to its container: when the container is a `menu` /\n`menubar` (via `role-override`) an interactive row exposes `role=\"menuitem\"`\non the HOST itself (the host IS the widget, like `option`) and skips the\ninner primary widget, because a `menu` owns its direct light-DOM children\n(the hosts) and must own `menuitem`s — a `listitem` / `role=\"none\"` host is a\ndisallowed menu child (axe `aria-required-children`). Empty for a plain\n`list` / `listbox`, where the default `listitem` / `option` roles apply."
+    },
+    {
+      "name": "reorderable",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "reorderable",
+      "optional": false,
+      "description": "Whether this row can be reordered via drag-and-drop. Set imperatively by\nthe parent `md-list[reorderable]` — authors should not need to touch this\ndirectly. When `true` the row renders a trailing drag handle (grab it to\ndrag) and supports `Alt + ArrowUp / ArrowDown` to move when focused.\nDisabled rows ignore it."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "hasSlottedLeading",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedTrailing",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedHeadline",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedOverline",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedSupportingText",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedTrailingSupportingText",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedExpandedContent",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasExpandedListItemChildren",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasLeadingVideo",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "pressed",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hostedByList",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "{ item: HTMLElement }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdItemClick",
+      "detail": "{ index: number; selected: boolean }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdItemSelect",
+      "detail": "{\n    index: number;\n    value: string;\n    selected: boolean;\n    item: HTMLMdListItemElement;\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdRequestActivation",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdItemRequestReorder",
+      "detail": "{\n    direction: 'up' | 'down';\n    from: number;\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdExpand",
+      "detail": "MdListItemExpandDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "setFocus",
+      "parameters": [
+        {
+          "name": "options",
+          "type": "FocusOptions"
+        }
+      ],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "focusItem",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "toggle",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "expand",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "collapse",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "leading",
+      "description": "Custom leading content (icon / avatar / image)"
+    },
+    {
+      "name": "overline",
+      "description": "Rich overline (overrides `overline` prop)"
+    },
+    {
+      "name": "headline",
+      "description": "Rich headline (overrides `headline` prop)"
+    },
+    {
+      "name": "supporting-text",
+      "description": "Rich supporting text"
+    },
+    {
+      "name": "trailing",
+      "description": "Custom trailing content (icon button, switch, etc.)"
+    },
+    {
+      "name": "trailing-supporting-text",
+      "description": "Rich trailing supporting text"
+    },
+    {
+      "name": "expanded-content",
+      "description": "Content revealed when an expandable row is expanded"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "leading",
+      "description": "Leading slot container"
+    },
+    {
+      "name": "avatar",
+      "description": "Leading avatar (image or label)"
+    },
+    {
+      "name": "image-wrap",
+      "description": "Wrapper around prop-based leading image + selection overlay"
+    },
+    {
+      "name": "image",
+      "description": "Leading image thumbnail"
+    },
+    {
+      "name": "image-selection-indicator",
+      "description": "Selected-state scrim overlay on image thumbnail"
+    },
+    {
+      "name": "image-selection-circle",
+      "description": "Checkmark circle fill centered on thumbnail"
+    },
+    {
+      "name": "image-selection-check",
+      "description": "Material Symbols check glyph inside the circle"
+    },
+    {
+      "name": "leading-icon",
+      "description": "Leading Material Symbols icon"
+    },
+    {
+      "name": "content",
+      "description": "Content slot container (overline + headline + supporting)"
+    },
+    {
+      "name": "overline",
+      "description": "Overline text element"
+    },
+    {
+      "name": "headline",
+      "description": "Headline text element"
+    },
+    {
+      "name": "supporting-text",
+      "description": "Supporting text element"
+    },
+    {
+      "name": "trailing",
+      "description": "Trailing slot container"
+    },
+    {
+      "name": "trailing-supporting-text",
+      "description": "Trailing supporting text element"
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Trailing Material Symbols icon"
+    },
+    {
+      "name": "expand-button",
+      "description": "Trailing caret md-icon-button on expandable rows"
+    },
+    {
+      "name": "drag-handle",
+      "description": "Trailing drag grip on reorderable rows"
+    },
+    {
+      "name": "primary"
+    },
+    {
+      "name": "row",
+      "description": "Row chassis (leading + content + trailing)"
+    },
+    {
+      "name": "state-layer",
+      "description": "State-layer overlay (interactive rows only)"
+    },
+    {
+      "name": "expanded-panel",
+      "description": "Wrapper revealed when `expanded` is true"
+    },
+    {
+      "name": "expanded-panel-inner",
+      "description": "Inner wrapper that holds the slot"
+    },
+    {
+      "name": "avatar-image"
+    },
+    {
+      "name": "avatar-initials"
+    },
+    {
+      "name": "avatar-icon"
+    },
+    {
+      "name": "headline-tooltip-popup",
+      "description": "Popup of the headline overflow tooltip (forwarded)"
+    },
+    {
+      "name": "supporting-tooltip-popup",
+      "description": "Popup of the supporting-text overflow tooltip (forwarded)"
+    },
+    {
+      "name": "expand-button-state-layer",
+      "description": "State-layer of the caret button (forwarded)"
+    },
+    {
+      "name": "expand-button-icon",
+      "description": "Icon glyph wrapper of the caret button (forwarded;"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-list-item-container-color",
+      "description": "Container background (M3 default: surface = #FEF7FF light)"
+    },
+    {
+      "name": "--md-list-item-container-shape",
+      "description": "Border-radius shorthand (all four corners)"
+    },
+    {
+      "name": "--md-list-item-container-shape-start-start",
+      "description": "Top-start corner (used by md-list grouped style)"
+    },
+    {
+      "name": "--md-list-item-container-shape-start-end",
+      "description": "Top-end corner   (used by md-list grouped style)"
+    },
+    {
+      "name": "--md-list-item-container-shape-end-start",
+      "description": "Bottom-start corner"
+    },
+    {
+      "name": "--md-list-item-container-shape-end-end",
+      "description": "Bottom-end corner"
+    },
+    {
+      "name": "--md-list-item-active-container-shape",
+      "description": "Meta-override applied to every active state"
+    },
+    {
+      "name": "--md-list-item-hover-container-shape",
+      "description": "Border-radius on hover    (default 0 — no morph; opt-in)"
+    },
+    {
+      "name": "--md-list-item-focus-container-shape",
+      "description": "Border-radius on focus    (default 16px / corner-large)"
+    },
+    {
+      "name": "--md-list-item-pressed-container-shape",
+      "description": "Border-radius on press    (default 16px / corner-large)"
+    },
+    {
+      "name": "--md-list-item-selected-container-shape",
+      "description": "Border-radius on selected (default 16px / corner-large)"
+    },
+    {
+      "name": "--md-list-item-active-container-shape",
+      "description": "Shared default for all four states above"
+    },
+    {
+      "name": "--md-list-item-dragged-container-shape",
+      "description": "Border-radius on dragged  (default 16px / corner-large)"
+    },
+    {
+      "name": "--md-list-item-hover-state-layer-opacity",
+      "description": "State-layer opacity on hover    (M3: 0.08)"
+    },
+    {
+      "name": "--md-list-item-focus-state-layer-opacity",
+      "description": "State-layer opacity on focus    (M3: 0.10)"
+    },
+    {
+      "name": "--md-list-item-pressed-state-layer-opacity",
+      "description": "State-layer opacity on press    (M3: 0.10)"
+    },
+    {
+      "name": "--md-list-item-dragged-state-layer-opacity",
+      "description": "State-layer opacity when dragged (M3: 0.16)"
+    },
+    {
+      "name": "--md-list-item-label-text-color",
+      "description": "Headline text color"
+    },
+    {
+      "name": "--md-list-item-label-text-font",
+      "description": "Headline font family"
+    },
+    {
+      "name": "--md-list-item-supporting-text-color",
+      "description": "Supporting text color"
+    },
+    {
+      "name": "--md-list-item-supporting-text-font",
+      "description": "Supporting text font family"
+    },
+    {
+      "name": "--md-list-item-overline-color",
+      "description": "Overline text color"
+    },
+    {
+      "name": "--md-list-item-trailing-supporting-text-color",
+      "description": "Trailing supporting text color"
+    },
+    {
+      "name": "--md-list-item-trailing-supporting-text-font",
+      "description": "Trailing supporting text font family"
+    },
+    {
+      "name": "--md-list-item-leading-icon-color",
+      "description": "Leading icon color"
+    },
+    {
+      "name": "--md-list-item-leading-icon-size",
+      "description": "Leading icon size, default (M3: 24px)"
+    },
+    {
+      "name": "--md-list-item-trailing-icon-color",
+      "description": "Trailing icon color"
+    },
+    {
+      "name": "--md-list-item-unselected-trailing-icon-color",
+      "description": "Trailing icon color when row is in selection"
+    },
+    {
+      "name": "--md-list-item-trailing-icon-size",
+      "description": "Trailing icon size, default (M3: 24px)"
+    },
+    {
+      "name": "--md-list-item-trailing-icon-expressive-size",
+      "description": "Trailing icon size, Expressive list-style (M3: 20px)"
+    },
+    {
+      "name": "--md-list-item-leading-space",
+      "description": "Inline-start padding (M3: 16px)"
+    },
+    {
+      "name": "--md-list-item-trailing-space",
+      "description": "Inline-end  padding (M3: 16px)"
+    },
+    {
+      "name": "--md-list-item-top-space",
+      "description": "Block-start padding (M3: 8px)"
+    },
+    {
+      "name": "--md-list-item-bottom-space",
+      "description": "Block-end   padding (M3: 10px)"
+    },
+    {
+      "name": "--md-list-item-between-space",
+      "description": "Gap between leading / content / trailing (M3: 12px)"
+    },
+    {
+      "name": "--md-list-item-three-line-top-space",
+      "description": "Block-start padding when 3-line / 88px+ (M3: 12px)"
+    },
+    {
+      "name": "--md-list-item-three-line-bottom-space",
+      "description": "Block-end padding when 3-line / 88px+ (M3: 12px)"
+    },
+    {
+      "name": "--md-list-item-dragged-container-elevation",
+      "description": "Box-shadow applied when host carries"
+    },
+    {
+      "name": "--md-list-item-leading-video-width",
+      "description": "Width of <video slot=\"leading\"> thumbnail (M3: 100px)"
+    },
+    {
+      "name": "--md-list-item-leading-video-height",
+      "description": "Height of <video slot=\"leading\"> thumbnail (M3: 56px)"
+    },
+    {
+      "name": "--md-list-item-leading-video-shape",
+      "description": "Border-radius of <video slot=\"leading\"> (M3: corner-small)"
+    },
+    {
+      "name": "--md-list-item-leading-video-top-space",
+      "description": "Block-start padding bumped when the row carries"
+    },
+    {
+      "name": "--md-list-item-leading-avatar-color",
+      "description": "Avatar circle color (label avatar)"
+    },
+    {
+      "name": "--md-list-item-leading-avatar-label-color",
+      "description": "Avatar label text color"
+    },
+    {
+      "name": "--md-list-item-leading-avatar-size",
+      "description": "Avatar dimensions (default 40px)"
+    },
+    {
+      "name": "--md-list-item-leading-avatar-shape",
+      "description": "Avatar border-radius (default full)"
+    },
+    {
+      "name": "--md-list-item-leading-image-width",
+      "description": "Image thumbnail width (default 56px)"
+    },
+    {
+      "name": "--md-list-item-leading-image-height",
+      "description": "Image thumbnail height (default 56px)"
+    },
+    {
+      "name": "--md-list-item-leading-image-shape",
+      "description": "Image thumbnail radius, default (M3: 0)"
+    },
+    {
+      "name": "--md-list-item-leading-image-expressive-shape",
+      "description": "Image thumbnail radius, Expressive list-style"
+    },
+    {
+      "name": "--md-list-item-leading-image-selection-scrim-color",
+      "description": "Full-thumbnail scrim when selected (M3: scrim @ 32%)"
+    },
+    {
+      "name": "--md-list-item-leading-image-selection-circle-color",
+      "description": "Checkmark circle fill when selected (M3: on-surface @ 60%)"
+    },
+    {
+      "name": "--md-list-item-leading-image-selection-icon-color",
+      "description": "Checkmark glyph color (M3: surface / white)"
+    },
+    {
+      "name": "--md-list-item-leading-image-selection-icon-size",
+      "description": "Checkmark circle diameter (M3: 24px)"
+    },
+    {
+      "name": "--md-list-item-selected-container-color",
+      "description": "Selected container background (M3: secondary-container)"
+    },
+    {
+      "name": "--md-list-item-selected-label-text-color",
+      "description": "Selected headline color (M3: on-secondary-container)"
+    },
+    {
+      "name": "--md-list-item-selected-active-icon-color",
+      "description": "Leading/trailing icon color when row is BOTH"
+    },
+    {
+      "name": "--md-list-item-selected-disabled-container-color",
+      "description": "Container fill when row is BOTH selected AND"
+    },
+    {
+      "name": "--md-list-item-expand-chevron-color",
+      "description": "Caret icon color when collapsed (forwarded to the"
+    },
+    {
+      "name": "--md-list-item-expand-duration",
+      "description": "Expanded-panel open duration   (M3: medium3 / 350ms)"
+    },
+    {
+      "name": "--md-list-item-collapse-duration",
+      "description": "Expanded-panel close duration  (M3: short4 / 200ms)"
+    },
+    {
+      "name": "--md-list-item-expanded-panel-padding-block",
+      "description": "Expanded panel vertical padding"
+    },
+    {
+      "name": "--md-list-item-expanded-panel-padding-inline",
+      "description": "Expanded panel horizontal padding (both sides)"
+    },
+    {
+      "name": "--md-list-item-expanded-panel-padding-inline-start",
+      "description": "Expanded panel start padding —"
+    },
+    {
+      "name": "--md-list-item-expanded-panel-background",
+      "description": "Expanded panel background"
+    },
+    {
+      "name": "--md-list-item-leading-icon-expressive-size"
+    },
+    {
+      "name": "--md-list-item-disabled-state-layer-opacity"
+    },
+    {
+      "name": "--md-list-item-expand-button-size"
+    },
+    {
+      "name": "--md-list-item-expand-chevron-size"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-list-item': true,\n          [`md-list-item--${lines}-line`]: true,\n          [`md-list-item--type-${this.type}`]: true,\n          'md-list-item--selection-mode': this.participatesInSelection,\n          'md-list-item--multi-action': this.isMultiAction,\n          'md-list-item--interactive': isInteractive,\n          'md-list-item--disabled': this.disabled || this.softDisabled,\n          'md-list-item--soft-disabled': this.softDisabled,\n          'md-list-item--selected': this.selected && !this.expandable,\n          'md-list-item--pressed': this.pressed,\n          'md-list-item--with-leading': this.hasLeadingContent,\n          'md-list-item--with-trailing': this.hasTrailingContent,\n          'md-list-item--with-avatar':\n            !!this.leadingAvatar || !!this.leadingAvatarLabel || !!this.leadingAvatarName,\n          'md-list-item--with-image': !!this.leadingImage,\n          'md-list-item--with-video': this.hasLeadingVideo,\n          'md-list-item--expandable': this.expandable,\n          'md-list-item--expanded': this.expandable && this.expanded,\n          'md-list-item--reorderable': this.reorderable,\n          'md-list-item--roving-focus-visible': this.rovingFocusVisible,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "role"
+      },
+      {
+        "name": "aria-disabled",
+        "value": "this.isEffectivelyDisabled ? 'true' : null"
+      },
+      {
+        "name": "aria-selected",
+        "value": "ariaSelected"
+      },
+      {
+        "name": "tabindex",
+        "value": "hostTabIndex"
+      },
+      {
+        "name": "onClick",
+        "value": "isInteractive ? this.handleClick : undefined"
+      },
+      {
+        "name": "onKeyDown",
+        "value": "isInteractive || this.reorderable ? this.handleKeyDown : undefined"
+      },
+      {
+        "name": "onPointerDown",
+        "value": "isInteractive ? this.handlePointerDown : undefined"
+      },
+      {
+        "name": "onPointerUp",
+        "value": "isInteractive ? this.handlePointerUp : undefined"
+      },
+      {
+        "name": "onPointerLeave",
+        "value": "isInteractive ? this.handlePointerUp : undefined"
+      },
+      {
+        "name": "onPointerCancel",
+        "value": "isInteractive ? this.handlePointerUp : undefined"
+      },
+      {
+        "name": "onFocus",
+        "value": "isInteractive && !hasPrimaryAction ? this.handleFocus : undefined"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-list-item__row"
+          },
+          {
+            "name": "part",
+            "value": "row"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "isInteractive && <md-ripple disabled={this.isEffectivelyDisabled}></md-ripple>"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "isInteractive && (\n            <span class=\"md-list-item__state-layer\" part=\"state-layer\" aria-hidden=\"true\"></span>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "hasPrimaryAction && this.renderPrimary(primaryTabIndex)"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "!hasPrimaryAction && this.renderLeading()"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "!hasPrimaryAction && this.renderContent()"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.renderTrailing()"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.expandable && (\n          <span\n            class=\"md-list-item__expanded-panel\"\n            part=\"expanded-panel\"\n            id={this.expandedPanelId}\n            /* The disclosed panel owns the row's slotted content. When that\n               content is flat `md-list-item` rows they render as `listitem`,\n               whose only valid axe context is `list` (verified against\n               axe-core `requiredContext: ['list']`) — so the panel is a `list`\n               in BOTH selection and non-selection modes. For arbitrary content\n               it is a `region` (non-selection) / `group` (selection); neither\n               requires an owned role, so a plain `<div>`/FAQ panel can't trip\n               `aria-required-children`. Interleaved dividers are `aria-hidden`\n               (see syncExpandedContentDividers) so a `list` owns only its rows. */\n            role={panelRole}\n            aria-label={panelLabel}\n            hidden={!this.expanded}\n          >\n            <span class=\"md-list-item__expanded-panel-inner\" part=\"expanded-panel-inner\">\n              <slot name=\"expanded-content\" />\n            </span>\n          </span>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 251
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 460
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 464
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 468
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Window access requires a native adapter.",
+      "line": 877
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 1048
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 20
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-list-item/md-list-item.tsx",
+    "styleUrl": "md-list-item.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "ecfb218a81ec9a93400e2abfdad0ad0c61d39bf31e79b3755e4492dce4dbdf43"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-list-item-container-color, var(--md-sys-color-surface, #fef7ff))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-list-item-container-shape, 0px)",
+          "important": false
+        },
+        {
+          "property": "--_container-shape-start-start",
+          "value": "var(--md-list-item-container-shape-start-start, var(--_container-shape))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape-start-end",
+          "value": "var(--md-list-item-container-shape-start-end, var(--_container-shape))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape-end-start",
+          "value": "var(--md-list-item-container-shape-end-start, var(--_container-shape))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape-end-end",
+          "value": "var(--md-list-item-container-shape-end-end, var(--_container-shape))",
+          "important": false
+        },
+        {
+          "property": "--_hover-container-shape",
+          "value": "var(--md-list-item-hover-container-shape,    var(--md-list-item-active-container-shape, 0px))",
+          "important": false
+        },
+        {
+          "property": "--_focus-container-shape",
+          "value": "calc(var(--md-list-item-focus-container-shape,    var(--md-list-item-active-container-shape, var(--md-sys-shape-corner-large, 16px))) * var(--md-sys-shape-morph-enabled, 1))",
+          "important": false
+        },
+        {
+          "property": "--_pressed-container-shape",
+          "value": "calc(var(--md-list-item-pressed-container-shape,  var(--md-list-item-active-container-shape, var(--md-sys-shape-corner-large, 16px))) * var(--md-sys-shape-morph-enabled, 1))",
+          "important": false
+        },
+        {
+          "property": "--_selected-container-shape",
+          "value": "calc(var(--md-list-item-selected-container-shape, var(--md-list-item-active-container-shape, var(--md-sys-shape-corner-large, 16px))) * var(--md-sys-shape-morph-enabled, 1))",
+          "important": false
+        },
+        {
+          "property": "--_dragged-container-shape",
+          "value": "var(--md-list-item-dragged-container-shape, var(--md-list-item-active-container-shape, var(--md-sys-shape-corner-large, 16px)))",
+          "important": false
+        },
+        {
+          "property": "--_label-text-color",
+          "value": "var(--md-list-item-label-text-color, var(--md-sys-color-on-surface, #1c1b1f))",
+          "important": false
+        },
+        {
+          "property": "--_label-text-font",
+          "value": "var(--md-list-item-label-text-font, var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif))",
+          "important": false
+        },
+        {
+          "property": "--_supporting-text-color",
+          "value": "var(--md-list-item-supporting-text-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_supporting-text-font",
+          "value": "var(--md-list-item-supporting-text-font, var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif))",
+          "important": false
+        },
+        {
+          "property": "--_overline-color",
+          "value": "var(--md-list-item-overline-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_trailing-supporting-text-color",
+          "value": "var(--md-list-item-trailing-supporting-text-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_trailing-supporting-text-font",
+          "value": "var(--md-list-item-trailing-supporting-text-font, var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif))",
+          "important": false
+        },
+        {
+          "property": "--_leading-icon-color",
+          "value": "var(--md-list-item-leading-icon-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_leading-icon-size",
+          "value": "var(--md-list-item-leading-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_leading-icon-expressive-size",
+          "value": "var(--md-list-item-leading-icon-expressive-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-color",
+          "value": "var(--md-list-item-trailing-icon-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_unselected-trailing-icon-color",
+          "value": "var(--md-list-item-unselected-trailing-icon-color, var(--md-sys-color-on-surface, #1d1b20))",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-size",
+          "value": "var(--md-list-item-trailing-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-expressive-size",
+          "value": "var(--md-list-item-trailing-icon-expressive-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_leading-avatar-color",
+          "value": "var(--md-list-item-leading-avatar-color, var(--md-sys-color-primary-container, #eaddff))",
+          "important": false
+        },
+        {
+          "property": "--_leading-avatar-label-color",
+          "value": "var(--md-list-item-leading-avatar-label-color, var(--md-sys-color-on-primary-container, #21005d))",
+          "important": false
+        },
+        {
+          "property": "--_leading-avatar-size",
+          "value": "var(--md-list-item-leading-avatar-size, 40px)",
+          "important": false
+        },
+        {
+          "property": "--_leading-avatar-shape",
+          "value": "var(--md-list-item-leading-avatar-shape, var(--md-sys-shape-corner-full, 9999px))",
+          "important": false
+        },
+        {
+          "property": "--_leading-image-width",
+          "value": "var(--md-list-item-leading-image-width, 56px)",
+          "important": false
+        },
+        {
+          "property": "--_leading-image-height",
+          "value": "var(--md-list-item-leading-image-height, 56px)",
+          "important": false
+        },
+        {
+          "property": "--_leading-image-shape",
+          "value": "var(--md-list-item-leading-image-shape, var(--md-sys-shape-corner-none, 0px))",
+          "important": false
+        },
+        {
+          "property": "--_leading-image-expressive-shape",
+          "value": "var(--md-list-item-leading-image-expressive-shape, var(--md-sys-shape-corner-small, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_leading-image-selection-scrim-color",
+          "value": "var(\n    --md-list-item-leading-image-selection-scrim-color,\n    color-mix(in srgb, var(--md-sys-color-scrim, #000000) 32%, transparent)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_leading-image-selection-circle-color",
+          "value": "var(\n    --md-list-item-leading-image-selection-circle-color,\n    color-mix(in srgb, var(--md-sys-color-on-surface, #1d1b20) 60%, transparent)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_leading-image-selection-icon-color",
+          "value": "var(\n    --md-list-item-leading-image-selection-icon-color,\n    var(--md-sys-color-surface, #fef7ff)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_leading-image-selection-icon-size",
+          "value": "var(--md-list-item-leading-image-selection-icon-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "--_leading-video-width",
+          "value": "var(--md-list-item-leading-video-width, 100px)",
+          "important": false
+        },
+        {
+          "property": "--_leading-video-height",
+          "value": "var(--md-list-item-leading-video-height, 56px)",
+          "important": false
+        },
+        {
+          "property": "--_leading-video-shape",
+          "value": "var(--md-list-item-leading-video-shape, var(--md-sys-shape-corner-small, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_selected-container-color",
+          "value": "var(--md-list-item-selected-container-color, var(--md-sys-color-secondary-container, #e8def8))",
+          "important": false
+        },
+        {
+          "property": "--_selected-label-text-color",
+          "value": "var(--md-list-item-selected-label-text-color, var(--md-sys-color-on-secondary-container, #4a4458))",
+          "important": false
+        },
+        {
+          "property": "--_selected-active-icon-color",
+          "value": "var(--md-list-item-selected-active-icon-color, var(--md-sys-color-on-surface, #1d1b20))",
+          "important": false
+        },
+        {
+          "property": "--_selected-disabled-container-color",
+          "value": "var(\n    --md-list-item-selected-disabled-container-color,\n    color-mix(in srgb, var(--md-sys-color-on-surface, #1d1b20) 12%, transparent)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-sys-color-on-surface, #1c1b1f)",
+          "important": false
+        },
+        {
+          "property": "--_hover-state-layer-opacity",
+          "value": "var(--md-list-item-hover-state-layer-opacity, var(--md-sys-state-hover-state-layer-opacity, 0.08))",
+          "important": false
+        },
+        {
+          "property": "--_focus-state-layer-opacity",
+          "value": "var(--md-list-item-focus-state-layer-opacity, 0.1)",
+          "important": false
+        },
+        {
+          "property": "--_pressed-state-layer-opacity",
+          "value": "var(--md-list-item-pressed-state-layer-opacity, 0.1)",
+          "important": false
+        },
+        {
+          "property": "--_dragged-state-layer-opacity",
+          "value": "var(--md-list-item-dragged-state-layer-opacity, 0.16)",
+          "important": false
+        },
+        {
+          "property": "--_disabled-state-layer-opacity",
+          "value": "var(--md-list-item-disabled-state-layer-opacity, 0)",
+          "important": false
+        },
+        {
+          "property": "--_leading-space",
+          "value": "var(--md-list-item-leading-space, var(--md-sys-spacing-inset-lg, 16px))",
+          "important": false
+        },
+        {
+          "property": "--_trailing-space",
+          "value": "var(--md-list-item-trailing-space, var(--md-sys-spacing-inset-lg, 16px))",
+          "important": false
+        },
+        {
+          "property": "--_top-space",
+          "value": "var(--md-list-item-top-space, max(2px, calc(8px + var(--md-sys-density-scale, 0) * 1.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_bottom-space",
+          "value": "var(--md-list-item-bottom-space, max(2px, calc(8px + var(--md-sys-density-scale, 0) * 1.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_between-space",
+          "value": "var(--md-list-item-between-space, max(8px, var(--md-sys-spacing-gap-md, 12px)))",
+          "important": false
+        },
+        {
+          "property": "--_three-line-top-space",
+          "value": "var(--md-list-item-three-line-top-space, max(2px, calc(12px + var(--md-sys-density-scale, 0) * 2.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_three-line-bottom-space",
+          "value": "var(--md-list-item-three-line-bottom-space, max(2px, calc(12px + var(--md-sys-density-scale, 0) * 2.5px)))",
+          "important": false
+        },
+        {
+          "property": "--_density-delta",
+          "value": "calc(var(--md-sys-density-scale, 0) * 4px)",
+          "important": false
+        },
+        {
+          "property": "--_density-delta-multi",
+          "value": "calc(var(--md-sys-density-scale, 0) * 6px)",
+          "important": false
+        },
+        {
+          "property": "--_dragged-container-elevation",
+          "value": "var(--md-list-item-dragged-container-elevation, var(--md-sys-elevation-4, 0px 6px 10px 4px rgba(0,0,0,0.15), 0px 2px 3px rgba(0,0,0,0.3)))",
+          "important": false
+        },
+        {
+          "property": "--_expand-chevron-color",
+          "value": "var(--md-list-item-expand-chevron-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_expand-duration",
+          "value": "var(--md-list-item-expand-duration, var(--md-sys-motion-duration-medium3, 350ms))",
+          "important": false
+        },
+        {
+          "property": "--_collapse-duration",
+          "value": "var(--md-list-item-collapse-duration, var(--md-sys-motion-duration-short4, 200ms))",
+          "important": false
+        },
+        {
+          "property": "--_expand-easing",
+          "value": "var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "important": false
+        },
+        {
+          "property": "--_collapse-easing",
+          "value": "var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15))",
+          "important": false
+        },
+        {
+          "property": "--_expanded-panel-padding-block",
+          "value": "var(--md-list-item-expanded-panel-padding-block, 0px)",
+          "important": false
+        },
+        {
+          "property": "--_expanded-panel-padding-inline",
+          "value": "var(--md-list-item-expanded-panel-padding-inline, 0px)",
+          "important": false
+        },
+        {
+          "property": "--_expanded-panel-padding-inline-start",
+          "value": "var(\n    --md-list-item-expanded-panel-padding-inline-start,\n    var(--md-list-item-expanded-panel-padding-inline, 0px)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_expanded-panel-background",
+          "value": "var(--md-list-item-expanded-panel-background, transparent)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_label-text-color)",
+          "important": false
+        },
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_container-shape-start-start)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_container-shape-start-end)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_container-shape-end-start)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_container-shape-end-end)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "clip",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "box-shadow var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    border-start-start-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),\n    border-start-end-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),\n    border-end-start-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),\n    border-end-end-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "calc(56px + var(--_density-delta))",
+          "important": false
+        },
+        {
+          "property": "padding-block-start",
+          "value": "var(--_top-space)",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "var(--_bottom-space)",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "var(--_leading-space)",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "var(--_trailing-space)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_between-space)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "border-start-start-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),\n    border-start-end-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),\n    border-end-start-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),\n    border-end-end-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--interactive) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--type-text:not(.md-list-item--selection-mode):not(.md-list-item--expandable)) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__primary",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_between-space)",
+          "important": false
+        },
+        {
+          "property": "appearance",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "font",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "text-decoration",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--3-line) .md-list-item__primary",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-items",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "stretch",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--1-line) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-block-size",
+          "value": "calc(56px + var(--_density-delta))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--2-line) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-block-size",
+          "value": "calc(72px + var(--_density-delta-multi))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--3-line) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-block-size",
+          "value": "calc(88px + var(--_density-delta-multi))",
+          "important": false
+        },
+        {
+          "property": "padding-block-start",
+          "value": "var(--_three-line-top-space)",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "var(--_three-line-bottom-space)",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "flex-start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--with-video)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_top-space",
+          "value": "var(--md-list-item-leading-video-top-space, max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_bottom-space",
+          "value": "max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--3-line) .md-list-item__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-self",
+          "value": "flex-start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--3-line.md-list-item--with-avatar) .md-list-item__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--3-line:has(md-avatar[slot='leading'])) .md-list-item__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--3-line) .md-list-item__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-self",
+          "value": "stretch",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "flex-end",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--3-line) .md-list-item__trailing-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-block",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(.md-list--standard),\n:host-context(.md-list--segmented)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_leading-icon-size",
+          "value": "var(--md-list-item-leading-icon-size, var(--_leading-icon-expressive-size))",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-size",
+          "value": "var(--md-list-item-trailing-icon-size, var(--_trailing-icon-expressive-size))",
+          "important": false
+        },
+        {
+          "property": "--_leading-image-shape",
+          "value": "var(--md-list-item-leading-image-shape, var(--_leading-image-expressive-shape))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(.md-list--standard):host(:first-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-start-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-start-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(.md-list--standard):host(:last-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-end-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(.md-list--standard):host(:only-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-start-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-start-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--expandable.md-list-item--expanded)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-end-start",
+          "value": "0px",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-end",
+          "value": "0px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(.md-list--segmented)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-list-item-container-shape, var(--md-sys-shape-corner-extra-small, 4px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(.md-list--segmented):host(:first-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-start-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-start-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(.md-list--segmented):host(:last-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-end-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(.md-list--segmented):host(:only-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-start-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-start-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_state-layer-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--interactive) .md-list-item__row:hover .md-list-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--_hover-state-layer-opacity)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--interactive:focus-visible) .md-list-item__state-layer,\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--_focus-state-layer-opacity)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--interactive:has(.md-list-item__primary:focus-visible)) .md-list-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--_focus-state-layer-opacity)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--interactive) .md-list-item__row:active .md-list-item__state-layer,\n:host(.md-list-item--pressed) .md-list-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--_pressed-state-layer-opacity)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--dragged) .md-list-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--_dragged-state-layer-opacity)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--dragged) md-ripple",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--dragged)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "var(--_dragged-container-elevation)",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--interactive:focus-visible),\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "inset 0 0 0 3px var(--md-sys-color-secondary, #625b71)",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--interactive:has(.md-list-item__primary:focus-visible))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "inset 0 0 0 3px var(--md-sys-color-secondary, #625b71)",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--dragged:focus-visible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "var(--_dragged-container-elevation),\n    inset 0 0 0 3px var(--md-sys-color-secondary, #625b71)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--interactive:focus-visible),\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),\n:host(.md-list-item--selected),\n:host(.md-list-item--interactive:active),\n:host(.md-list-item--pressed),\n:host(.md-list-item--dragged)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "box-shadow var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    border-start-start-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    border-start-end-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    border-end-start-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    border-end-end-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--interactive:focus-visible) .md-list-item__row,\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__row,\n:host(.md-list-item--selected) .md-list-item__row,\n:host(.md-list-item--interactive:active) .md-list-item__row,\n:host(.md-list-item--pressed) .md-list-item__row,\n:host(.md-list-item--dragged) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "border-start-start-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    border-start-end-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    border-end-start-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    border-end-end-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--interactive:focus-visible),\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),\n:host(.md-list-item--interactive:focus-visible) .md-list-item__row,\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "max(var(--_container-shape-start-start), var(--_focus-container-shape))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "max(var(--_container-shape-start-end),   var(--_focus-container-shape))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "max(var(--_container-shape-end-start),   var(--_focus-container-shape))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "max(var(--_container-shape-end-end),     var(--_focus-container-shape))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--selected),\n:host(.md-list-item--selected) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "max(var(--_container-shape-start-start), var(--_selected-container-shape))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "max(var(--_container-shape-start-end),   var(--_selected-container-shape))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "max(var(--_container-shape-end-start),   var(--_selected-container-shape))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "max(var(--_container-shape-end-end),     var(--_selected-container-shape))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--interactive:active),\n:host(.md-list-item--pressed),\n:host(.md-list-item--dragged),\n:host(.md-list-item--interactive:active) .md-list-item__row,\n:host(.md-list-item--pressed) .md-list-item__row,\n:host(.md-list-item--dragged) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "max(var(--_container-shape-start-start), var(--_pressed-container-shape))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "max(var(--_container-shape-start-end),   var(--_pressed-container-shape))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "max(var(--_container-shape-end-start),   var(--_pressed-container-shape))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "max(var(--_container-shape-end-end),     var(--_pressed-container-shape))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--dragged),\n:host(.md-list-item--dragged) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "max(var(--_container-shape-start-start), var(--_dragged-container-shape))",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "max(var(--_container-shape-start-end),   var(--_dragged-container-shape))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "max(var(--_container-shape-end-start),   var(--_dragged-container-shape))",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "max(var(--_container-shape-end-end),     var(--_dragged-container-shape))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--selected)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--_selected-container-color)",
+          "important": false
+        },
+        {
+          "property": "--_label-text-color",
+          "value": "var(--_selected-label-text-color)",
+          "important": false
+        },
+        {
+          "property": "--_supporting-text-color",
+          "value": "var(--_selected-label-text-color)",
+          "important": false
+        },
+        {
+          "property": "--_overline-color",
+          "value": "var(--_selected-label-text-color)",
+          "important": false
+        },
+        {
+          "property": "--_leading-icon-color",
+          "value": "var(--_selected-label-text-color)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-color",
+          "value": "var(--_selected-label-text-color)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-supporting-text-color",
+          "value": "var(--_selected-label-text-color)",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--_selected-label-text-color)",
+          "important": false
+        },
+        {
+          "property": "--_expand-chevron-color",
+          "value": "var(--_selected-label-text-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--selection-mode:not(.md-list-item--selected))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_trailing-icon-color",
+          "value": "var(--_unselected-trailing-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--selected.md-list-item--interactive:hover),\n:host(.md-list-item--selected.md-list-item--interactive:focus-visible),\n:host(.md-list-item--selected.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),\n:host(.md-list-item--selected.md-list-item--interactive:active),\n:host(.md-list-item--selected.md-list-item--pressed),\n:host(.md-list-item--selected.md-list-item--dragged)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_leading-icon-color",
+          "value": "var(--_selected-active-icon-color)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-color",
+          "value": "var(--_selected-active-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--expandable),\n:host(.md-list-item--expandable[selected]),\n:host(.md-list-item--expandable.md-list-item--selected),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:hover),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:focus-visible),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:active),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--pressed),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--dragged)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-list-item-container-color, var(--md-sys-color-surface, #fef7ff))",
+          "important": false
+        },
+        {
+          "property": "--_label-text-color",
+          "value": "var(--md-list-item-label-text-color, var(--md-sys-color-on-surface, #1c1b1f))",
+          "important": false
+        },
+        {
+          "property": "--_supporting-text-color",
+          "value": "var(--md-list-item-supporting-text-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_overline-color",
+          "value": "var(--md-list-item-overline-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_leading-icon-color",
+          "value": "var(--md-list-item-leading-icon-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-color",
+          "value": "var(--md-list-item-trailing-icon-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "--_trailing-supporting-text-color",
+          "value": "var(\n    --md-list-item-trailing-supporting-text-color,\n    var(--md-sys-color-on-surface-variant, #49454f)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-sys-color-on-surface, #1c1b1f)",
+          "important": false
+        },
+        {
+          "property": "--_expand-chevron-color",
+          "value": "var(--md-list-item-expand-chevron-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--expandable.md-list-item--selected),\n:host(.md-list-item--expandable.md-list-item--selected) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_container-shape-start-start)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_container-shape-start-end)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_container-shape-end-start)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_container-shape-end-end)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "--_label-text-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_supporting-text-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_overline-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_leading-icon-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-supporting-text-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_expand-chevron-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--disabled) .md-list-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--_disabled-state-layer-opacity)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--selected.md-list-item--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--_selected-disabled-container-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled]) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled]) .md-list-item__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_leading-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__leading--empty,\n.md-list-item__overline--empty,\n.md-list-item__supporting-text--empty,\n.md-list-item__trailing-text--empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_leading-icon-size)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_leading-icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_leading-icon-size)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_leading-icon-color)",
+          "important": false
+        },
+        {
+          "property": "font-variation-settings",
+          "value": "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "font-variation-settings var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--expanded) .md-list-item__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-variation-settings",
+          "value": "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "md-avatar.md-list-item__avatar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-avatar-size",
+          "value": "var(--_leading-avatar-size)",
+          "important": false
+        },
+        {
+          "property": "--md-avatar-container-shape",
+          "value": "var(--_leading-avatar-shape)",
+          "important": false
+        },
+        {
+          "property": "--md-avatar-container-color",
+          "value": "var(--_leading-avatar-color)",
+          "important": false
+        },
+        {
+          "property": "--md-avatar-label-color",
+          "value": "var(--_leading-avatar-label-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__image-wrap",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_leading-image-width)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_leading-image-height)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_leading-image-shape)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__image",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "object-fit",
+          "value": "cover",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__image-selection-indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_leading-image-selection-scrim-color)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--selected) .md-list-item__image-selection-indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__image-selection-circle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_leading-image-selection-icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_leading-image-selection-icon-size)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 9999px)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_leading-image-selection-circle-color)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scale(0)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--selected) .md-list-item__image-selection-circle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "md-list-item-image-selection-in var(--md-sys-motion-duration-medium2, 250ms)\n    var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)) both",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "0%",
+      "context": "@keyframes md-list-item-image-selection-in",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scale(0)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "60%",
+      "context": "@keyframes md-list-item-image-selection-in",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scale(1.08)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "100%",
+      "context": "@keyframes md-list-item-image-selection-in",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scale(1)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__image-selection-check.material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "calc(var(--_leading-image-selection-icon-size) * 0.667)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "calc(var(--_leading-image-selection-icon-size) * 0.667)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "calc(var(--_leading-image-selection-icon-size) * 0.667)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_leading-image-selection-icon-color)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-variation-settings",
+          "value": "'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot=\"leading\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_leading-icon-color)",
+          "important": false
+        },
+        {
+          "property": "fill",
+          "value": "currentColor",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted(video[slot=\"leading\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--_leading-video-width)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_leading-video-height)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_leading-video-shape)",
+          "important": false
+        },
+        {
+          "property": "object-fit",
+          "value": "cover",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__overline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-sys-typescale-label-small-font-size, 11px)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-small-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-label-small-line-height, 16px)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-label-small-letter-spacing, 0.5px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_overline-color)",
+          "important": false
+        },
+        {
+          "property": "contain",
+          "value": "inline-size",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "uppercase",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__headline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--_label-text-font)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-large-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-large-letter-spacing, 0.5px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_label-text-color)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "contain",
+          "value": "inline-size",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__supporting-text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--_supporting-text-font)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-medium-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-medium-letter-spacing, 0.25px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_supporting-text-color)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "contain",
+          "value": "inline-size",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--3-line) .md-list-item__supporting-text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "-webkit-box",
+          "important": false
+        },
+        {
+          "property": "-webkit-line-clamp",
+          "value": "2",
+          "important": false
+        },
+        {
+          "property": "-webkit-box-orient",
+          "value": "vertical",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "normal",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "md-tooltip.md-list-item__headline-tooltip,\nmd-tooltip.md-list-item__supporting-tooltip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "--md-tooltip-plain-max-inline-size",
+          "value": "320px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "md-tooltip.md-list-item__supporting-tooltip--empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_trailing-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__trailing-text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--_trailing-supporting-text-font)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-sys-typescale-label-small-font-size, 11px)",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-small-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-label-small-line-height, 16px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_trailing-supporting-text-color)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__trailing-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_trailing-icon-size)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_trailing-icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_trailing-icon-size)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_trailing-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot=\"trailing\"]:not(md-badge))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_trailing-icon-color)",
+          "important": false
+        },
+        {
+          "property": "fill",
+          "value": "currentColor",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted(md-badge[slot=\"trailing\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "static",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--3-line) ::slotted(md-badge[slot=\"trailing\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-block",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__drag-handle.material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "22px",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_trailing-icon-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.55",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "grab",
+          "important": false
+        },
+        {
+          "property": "touch-action",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),\n    transform var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),\n    color var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__drag-handle.material-symbols-outlined:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1c1b1f)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scale(1.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__drag-handle.material-symbols-outlined:active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "grabbing",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--dragged) .md-list-item__drag-handle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1c1b1f)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "grabbing",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--shifting)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "will-change",
+          "value": "transform",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__expand-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "var(--md-list-item-expand-button-size, 32px)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "var(--md-list-item-expand-button-size, 32px)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "var(--md-list-item-expand-chevron-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--_expand-chevron-color)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-state-layer-color",
+          "value": "var(--_expand-chevron-color)",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "-4px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__expand-button--expanded",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-container-color",
+          "value": "var(--md-sys-color-primary, #6750a4)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--md-sys-color-on-primary, #ffffff)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-state-layer-color",
+          "value": "var(--md-sys-color-on-primary, #ffffff)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-outline-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__expand-button::part(icon)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-medium2, 250ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__expand-button--expanded::part(icon)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "rotate(180deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__expanded-panel",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        },
+        {
+          "property": "grid-template-rows",
+          "value": "0fr",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_expanded-panel-background)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "grid-template-rows var(--_collapse-duration) var(--_collapse-easing),\n    opacity var(--_collapse-duration) var(--_collapse-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--expanded) .md-list-item__expanded-panel",
+      "context": null,
+      "declarations": [
+        {
+          "property": "grid-template-rows",
+          "value": "1fr",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "grid-template-rows var(--_expand-duration) var(--_expand-easing),\n    opacity var(--_expand-duration) var(--_expand-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__expanded-panel-inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(-8px)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--_collapse-duration) var(--_collapse-easing)",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--_expanded-panel-padding-block)",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "var(--_expanded-panel-padding-inline-start)",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "var(--_expanded-panel-padding-inline)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--expanded) .md-list-item__expanded-panel-inner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "translateY(0)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--_expand-duration) var(--_expand-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--expandable) ::slotted(md-list-item[slot=\"expanded-content\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape",
+          "value": "0px",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-start-start",
+          "value": "0px",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-start-end",
+          "value": "0px",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-start",
+          "value": "0px",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-end",
+          "value": "0px",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context(.md-list--standard):host(:last-of-type.md-list-item--expanded) ::slotted(md-list-item[slot=\"expanded-content\"]:last-of-type),\n:host-context(.md-list--segmented):host(:last-of-type.md-list-item--expanded) ::slotted(md-list-item[slot=\"expanded-content\"]:last-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-end-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted(md-divider[slot=\"expanded-content\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot=\"expanded-content\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__expanded-panel[hidden]",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-property",
+          "value": "box-shadow",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__row,\n  .md-list-item__expanded-panel,\n  .md-list-item__expanded-panel-inner,\n  .md-list-item__drag-handle",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__drag-handle.material-symbols-outlined:hover",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__expand-button::part(icon)",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list-item__image-selection-indicator",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--selected) .md-list-item__image-selection-circle",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "scale(1)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([dir=\"rtl\"]) .md-list-item__trailing-icon[data-rtl-mirror],\n:host-context([dir=\"rtl\"]) .md-list-item__trailing-icon[data-rtl-mirror]",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleX(-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--with-image) .md-list-item__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-inline-start",
+          "value": "16px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "List Item",
+  "category": "Containment",
+  "parent": "md-list",
+  "description": "One row of a list. Up to three text lines, a leading visual, trailing content. The leading visual is an icon, avatar, or image; an optional panel expands detail in place. Normally a direct child of md-list, which supplies selection, roving focus and reordering.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-list-item.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-list-item/md-list-item.tsx",
+    "css": "packages/core/src/components/md-list-item/md-list-item.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "headline",
+        "overline",
+        "supportingText",
+        "trailingSupportingText",
+        "leadingIcon",
+        "trailingIcon",
+        "leadingAvatar",
+        "leadingAvatarAlt",
+        "leadingAvatarName",
+        "href",
+        "selected",
+        "expandable",
+        "expanded",
+        "selectionMode",
+        "disabled",
+        "softDisabled",
+        "type"
+      ],
+      "events": [
+        "mdClick",
+        "mdItemClick",
+        "mdItemSelect",
+        "mdExpand"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "leading",
+        "overline",
+        "headline",
+        "supporting-text",
+        "trailing",
+        "trailing-supporting-text",
+        "expanded-content"
+      ],
+      "unsupportedProperties": [
+        "leadingAvatarLabel",
+        "leadingImage",
+        "leadingImageAlt",
+        "lines",
+        "target",
+        "tabbable",
+        "rovingFocusVisible",
+        "interactionMode",
+        "containerRole",
+        "reorderable",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdRequestActivation",
+        "mdItemRequestReorder"
+      ],
+      "unsupportedMethods": [
+        "setFocus",
+        "focusItem",
+        "toggle",
+        "expand",
+        "collapse"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Event item DOM references become stable native node IDs. Nested focus and keyboard reorder are not implemented."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "disabled",
+        "expandable",
+        "expanded",
+        "headline",
+        "leadingIcon",
+        "overline",
+        "selected",
+        "softDisabled",
+        "supportingText",
+        "trailingSupportingText"
+      ],
+      "events": [
+        "mdClick",
+        "mdExpand",
+        "mdItemClick",
+        "mdItemSelect"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "expanded-content",
+        "leading",
+        "trailing"
+      ],
+      "unsupportedProperties": [
+        "type",
+        "trailingIcon",
+        "leadingAvatar",
+        "leadingAvatarAlt",
+        "leadingAvatarName",
+        "leadingAvatarLabel",
+        "leadingImage",
+        "leadingImageAlt",
+        "lines",
+        "href",
+        "target",
+        "tabbable",
+        "rovingFocusVisible",
+        "selectionMode",
+        "interactionMode",
+        "containerRole",
+        "reorderable",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdRequestActivation",
+        "mdItemRequestReorder"
+      ],
+      "unsupportedMethods": [
+        "setFocus",
+        "focusItem",
+        "toggle",
+        "expand",
+        "collapse"
+      ],
+      "unsupportedSlots": [
+        "overline",
+        "headline",
+        "supporting-text",
+        "trailing-supporting-text"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

@@ -103,7 +103,12 @@
     "verify:dx": "pnpm check:environment && pnpm test:cli && pnpm test:adapters && pnpm test:ssr-contracts && pnpm verify:consumer-types && pnpm verify:package-size",
     "build:mcp": "pnpm --filter @awc-ui/mcp build",
     "test:mcp": "pnpm build:mcp && pnpm --filter @awc-ui/mcp test",
-    "test:security": "pnpm --filter @awc-ui/showcase-kit build && node --experimental-strip-types --test scripts/tests/app-security.test.mjs scripts/tests/html-comments.test.mjs scripts/tests/markdown-text.test.mjs scripts/tests/serve-docs-prod.test.mjs scripts/check-docs-release.test.mjs apps/docs/src/lib/htmlToTechnology.test.mjs packages/showcase-kit/src/dock/state.test.mjs packages/showcase-kit/src/design/selectors.test.mjs"
+    "test:security": "pnpm --filter @awc-ui/showcase-kit build && node --experimental-strip-types --test scripts/tests/app-security.test.mjs scripts/tests/html-comments.test.mjs scripts/tests/markdown-text.test.mjs scripts/tests/serve-docs-prod.test.mjs scripts/check-docs-release.test.mjs apps/docs/src/lib/htmlToTechnology.test.mjs packages/showcase-kit/src/dock/state.test.mjs packages/showcase-kit/src/design/selectors.test.mjs",
+    "native:build": "node packages/native-compiler/src/cli.mjs build",
+    "native:check": "node packages/native-compiler/src/cli.mjs check",
+    "native:audit": "node packages/native-compiler/src/cli.mjs audit",
+    "native:test": "node --test packages/native-compiler/test/*.test.mjs apps/native-playground/*.test.mjs",
+    "native:playground": "node apps/native-playground/server.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.4",

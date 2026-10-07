@@ -1,0 +1,875 @@
+{
+  "tag": "md-list",
+  "className": "MdList",
+  "properties": [
+    {
+      "name": "listStyle",
+      "type": "MdListStyle",
+      "default": "'standard'",
+      "defaultValue": "standard",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "list-style",
+      "optional": false,
+      "description": "Visual style of the list.\n\n- `standard` (default, M3 Expressive): rows share a single rounded\n  chassis with **no gap** between them. The first row rounds its\n  top corners, the last rounds its bottom corners, and middle rows\n  are square so the stack reads as one continuous shape — the M3\n  \"connected\" pattern. Best for settings panels, option groups,\n  and iOS-style sectioned tables. To add hairline separators\n  between rows, interleave `<md-divider>` elements.\n- `segmented` (M3 Expressive): rows are individually rounded \"tiles\"\n  separated by a small gap. Each tile rounds all four corners. Best\n  for action sets, quick-action menus, and card-like sections where\n  each row should read as its own affordance."
+    },
+    {
+      "name": "selectionMode",
+      "type": "MdListSelectionMode",
+      "default": "'none'",
+      "defaultValue": "none",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "selection-mode",
+      "optional": false,
+      "description": "Selection coordination across child rows.\n\n- `none` (default): each row stands alone and the container is always\n  `role=\"list\"` (rows are `listitem`s). Interactive rows (`type=\"button\"` /\n  `type=\"link\"`) expose their widget role on an inner primary element, so\n  the list validly owns only `listitem`s while still providing the same\n  roving-tabindex + arrow-key navigation. `type=\"text\"` rows stay\n  non-focusable.\n- `single-select`: the container behaves as `role=\"listbox\"`, items\n  become `role=\"option\"`, and exactly one item carries `aria-selected`.\n- `multi-select`: same as above plus `aria-multiselectable=\"true\"`.\n\nSwitching to a selection mode also auto-promotes plain `type=\"text\"`\nrows to focusable so users can pick from a list of label-only rows\nwithout authoring extra props."
+    },
+    {
+      "name": "interactionMode",
+      "type": "MdListInteractionMode",
+      "default": "'single-action'",
+      "defaultValue": "single-action",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "interaction-mode",
+      "optional": false,
+      "description": "Row interaction pattern for the whole list. A list uses exactly one\ninteraction mode at a time (per the M3 Lists spec).\n\n- `single-action` (default): each row is one tappable area — leading\n  icon + label activate together. Use `type=\"button\"` (or selection\n  mode) on items.\n- `multi-action`: rows expose a primary action (the row body) plus\n  optional secondary actions in `slot=\"trailing\"` (e.g. `md-icon-button`).\n  Clicks on trailing controls do not activate the primary row action;\n  each secondary control keeps its own focus stop and keyboard behavior."
+    },
+    {
+      "name": "reorderable",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "reorderable",
+      "optional": false,
+      "description": ""
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Optional aria-label for the container."
+    },
+    {
+      "name": "labelledby",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "labelledby",
+      "optional": false,
+      "description": "Optional aria-labelledby for the container."
+    },
+    {
+      "name": "roleOverride",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "role-override",
+      "optional": false,
+      "description": "Override the auto-computed ARIA role. Useful when wiring the list\ninto a wider widget pattern (e.g. `role=\"menu\"` for a dropdown).\nLeave empty to use the role implied by `selectionMode`."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "activeIndex",
+      "type": "inferred",
+      "initializer": "0"
+    },
+    {
+      "name": "dropPlaceholder",
+      "type": "{ top: number; height: number } | null",
+      "initializer": "null"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSelect",
+      "detail": "MdListSelectDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdActivate",
+      "detail": "{ index: number; item: HTMLMdListItemElement }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdReorder",
+      "detail": "{ from: number; to: number; order: number[] }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "activateNext",
+      "parameters": [],
+      "returnType": "Promise<HTMLMdListItemElement | null>"
+    },
+    {
+      "name": "activatePrevious",
+      "parameters": [],
+      "returnType": "Promise<HTMLMdListItemElement | null>"
+    },
+    {
+      "name": "selectItem",
+      "parameters": [
+        {
+          "name": "index",
+          "type": "number"
+        }
+      ],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "getSelectedIndices",
+      "parameters": [],
+      "returnType": "Promise<number[]>"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "drop-placeholder",
+      "description": "Ghost slot shown in the lifted row's vacated position"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-list-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-list-container-shape",
+      "description": "Border-radius override"
+    },
+    {
+      "name": "--md-list-padding-block",
+      "description": "Vertical padding inside the list"
+    },
+    {
+      "name": "--md-list-padding-inline",
+      "description": "Horizontal padding inside the list"
+    },
+    {
+      "name": "--md-list-segmented-gap",
+      "description": "Gap between rows in segmented mode (default 2px)"
+    },
+    {
+      "name": "--md-list-drop-placeholder-color",
+      "description": "Drop-target ghost fill (default primary-container @ ~45%, on-theme)"
+    },
+    {
+      "name": "--md-list-drop-placeholder-shape",
+      "description": "Drop-target ghost corner radius (default corner-large / 16px)"
+    },
+    {
+      "name": "--md-list-drop-placeholder-opacity",
+      "description": "Drop-target ghost opacity (default 1)"
+    },
+    {
+      "name": "--md-list-drop-placeholder-outline-color"
+    },
+    {
+      "name": "--md-list-drop-placeholder-outline-width"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-list': true,\n          [`md-list--${this.listStyle}`]: true,\n          [`md-list--${this.selectionMode}`]: this.selectionMode !== 'none',\n          [`md-list--${this.interactionMode}`]: true,\n          'md-list--reorderable': this.reorderable,\n          'md-list--reordering': !!this.dropPlaceholder,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "role"
+      },
+      {
+        "name": "aria-label",
+        "value": "this.label || null"
+      },
+      {
+        "name": "aria-labelledby",
+        "value": "this.labelledby || null"
+      },
+      {
+        "name": "aria-multiselectable",
+        "value": "ariaMulti"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.dropPlaceholder && (\n          <div\n            class=\"md-list__drop-placeholder\"\n            part=\"drop-placeholder\"\n            aria-hidden=\"true\"\n            style={{\n              transform: `translateY(${this.dropPlaceholder.top}px)`,\n              blockSize: `${this.dropPlaceholder.height}px`,\n            }}\n          ></div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "slot",
+        "attributes": [],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 164
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Window access requires a native adapter.",
+      "line": 300
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 536
+    },
+    {
+      "code": "DOM_MUTATION",
+      "severity": "warning",
+      "message": "classList depends on browser semantics and requires a native adapter.",
+      "line": 564
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 675
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 50
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-list/md-list.tsx",
+    "styleUrl": "md-list.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "4061c53fac249b4465948e261f09c5334136945f7f8573f8d0992ab457e8dc1a"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-list-container-color, var(--md-sys-color-surface, #fffbfe))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-list-container-shape, 0px)",
+          "important": false
+        },
+        {
+          "property": "--_padding-block",
+          "value": "var(--md-list-padding-block, var(--md-sys-spacing-inset-sm, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_padding-inline",
+          "value": "var(--md-list-padding-inline, 0px)",
+          "important": false
+        },
+        {
+          "property": "--_segmented-gap",
+          "value": "var(--md-list-segmented-gap, 2px)",
+          "important": false
+        },
+        {
+          "property": "--_drop-placeholder-color",
+          "value": "var(--md-list-drop-placeholder-color, color-mix(in srgb, var(--md-sys-color-primary-container, #eaddff) 45%, transparent))",
+          "important": false
+        },
+        {
+          "property": "--_drop-placeholder-outline-color",
+          "value": "var(--md-list-drop-placeholder-outline-color, color-mix(in srgb, var(--md-sys-color-primary, #6750a4) 55%, transparent))",
+          "important": false
+        },
+        {
+          "property": "--_drop-placeholder-outline-width",
+          "value": "var(--md-list-drop-placeholder-outline-width, 2px)",
+          "important": false
+        },
+        {
+          "property": "--_drop-placeholder-shape",
+          "value": "var(--md-list-drop-placeholder-shape, var(--md-sys-shape-corner-large, 16px))",
+          "important": false
+        },
+        {
+          "property": "--_drop-placeholder-opacity",
+          "value": "var(--md-list-drop-placeholder-opacity, 1)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1c1b1f)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--_padding-block)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--_padding-inline)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "clip",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list--standard)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-list-container-color, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-list-container-shape, 0px)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list--standard) ::slotted(md-list-item)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape",
+          "value": "0px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list--standard) ::slotted(md-list-item:first-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-start-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-start-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list--standard) ::slotted(md-list-item:last-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-end-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list--standard) ::slotted(md-list-item:only-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-start-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-start-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list--segmented)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-list-container-color, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-list-container-shape, 0px)",
+          "important": false
+        },
+        {
+          "property": "--_padding-inline",
+          "value": "var(--md-list-padding-inline, 0px)",
+          "important": false
+        },
+        {
+          "property": "--_padding-block",
+          "value": "var(--md-list-padding-block, 0px)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_segmented-gap)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list--segmented) ::slotted(md-list-item)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape",
+          "value": "var(--md-sys-shape-corner-extra-small, 4px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list--segmented) ::slotted(md-list-item:first-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-start-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-start-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list--segmented) ::slotted(md-list-item:last-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-end-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list--segmented) ::slotted(md-list-item:only-of-type)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-list-item-container-shape-start-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-start-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-start",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        },
+        {
+          "property": "--md-list-item-container-shape-end-end",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list--single-select),\n:host(.md-list--multi-select)",
+      "context": null,
+      "declarations": []
+    },
+    {
+      "selector": ":host(:focus)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list--reordering)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list__drop-placeholder",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
+          "value": "var(--_padding-inline)",
+          "important": false
+        },
+        {
+          "property": "inset-inline-end",
+          "value": "var(--_padding-inline)",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_drop-placeholder-shape)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_drop-placeholder-color)",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "var(--_drop-placeholder-outline-width) dashed var(--_drop-placeholder-outline-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "var(--_drop-placeholder-opacity)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-list__drop-placeholder",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "List",
+  "category": "Containment",
+  "parent": null,
+  "description": "A vertical set of related rows. It owns the container role and selection. Roving focus, arrow-key and typeahead navigation, and optional drag-to-reorder are all coordinated here on behalf of its md-list-item children.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-list.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-list/md-list.tsx",
+    "css": "packages/core/src/components/md-list/md-list.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "listStyle",
+        "selectionMode",
+        "label"
+      ],
+      "events": [
+        "mdSelect",
+        "mdActivate"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "interactionMode",
+        "reorderable",
+        "labelledby",
+        "roleOverride",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdReorder"
+      ],
+      "unsupportedMethods": [
+        "activateNext",
+        "activatePrevious",
+        "selectItem",
+        "getSelectedIndices"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Coordinates native child selection. DOM references in events become native node IDs."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "label",
+        "listStyle",
+        "selectionMode"
+      ],
+      "events": [
+        "mdSelect"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "interactionMode",
+        "reorderable",
+        "labelledby",
+        "roleOverride",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdActivate",
+        "mdReorder"
+      ],
+      "unsupportedMethods": [
+        "activateNext",
+        "activatePrevious",
+        "selectItem",
+        "getSelectedIndices"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native single/multi selection; native events omit DOM item references. Reordering remains unsupported."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

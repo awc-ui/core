@@ -1,0 +1,240 @@
+{
+  "tag": "md-segmented-button-set",
+  "className": "MdSegmentedButtonSet",
+  "properties": [
+    {
+      "name": "multiselect",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "multiselect",
+      "optional": false,
+      "description": "Single-select or multi-select mode"
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Density: 0 = 40px, -1 = 36px, -2 = 32px, -3 = 28px, -4 = 24px"
+    }
+  ],
+  "state": [],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "string[]",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [],
+  "cssProperties": [],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-segmented-button-set': true,\n          [`md-segmented-button-set--density-${Math.abs(this.density)}`]: this.density !== 0,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "this.multiselect ? 'group' : 'radiogroup'"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "slot",
+        "attributes": [
+          {
+            "name": "onSlotchange",
+            "value": "this.handleSlotChange"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
+      "line": 61
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 4
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-segmented-button-set/md-segmented-button-set.tsx",
+    "styleUrl": "md-segmented-button-set.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "b91255508bb0ef93560547e4233b73bc1728d7ba9cc899bfdc3d535e36e85280"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-grid",
+          "important": false
+        },
+        {
+          "property": "grid-auto-flow",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "grid-auto-columns",
+          "value": "1fr",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "vertical-align",
+          "value": "middle",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Segmented Button Set",
+  "category": "Actions",
+  "parent": null,
+  "description": "A choice between 2–5 exclusive options, all visible at once. Wraps md-segmented-button children, owns the selection, and stamps each child with its position so the fused container renders correct end caps.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-segmented-button-set.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-segmented-button-set/md-segmented-button-set.tsx",
+    "css": "packages/core/src/components/md-segmented-button-set/md-segmented-button-set.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "multiselect"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Coordinates selected children."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "multiselect"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native exclusive/multiple selection coordinated by child identity; supports duplicate child values."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

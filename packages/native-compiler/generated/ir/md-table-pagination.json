@@ -1,0 +1,994 @@
+{
+  "tag": "md-table-pagination",
+  "className": "MdTablePagination",
+  "properties": [
+    {
+      "name": "count",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "count",
+      "optional": false,
+      "description": "Total number of rows in the dataset."
+    },
+    {
+      "name": "page",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "page",
+      "optional": false,
+      "description": "Current zero-based page."
+    },
+    {
+      "name": "rowsPerPage",
+      "type": "number",
+      "default": "10",
+      "defaultValue": 10,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "rows-per-page",
+      "optional": false,
+      "description": "Rows shown per page."
+    },
+    {
+      "name": "rowsPerPageOptions",
+      "type": "string",
+      "default": "'5,10,25,50'",
+      "defaultValue": "5,10,25,50",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "rows-per-page-options",
+      "optional": false,
+      "description": "Comma-separated list of options for the rows-per-page selector\n(e.g. `\"5,10,25,50\"`). Use `\"all\"` (case-insensitive) to add an\n\"All\" option that maps to the total count."
+    },
+    {
+      "name": "showFirstLast",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "show-first-last",
+      "optional": false,
+      "description": "Show the first / last page buttons."
+    },
+    {
+      "name": "labelDisplayedRows",
+      "type": "string",
+      "default": "'%from%–%to% of %count%'",
+      "defaultValue": "%from%–%to% of %count%",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-displayed-rows",
+      "optional": false,
+      "description": "Custom label used to display the current row range\n(e.g. `\"Showing %from%–%to% of %count%\"`).\nTokens: `%from%`, `%to%`, `%count%`."
+    },
+    {
+      "name": "labelRowsPerPage",
+      "type": "string",
+      "default": "'Rows per page:'",
+      "defaultValue": "Rows per page:",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-rows-per-page",
+      "optional": false,
+      "description": "Label for the rows-per-page selector."
+    },
+    {
+      "name": "labelFirstPage",
+      "type": "string",
+      "default": "'First page'",
+      "defaultValue": "First page",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-first-page",
+      "optional": false,
+      "description": "Accessible label for the first-page button."
+    },
+    {
+      "name": "labelPreviousPage",
+      "type": "string",
+      "default": "'Previous page'",
+      "defaultValue": "Previous page",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-previous-page",
+      "optional": false,
+      "description": "Accessible label for the previous-page button."
+    },
+    {
+      "name": "labelNextPage",
+      "type": "string",
+      "default": "'Next page'",
+      "defaultValue": "Next page",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-next-page",
+      "optional": false,
+      "description": "Accessible label for the next-page button."
+    },
+    {
+      "name": "labelLastPage",
+      "type": "string",
+      "default": "'Last page'",
+      "defaultValue": "Last page",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-last-page",
+      "optional": false,
+      "description": "Accessible label for the last-page button."
+    },
+    {
+      "name": "labelAll",
+      "type": "string",
+      "default": "'All'",
+      "defaultValue": "All",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-all",
+      "optional": false,
+      "description": "Label of the \"All\" rows-per-page option."
+    },
+    {
+      "name": "compact",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "compact",
+      "optional": false,
+      "description": "Compact pagination layout (good for embedding inside cards)."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disabled state."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [],
+  "events": [
+    {
+      "name": "mdPageChange",
+      "detail": "{ page: number }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdRowsPerPageChange",
+      "detail": "{ rowsPerPage: number }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "goToPage",
+      "parameters": [
+        {
+          "name": "page",
+          "type": "number"
+        }
+      ],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "setRowsPerPage",
+      "parameters": [
+        {
+          "name": "rpp",
+          "type": "number"
+        }
+      ],
+      "returnType": "Promise<void>"
+    }
+  ],
+  "slots": [
+    {
+      "name": "actions"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "display",
+      "description": "The \"from–to of count\" label"
+    },
+    {
+      "name": "rpp",
+      "description": "Rows-per-page region"
+    },
+    {
+      "name": "rpp-select",
+      "description": "The md-select picker"
+    },
+    {
+      "name": "nav",
+      "description": "Navigation buttons region"
+    },
+    {
+      "name": "first-button"
+    },
+    {
+      "name": "prev-button"
+    },
+    {
+      "name": "next-button"
+    },
+    {
+      "name": "last-button"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-table-pagination-color",
+      "description": "Foreground color"
+    },
+    {
+      "name": "--md-table-pagination-bg",
+      "description": "Background color"
+    },
+    {
+      "name": "--md-table-pagination-padding-block",
+      "description": "Top/bottom padding"
+    },
+    {
+      "name": "--md-table-pagination-padding-inline",
+      "description": "Left/right padding"
+    },
+    {
+      "name": "--md-table-pagination-select-width",
+      "description": "Rows-per-page select width (default 72px)"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-table-pagination': true,\n          'md-table-pagination--compact': this.compact,\n          'md-table-pagination--disabled': this.disabled,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "navigation"
+      },
+      {
+        "name": "aria-label",
+        "value": "Pagination"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table-pagination__display"
+          },
+          {
+            "name": "part",
+            "value": "display"
+          },
+          {
+            "name": "aria-live",
+            "value": "polite"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.displayLabel"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table-pagination__rpp"
+          },
+          {
+            "name": "part",
+            "value": "rpp"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-table-pagination__rpp-label"
+              },
+              {
+                "name": "id",
+                "value": "rpp-label"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "expression",
+                "source": "this.labelRowsPerPage"
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "md-select",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-table-pagination__rpp-select"
+              },
+              {
+                "name": "part",
+                "value": "rpp-select"
+              },
+              {
+                "name": "aria-label",
+                "value": "this.labelRowsPerPage"
+              },
+              {
+                "name": "density",
+                "value": "this.selectDensity"
+              },
+              {
+                "name": "options",
+                "value": "selectOptions"
+              },
+              {
+                "name": "value",
+                "value": "String(this.rowsPerPage)"
+              },
+              {
+                "name": "disabled",
+                "value": "this.disabled"
+              },
+              {
+                "name": "placement",
+                "value": "top-start"
+              },
+              {
+                "name": "onMdChange",
+                "value": "this.handleRppChange"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table-pagination__nav"
+          },
+          {
+            "name": "part",
+            "value": "nav"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.showFirstLast && (\n            <md-icon-button\n              part=\"first-button\"\n              icon=\"first_page\"\n              size=\"sm\"\n              aria-label={this.labelFirstPage}\n              disabled={isFirst || this.disabled}\n              onClick={this.handleFirst}\n            ></md-icon-button>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "md-icon-button",
+            "attributes": [
+              {
+                "name": "part",
+                "value": "prev-button"
+              },
+              {
+                "name": "icon",
+                "value": "chevron_left"
+              },
+              {
+                "name": "size",
+                "value": "sm"
+              },
+              {
+                "name": "aria-label",
+                "value": "this.labelPreviousPage"
+              },
+              {
+                "name": "disabled",
+                "value": "isFirst || this.disabled"
+              },
+              {
+                "name": "onClick",
+                "value": "this.handlePrev"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "md-icon-button",
+            "attributes": [
+              {
+                "name": "part",
+                "value": "next-button"
+              },
+              {
+                "name": "icon",
+                "value": "chevron_right"
+              },
+              {
+                "name": "size",
+                "value": "sm"
+              },
+              {
+                "name": "aria-label",
+                "value": "this.labelNextPage"
+              },
+              {
+                "name": "disabled",
+                "value": "isLast || this.disabled"
+              },
+              {
+                "name": "onClick",
+                "value": "this.handleNext"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.showFirstLast && (\n            <md-icon-button\n              part=\"last-button\"\n              icon=\"last_page\"\n              size=\"sm\"\n              aria-label={this.labelLastPage}\n              disabled={isLast || this.disabled}\n              onClick={this.handleLast}\n            ></md-icon-button>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "name",
+                "value": "actions"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 112
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 29
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-table-pagination/md-table-pagination.tsx",
+    "styleUrl": "md-table-pagination.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "e3655914c7eb3a8aa4900e572680bb6795fd50eff4bda39e404959522eda4ab8"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-table-pagination-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_bg",
+          "value": "var(--md-table-pagination-bg, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_pad-block",
+          "value": "var(--md-table-pagination-padding-block, var(--md-sys-spacing-inset-sm, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_pad-inline",
+          "value": "var(--md-table-pagination-padding-inline, 16px)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "flex-end",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(12px, calc(24px + var(--md-sys-density-scale, 0) * 3px))",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--_pad-block)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_bg)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_color)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-small-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-small-letter-spacing, 0.4px)",
+          "important": false
+        },
+        {
+          "property": "flex-wrap",
+          "value": "wrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-pagination--compact)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "gap",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "4px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-pagination--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0.6",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-pagination__rpp",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-pagination__rpp-select",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--md-table-pagination-select-width, max(56px, calc(80px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-pagination__rpp-select::part(caret)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "max(14px, calc(18px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(14px, calc(18px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(14px, calc(18px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-pagination__display",
+      "context": null,
+      "declarations": [
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-pagination__nav",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(0px, calc(4px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([dir='rtl']) .md-table-pagination__nav md-icon-button,\n:host-context([dir='rtl']) .md-table-pagination__nav md-icon-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleX(-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Table Pagination",
+  "category": "Data Display",
+  "parent": "md-table",
+  "description": "The page controls under a table. A \"1–10 of 120\" readout, a rows-per-page selector and previous/next (optionally first/last) navigation. It reports intent through events — it never slices your data.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-table-pagination.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-table-pagination/md-table-pagination.tsx",
+    "css": "packages/core/src/components/md-table-pagination/md-table-pagination.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "count",
+        "page",
+        "rowsPerPage",
+        "rowsPerPageOptions",
+        "showFirstLast",
+        "labelRowsPerPage",
+        "labelFirstPage",
+        "labelPreviousPage",
+        "labelNextPage",
+        "labelLastPage",
+        "compact",
+        "disabled"
+      ],
+      "events": [
+        "mdPageChange",
+        "mdRowsPerPageChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "labelDisplayedRows",
+        "labelAll",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "goToPage",
+        "setRowsPerPage"
+      ],
+      "unsupportedSlots": [
+        "actions"
+      ],
+      "notes": [
+        "Positive page sizes supported; web -1 all-rows sentinel and format templates are not implemented."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "count",
+        "disabled",
+        "labelNextPage",
+        "labelPreviousPage",
+        "page",
+        "rowsPerPage",
+        "rowsPerPageOptions",
+        "showFirstLast"
+      ],
+      "events": [
+        "mdPageChange",
+        "mdRowsPerPageChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "labelDisplayedRows",
+        "labelRowsPerPage",
+        "labelFirstPage",
+        "labelLastPage",
+        "labelAll",
+        "compact",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "goToPage",
+        "setRowsPerPage"
+      ],
+      "unsupportedSlots": [
+        "actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

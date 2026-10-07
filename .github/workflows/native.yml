@@ -1,0 +1,66 @@
+name: Native compiler and playgrounds
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'packages/core/src/**'
+      - 'packages/core/custom-elements.json'
+      - 'apps/docs/src/data/components/**'
+      - 'packages/tokens/**'
+      - 'packages/native-*/**'
+      - 'apps/native-*/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/native.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  compiler:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter @awc-ui/native-compiler
+      - run: pnpm native:test
+      - run: pnpm native:check
+      - name: Report remaining native API gaps
+        run: pnpm native:audit
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install SDK platform
+        run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
+      - name: Compile app, unit tests, and instrumentation APK
+        working-directory: apps/native-android-playground
+        run: ./gradlew :app:assembleDebug :native-ui:testDebugUnitTest :app:assembleDebugAndroidTest --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: awc-native-android-debug
+          path: apps/native-android-playground/app/build/outputs/apk/debug/app-debug.apk
+
+  apple:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build native macOS playground
+        run: swift build --package-path apps/native-ios-playground
+      - name: Build iOS simulator app
+        run: >-
+          xcodebuild
+          -project apps/native-ios-playground/AWCPlayground.xcodeproj
+          -scheme AWCPlayground
+          -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath /tmp/awc-ios-derived
+          CODE_SIGNING_ALLOWED=NO build

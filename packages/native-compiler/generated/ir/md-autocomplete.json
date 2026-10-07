@@ -1,0 +1,1822 @@
+{
+  "tag": "md-autocomplete",
+  "className": "MdAutocomplete",
+  "properties": [
+    {
+      "name": "valueMissingLabel",
+      "type": "string",
+      "default": "'Please make a selection'",
+      "defaultValue": "Please make a selection",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-missing-label",
+      "optional": false,
+      "description": "Localized constraint-validation message shown when `required` is unmet.\n`errorText` still wins when set, so an app-supplied inline message and the\nnative bubble stay in agreement."
+    },
+    {
+      "name": "reserveSupportingSpace",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "reserve-supporting-space",
+      "optional": false,
+      "description": "Always occupy the supporting-text line, even when there is no message, so a\nvalidation error does not push the content below it down. Forwarded to the\nembedded md-text-field. See that component for why it is opt-in."
+    },
+    {
+      "name": "variant",
+      "type": "'filled' | 'outlined'",
+      "default": "'filled'",
+      "defaultValue": "filled",
+      "options": [
+        "filled",
+        "outlined"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Visual variant of the inner text-field."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Floating label / accessible name."
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "placeholder",
+      "optional": false,
+      "description": "Placeholder for the input."
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": "Supporting / helper text below the field."
+    },
+    {
+      "name": "error",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "error",
+      "optional": false,
+      "description": "Error state — forwarded to the text-field."
+    },
+    {
+      "name": "errorText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "error-text",
+      "optional": false,
+      "description": "Error text rendered in place of supporting text when `error` is true."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disabled — non-interactive."
+    },
+    {
+      "name": "softDisabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "soft-disabled",
+      "optional": false,
+      "description": "Soft-disabled — focusable but non-interactive."
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "required",
+      "optional": false,
+      "description": "Required for native form parity."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Density forwarded to the text-field."
+    },
+    {
+      "name": "options",
+      "type": "MdAutocompleteOption[] | string",
+      "default": "[]",
+      "defaultValue": [],
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "options",
+      "optional": false,
+      "description": "Programmatic options (shared select model; `description` is accepted as\na legacy alias for `supportingText`). Slotted `<md-select-option>`\nchildren take precedence when present.\n\nAccepts either the array (property) or a **JSON string** (attribute), the\nsame contract `md-organization-chart.nodes` uses — so a plain-HTML page can\ndeclare its dataset inline instead of reaching for a script:\n\n    <md-autocomplete options='[{\"value\":\"a\",\"label\":\"Apple\"}]'></md-autocomplete>\n\nMalformed JSON degrades to an empty list rather than throwing: a broken\nattribute must not take the whole field down."
+    },
+    {
+      "name": "multiple",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "multiple",
+      "optional": false,
+      "description": "Multi-select mode — the selection renders as removable chips."
+    },
+    {
+      "name": "chipPosition",
+      "type": "| 'below'\n    | 'top'\n    | 'left'\n    | 'right'\n    | 'inline'",
+      "default": "'below'",
+      "defaultValue": "below",
+      "options": [
+        "below",
+        "top",
+        "left",
+        "right",
+        "inline"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "chip-position",
+      "optional": false,
+      "description": "Where the selection chips live (`multiple` only): around the field\n(`'below'` default, `'top'`, `'left'`, `'right'`) or `'inline'` inside\nit, before the input, wrapping onto new rows as the selection grows\n(the field grows with them)."
+    },
+    {
+      "name": "value",
+      "type": "string | string[]",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": "Single-mode value — option `value` or free-solo string.\nMulti-mode value — array of option `value`s."
+    },
+    {
+      "name": "inputValue",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "input-value",
+      "optional": false,
+      "description": "Live text of the input (separate from `value` so typing never commits)."
+    },
+    {
+      "name": "freeSolo",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "free-solo",
+      "optional": false,
+      "description": "Allow committing arbitrary text (not just options) with Enter."
+    },
+    {
+      "name": "maxSelected",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max-selected",
+      "optional": false,
+      "description": "When `multiple`, the max number of selected items (`0` = no limit)."
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "loading",
+      "optional": false,
+      "description": "Busy state: progress bar in the menu while an async dataset loads."
+    },
+    {
+      "name": "noOptionsText",
+      "type": "string",
+      "default": "'No options'",
+      "defaultValue": "No options",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "no-options-text",
+      "optional": false,
+      "description": "Empty-state text when the dataset has no options at all."
+    },
+    {
+      "name": "noResultsText",
+      "type": "string",
+      "default": "'No results'",
+      "defaultValue": "No results",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "no-results-text",
+      "optional": false,
+      "description": "Empty-state text when the typed filter matches nothing."
+    },
+    {
+      "name": "loadingText",
+      "type": "string",
+      "default": "'Loading…'",
+      "defaultValue": "Loading…",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "loading-text",
+      "optional": false,
+      "description": "Text shown while `loading` is true."
+    },
+    {
+      "name": "statusTemplate",
+      "type": "string",
+      "default": "'{count} suggestions available'",
+      "defaultValue": "{count} suggestions available",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "status-template",
+      "optional": false,
+      "description": "Template for the polite screen-reader status while the popup is open\n(localisable). `{count}` is replaced with the visible option count."
+    },
+    {
+      "name": "disableCloseOnSelect",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disable-close-on-select",
+      "optional": false,
+      "description": "Keep the menu open after a selection in **single** mode.\n\n`multiple` already stays open — picking several in a row is the point, and\nit dismisses on an outside click, on the trigger, or on Escape. This prop\ngives a single-select the same stickiness when a picker is being used to\nscan rather than to commit."
+    },
+    {
+      "name": "clearOnBlur",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "clear-on-blur",
+      "optional": false,
+      "description": "Clear a non-matching input on blur (strict single mode only)."
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "clearable",
+      "optional": false,
+      "description": "Show a clear (×) button on the trailing edge."
+    },
+    {
+      "name": "clearIcon",
+      "type": "string",
+      "default": "'close'",
+      "defaultValue": "close",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "clear-icon",
+      "optional": false,
+      "description": "Material Symbols glyph for the clear button."
+    },
+    {
+      "name": "dropdownIcon",
+      "type": "string",
+      "default": "'arrow_drop_down'",
+      "defaultValue": "arrow_drop_down",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "dropdown-icon",
+      "optional": false,
+      "description": "Caret glyph; rotates 180° when open (matches md-select). Slot\n`dropdown-icon` overrides it."
+    },
+    {
+      "name": "limitResults",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "limit-results",
+      "optional": false,
+      "description": "Max items shown in the dropdown (`0` = unlimited; client-side path only)."
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "open",
+      "optional": false,
+      "description": "Open state."
+    },
+    {
+      "name": "filterer",
+      "type": "(\n    options: SelectOptionData[],\n    state: { inputValue: string; selected: string[] },\n  ) => SelectOptionData[]",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "filterer",
+      "optional": true,
+      "description": "Custom client-side filter (ignored while virtualized — the WASM engine\nfilters by `filter-mode` instead)."
+    },
+    {
+      "name": "virtualize",
+      "type": "'auto' | 'always' | 'never'",
+      "default": "'auto'",
+      "defaultValue": "auto",
+      "options": [
+        "auto",
+        "always",
+        "never"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "virtualize",
+      "optional": false,
+      "description": "Virtualization strategy (same engine as `md-select`):\n  - `'auto'` (default): virtualize above 200 rows.\n  - `'always'`: always virtualize the `options` / `loadOptions` dataset.\n  - `'never'`: plain DOM rendering."
+    },
+    {
+      "name": "filterMode",
+      "type": "FilterMode",
+      "default": "'substring'",
+      "defaultValue": "substring",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "filter-mode",
+      "optional": false,
+      "description": "Filter strategy for the virtualized (WASM) path."
+    },
+    {
+      "name": "rowHeight",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "row-height",
+      "optional": true,
+      "description": "Fixed virtualized row height (px). Auto-measured from the first row if unset."
+    },
+    {
+      "name": "placement",
+      "type": "'bottom-start' | 'bottom-end' | 'top-start' | 'top-end'",
+      "default": "'bottom-start'",
+      "defaultValue": "bottom-start",
+      "options": [
+        "bottom-start",
+        "bottom-end",
+        "top-start",
+        "top-end"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "placement",
+      "optional": false,
+      "description": "Menu placement."
+    },
+    {
+      "name": "matchTriggerWidth",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "match-trigger-width",
+      "optional": false,
+      "description": "Match the dropdown width to the trigger."
+    },
+    {
+      "name": "maxHeight",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "max-height",
+      "optional": true,
+      "description": "Max height of the dropdown menu (px)."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "name",
+      "optional": false,
+      "description": "Form name. Multi-mode submits as repeated `name=value` pairs."
+    }
+  ],
+  "state": [
+    {
+      "name": "validationMessage",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "triggerId",
+      "type": "string",
+      "initializer": "`md-autocomplete-${++autocompleteIdCounter}`"
+    },
+    {
+      "name": "focused",
+      "type": "boolean",
+      "initializer": "false"
+    },
+    {
+      "name": "optionsData",
+      "type": "SelectOptionData[]",
+      "initializer": "[]"
+    },
+    {
+      "name": "labelMap",
+      "type": "Map<string, string>",
+      "initializer": "new Map()"
+    },
+    {
+      "name": "packing",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "string | string[]",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdInput",
+      "detail": "string",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdClose",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdClear",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "focusInput",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "showMenu",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "closeMenu",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "loadOptions",
+      "parameters": [
+        {
+          "name": "source",
+          "type": "SelectOptionInit[] | OptionRowSource"
+        }
+      ],
+      "returnType": "inferred"
+    },
+    {
+      "name": "getLabels",
+      "parameters": [
+        {
+          "name": "values",
+          "type": "string[]"
+        }
+      ],
+      "returnType": "Promise<Record<string, string>>"
+    },
+    {
+      "name": "getValidity",
+      "parameters": [],
+      "returnType": "Promise<{\n    valid: boolean;\n    validationMessage: string;\n    flags: Record<string, boolean>;\n  }>"
+    },
+    {
+      "name": "checkValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "reportValidity",
+      "parameters": [],
+      "returnType": "Promise<boolean>"
+    },
+    {
+      "name": "setCustomValidity",
+      "parameters": [
+        {
+          "name": "message",
+          "type": "string"
+        }
+      ],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [
+    {
+      "name": "loader",
+      "description": "Replaces the default trigger busy spinner"
+    },
+    {
+      "name": "dropdown-icon",
+      "description": "Replaces the caret glyph"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "chip"
+    },
+    {
+      "name": "chips",
+      "description": "Selected chips container"
+    },
+    {
+      "name": "clear",
+      "description": "Trailing clear button"
+    },
+    {
+      "name": "field",
+      "description": "Inner md-text-field"
+    },
+    {
+      "name": "loading-spinner",
+      "description": "Trigger busy spinner (replaces clear/caret)"
+    },
+    {
+      "name": "caret",
+      "description": "Trailing dropdown caret"
+    },
+    {
+      "name": "option-icon"
+    },
+    {
+      "name": "menu",
+      "description": "Popup md-menu"
+    },
+    {
+      "name": "loading",
+      "description": "Loading row inside the menu"
+    },
+    {
+      "name": "loading-progress"
+    },
+    {
+      "name": "chip-remove"
+    },
+    {
+      "name": "chip-label"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-autocomplete-width",
+      "description": "Trigger width (default 100% of container)"
+    },
+    {
+      "name": "--md-autocomplete-min-width",
+      "description": "Minimum trigger width"
+    },
+    {
+      "name": "--md-autocomplete-chip-gap",
+      "description": "Gap between selected chips"
+    },
+    {
+      "name": "--md-autocomplete-chip-radius",
+      "description": "Chip corner radius"
+    },
+    {
+      "name": "--md-autocomplete-caret-color",
+      "description": "Trailing caret color"
+    },
+    {
+      "name": "--md-autocomplete-caret-size",
+      "description": "Caret glyph size (default 24px)"
+    },
+    {
+      "name": "--md-autocomplete-clear-color",
+      "description": "Clear button color"
+    },
+    {
+      "name": "--md-autocomplete-option-icon-size",
+      "description": "Leading-icon size in items"
+    },
+    {
+      "name": "--md-autocomplete-loading-color",
+      "description": "Color of the loading row"
+    },
+    {
+      "name": "--md-autocomplete-spinner-size",
+      "description": "Trigger busy-spinner size (default 22px)"
+    },
+    {
+      "name": "--md-autocomplete-option-icon-color"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-autocomplete': true,\n          [`md-autocomplete--${this.variant}`]: true,\n          'md-autocomplete--open': this.open,\n          'md-autocomplete--disabled': this.disabled,\n          'md-autocomplete--soft-disabled': this.softDisabled,\n          'md-autocomplete--multiple': this.multiple,\n          'md-autocomplete--loading': this.busy,\n          [`md-autocomplete--chips-${this.chipPosition}`]: this.multiple,\n        }"
+      },
+      {
+        "name": "aria-haspopup",
+        "value": "listbox"
+      },
+      {
+        "name": "aria-busy",
+        "value": "this.busy ? 'true' : 'false'"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "chipsFirst && this.renderChips()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderTrigger()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "!chipsFirst && this.renderChips()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderMenu()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-autocomplete__sr-status"
+          },
+          {
+            "name": "role",
+            "value": "status"
+          },
+          {
+            "name": "aria-live",
+            "value": "polite"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "srStatus"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "CALLABLE_PROP",
+      "severity": "warning",
+      "message": "Callable props require target-specific callback signatures.",
+      "line": 246
+    },
+    {
+      "code": "HTML_FORM",
+      "severity": "warning",
+      "message": "HTML form association requires explicit native form state.",
+      "line": 102
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 323
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 323
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 973
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 69
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
+    "styleUrl": "md-autocomplete.css",
+    "shadow": true,
+    "formAssociated": true,
+    "sha256": "c820ca63d58e411048568c8ea59957892794fc2e01c47c98981d23b862b3d2ba"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-text-field-padding-inline-end",
+          "value": "var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "--_min-width",
+          "value": "var(--md-autocomplete-min-width, 220px)",
+          "important": false
+        },
+        {
+          "property": "--_chip-gap",
+          "value": "var(--md-autocomplete-chip-gap, var(--md-sys-spacing-gap-xs, 4px))",
+          "important": false
+        },
+        {
+          "property": "--_chip-radius",
+          "value": "var(--md-autocomplete-chip-radius, 8px)",
+          "important": false
+        },
+        {
+          "property": "--_caret-color",
+          "value": "var(--md-autocomplete-caret-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_clear-color",
+          "value": "var(--md-autocomplete-clear-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_option-icon-size",
+          "value": "var(--md-autocomplete-option-icon-size, 20px)",
+          "important": false
+        },
+        {
+          "property": "--_loading-color",
+          "value": "var(--md-autocomplete-loading-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--md-autocomplete-width, 100%)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--_min-width)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "vertical-align",
+          "value": "bottom",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-autocomplete--chips-top) .md-autocomplete__chips",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-block-end",
+          "value": "var(--md-sys-spacing-inset-sm, 8px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-autocomplete--chips-left),\n:host(.md-autocomplete--chips-right)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "row",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-sm, 8px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-autocomplete--chips-left) .md-autocomplete__field,\n:host(.md-autocomplete--chips-right) .md-autocomplete__field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-autocomplete--chips-left) .md-autocomplete__chips,\n:host(.md-autocomplete--chips-right) .md-autocomplete__chips",
+      "context": null,
+      "declarations": [
+        {
+          "property": "contain",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 1 auto",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__chips",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-wrap",
+          "value": "wrap",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_chip-gap)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "var(--md-sys-spacing-inset-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "contain",
+          "value": "inline-size",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__chips md-chip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-chip-container-shape",
+          "value": "var(--_chip-radius)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__inline-chips",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-wrap",
+          "value": "wrap",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_chip-gap)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__inline-chips md-chip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-chip-container-shape",
+          "value": "var(--_chip-radius)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__caret",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_caret-color)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-autocomplete-caret-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-short4, 200ms)\n    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-autocomplete--open) .md-autocomplete__caret",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "rotate(180deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__clear",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "28px",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "28px",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "18px",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_clear-color)",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__clear--hidden",
+      "context": null,
+      "declarations": [
+        {
+          "property": "visibility",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__loader",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "--md-loading-indicator-size",
+          "value": "var(--md-autocomplete-spinner-size, 22px)",
+          "important": false
+        },
+        {
+          "property": "--md-loading-indicator-shape-size",
+          "value": "var(--md-autocomplete-spinner-size, 22px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "md-menu::part(empty-text)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant)",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__option-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-autocomplete-option-icon-color, var(--md-sys-color-on-surface-variant, #49454f))",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_option-icon-size)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_option-icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_option-icon-size)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__listbox",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__vspacer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__loading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_loading-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__sr-status",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "-1px",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "inset(50%)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-autocomplete--disabled),\n:host(.md-autocomplete--soft-disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-autocomplete--soft-disabled) .md-autocomplete__field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__caret,\n  .md-autocomplete__clear",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-autocomplete__caret,\n  .md-autocomplete__clear",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Autocomplete",
+  "category": "Text Inputs",
+  "parent": null,
+  "description": "Type to filter, then choose. A text field with a suggestion listbox: single or multiple selection, optional free-text values, custom filtering, async loading, and virtualization for large option sets.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-autocomplete.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
+    "css": "packages/core/src/components/md-autocomplete/md-autocomplete.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "label",
+        "placeholder",
+        "supportingText",
+        "error",
+        "errorText",
+        "required",
+        "options",
+        "multiple",
+        "value",
+        "inputValue",
+        "freeSolo",
+        "maxSelected",
+        "loading",
+        "noOptionsText",
+        "noResultsText",
+        "loadingText",
+        "disableCloseOnSelect",
+        "clearable",
+        "dropdownIcon",
+        "limitResults",
+        "open",
+        "valueMissingLabel",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdChange",
+        "mdInput",
+        "mdOpen",
+        "mdClose",
+        "mdClear",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "reserveSupportingSpace",
+        "variant",
+        "density",
+        "chipPosition",
+        "statusTemplate",
+        "clearOnBlur",
+        "clearIcon",
+        "filterer",
+        "virtualize",
+        "filterMode",
+        "rowHeight",
+        "placement",
+        "matchTriggerWidth",
+        "maxHeight",
+        "name"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "focusInput",
+        "showMenu",
+        "closeMenu",
+        "loadOptions",
+        "getLabels",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [
+        "loader",
+        "dropdown-icon"
+      ],
+      "notes": [
+        "Native searchable sheet, free-form submit and multiple selection. Custom JS filtering and virtualization not executed."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "clearable",
+        "disabled",
+        "error",
+        "errorText",
+        "freeSolo",
+        "inputValue",
+        "label",
+        "limitResults",
+        "loading",
+        "maxHeight",
+        "maxSelected",
+        "multiple",
+        "noOptionsText",
+        "noResultsText",
+        "open",
+        "options",
+        "placeholder",
+        "softDisabled",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdClear",
+        "mdClose",
+        "mdInput",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "valueMissingLabel",
+        "reserveSupportingSpace",
+        "variant",
+        "required",
+        "density",
+        "chipPosition",
+        "loadingText",
+        "statusTemplate",
+        "disableCloseOnSelect",
+        "clearOnBlur",
+        "clearIcon",
+        "dropdownIcon",
+        "filterer",
+        "virtualize",
+        "filterMode",
+        "rowHeight",
+        "placement",
+        "matchTriggerWidth",
+        "name"
+      ],
+      "unsupportedEvents": [
+        "mdValidityChange"
+      ],
+      "unsupportedMethods": [
+        "focusInput",
+        "showMenu",
+        "closeMenu",
+        "loadOptions",
+        "getLabels",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [
+        "loader",
+        "dropdown-icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

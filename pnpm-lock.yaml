@@ -491,6 +491,8 @@ importers:
         specifier: ^6.4.3
         version: 6.4.3(@types/node@24.13.3)(jiti@2.7.0)(less@4.9.0)(lightningcss@1.33.0)(sass@1.103.0)(terser@5.50.0)(yaml@2.9.0)
 
+  apps/native-playground: {}
+
   apps/pharma:
     dependencies:
       '@awc-ui/core':
@@ -2493,6 +2495,15 @@ importers:
       '@modelcontextprotocol/client':
         specifier: ^2.0.0
         version: 2.0.0
+
+  packages/native-compiler:
+    dependencies:
+      postcss:
+        specifier: ^8.5.28
+        version: 8.5.28
+      typescript:
+        specifier: ^5.4.0
+        version: 5.4.5
 
   packages/react:
     dependencies:

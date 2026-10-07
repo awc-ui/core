@@ -1,0 +1,1678 @@
+{
+  "tag": "md-transfer-list",
+  "className": "MdTransferList",
+  "properties": [
+    {
+      "name": "items",
+      "type": "MdTransferListItem[] | string",
+      "default": "[]",
+      "defaultValue": [],
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "items",
+      "optional": false,
+      "description": "The full item pool — both columns are derived from it.\n\nAccepts the array (property) or a **JSON string** (attribute), so a\nplain-HTML page can declare its data inline instead of reaching for a\nscript. Malformed JSON degrades to an empty list with a console warning."
+    },
+    {
+      "name": "value",
+      "type": "string[]",
+      "default": "[]",
+      "defaultValue": [],
+      "options": [],
+      "mutable": true,
+      "reflect": false,
+      "attribute": "value",
+      "optional": false,
+      "description": "Values currently in the *target* (right) column."
+    },
+    {
+      "name": "sourceTitle",
+      "type": "string",
+      "default": "'Choices'",
+      "defaultValue": "Choices",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "source-title",
+      "optional": false,
+      "description": "Title for the source side."
+    },
+    {
+      "name": "targetTitle",
+      "type": "string",
+      "default": "'Chosen'",
+      "defaultValue": "Chosen",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "target-title",
+      "optional": false,
+      "description": "Title for the target side."
+    },
+    {
+      "name": "searchable",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "searchable",
+      "optional": false,
+      "description": "Render search inputs above each list."
+    },
+    {
+      "name": "sourceSearchPlaceholder",
+      "type": "string",
+      "default": "'Search choices'",
+      "defaultValue": "Search choices",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "source-search-placeholder",
+      "optional": false,
+      "description": "Source-side search placeholder."
+    },
+    {
+      "name": "targetSearchPlaceholder",
+      "type": "string",
+      "default": "'Search chosen'",
+      "defaultValue": "Search chosen",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "target-search-placeholder",
+      "optional": false,
+      "description": "Target-side search placeholder."
+    },
+    {
+      "name": "showSelectAll",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "show-select-all",
+      "optional": false,
+      "description": "Show the \"select all\" select-all checkbox in each header."
+    },
+    {
+      "name": "searchIcon",
+      "type": "string",
+      "default": "'search'",
+      "defaultValue": "search",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "search-icon",
+      "optional": false,
+      "description": "Material Symbols glyph for the search fields' leading icon ('' = none)."
+    },
+    {
+      "name": "moveRightIcon",
+      "type": "string",
+      "default": "'chevron_right'",
+      "defaultValue": "chevron_right",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "move-right-icon",
+      "optional": false,
+      "description": "Material Symbols glyph for the \"move selected to target\" (>) button."
+    },
+    {
+      "name": "moveLeftIcon",
+      "type": "string",
+      "default": "'chevron_left'",
+      "defaultValue": "chevron_left",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "move-left-icon",
+      "optional": false,
+      "description": "Material Symbols glyph for the \"move selected to source\" (<) button."
+    },
+    {
+      "name": "moveAllRightIcon",
+      "type": "string",
+      "default": "'keyboard_double_arrow_right'",
+      "defaultValue": "keyboard_double_arrow_right",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "move-all-right-icon",
+      "optional": false,
+      "description": "Material Symbols glyph for the \"move all to target\" (>>) button."
+    },
+    {
+      "name": "moveAllLeftIcon",
+      "type": "string",
+      "default": "'keyboard_double_arrow_left'",
+      "defaultValue": "keyboard_double_arrow_left",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "move-all-left-icon",
+      "optional": false,
+      "description": "Material Symbols glyph for the \"move all to source\" (<<) button."
+    },
+    {
+      "name": "emptyIcon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "empty-icon",
+      "optional": false,
+      "description": "Optional Material Symbols glyph shown above the empty-state text."
+    },
+    {
+      "name": "emptyText",
+      "type": "string",
+      "default": "'No items'",
+      "defaultValue": "No items",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "empty-text",
+      "optional": false,
+      "description": "Empty-state text (localisable)."
+    },
+    {
+      "name": "countTemplate",
+      "type": "string",
+      "default": "'{checked}/{total} selected'",
+      "defaultValue": "{checked}/{total} selected",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "count-template",
+      "optional": false,
+      "description": "Template for the header count pill (localisable). `{checked}` and\n`{total}` are replaced with the live numbers."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Density scale: 0 (default), -1, -2, -3, -4. Passed to the search text field."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disable the entire control."
+    },
+    {
+      "name": "singleStepOnly",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "single-step-only",
+      "optional": false,
+      "description": "Show only the >/< buttons (drop >>/<< \"move all\")."
+    },
+    {
+      "name": "moveRightLabel",
+      "type": "string",
+      "default": "'Move selected to target'",
+      "defaultValue": "Move selected to target",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "move-right-label",
+      "optional": false,
+      "description": "Accessible label for the > button (localisable). NB: deliberately NOT an\n`aria-*`-prefixed attribute — a custom attribute in the aria namespace is\ninvalid ARIA (axe aria-valid-attr)."
+    },
+    {
+      "name": "moveLeftLabel",
+      "type": "string",
+      "default": "'Move selected to source'",
+      "defaultValue": "Move selected to source",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "move-left-label",
+      "optional": false,
+      "description": "Accessible label for the < button (localisable)."
+    },
+    {
+      "name": "moveAllRightLabel",
+      "type": "string",
+      "default": "'Move all to target'",
+      "defaultValue": "Move all to target",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "move-all-right-label",
+      "optional": false,
+      "description": "Accessible label for the >> button (localisable)."
+    },
+    {
+      "name": "moveAllLeftLabel",
+      "type": "string",
+      "default": "'Move all to source'",
+      "defaultValue": "Move all to source",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "move-all-left-label",
+      "optional": false,
+      "description": "Accessible label for the << button (localisable)."
+    }
+  ],
+  "state": [
+    {
+      "name": "sourceChecked",
+      "type": "Set<string>",
+      "initializer": "new Set()"
+    },
+    {
+      "name": "targetChecked",
+      "type": "Set<string>",
+      "initializer": "new Set()"
+    },
+    {
+      "name": "sourceQuery",
+      "type": "string",
+      "initializer": "''"
+    },
+    {
+      "name": "targetQuery",
+      "type": "string",
+      "initializer": "''"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "string[]",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdMove",
+      "detail": "{\n    direction: 'left' | 'right';\n    moved: string[];\n    target: string[];\n  }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "moveSelectedRight",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "moveSelectedLeft",
+      "parameters": [],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "header",
+      "description": "Header bar"
+    },
+    {
+      "name": "header-title",
+      "description": "Header title cluster"
+    },
+    {
+      "name": "count",
+      "description": "\"{n}/{total} selected\" pill"
+    },
+    {
+      "name": "search",
+      "description": "Search field per side"
+    },
+    {
+      "name": "empty",
+      "description": "Empty-state message"
+    },
+    {
+      "name": "empty-icon",
+      "description": "Optional empty-state glyph (via `empty-icon` prop)"
+    },
+    {
+      "name": "list",
+      "description": "The <ul> listbox per side"
+    },
+    {
+      "name": "item",
+      "description": "Each <li> row"
+    },
+    {
+      "name": "controls",
+      "description": "Centre column with move buttons"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-transfer-list-width",
+      "description": "Explicit inline-size (default: auto; 100% supported)"
+    },
+    {
+      "name": "--md-transfer-list-min-width",
+      "description": "Minimum inline-size"
+    },
+    {
+      "name": "--md-transfer-list-max-width",
+      "description": "Maximum inline-size"
+    },
+    {
+      "name": "--md-transfer-list-height",
+      "description": "Explicit block-size (default: auto; 100% supported —"
+    },
+    {
+      "name": "--md-transfer-list-min-height",
+      "description": "Minimum block-size"
+    },
+    {
+      "name": "--md-transfer-list-max-height",
+      "description": "Maximum block-size"
+    },
+    {
+      "name": "--md-transfer-list-column-min-width",
+      "description": "Min-width of each column"
+    },
+    {
+      "name": "--md-transfer-list-column-max-block",
+      "description": "Max-height of each column (default 360px,"
+    },
+    {
+      "name": "--md-transfer-list-container-shape",
+      "description": "Container corner radius"
+    },
+    {
+      "name": "--md-transfer-list-container-color",
+      "description": "Column background"
+    },
+    {
+      "name": "--md-transfer-list-header-color",
+      "description": "Header background"
+    },
+    {
+      "name": "--md-transfer-list-header-text-color",
+      "description": "Header text color"
+    },
+    {
+      "name": "--md-transfer-list-item-inset",
+      "description": "Row plate inset from the panel edge"
+    },
+    {
+      "name": "--md-transfer-list-item-padding",
+      "description": "Padding of each row (derived from"
+    },
+    {
+      "name": "--md-transfer-list-item-gap",
+      "description": "Gap between checkbox and label"
+    },
+    {
+      "name": "--md-transfer-list-divider-color",
+      "description": "Divider color"
+    },
+    {
+      "name": "--md-transfer-list-controls-gap",
+      "description": "Gap between controls buttons"
+    },
+    {
+      "name": "--md-transfer-list-empty-icon-size",
+      "description": "Empty-state icon size (default 32px,"
+    },
+    {
+      "name": "--md-transfer-list-control-size"
+    },
+    {
+      "name": "--md-transfer-list-control-icon-size"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-transfer-list': true,\n          'md-transfer-list--disabled': this.disabled,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "group"
+      },
+      {
+        "name": "aria-disabled",
+        "value": "this.disabled ? 'true' : 'false'"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderColumn('source')"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderControls()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderColumn('target')"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 42
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-transfer-list/md-transfer-list.tsx",
+    "styleUrl": "md-transfer-list.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "c0250bae280f4d384df935d47c733f238794bc0e4f7aad59c94529fe887f3a31"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_column-min-width",
+          "value": "var(--md-transfer-list-column-min-width, 260px)",
+          "important": false
+        },
+        {
+          "property": "--_column-max-block",
+          "value": "var(--md-transfer-list-column-max-block, var(--md-transfer-list-height, 360px))",
+          "important": false
+        },
+        {
+          "property": "--_width",
+          "value": "var(--md-transfer-list-width, auto)",
+          "important": false
+        },
+        {
+          "property": "--_min-width",
+          "value": "var(--md-transfer-list-min-width, auto)",
+          "important": false
+        },
+        {
+          "property": "--_max-width",
+          "value": "var(--md-transfer-list-max-width, none)",
+          "important": false
+        },
+        {
+          "property": "--_height",
+          "value": "var(--md-transfer-list-height, auto)",
+          "important": false
+        },
+        {
+          "property": "--_min-height",
+          "value": "var(--md-transfer-list-min-height, auto)",
+          "important": false
+        },
+        {
+          "property": "--_max-height",
+          "value": "var(--md-transfer-list-max-height, none)",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-transfer-list-container-shape, var(--md-sys-shape-corner-large, 16px))",
+          "important": false
+        },
+        {
+          "property": "--_container-color",
+          "value": "var(--md-transfer-list-container-color, var(--md-sys-color-surface-container-low))",
+          "important": false
+        },
+        {
+          "property": "--_header-color",
+          "value": "var(--md-transfer-list-header-color, var(--md-sys-color-surface-container))",
+          "important": false
+        },
+        {
+          "property": "--_header-text-color",
+          "value": "var(--md-transfer-list-header-text-color, var(--md-sys-color-on-surface))",
+          "important": false
+        },
+        {
+          "property": "--_item-inset",
+          "value": "var(--md-transfer-list-item-inset, 6px)",
+          "important": false
+        },
+        {
+          "property": "--_item-padding",
+          "value": "var(\n    --md-transfer-list-item-padding,\n    var(--md-sys-spacing-inset-sm, 8px)\n      calc(var(--md-sys-spacing-inset-lg, 16px) - var(--_item-inset))\n  )",
+          "important": false
+        },
+        {
+          "property": "--_item-gap",
+          "value": "var(--md-transfer-list-item-gap, var(--md-sys-spacing-gap-md, 12px))",
+          "important": false
+        },
+        {
+          "property": "--_divider-color",
+          "value": "var(--md-transfer-list-divider-color, var(--md-sys-color-outline-variant))",
+          "important": false
+        },
+        {
+          "property": "--_controls-gap",
+          "value": "var(--md-transfer-list-controls-gap, var(--md-sys-spacing-gap-md, 12px))",
+          "important": false
+        },
+        {
+          "property": "--_control-size",
+          "value": "var(--md-transfer-list-control-size, max(24px, calc(40px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_control-icon-size",
+          "value": "var(--md-transfer-list-control-icon-size, max(16px, calc(24px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        },
+        {
+          "property": "grid-template-columns",
+          "value": "1fr auto 1fr",
+          "important": false
+        },
+        {
+          "property": "grid-template-rows",
+          "value": "minmax(0, 1fr)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "stretch",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_width)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--_min-width)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "var(--_max-width)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_height)",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_min-height)",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "var(--_max-height)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-medium-font-family, Roboto, system-ui, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface, #1d1b20)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([full-width])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([full-height])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "--_column-max-block",
+          "value": "var(--md-transfer-list-column-max-block, 100%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (max-width: 640px)",
+      "declarations": [
+        {
+          "property": "grid-template-columns",
+          "value": "1fr",
+          "important": false
+        },
+        {
+          "property": "grid-template-rows",
+          "value": "auto auto auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__column",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--_column-min-width)",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "var(--_column-max-block)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "1px solid var(--_divider-color)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([searchable]) .md-transfer-list__column",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "var(--_column-max-block)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__header",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-md, 12px)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_header-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_header-text-color)",
+          "important": false
+        },
+        {
+          "property": "border-block-end",
+          "value": "1px solid var(--_divider-color)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__header-title",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__title",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-title-small-font-family, Roboto, system-ui, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-title-small-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__count",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-self",
+          "value": "flex-start",
+          "important": false
+        },
+        {
+          "property": "margin-block-start",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "1px 8px",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-full, 999px)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--md-sys-color-secondary-container, #e8def8)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-secondary-container, #1d192b)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(11px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-small-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "0.4px",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__search",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding",
+          "value": "calc(8px + max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)))\n    var(--md-sys-spacing-inset-md, 12px)\n    var(--md-sys-spacing-inset-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__list",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--md-sys-spacing-inset-xs, 4px) 0",
+          "important": false
+        },
+        {
+          "property": "list-style",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "overflow-y",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__item",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_item-gap)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--_item-padding)",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "var(--_item-inset)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--md-sys-motion-duration-short2, 100ms) ease",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__item + .md-transfer-list__item",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-block-start",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__item:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__item--checked",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__item--checked:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__item:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "-3px",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__item--disabled",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-disabled-content-opacity, 0.38)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__labels",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1.4",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__description",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1.35",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "max(4px, calc(32px + var(--md-sys-density-scale, 0) * 2px)) var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__empty-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--md-transfer-list-empty-icon-size, max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.9",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__controls",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_controls-gap)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--md-sys-spacing-inset-xs, 4px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__controls md-icon-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "var(--_control-size)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "var(--_control-size)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "var(--_control-icon-size)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__controls",
+      "context": "@media (max-width: 640px)",
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "row",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--md-sys-spacing-inset-md, 12px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__controls md-icon-button,\n  :host-context([dir='rtl']) .md-transfer-list__controls md-icon-button,\n  :host([dir='rtl']) .md-transfer-list__controls md-icon-button",
+      "context": "@media (max-width: 640px)",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "rotate(90deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-transfer-list--disabled) .md-transfer-list__item",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context([dir='rtl']) .md-transfer-list__controls md-icon-button,\n:host([dir='rtl']) .md-transfer-list__controls md-icon-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleX(-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__item",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Transfer List",
+  "category": "Selection",
+  "parent": null,
+  "description": "A dual-list selector. Two columns — source and target — with per-side search, select-all headers, checkbox rows, and four movers between them. The value prop is the set of item values currently in the target column.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-transfer-list.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-transfer-list/md-transfer-list.tsx",
+    "css": "packages/core/src/components/md-transfer-list/md-transfer-list.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "items",
+        "value",
+        "sourceTitle",
+        "targetTitle",
+        "searchable",
+        "sourceSearchPlaceholder",
+        "targetSearchPlaceholder",
+        "showSelectAll",
+        "emptyText",
+        "singleStepOnly",
+        "moveRightLabel",
+        "moveLeftLabel",
+        "moveAllRightLabel",
+        "moveAllLeftLabel",
+        "disabled"
+      ],
+      "events": [
+        "mdChange",
+        "mdMove"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "searchIcon",
+        "moveRightIcon",
+        "moveLeftIcon",
+        "moveAllRightIcon",
+        "moveAllLeftIcon",
+        "emptyIcon",
+        "countTemplate",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "moveSelectedRight",
+        "moveSelectedLeft"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native dual-list transfer supports disabled options, checked selection, select-all, per-side search and directional moves."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "disabled",
+        "emptyText",
+        "items",
+        "moveAllLeftLabel",
+        "moveAllRightLabel",
+        "moveLeftLabel",
+        "moveRightLabel",
+        "searchable",
+        "showSelectAll",
+        "singleStepOnly",
+        "sourceSearchPlaceholder",
+        "sourceTitle",
+        "targetSearchPlaceholder",
+        "targetTitle",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdMove"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "searchIcon",
+        "moveRightIcon",
+        "moveLeftIcon",
+        "moveAllRightIcon",
+        "moveAllLeftIcon",
+        "emptyIcon",
+        "countTemplate",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "moveSelectedRight",
+        "moveSelectedLeft"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

@@ -1,0 +1,923 @@
+{
+  "tag": "md-table-toolbar",
+  "className": "MdTableToolbar",
+  "properties": [
+    {
+      "name": "headline",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "headline",
+      "optional": false,
+      "description": "Title displayed when no rows are selected."
+    },
+    {
+      "name": "supportingText",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "supporting-text",
+      "optional": false,
+      "description": "Optional supporting text under the headline."
+    },
+    {
+      "name": "numSelected",
+      "type": "number",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "num-selected",
+      "optional": false,
+      "description": "Number of selected rows (controlled)."
+    },
+    {
+      "name": "autoBind",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "auto-bind",
+      "optional": false,
+      "description": "Auto-bind to the closest `<md-table>`'s `mdSelectionChange`\nevent so `numSelected` updates with no glue code."
+    },
+    {
+      "name": "labelSelected",
+      "type": "string",
+      "default": "'%count% selected'",
+      "defaultValue": "%count% selected",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-selected",
+      "optional": false,
+      "description": "Custom label for the selection-mode caption.\nTokens: `%count%`."
+    },
+    {
+      "name": "compact",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "compact",
+      "optional": false,
+      "description": "Compact density for the toolbar (smaller padding / type)."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "hasSelectionActions",
+      "type": "boolean",
+      "initializer": "false"
+    },
+    {
+      "name": "hasActions",
+      "type": "boolean",
+      "initializer": "false"
+    },
+    {
+      "name": "hasLeading",
+      "type": "boolean",
+      "initializer": "false"
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [
+    {
+      "name": "leading"
+    },
+    {
+      "name": "headline"
+    },
+    {
+      "name": "supporting-text"
+    },
+    {
+      "name": "title-area"
+    },
+    {
+      "name": "selection-actions"
+    },
+    {
+      "name": "actions"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "leading",
+      "description": "Container for the `leading` slot"
+    },
+    {
+      "name": "main",
+      "description": "Container for headline / supporting text"
+    },
+    {
+      "name": "selection-caption",
+      "description": "\"%count% selected\" caption (selection mode)"
+    },
+    {
+      "name": "headline",
+      "description": "<h2> element"
+    },
+    {
+      "name": "supporting-text",
+      "description": "<p> element"
+    },
+    {
+      "name": "actions"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-table-toolbar-color",
+      "description": "Foreground color"
+    },
+    {
+      "name": "--md-table-toolbar-bg",
+      "description": "Background color (default mode)"
+    },
+    {
+      "name": "--md-table-toolbar-selection-bg",
+      "description": "Background color (selection mode)"
+    },
+    {
+      "name": "--md-table-toolbar-selection-color",
+      "description": "Foreground color (selection mode)"
+    },
+    {
+      "name": "--md-table-toolbar-padding-block",
+      "description": "Top/bottom padding"
+    },
+    {
+      "name": "--md-table-toolbar-padding-inline",
+      "description": "Left/right padding"
+    },
+    {
+      "name": "--md-table-toolbar-min-height",
+      "description": "Minimum height (default: 64px)"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-table-toolbar': true,\n          'md-table-toolbar--compact': this.compact,\n          'md-table-toolbar--selection-mode': this.inSelectionMode,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "toolbar"
+      },
+      {
+        "name": "aria-label",
+        "value": "this.headline || 'Table toolbar'"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table-toolbar__leading"
+          },
+          {
+            "name": "part",
+            "value": "leading"
+          },
+          {
+            "name": "hidden",
+            "value": "!this.hasLeading && !this.inSelectionMode"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "!this.inSelectionMode && <slot name=\"leading\" />"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table-toolbar__main"
+          },
+          {
+            "name": "part",
+            "value": "main"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.inSelectionMode ? (\n            <span class=\"md-table-toolbar__selection-caption\" part=\"selection-caption\" aria-live=\"polite\">\n              {this.selectionLabel}\n            </span>\n          ) : (\n            <div class=\"md-table-toolbar__titles\">\n              {this.headline && (\n                <h2 class=\"md-table-toolbar__headline\" part=\"headline\">\n                  <slot name=\"headline\">{this.headline}</slot>\n                </h2>\n              )}\n              {this.supportingText && (\n                <p class=\"md-table-toolbar__supporting\" part=\"supporting-text\">\n                  <slot name=\"supporting-text\">{this.supportingText}</slot>\n                </p>\n              )}\n              {!this.headline && !this.supportingText && (\n                <slot name=\"title-area\" />\n              )}\n            </div>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table-toolbar__actions"
+          },
+          {
+            "name": "part",
+            "value": "actions"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.inSelectionMode ? (\n            <slot name=\"selection-actions\" />\n          ) : (\n            <slot name=\"actions\" />\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 68
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 73
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 97
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-table-toolbar/md-table-toolbar.tsx",
+    "styleUrl": "md-table-toolbar.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "a7642e51ade1bacddb1531af88cca39612b8f62de932353040a2ef59a9707e4d"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-table-toolbar-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        },
+        {
+          "property": "--_bg",
+          "value": "var(--md-table-toolbar-bg, transparent)",
+          "important": false
+        },
+        {
+          "property": "--_sel-bg",
+          "value": "var(--md-table-toolbar-selection-bg, var(--md-sys-color-secondary-container, #E8DEF8))",
+          "important": false
+        },
+        {
+          "property": "--_sel-color",
+          "value": "var(--md-table-toolbar-selection-color, var(--md-sys-color-on-secondary-container, #1E192B))",
+          "important": false
+        },
+        {
+          "property": "--_pad-block",
+          "value": "var(--md-table-toolbar-padding-block, var(--md-sys-spacing-inset-md, 12px))",
+          "important": false
+        },
+        {
+          "property": "--_pad-inline",
+          "value": "var(\n    --md-table-toolbar-padding-inline,\n    max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px))\n  )",
+          "important": false
+        },
+        {
+          "property": "--_min-h",
+          "value": "var(--md-table-toolbar-min-height, calc(64px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_motion-duration",
+          "value": "var(--md-sys-motion-spring-effects-default-duration, 200ms)",
+          "important": false
+        },
+        {
+          "property": "--_motion-easing",
+          "value": "var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.8, 0.34, 1))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--_pad-block)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--_pad-inline)",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_min-h)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_bg)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_color)",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "isolation",
+          "value": "isolate",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--_motion-duration) var(--_motion-easing),\n    color var(--_motion-duration) var(--_motion-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-toolbar--compact)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_pad-block",
+          "value": "6px",
+          "important": false
+        },
+        {
+          "property": "--_min-h",
+          "value": "48px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-toolbar--selection-mode)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_sel-bg)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_sel-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-toolbar__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-toolbar__leading[hidden]",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-toolbar__main",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-toolbar__actions",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(0px, calc(4px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "--md-select-width",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-toolbar__titles",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-toolbar__headline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-title-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(16px, calc(22px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-title-large-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(22px, calc(28px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-toolbar--compact) .md-table-toolbar__headline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--md-sys-typescale-title-medium-font-size, 16px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-title-medium-line-height, 24px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-toolbar__supporting",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--md-sys-typescale-body-medium-font-size, 14px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-body-medium-line-height, 20px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--md-sys-color-on-surface-variant, #49454F)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-toolbar--selection-mode) .md-table-toolbar__supporting",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.85",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-toolbar__selection-caption",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-title-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "500",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-table-toolbar-fade var(--_motion-duration) var(--_motion-easing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-table-toolbar-fade",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(-8px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-table-toolbar-fade",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-toolbar__selection-caption",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Table Toolbar",
+  "category": "Data Display",
+  "parent": "md-table",
+  "description": "The band above a table. Title and supporting text in the resting state; a selection count and bulk actions once rows are selected. It is a presentation band with two modes — it never selects anything itself.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-table-toolbar.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-table-toolbar/md-table-toolbar.tsx",
+    "css": "packages/core/src/components/md-table-toolbar/md-table-toolbar.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "headline",
+        "supportingText",
+        "numSelected",
+        "labelSelected"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "autoBind",
+        "compact",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "leading",
+        "headline",
+        "supporting-text",
+        "title-area",
+        "selection-actions",
+        "actions"
+      ],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "headline",
+        "labelSelected",
+        "numSelected",
+        "supportingText"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        "actions"
+      ],
+      "unsupportedProperties": [
+        "autoBind",
+        "compact",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "leading",
+        "headline",
+        "supporting-text",
+        "title-area",
+        "selection-actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

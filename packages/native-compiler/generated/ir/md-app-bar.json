@@ -1,0 +1,2558 @@
+{
+  "tag": "md-app-bar",
+  "className": "MdAppBar",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "'small' | 'medium' | 'large' | 'search'",
+      "default": "'small'",
+      "defaultValue": "small",
+      "options": [
+        "small",
+        "medium",
+        "large",
+        "search"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "App bar size variant.\n\n- `small` — 64px action row with inline title-large headline.\n- `medium` — flexible 112px (136px with subtitle) expanded headline block.\n- `large` — flexible 120px (152px with subtitle) expanded headline block.\n- `search` — 64px row with inline search field (M3 search app bar)."
+    },
+    {
+      "name": "titleAlignment",
+      "type": "'start' | 'center'",
+      "default": "'start'",
+      "defaultValue": "start",
+      "options": [
+        "start",
+        "center"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "title-alignment",
+      "optional": false,
+      "description": "Title horizontal alignment — `start` (leading edge, default) or `center`.\nOn search bars it centers the placeholder when empty and unfocused; once\nfocused or when typing, the caret and text align to the inline-start edge."
+    },
+    {
+      "name": "searchPlaceholder",
+      "type": "string",
+      "default": "'Search'",
+      "defaultValue": "Search",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "search-placeholder",
+      "optional": false,
+      "description": "Search variant only: hinted search text shown in the inline search field.\nFalls back to `placeholder` on the optional `search` slot when empty."
+    },
+    {
+      "name": "searchValue",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "search-value",
+      "optional": false,
+      "description": "Search variant only: current search field value (two-way bindable)."
+    },
+    {
+      "name": "searchAriaLabel",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "search-aria-label",
+      "optional": false,
+      "description": "Search variant only: accessible name for the inline search field. Per M3\nlabeling guidance, falls back to `search-placeholder` when unset."
+    },
+    {
+      "name": "searchDisabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "search-disabled",
+      "optional": false,
+      "description": "Search variant only: disable the inline search field."
+    },
+    {
+      "name": "headline",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "headline",
+      "optional": false,
+      "description": "Inline or expanded headline text. Falls back to the `headline` slot when empty."
+    },
+    {
+      "name": "subtitle",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "subtitle",
+      "optional": false,
+      "description": "Optional subtitle. On flexible variants it sits below the expanded headline\n(and grows the container); on `small` it stacks under the inline title.\nFalls back to the `subtitle` slot when empty."
+    },
+    {
+      "name": "scrolled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "scrolled",
+      "optional": false,
+      "description": "When true, applies the scrolled container surface colour per M3 app bar\ncommon-colors (`surface` → `surface-container`). Wire from your scroll listener;\nthe component does not observe scroll position itself."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Density scale: 0 (default 64px row), -1 (60px), -2 (56px), -3 (52px), -4 (48px).\nTightens the action row, icon targets, search field, and expanded heights."
+    },
+    {
+      "name": "leadingIcon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "leading-icon",
+      "optional": false,
+      "description": "Material Symbols name for the leading navigation icon (slot takes priority)."
+    },
+    {
+      "name": "leadingIconLabel",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "leading-icon-label",
+      "optional": false,
+      "description": "Accessible label for the prop-based leading icon button. Required when `leading-icon` is set."
+    }
+  ],
+  "state": [
+    {
+      "name": "hasSlottedLeading",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedHeadline",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedSubtitle",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedSearch",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasSlottedSearchTrailing",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "searchFocused",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "searchKeyboardModality",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdLeadingClick",
+      "detail": "MouseEvent",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdSearchActivate",
+      "detail": "{ value: string }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdSearchInput",
+      "detail": "{ value: string }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "headline",
+      "description": "Custom headline content (overrides headline prop)"
+    },
+    {
+      "name": "subtitle",
+      "description": "Custom subtitle content (overrides subtitle prop)"
+    },
+    {
+      "name": "search",
+      "description": "Replace built-in search input (search configuration)"
+    },
+    {
+      "name": "search-trailing",
+      "description": "In-pill trailing icons (e.g. mic); data-compact-keep opts out of compact hide"
+    },
+    {
+      "name": "leading",
+      "description": "Leading navigation icon(s) — slot takes priority over leading-icon prop"
+    },
+    {
+      "name": "trailing",
+      "description": "Trailing action icons outside search field (max 3; excess hidden + warn)"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "leading-icon",
+      "description": "Prop-based leading md-icon-button"
+    },
+    {
+      "name": "title",
+      "description": "Inline title (small variant)"
+    },
+    {
+      "name": "subtitle",
+      "description": "Subtitle text (inline on small, expanded on medium/large)"
+    },
+    {
+      "name": "expanded-headline",
+      "description": "Expanded headline text (headline-medium)"
+    },
+    {
+      "name": "search-host",
+      "description": "Flex region between leading/trailing (search variant)"
+    },
+    {
+      "name": "search",
+      "description": "Search pill container (search variant)"
+    },
+    {
+      "name": "search-state-layer",
+      "description": "Hover / focus / press overlay on search field"
+    },
+    {
+      "name": "search-field",
+      "description": "Text/input flex region inside pill (hint padding)"
+    },
+    {
+      "name": "search-content",
+      "description": "Wrapper around slotted `search` content"
+    },
+    {
+      "name": "search-input",
+      "description": "Inline search `<input>` (search variant)"
+    },
+    {
+      "name": "search-trailing",
+      "description": "Trailing slot inside the search field"
+    },
+    {
+      "name": "row",
+      "description": "Top action row (leading | title | trailing)"
+    },
+    {
+      "name": "leading",
+      "description": "Leading slot wrapper"
+    },
+    {
+      "name": "trailing",
+      "description": "Trailing slot wrapper (outside search field)"
+    },
+    {
+      "name": "expanded",
+      "description": "Expanded title block wrapper (medium / large)"
+    },
+    {
+      "name": "icon",
+      "description": "Leading icon glyph (exported from leading-icon)"
+    },
+    {
+      "name": "state-layer",
+      "description": "Leading icon state layer (exported from leading-icon)"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-app-bar-container-color",
+      "description": "Top bar background (flat → surface)"
+    },
+    {
+      "name": "--md-app-bar-container-color-scrolled",
+      "description": "Top bar background when scrolled (surface-container)"
+    },
+    {
+      "name": "--md-app-bar-container-shape",
+      "description": "Top bar container corner radius (none)"
+    },
+    {
+      "name": "--md-app-bar-headline-color",
+      "description": "Headline / title colour (on-surface)"
+    },
+    {
+      "name": "--md-app-bar-subtitle-color",
+      "description": "Subtitle colour (on-surface-variant)"
+    },
+    {
+      "name": "--md-app-bar-leading-icon-color",
+      "description": "Leading icon colour (on-surface)"
+    },
+    {
+      "name": "--md-app-bar-trailing-icon-color",
+      "description": "Trailing icon colour (on-surface-variant)"
+    },
+    {
+      "name": "--md-app-bar-container-elevation",
+      "description": "Container shadow (elevation-0 default)"
+    },
+    {
+      "name": "--md-app-bar-row-height",
+      "description": "Action row height (64px)"
+    },
+    {
+      "name": "--md-app-bar-padding-inline-start",
+      "description": "Action row inline-start padding (4px)"
+    },
+    {
+      "name": "--md-app-bar-padding-inline-end",
+      "description": "Action row inline-end padding (4px)"
+    },
+    {
+      "name": "--md-app-bar-row-padding-inline",
+      "description": "Deprecated alias for both paddings (4px)"
+    },
+    {
+      "name": "--md-app-bar-row-padding-block-start",
+      "description": "Action row block-start padding (20px large expanded)"
+    },
+    {
+      "name": "--md-app-bar-trailing-gap",
+      "description": "Gap between trailing action icons (2px)"
+    },
+    {
+      "name": "--md-app-bar-trailing-icon-touch-size",
+      "description": "Trailing icon touch target (48px; matches leading)"
+    },
+    {
+      "name": "--md-app-bar-icon-gap",
+      "description": "Gap between icons and row content (0)"
+    },
+    {
+      "name": "--md-app-bar-icon-size",
+      "description": "Icon glyph size in action row (24px,"
+    },
+    {
+      "name": "--md-app-bar-icon-button-size"
+    },
+    {
+      "name": "--md-app-bar-avatar-size"
+    },
+    {
+      "name": "--md-app-bar-expanded-padding-inline"
+    },
+    {
+      "name": "--md-app-bar-expanded-padding-block-end"
+    },
+    {
+      "name": "--md-app-bar-search-container-height"
+    },
+    {
+      "name": "--md-app-bar-search-padding-inline-start"
+    },
+    {
+      "name": "--md-app-bar-search-padding-inline-end"
+    },
+    {
+      "name": "--md-app-bar-search-row-gap"
+    },
+    {
+      "name": "--md-app-bar-search-trailing-gap"
+    },
+    {
+      "name": "--md-app-bar-search-field-trailing-gap"
+    },
+    {
+      "name": "--md-app-bar-trailing-touch-size"
+    },
+    {
+      "name": "--md-app-bar-medium-height"
+    },
+    {
+      "name": "--md-app-bar-medium-height-with-subtitle"
+    },
+    {
+      "name": "--md-app-bar-large-height"
+    },
+    {
+      "name": "--md-app-bar-large-height-with-subtitle"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-app-bar': true,\n          [`md-app-bar--${this.variant}`]: true,\n          'md-app-bar--flexible': flexible,\n          'md-app-bar--center': centered,\n          'md-app-bar--search': search,\n          'md-app-bar--with-subtitle': !search && this.hasSubtitleContent(),\n          'md-app-bar--search-focused': search && this.searchFocused,\n          'md-app-bar--search-disabled': search && this.searchDisabled,\n          'md-app-bar--with-search-trailing': search && this.hasSlottedSearchTrailing,\n          'md-app-bar--scrolled': this.scrolled,\n          [`md-app-bar--density${this.density}`]: this.density !== 0,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "banner"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.renderTop()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Document access requires a native adapter.",
+      "line": 127
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 139
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 148
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 163
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 26
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-app-bar/md-app-bar.tsx",
+    "styleUrl": "md-app-bar.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "2078a7d9a36b1a16d78884626dd16f7a0b18a013168402d7d0abed99f81c5fc6"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-app-bar-container-color, var(--md-sys-color-surface))",
+          "important": false
+        },
+        {
+          "property": "--_container-color-scrolled",
+          "value": "var(\n    --md-app-bar-container-color-scrolled,\n    var(--md-sys-color-surface-container)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-app-bar-container-shape, var(--md-sys-shape-corner-none))",
+          "important": false
+        },
+        {
+          "property": "--_headline-color",
+          "value": "var(--md-app-bar-headline-color, var(--md-sys-color-on-surface))",
+          "important": false
+        },
+        {
+          "property": "--_subtitle-color",
+          "value": "var(--md-app-bar-subtitle-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_leading-icon-color",
+          "value": "var(--md-app-bar-leading-icon-color, var(--md-sys-color-on-surface))",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-color",
+          "value": "var(--md-app-bar-trailing-icon-color, var(--md-sys-color-on-surface-variant))",
+          "important": false
+        },
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-app-bar-container-elevation, var(--md-sys-elevation-0))",
+          "important": false
+        },
+        {
+          "property": "--_padding-inline-start",
+          "value": "var(\n    --md-app-bar-padding-inline-start,\n    var(--md-app-bar-row-padding-inline, var(--md-sys-spacing-inset-xs, 4px))\n  )",
+          "important": false
+        },
+        {
+          "property": "--_padding-inline-end",
+          "value": "var(\n    --md-app-bar-padding-inline-end,\n    var(--md-app-bar-row-padding-inline, var(--md-sys-spacing-inset-xs, 4px))\n  )",
+          "important": false
+        },
+        {
+          "property": "--_icon-gap",
+          "value": "var(--md-app-bar-icon-gap, 0px)",
+          "important": false
+        },
+        {
+          "property": "--_row-height",
+          "value": "var(--md-app-bar-row-height, max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_icon-button-size",
+          "value": "var(--md-app-bar-icon-button-size, max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-touch-size",
+          "value": "var(--md-app-bar-trailing-icon-touch-size, var(--_icon-button-size))",
+          "important": false
+        },
+        {
+          "property": "--_trailing-gap",
+          "value": "var(--md-app-bar-trailing-gap, 2px)",
+          "important": false
+        },
+        {
+          "property": "--_row-padding-block-start",
+          "value": "var(--md-app-bar-row-padding-block-start, 0px)",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-app-bar-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size-handoff",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "--_avatar-size",
+          "value": "var(--md-app-bar-avatar-size, max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_expanded-padding-inline",
+          "value": "var(--md-app-bar-expanded-padding-inline, var(--md-sys-spacing-inset-lg, 16px))",
+          "important": false
+        },
+        {
+          "property": "--_expanded-padding-block-end",
+          "value": "var(--md-app-bar-expanded-padding-block-end, var(--md-sys-spacing-inset-xl, 24px))",
+          "important": false
+        },
+        {
+          "property": "--_search-container-color",
+          "value": "var(\n    --md-app-bar-search-container-color,\n    var(--md-sys-color-surface-container-highest)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_search-container-color-scrolled",
+          "value": "var(\n    --md-app-bar-search-container-color-scrolled,\n    var(--md-sys-color-surface-container)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_search-container-shape",
+          "value": "var(\n    --md-app-bar-search-container-shape,\n    var(--md-sys-shape-corner-full)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_search-container-height",
+          "value": "var(--md-app-bar-search-container-height, max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_search-padding-inline-start",
+          "value": "var(--md-app-bar-search-padding-inline-start, var(--md-sys-spacing-inset-xl, 24px))",
+          "important": false
+        },
+        {
+          "property": "--_search-padding-inline-end",
+          "value": "var(--md-app-bar-search-padding-inline-end, var(--md-sys-spacing-inset-sm, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_search-row-gap",
+          "value": "var(--md-app-bar-search-row-gap, var(--md-sys-spacing-gap-sm, 8px))",
+          "important": false
+        },
+        {
+          "property": "--_search-trailing-gap",
+          "value": "var(--md-app-bar-search-trailing-gap, var(--md-sys-spacing-gap-xs, 4px))",
+          "important": false
+        },
+        {
+          "property": "--_search-field-trailing-gap",
+          "value": "var(--md-app-bar-search-field-trailing-gap, 6px)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-touch-size",
+          "value": "var(--md-app-bar-trailing-touch-size, max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px)))",
+          "important": false
+        },
+        {
+          "property": "--_search-placeholder-color",
+          "value": "var(\n    --md-app-bar-search-placeholder-color,\n    var(--md-sys-color-on-surface-variant)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_search-input-color",
+          "value": "var(\n    --md-app-bar-search-input-color,\n    var(--md-sys-color-on-surface)\n  )",
+          "important": false
+        },
+        {
+          "property": "--_search-trailing-icon-color",
+          "value": "var(\n    --md-app-bar-search-trailing-icon-color,\n    var(--md-sys-color-on-surface-variant)\n  )",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_headline-color)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--_container-elevation)",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "var(--md-sys-z-index-app-bar, 100)",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "sticky",
+          "important": false
+        },
+        {
+          "property": "inset-block-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),\n    box-shadow var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--scrolled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_container-color-scrolled)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--scrolled) .md-app-bar__search",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--_search-container-color-scrolled)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--flexible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_flex-expanded-height)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--medium)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_flex-expanded-height",
+          "value": "var(--md-app-bar-medium-height, calc(112px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_expanded-padding-block-end",
+          "value": "var(--md-sys-spacing-inset-xl, 24px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--medium.md-app-bar--with-subtitle)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_flex-expanded-height",
+          "value": "var(--md-app-bar-medium-height-with-subtitle, calc(136px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--large)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_flex-expanded-height",
+          "value": "var(--md-app-bar-large-height, calc(120px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--_expanded-padding-block-end",
+          "value": "28px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--large:not(.md-app-bar--search))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_row-padding-block-start",
+          "value": "var(--md-app-bar-row-padding-block-start, 20px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--large.md-app-bar--with-subtitle)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_flex-expanded-height",
+          "value": "var(--md-app-bar-large-height-with-subtitle, calc(152px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_row-height)",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_row-height)",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "var(--_padding-inline-start)",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "var(--_padding-inline-end)",
+          "important": false
+        },
+        {
+          "property": "padding-block-start",
+          "value": "var(--_row-padding-block-start)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_icon-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--large:not(.md-app-bar--search)) .md-app-bar__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-items",
+          "value": "flex-start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--center:not(.md-app-bar--search)) .md-app-bar__row",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "grid",
+          "important": false
+        },
+        {
+          "property": "grid-template-columns",
+          "value": "minmax(var(--_icon-button-size), 1fr) minmax(0, auto) minmax(\n      var(--_icon-button-size),\n      1fr\n    )",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "column-gap",
+          "value": "var(--_icon-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__leading,\n.md-app-bar__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_leading-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--center:not(.md-app-bar--search)) .md-app-bar__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-self",
+          "value": "start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_trailing-icon-color)",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_trailing-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--center:not(.md-app-bar--search)) .md-app-bar__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "justify-self",
+          "value": "end",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__headline-inline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--md-sys-spacing-inset-md, 12px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--center) .md-app-bar__headline-inline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "unset",
+          "important": false
+        },
+        {
+          "property": "justify-self",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--md-sys-spacing-inset-sm, 8px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--flexible) .md-app-bar__headline-inline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__title",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-title-large-font-family)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(16px, calc(22px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-title-large-font-weight)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(22px, calc(28px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-title-large-letter-spacing)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_headline-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__expanded",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "flex-end",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--_expanded-padding-inline)",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "var(--_expanded-padding-block-end)",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--center) .md-app-bar__expanded",
+      "context": null,
+      "declarations": [
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--medium) .md-app-bar__expanded-headline,\n:host(.md-app-bar--large) .md-app-bar__expanded-headline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-headline-medium-font-family)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(22px, calc(28px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-headline-medium-font-weight)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(28px, calc(36px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-headline-medium-letter-spacing)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_headline-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__subtitle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-block-start",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-large-font-family)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-large-font-weight)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-label-large-letter-spacing)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_subtitle-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--large) .md-app-bar__expanded .md-app-bar__subtitle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-title-medium-font-family)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-title-medium-font-weight)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-title-medium-letter-spacing)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "container-type",
+          "value": "inline-size",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__row--search",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_search-row-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search) .md-app-bar__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "min-inline-size",
+          "value": "var(--_icon-button-size)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search) .md-app-bar__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--_trailing-touch-size)",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_trailing-touch-size)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search) .md-app-bar__search-input,\n:host(.md-app-bar--search) .md-app-bar__search-content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "text-align",
+          "value": "start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search:not(.md-app-bar--center)) .md-app-bar__search-field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-inline-start",
+          "value": "max(12px, var(--_search-padding-inline-start))",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search:not(.md-app-bar--center)) .md-app-bar__search-input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-inline-start",
+          "value": "max(12px, var(--_search-padding-inline-start))",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search:not(.md-app-bar--center))\n  .md-app-bar__search-field:has(.md-app-bar__search-input)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-inline-start",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search.md-app-bar--center) .md-app-bar__search-field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search.md-app-bar--center) .md-app-bar__search-input::placeholder",
+      "context": null,
+      "declarations": [
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search.md-app-bar--center) .md-app-bar__search-input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-inline-start",
+          "value": "max(12px, var(--_search-padding-inline-start))",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "max(12px, var(--_search-padding-inline-start))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search-host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "stretch",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_search-container-height)",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_icon-gap)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_search-container-shape)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_search-container-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_search-input-color)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "text",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "background-color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),\n    box-shadow var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search:focus-within",
+      "context": null,
+      "declarations": [
+        {
+          "property": "overflow",
+          "value": "visible",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search > md-ripple",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "--md-ripple-grow-duration",
+          "value": "var(--md-sys-motion-duration-short2)",
+          "important": false
+        },
+        {
+          "property": "--md-ripple-grow-easing",
+          "value": "var(--md-sys-motion-easing-standard)",
+          "important": false
+        },
+        {
+          "property": "--md-ripple-extend-inline",
+          "value": "0px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_search-input-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short1) var(--md-sys-motion-easing-standard)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search:hover .md-app-bar__search-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search:active .md-app-bar__search-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search--focus-ring",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search-field",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search-input",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "start",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_search-input-color)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-large-font-family)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-large-font-weight)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-large-letter-spacing)",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "text-indent",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "appearance",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search-input::placeholder",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_search-placeholder-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search-input:disabled",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "not-allowed",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search-content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot='search'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search-trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_search-trailing-gap)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_search-trailing-icon-color)",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "2",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--with-search-trailing) .md-app-bar__search",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-inline-end",
+          "value": "var(--_search-padding-inline-end)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--with-search-trailing) .md-app-bar__search-trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-inline-start",
+          "value": "var(--_search-field-trailing-gap)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot='search-trailing'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_search-trailing-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search) ::slotted([slot='trailing'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_trailing-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search-disabled) .md-app-bar__search,\n:host(.md-app-bar--search) .md-app-bar__search:has(.md-app-bar__search-input:disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "not-allowed",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.38",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search-disabled) .md-app-bar__search-state-layer,\n:host(.md-app-bar--search) .md-app-bar__search:has(.md-app-bar__search-input:disabled) .md-app-bar__search-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__search",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-duration",
+          "value": "0.01ms",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search:not(.md-app-bar--center))",
+      "context": "@container (max-width: 599px)",
+      "declarations": [
+        {
+          "property": "--_search-padding-inline-start",
+          "value": "min(16px, var(--_search-padding-inline-start))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search)\n    ::slotted([slot='search-trailing']:not(:first-of-type):not([data-compact-keep]))",
+      "context": "@container (max-width: 599px)",
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search:not(.md-app-bar--center))",
+      "context": "@container (max-width: 399px)",
+      "declarations": [
+        {
+          "property": "--_search-padding-inline-start",
+          "value": "min(12px, var(--_search-padding-inline-start))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search:not(.md-app-bar--center))",
+      "context": "@media (max-width: 599px)",
+      "declarations": [
+        {
+          "property": "--_search-padding-inline-start",
+          "value": "min(16px, var(--_search-padding-inline-start))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search)\n    ::slotted([slot='search-trailing']:not(:first-of-type):not([data-compact-keep]))",
+      "context": "@media (max-width: 599px)",
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-app-bar--search:not(.md-app-bar--center))",
+      "context": "@media (max-width: 399px)",
+      "declarations": [
+        {
+          "property": "--_search-padding-inline-start",
+          "value": "min(12px, var(--_search-padding-inline-start))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-app-bar__leading-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "var(--_icon-size-handoff)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "var(--_icon-button-size)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "var(--_icon-button-size)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--_leading-icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-state-layer-color",
+          "value": "var(--_leading-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot='leading']),\n::slotted([slot='trailing']),\n::slotted([slot='search-trailing'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "var(--_icon-size-handoff)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "var(--_icon-button-size)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "var(--_icon-button-size)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot='leading'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--_leading-icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-state-layer-color",
+          "value": "var(--_leading-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot='trailing'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--_trailing-icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-state-layer-color",
+          "value": "var(--_trailing-icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-avatar-size",
+          "value": "var(--_avatar-size)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot='trailing'][hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot='search-trailing'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--_search-trailing-icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-state-layer-color",
+          "value": "var(--_search-trailing-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host-context([dir='rtl']) ::slotted([slot='leading'][data-directional]),\n:host([dir='rtl']) ::slotted([slot='leading'][data-directional]),\n:host-context([dir='rtl']) .md-app-bar__leading-button[data-directional],\n:host([dir='rtl']) .md-app-bar__leading-button[data-directional]",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleX(-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "App Bar",
+  "category": "Navigation",
+  "parent": null,
+  "description": "The screen's header. Title, a leading navigation affordance, and trailing actions — in small / medium / large heights, plus a dedicated search variant for apps where search is the primary global function.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-app-bar.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-app-bar/md-app-bar.tsx",
+    "css": "packages/core/src/components/md-app-bar/md-app-bar.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "variant",
+        "titleAlignment",
+        "searchPlaceholder",
+        "searchValue",
+        "searchDisabled",
+        "headline",
+        "subtitle",
+        "leadingIcon",
+        "leadingIconLabel"
+      ],
+      "events": [
+        "mdLeadingClick",
+        "mdSearchActivate",
+        "mdSearchInput"
+      ],
+      "methods": [],
+      "slots": [
+        "headline",
+        "subtitle",
+        "search",
+        "search-trailing",
+        "leading",
+        "trailing"
+      ],
+      "unsupportedProperties": [
+        "searchAriaLabel",
+        "scrolled",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "density",
+        "headline",
+        "leadingIcon",
+        "leadingIconLabel",
+        "subtitle"
+      ],
+      "events": [
+        "mdLeadingClick"
+      ],
+      "methods": [],
+      "slots": [
+        "leading",
+        "trailing"
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "titleAlignment",
+        "searchPlaceholder",
+        "searchValue",
+        "searchAriaLabel",
+        "searchDisabled",
+        "scrolled"
+      ],
+      "unsupportedEvents": [
+        "mdSearchActivate",
+        "mdSearchInput"
+      ],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "headline",
+        "subtitle",
+        "search",
+        "search-trailing"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

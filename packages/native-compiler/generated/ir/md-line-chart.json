@@ -1,0 +1,2074 @@
+{
+  "tag": "md-line-chart",
+  "className": "MdLineChart",
+  "properties": [
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Optional chart title rendered above the plot."
+    },
+    {
+      "name": "subtitle",
+      "type": "string | undefined",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "subtitle",
+      "optional": false,
+      "description": "Optional sub-title rendered under the title in the muted text colour."
+    },
+    {
+      "name": "markLines",
+      "type": "MdChartMarkLine[] | undefined",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "mark-lines",
+      "optional": false,
+      "description": "Vertical reference lines across the plot (e.g. a \"current time\" divider)."
+    },
+    {
+      "name": "titleAlign",
+      "type": "MdChartTitleAlign",
+      "default": "'start'",
+      "defaultValue": "start",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "title-align",
+      "optional": false,
+      "description": "Title alignment over the plot: `start` (left), `center`, or `end` (right)."
+    },
+    {
+      "name": "series",
+      "type": "MdChartXYSeries[]",
+      "default": "[]",
+      "defaultValue": [],
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "series",
+      "optional": false,
+      "description": "Series array. Each entry is one line. Empty → empty state.\n\n`data` is either a bare list of y values, positioned by index against\n`xAxis.data`, or a list of points carrying their own x —\n`{ x: '2021-11-13', y: 0.12 }` / `['2021-11-13', 0.12]`. Points are what\nirregular data needs: uneven sampling, or several series measured on\ncompletely different dates. Set `xAxis.scale = 'time'` (or `'value'`) so\nthe gaps render proportionally; series carrying their own x need no\n`xAxis.data` at all."
+    },
+    {
+      "name": "xAxis",
+      "type": "MdChartAxis | undefined",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "x-axis",
+      "optional": false,
+      "description": "X-axis configuration."
+    },
+    {
+      "name": "yAxis",
+      "type": "MdChartAxis | undefined",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "y-axis",
+      "optional": false,
+      "description": "Y-axis configuration."
+    },
+    {
+      "name": "yAxes",
+      "type": "MdChartAxis[] | undefined",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "y-axes",
+      "optional": false,
+      "description": "Multiple independent value (y) axes. When set (non-empty), each series is\nmeasured against `yAxes[series.yAxisIndex ?? 0]`, and the axes stack outward\nfrom the plot (first → left, rest → right, or per each axis' `position`).\nSupersedes the single `yAxis`. Each axis keeps its own `min`/`max`/`scale`/\n`valueFormatter`/`label`."
+    },
+    {
+      "name": "curve",
+      "type": "'linear' | 'smooth' | 'monotone' | 'step' | 'step-before' | 'step-middle'",
+      "default": "'smooth'",
+      "defaultValue": "smooth",
+      "options": [
+        "linear",
+        "smooth",
+        "monotone",
+        "step",
+        "step-before",
+        "step-middle"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "curve",
+      "optional": false,
+      "description": "Default curve interpolation. Overridable per-series."
+    },
+    {
+      "name": "stack",
+      "type": "MdChartStackMode",
+      "default": "'none'",
+      "defaultValue": "none",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "stack",
+      "optional": false,
+      "description": "Stacking strategy."
+    },
+    {
+      "name": "connectNulls",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "connect-nulls",
+      "optional": false,
+      "description": "Whether `null` values are bridged with a straight line."
+    },
+    {
+      "name": "showMarks",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "show-marks",
+      "optional": false,
+      "description": "Show data-point markers on every series by default."
+    },
+    {
+      "name": "lineWidth",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "line-width",
+      "optional": true,
+      "description": "Line stroke width in px, for every series. Default 2.5; a per-series\n`series[].lineWidth` overrides it."
+    },
+    {
+      "name": "markSize",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "mark-size",
+      "optional": true,
+      "description": "Marker RADIUS in px, for every series. Overrides the per-symbol default; a\nper-series `series[].markSize` wins."
+    },
+    {
+      "name": "area",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "area",
+      "optional": false,
+      "description": "Render the line area as a filled gradient below the line."
+    },
+    {
+      "name": "showLine",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "show-line",
+      "optional": false,
+      "description": "Draw the line for each series. Default `true`. Set `false` for a fill-only\nchart (with `area`) or a marks-only chart — handy when a high `fillOpacity`\nmakes the same-coloured line vanish into the fill. A per-series\n`series[].stroke` still wins over this."
+    },
+    {
+      "name": "legend",
+      "type": "MdChartLegendPosition | 'none'",
+      "default": "'top-end'",
+      "defaultValue": "top-end",
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "legend",
+      "optional": false,
+      "description": "Legend position. `'none'` hides the legend."
+    },
+    {
+      "name": "tooltip",
+      "type": "MdChartTooltipTrigger",
+      "default": "'axis'",
+      "defaultValue": "axis",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "tooltip",
+      "optional": false,
+      "description": "Tooltip interaction model."
+    },
+    {
+      "name": "grid",
+      "type": "'none' | 'horizontal' | 'vertical' | 'both'",
+      "default": "'horizontal'",
+      "defaultValue": "horizontal",
+      "options": [
+        "none",
+        "horizontal",
+        "vertical",
+        "both"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "grid",
+      "optional": false,
+      "description": "Gridlines: horizontal (y ticks), vertical (x ticks), both, or none."
+    },
+    {
+      "name": "axisTicks",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "axis-ticks",
+      "optional": false,
+      "description": "Draw small perpendicular tick marks on the axes."
+    },
+    {
+      "name": "inverted",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "inverted",
+      "optional": false,
+      "description": "Transpose the axes — the x-axis data runs vertically and the values run\nhorizontally (e.g. a temperature-by-altitude spline). Best with `curve=\"smooth\"`."
+    },
+    {
+      "name": "showLabels",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "show-labels",
+      "optional": false,
+      "description": "Print each point's value as a data label beside its marker."
+    },
+    {
+      "name": "seriesLabels",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "series-labels",
+      "optional": false,
+      "description": "Label each series at its last point with its name (follows the line end)."
+    },
+    {
+      "name": "zoom",
+      "type": "'none' | 'inside' | 'slider' | 'both'",
+      "default": "'none'",
+      "defaultValue": "none",
+      "options": [
+        "none",
+        "inside",
+        "slider",
+        "both"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "zoom",
+      "optional": false,
+      "description": "Interactive zoom over the x range.\n  • `inside` — drag horizontally across the plot to zoom into that span;\n    double-click anywhere in the plot to reset.\n  • `slider` — an `md-slider` in range mode under the plot: drag either\n    thumb to resize the window, click the track to jump the nearest thumb,\n    drag the window itself to pan. Thumbs are focusable and take\n    Arrow/Home/End/PageUp/PageDown.\n  • `both` — both of the above.\n\nZoom is a *view* over the data: `series`/`xAxis` are untouched, and\n`mdHover`/`mdMarkerClick` keep reporting absolute indices into your data."
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "locale",
+      "optional": false,
+      "description": "BCP-47 locale for the DEFAULT number / date formatting — axis ticks,\ntooltip values and the screen-reader table. Empty follows the browser.\nAn explicit `valueFormatter` / `xAxis.valueFormatter` always wins, so a\nconsumer that formats its own values is unaffected."
+    },
+    {
+      "name": "labelEmpty",
+      "type": "string",
+      "default": "'No data to display'",
+      "defaultValue": "No data to display",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-empty",
+      "optional": false,
+      "description": "Text shown when there is no data. The `empty` slot still overrides it —\nthis is the prop form, for handing a string straight from a dictionary."
+    },
+    {
+      "name": "labelPlot",
+      "type": "string",
+      "default": "'Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.'",
+      "defaultValue": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-plot",
+      "optional": false,
+      "description": "Instructions announced when the plot receives keyboard focus. The plot is\nfocusable so a keyboard user can walk the data with the arrow keys; this\nis what tells them so."
+    },
+    {
+      "name": "labelPoint",
+      "type": "string",
+      "default": "'%x%: %values%'",
+      "defaultValue": "%x%: %values%",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-point",
+      "optional": false,
+      "description": "Template for the live announcement made as keyboard focus moves. `%x%` is\nthe axis value and `%values%` the series readings at it."
+    },
+    {
+      "name": "labelZoomStart",
+      "type": "string",
+      "default": "'Zoom range start'",
+      "defaultValue": "Zoom range start",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-zoom-start",
+      "optional": false,
+      "description": "Accessible label for the zoom slider's start thumb."
+    },
+    {
+      "name": "labelZoomEnd",
+      "type": "string",
+      "default": "'Zoom range end'",
+      "defaultValue": "Zoom range end",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label-zoom-end",
+      "optional": false,
+      "description": "Accessible label for the zoom slider's end thumb."
+    },
+    {
+      "name": "summary",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "summary",
+      "optional": false,
+      "description": "Replaces the generated `aria-label` outright. The default summary is\nassembled in English (\"Revenue, Line chart, with 2 series, from Jan to\nDec.\"); rather than translate it piecewise, hand over the whole sentence\nbuilt in your own language."
+    },
+    {
+      "name": "tableLabels",
+      "type": "{ x?: string; index?: string; series?: string; truncated?: string }",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "table-labels",
+      "optional": true,
+      "description": "Translatable chrome for the screen-reader data table. `%shown%` and\n`%total%` are substituted in `truncated`."
+    },
+    {
+      "name": "valueFormatter",
+      "type": "(value: number | null | undefined) => string",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "value-formatter",
+      "optional": true,
+      "description": "Format raw Y values for tooltips / a11y table.\n\nThe tooltip also asks it about series with NO value at the hovered x —\n`null` when the series has a null datum there, `undefined` when it has no\ndatum at all. Return `''` (or leave those cases unhandled) to keep the\ndefault behaviour of omitting the series; return a string to show a row\nfor it — e.g. `(v) => (v === null ? 'no reading' : v === undefined ? '—' : v + ' m')`."
+    },
+    {
+      "name": "tooltipRenderer",
+      "type": "MdChartTooltipRenderer",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "tooltip-renderer",
+      "optional": true,
+      "description": "Replace the tooltip's content with your own. Receives everything the chart\nknows about the hovered x — the axis value + its formatted label, and per\nvisible series the index, label, colour, raw and formatted value, and\nwhether it is the emphasised one — split into `series` (has a reading here)\nand `missing` (does not).\n\nReturn a DOM `Node` (what React / Vue / Angular renderers produce), a\nstring (inserted as TEXT, never parsed as markup), `{ unsafeHtml }` to opt\ninto raw HTML, `undefined` to fall back to the built-in tooltip, or `null`\nfor no tooltip at this x. The engine keeps positioning it, and it is still\nthe `tooltip` CSS part."
+    },
+    {
+      "name": "heightProp",
+      "type": "string",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "height",
+      "optional": true,
+      "description": "Force a specific height (CSS length)."
+    },
+    {
+      "name": "noAnimation",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "no-animation",
+      "optional": false,
+      "description": "Disable all animation (shorthand for `animation=\"none\"`)."
+    },
+    {
+      "name": "animation",
+      "type": "MdChartAnimation",
+      "default": "'expressive'",
+      "defaultValue": "expressive",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "animation",
+      "optional": false,
+      "description": "Entry-animation variant: `expressive` (default), `grow`, `fade`, `draw`, or `none`."
+    },
+    {
+      "name": "animationDuration",
+      "type": "number",
+      "default": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "animation-duration",
+      "optional": true,
+      "description": "Entry-animation duration override in ms (≤ 0 disables)."
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "loading",
+      "optional": false,
+      "description": "Data is still on its way — the chart covers the plot with a loader instead\nof drawing an empty (or stale) axis, and marks itself `aria-busy`.\n\nSet it while the fetch is in flight and clear it when `series` arrives; the\nentry animation replays on the way out, so the data draws itself in rather\nthan appearing fully formed. Slot `loading` to replace the default\nindicator with your own skeleton."
+    },
+    {
+      "name": "loadingLabel",
+      "type": "string",
+      "default": "'Loading chart…'",
+      "defaultValue": "Loading chart…",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "loading-label",
+      "optional": false,
+      "description": "Accessible + visible text under the loader."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "mounted",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "kbIndex",
+      "type": "inferred",
+      "initializer": "-1"
+    },
+    {
+      "name": "announcement",
+      "type": "inferred",
+      "initializer": "''"
+    },
+    {
+      "name": "zoomWin",
+      "type": "{ start: number; end: number } | null",
+      "initializer": "null"
+    },
+    {
+      "name": "dragBand",
+      "type": "{ x1: number; x2: number } | null",
+      "initializer": "null"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdMarkerClick",
+      "detail": "MdChartClickDetail<MdChartXYSeries>",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdLineClick",
+      "detail": "MdChartClickDetail<MdChartXYSeries>",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdAreaClick",
+      "detail": "MdChartClickDetail<MdChartXYSeries>",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdAxisClick",
+      "detail": "MdChartAxisClickDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdLegendClick",
+      "detail": "{ seriesIndex: number; seriesId?: string; selected: boolean }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdHover",
+      "detail": "MdChartHoverDetail",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdReady",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdZoom",
+      "detail": "{ startIndex: number; endIndex: number; reset: boolean }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "refreshTheme",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "resize",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "replay",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "toDataURL",
+      "parameters": [],
+      "returnType": "Promise<string>"
+    },
+    {
+      "name": "getInstance",
+      "parameters": [],
+      "returnType": "Promise<LineChartEngine | null>"
+    },
+    {
+      "name": "setZoom",
+      "parameters": [
+        {
+          "name": "startIndex",
+          "type": "number"
+        },
+        {
+          "name": "endIndex",
+          "type": "number"
+        }
+      ],
+      "returnType": "Promise<void>"
+    },
+    {
+      "name": "resetZoom",
+      "parameters": [],
+      "returnType": "Promise<void>"
+    }
+  ],
+  "slots": [
+    {
+      "name": "header",
+      "description": "Renders above the plot"
+    },
+    {
+      "name": "empty",
+      "description": "Empty-state content (overrides default text)"
+    },
+    {
+      "name": "loader"
+    },
+    {
+      "name": "loading"
+    },
+    {
+      "name": "footer",
+      "description": "Renders below the plot"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "zoom",
+      "description": "Zoom slider container"
+    },
+    {
+      "name": "zoom-slider",
+      "description": "The md-slider itself"
+    },
+    {
+      "name": "zoom-pan",
+      "description": "Drag-to-pan grip over the window"
+    },
+    {
+      "name": "header",
+      "description": "Header slot wrapper (title, toolbar)"
+    },
+    {
+      "name": "canvas",
+      "description": "Plot canvas container"
+    },
+    {
+      "name": "empty",
+      "description": "Empty-state container"
+    },
+    {
+      "name": "loading"
+    },
+    {
+      "name": "zoom-band",
+      "description": "Drag-to-zoom selection band"
+    },
+    {
+      "name": "footer",
+      "description": "Footer slot wrapper (caption, legend)"
+    },
+    {
+      "name": "zoom-track",
+      "description": "Zoom slider track (forwarded)"
+    },
+    {
+      "name": "zoom-window",
+      "description": "Selected window / active track (forwarded)"
+    },
+    {
+      "name": "zoom-handle",
+      "description": "Zoom slider thumb (forwarded)"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-line-chart-block-size",
+      "description": "Chart block-size (default: aspect-ratio driven)"
+    },
+    {
+      "name": "--md-line-chart-min-block-size",
+      "description": "Floor for the chart's height (default: 160px)"
+    },
+    {
+      "name": "--md-line-chart-aspect-ratio",
+      "description": "Width:height ratio (default: 16/9)"
+    },
+    {
+      "name": "--md-line-chart-background",
+      "description": "Surface behind the chart (default: --md-sys-color-surface-container-low;"
+    },
+    {
+      "name": "--md-line-chart-padding",
+      "description": "Inset padding around the canvas (default: 16px)"
+    },
+    {
+      "name": "--md-line-chart-shape",
+      "description": "Container corner radius (default: --md-sys-shape-corner-large)"
+    },
+    {
+      "name": "--md-line-chart-empty-color",
+      "description": "Empty-state text colour"
+    },
+    {
+      "name": "--md-line-chart-empty-background",
+      "description": "Empty-state surface (default: the chart's own background)"
+    },
+    {
+      "name": "--md-line-chart-empty-font",
+      "description": "Empty-state font FAMILY — not a font shorthand"
+    },
+    {
+      "name": "--md-line-chart-empty-font-size",
+      "description": "Empty-state font size (default: 14px)"
+    },
+    {
+      "name": "--md-line-chart-empty-icon-size",
+      "description": "Slotted Material Symbols icon size (default: 40px)"
+    },
+    {
+      "name": "--md-line-chart-zoom-size",
+      "description": "Height reserved for the zoom slider (default: 28px)"
+    },
+    {
+      "name": "--md-line-chart-zoom-track-color",
+      "description": "Zoom slider track colour (md-slider inactive track)"
+    },
+    {
+      "name": "--md-line-chart-zoom-window-color",
+      "description": "Zoom slider selected-window colour (md-slider active track)"
+    },
+    {
+      "name": "--md-line-chart-zoom-handle-color",
+      "description": "Zoom slider thumb + drag-band edge colour"
+    },
+    {
+      "name": "--md-line-chart-zoom-band-color",
+      "description": "Drag-to-zoom selection fill"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-line-chart': true,\n          'md-line-chart--empty': empty,\n          'md-line-chart--loading': this.loading,\n          'md-line-chart--mounted': this.mounted,\n          'md-line-chart--zoom-slider': this.zoomSliderOn,\n          'md-line-chart--zoom-drag': this.zoomInside,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "figure"
+      },
+      {
+        "name": "aria-label",
+        "value": "summary"
+      },
+      {
+        "name": "aria-busy",
+        "value": "this.loading ? 'true' : null"
+      },
+      {
+        "name": "style",
+        "value": "this.heightProp ? { blockSize: this.heightProp } : undefined"
+      },
+      {
+        "name": "onPointerDown",
+        "value": "this.onPlotPointerDown"
+      },
+      {
+        "name": "onPointerMove",
+        "value": "this.onPointerMove"
+      },
+      {
+        "name": "onPointerUp",
+        "value": "this.onPointerUp"
+      },
+      {
+        "name": "onPointerCancel",
+        "value": "this.onPointerUp"
+      },
+      {
+        "name": "onDblClick",
+        "value": "this.onPlotDblClick"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "header",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-line-chart__header"
+          },
+          {
+            "name": "part",
+            "value": "header"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "name",
+                "value": "header"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-line-chart__canvas"
+          },
+          {
+            "name": "part",
+            "value": "canvas"
+          },
+          {
+            "name": "ref",
+            "value": "el => this.bindChartHost(el as HTMLDivElement)"
+          },
+          {
+            "name": "tabindex",
+            "value": "empty ? undefined : '0'"
+          },
+          {
+            "name": "role",
+            "value": "empty ? undefined : 'application'"
+          },
+          {
+            "name": "aria-label",
+            "value": "empty ? undefined : this.labelPlot"
+          },
+          {
+            "name": "onKeyDown",
+            "value": "this.onPlotKeyDown"
+          },
+          {
+            "name": "onBlur",
+            "value": "this.onPlotBlur"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "empty && (\n          <div class=\"md-line-chart__empty\" part=\"empty\">\n            <slot name=\"empty\">{this.labelEmpty}</slot>\n          </div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.loading && (\n          <div class=\"md-line-chart__loading\" part=\"loading\" role=\"status\">\n            {/* `loader` is the library-wide name for \"swap the loading affordance\";\n                `loading` is kept as the older alias. Nesting them means either\n                works — the outer slot falls back to the inner one, which falls\n                back to the default below — and `loader` wins if both are given. */}\n            <slot name=\"loader\">\n              <slot name=\"loading\">\n              <md-progress-indicator\n                class=\"md-line-chart__spinner\"\n                variant=\"circular\"\n                indeterminate\n                label={this.loadingLabel}\n              ></md-progress-indicator>\n              <span class=\"md-line-chart__loading-text\">{this.loadingLabel}</span>\n            </slot>\n            </slot>\n          </div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.dragBand && Math.abs(this.dragBand.x2 - this.dragBand.x1) > 1 && (\n          <div\n            class=\"md-line-chart__zoom-band\"\n            part=\"zoom-band\"\n            style={this.zoomBandStyle()}\n          ></div>\n        )"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.zoomSliderOn && this.renderZoomSlider()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "footer",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-line-chart__footer"
+          },
+          {
+            "name": "part",
+            "value": "footer"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "name",
+                "value": "footer"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-line-chart__a11y-table"
+          },
+          {
+            "name": "ref",
+            "value": "el => this.bindA11yTableHost(el as HTMLDivElement)"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-line-chart__live"
+          },
+          {
+            "name": "role",
+            "value": "status"
+          },
+          {
+            "name": "aria-live",
+            "value": "polite"
+          },
+          {
+            "name": "aria-atomic",
+            "value": "true"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.announcement"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "CALLABLE_PROP",
+      "severity": "warning",
+      "message": "Callable props require target-specific callback signatures.",
+      "line": 240
+    },
+    {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "Native layout measurement must replace ResizeObserver.",
+      "line": 344
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 633
+    },
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 748
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 823
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 823
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 68
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-line-chart/md-line-chart.tsx",
+    "styleUrl": "md-line-chart.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "ea150cce42c6b02a273ddee1d5adc1bde643acdfd7e7a9a8d90f9bd3328212c9"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_block-size",
+          "value": "var(--md-line-chart-block-size, auto)",
+          "important": false
+        },
+        {
+          "property": "--_min-block-size",
+          "value": "var(--md-line-chart-min-block-size, max(120px, calc(160px + var(--md-sys-density-scale, 0) * 8px)))",
+          "important": false
+        },
+        {
+          "property": "--_aspect-ratio",
+          "value": "var(--md-line-chart-aspect-ratio, 16 / 9)",
+          "important": false
+        },
+        {
+          "property": "--_background",
+          "value": "var(--md-line-chart-background, var(--md-sys-color-surface-container-low, #F7F2FA))",
+          "important": false
+        },
+        {
+          "property": "--_padding",
+          "value": "var(--md-line-chart-padding, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_shape",
+          "value": "var(--md-line-chart-shape, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_empty-color",
+          "value": "var(--md-line-chart-empty-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_empty-background",
+          "value": "var(--md-line-chart-empty-background, var(--_background))",
+          "important": false
+        },
+        {
+          "property": "--_empty-font",
+          "value": "var(--md-line-chart-empty-font, var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif))",
+          "important": false
+        },
+        {
+          "property": "--_empty-font-size",
+          "value": "var(--md-line-chart-empty-font-size, var(--md-sys-typescale-body-medium-font-size, 14px))",
+          "important": false
+        },
+        {
+          "property": "--_empty-icon-size",
+          "value": "var(--md-line-chart-empty-icon-size, 40px)",
+          "important": false
+        },
+        {
+          "property": "--_zoom-size",
+          "value": "var(--md-line-chart-zoom-size, 28px)",
+          "important": false
+        },
+        {
+          "property": "--_zoom-track-color",
+          "value": "var(--md-line-chart-zoom-track-color, var(--md-sys-color-surface-container-highest, #E6E0E9))",
+          "important": false
+        },
+        {
+          "property": "--_zoom-window-color",
+          "value": "var(--md-line-chart-zoom-window-color, var(--md-sys-color-secondary-container, #E8DEF8))",
+          "important": false
+        },
+        {
+          "property": "--_zoom-handle-color",
+          "value": "var(--md-line-chart-zoom-handle-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_zoom-band-color",
+          "value": "var(--md-line-chart-zoom-band-color, color-mix(in srgb, var(--md-sys-color-primary, #6750A4) 16%, transparent))",
+          "important": false
+        },
+        {
+          "property": "--_zoom-pan-inset",
+          "value": "10px",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_block-size)",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_min-block-size)",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_background)",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "var(--_padding)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_shape)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "aspect-ratio",
+          "value": "var(--_aspect-ratio)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__header,\n.md-line-chart__footer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "contents",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__header > slot[name='header']::slotted(*),\n.md-line-chart__footer > slot[name='footer']::slotted(*)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "margin-block",
+          "value": "8px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__canvas",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "var(--_padding)",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__empty",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_empty-background)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_shape)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_empty-color)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--_empty-font)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_empty-font-size)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--md-sys-typescale-body-medium-line-height, 20px)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__loading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_empty-background)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_shape)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_empty-color)",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--_empty-font)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "var(--_empty-font-size)",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__spinner",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "var(--_empty-icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_empty-icon-size)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__empty ::slotted(.material-symbols-outlined),\n.md-line-chart__empty ::slotted(.material-symbols-rounded),\n.md-line-chart__empty ::slotted(.material-symbols-sharp),\n.md-line-chart__empty ::slotted(.material-icons)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_empty-icon-size)",
+          "important": true
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.55",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-line-chart--zoom-slider) .md-line-chart__canvas",
+      "context": null,
+      "declarations": [
+        {
+          "property": "bottom",
+          "value": "calc(var(--_padding) + var(--_zoom-size))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-line-chart--zoom-drag) .md-line-chart__canvas",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "ew-resize",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__zoom",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-inline",
+          "value": "var(--_padding)",
+          "important": false
+        },
+        {
+          "property": "bottom",
+          "value": "var(--_padding)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_zoom-size)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__zoom-slider",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-slider-active-color",
+          "value": "var(--_zoom-window-color)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-inactive-color",
+          "value": "var(--_zoom-track-color)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-thumb-color",
+          "value": "var(--_zoom-handle-color)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-thumb-height",
+          "value": "var(--_zoom-size)",
+          "important": false
+        },
+        {
+          "property": "--md-slider-track-height",
+          "value": "12px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__zoom-pan",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "grab",
+          "important": false
+        },
+        {
+          "property": "touch-action",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__zoom-pan:active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "grabbing",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__zoom-band",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "background",
+          "value": "var(--_zoom-band-color)",
+          "important": false
+        },
+        {
+          "property": "border-inline",
+          "value": "1px solid var(--_zoom-handle-color)",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__live",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "-1px",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "inset(50%)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "[part='legend'] button:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "6px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__canvas:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "-3px",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "4px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-line-chart__a11y-table",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "-1px",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "inset(50%)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "forced-color-adjust",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Line Chart",
+  "category": "Charts",
+  "parent": null,
+  "description": "A trend over a continuous axis. One or many series, six curve types, multiple y-axes, mark lines, drag-zoom and a slider band, plus a built-in loading state.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-line-chart.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-line-chart/md-line-chart.tsx",
+    "css": "packages/core/src/components/md-line-chart/md-line-chart.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "label",
+        "subtitle",
+        "series",
+        "heightProp",
+        "legend",
+        "loading",
+        "loadingLabel",
+        "labelEmpty",
+        "summary",
+        "showMarks",
+        "showLine",
+        "lineWidth",
+        "grid",
+        "connectNulls",
+        "showLabels",
+        "area"
+      ],
+      "events": [
+        "mdMarkerClick",
+        "mdLegendClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [
+        "header",
+        "empty",
+        "loader",
+        "loading",
+        "footer"
+      ],
+      "unsupportedProperties": [
+        "markLines",
+        "titleAlign",
+        "xAxis",
+        "yAxis",
+        "yAxes",
+        "curve",
+        "stack",
+        "markSize",
+        "tooltip",
+        "axisTicks",
+        "inverted",
+        "seriesLabels",
+        "zoom",
+        "locale",
+        "labelPlot",
+        "labelPoint",
+        "labelZoomStart",
+        "labelZoomEnd",
+        "tableLabels",
+        "valueFormatter",
+        "tooltipRenderer",
+        "noAnimation",
+        "animation",
+        "animationDuration",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdLineClick",
+        "mdAreaClick",
+        "mdAxisClick",
+        "mdHover",
+        "mdZoom"
+      ],
+      "unsupportedMethods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "toDataURL",
+        "getInstance",
+        "setZoom",
+        "resetZoom"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Canvas plots. Supports scalar/y/value points and gaps; linear curves, unstacked single-axis. Tap probes first visible series. JS formatters, zoom, marks, multi-axis, stack, smooth curves and exact pointer event metadata remain unsupported."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "area",
+        "connectNulls",
+        "grid",
+        "heightProp",
+        "label",
+        "labelEmpty",
+        "legend",
+        "lineWidth",
+        "loading",
+        "loadingLabel",
+        "markSize",
+        "series",
+        "showMarks",
+        "subtitle",
+        "summary",
+        "xAxis"
+      ],
+      "events": [
+        "mdLegendClick",
+        "mdMarkerClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "markLines",
+        "titleAlign",
+        "yAxis",
+        "yAxes",
+        "curve",
+        "stack",
+        "showLine",
+        "tooltip",
+        "axisTicks",
+        "inverted",
+        "showLabels",
+        "seriesLabels",
+        "zoom",
+        "locale",
+        "labelPlot",
+        "labelPoint",
+        "labelZoomStart",
+        "labelZoomEnd",
+        "tableLabels",
+        "valueFormatter",
+        "tooltipRenderer",
+        "noAnimation",
+        "animation",
+        "animationDuration",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdLineClick",
+        "mdAreaClick",
+        "mdAxisClick",
+        "mdHover",
+        "mdZoom"
+      ],
+      "unsupportedMethods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "toDataURL",
+        "getInstance",
+        "setZoom",
+        "resetZoom"
+      ],
+      "unsupportedSlots": [
+        "header",
+        "empty",
+        "loader",
+        "loading",
+        "footer"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

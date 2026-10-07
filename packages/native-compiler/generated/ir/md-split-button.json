@@ -1,0 +1,2291 @@
+{
+  "tag": "md-split-button",
+  "className": "MdSplitButton",
+  "properties": [
+    {
+      "name": "variant",
+      "type": "'elevated' | 'filled' | 'tonal' | 'outlined'",
+      "default": "'filled'",
+      "defaultValue": "filled",
+      "options": [
+        "elevated",
+        "filled",
+        "tonal",
+        "outlined"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "variant",
+      "optional": false,
+      "description": "Color variant"
+    },
+    {
+      "name": "size",
+      "type": "'xs' | 'sm' | 'md' | 'lg' | 'xl'",
+      "default": "'sm'",
+      "defaultValue": "sm",
+      "options": [
+        "xs",
+        "sm",
+        "md",
+        "lg",
+        "xl"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "size",
+      "optional": false,
+      "description": "Size"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disable the entire split button"
+    },
+    {
+      "name": "softDisabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "soft-disabled",
+      "optional": false,
+      "description": "Visually disabled but remains focusable for screen readers"
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "icon",
+      "optional": false,
+      "description": "Material Symbols icon name for the leading button"
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Leading button label text"
+    },
+    {
+      "name": "trailingIcon",
+      "type": "string",
+      "default": "'keyboard_arrow_down'",
+      "defaultValue": "keyboard_arrow_down",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "trailing-icon",
+      "optional": false,
+      "description": "Trailing button icon (default: keyboard_arrow_down)"
+    },
+    {
+      "name": "trailingChecked",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "trailing-checked",
+      "optional": false,
+      "description": "Whether the trailing button is in \"open/checked\" state"
+    },
+    {
+      "name": "menuLabel",
+      "type": "string",
+      "default": "'Toggle menu'",
+      "defaultValue": "Toggle menu",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "menu-label",
+      "optional": false,
+      "description": "Accessible label for the trailing (menu-toggle) button. Localize per the\npage locale. (WCAG 4.1.2 — the icon-only trailing button needs a name.)"
+    },
+    {
+      "name": "haspopup",
+      "type": "| 'menu' | 'listbox' | 'dialog' | 'grid' | 'tree' | 'true' | 'false'",
+      "default": "'menu'",
+      "defaultValue": "menu",
+      "options": [
+        "menu",
+        "listbox",
+        "dialog",
+        "grid",
+        "tree",
+        "true",
+        "false"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "haspopup",
+      "optional": false,
+      "description": "`aria-haspopup` value for the trailing button — the kind of popup it opens.\nDefaults to `'menu'` (the split-button menu-trigger pattern). Set to\n`'false'` when the trailing button toggles state rather than opening a popup."
+    },
+    {
+      "name": "controls",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "controls",
+      "optional": false,
+      "description": "`id` of the element the trailing button controls (the menu/listbox it\nopens). Wires `aria-controls` so assistive tech links trigger → popup."
+    },
+    {
+      "name": "fullWidth",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "full-width",
+      "optional": false,
+      "description": "Stretch the split button to fill its container. The leading segment grows\nand its label truncates with an ellipsis when space is tight; the trailing\ntoggle keeps its intrinsic width."
+    },
+    {
+      "name": "ripple",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "ripple",
+      "optional": false,
+      "description": "Enable/disable ripple"
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [],
+  "events": [
+    {
+      "name": "mdLeadingClick",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdTrailingClick",
+      "detail": "{ checked: boolean }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "leading",
+      "description": "Leading button"
+    },
+    {
+      "name": "leading-state-layer",
+      "description": "Leading state overlay"
+    },
+    {
+      "name": "icon",
+      "description": "Leading icon"
+    },
+    {
+      "name": "label",
+      "description": "Label text"
+    },
+    {
+      "name": "trailing",
+      "description": "Trailing button"
+    },
+    {
+      "name": "trailing-state-layer",
+      "description": "Trailing state overlay"
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Trailing menu icon"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-split-button-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-split-button-label-color",
+      "description": "Label + icon color"
+    },
+    {
+      "name": "--md-split-button-icon-color",
+      "description": "Icon override"
+    },
+    {
+      "name": "--md-split-button-outline-color",
+      "description": "Outlined border"
+    },
+    {
+      "name": "--md-split-button-container-shape",
+      "description": "Outer corner override"
+    },
+    {
+      "name": "--md-split-button-icon-size",
+      "description": "Icon dimensions"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-split-button': true,\n          [`md-split-button--${this.variant}`]: true,\n          [`md-split-button--${this.size}`]: true,\n          'md-split-button--disabled': this.isDisabled,\n          'md-split-button--trailing-checked': this.trailingChecked,\n          'md-split-button--with-icon': hasIcon,\n          'md-split-button--full-width': this.fullWidth,\n        }"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "button",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-split-button__leading"
+          },
+          {
+            "name": "part",
+            "value": "leading"
+          },
+          {
+            "name": "disabled",
+            "value": "this.disabled"
+          },
+          {
+            "name": "aria-disabled",
+            "value": "this.isDisabled ? 'true' : undefined"
+          },
+          {
+            "name": "aria-label",
+            "value": "!this.label ? this.el.getAttribute('aria-label') ?? undefined : undefined"
+          },
+          {
+            "name": "tabindex",
+            "value": "this.disabled ? -1 : 0"
+          },
+          {
+            "name": "onClick",
+            "value": "this.handleLeadingClick"
+          },
+          {
+            "name": "onKeyDown",
+            "value": "this.handleLeadingKeyDown"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.ripple && <md-ripple disabled={this.isDisabled}></md-ripple>"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-split-button__leading-state-layer"
+              },
+              {
+                "name": "part",
+                "value": "leading-state-layer"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "hasIcon && (\n            <span class=\"md-split-button__icon material-symbols-outlined\" part=\"icon\" aria-hidden=\"true\">\n              {this.icon}\n            </span>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.label && <span class=\"md-split-button__label\" part=\"label\">{this.label}</span>"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "button",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "{\n            'md-split-button__trailing': true,\n            'md-split-button__trailing--checked': this.trailingChecked,\n          }"
+          },
+          {
+            "name": "part",
+            "value": "trailing"
+          },
+          {
+            "name": "disabled",
+            "value": "this.disabled"
+          },
+          {
+            "name": "aria-disabled",
+            "value": "this.isDisabled ? 'true' : undefined"
+          },
+          {
+            "name": "aria-haspopup",
+            "value": "this.haspopup === 'false' ? undefined : this.haspopup"
+          },
+          {
+            "name": "aria-expanded",
+            "value": "String(this.trailingChecked)"
+          },
+          {
+            "name": "aria-controls",
+            "value": "this.controls || undefined"
+          },
+          {
+            "name": "aria-label",
+            "value": "this.menuLabel"
+          },
+          {
+            "name": "tabindex",
+            "value": "this.disabled ? -1 : 0"
+          },
+          {
+            "name": "onClick",
+            "value": "this.handleTrailingClick"
+          },
+          {
+            "name": "onKeyDown",
+            "value": "this.handleTrailingKeyDown"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.ripple && <md-ripple disabled={this.isDisabled}></md-ripple>"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-split-button__trailing-state-layer"
+              },
+              {
+                "name": "part",
+                "value": "trailing-state-layer"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-split-button__trailing-icon material-symbols-outlined"
+              },
+              {
+                "name": "part",
+                "value": "trailing-icon"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "expression",
+                "source": "this.trailingIcon"
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Window access requires a native adapter.",
+      "line": 85
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 4
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-split-button/md-split-button.tsx",
+    "styleUrl": "md-split-button.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "123d2eee377c40c2399e2c4000ff446c33ea420e6d3902b34bcd5599c9274de6"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-split-button-container-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-split-button-label-color, var(--md-sys-color-on-primary))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-split-button-icon-color, var(--_label-color))",
+          "important": false
+        },
+        {
+          "property": "--_outline-color",
+          "value": "var(--md-split-button-outline-color, var(--md-sys-color-outline))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-sys-color-on-primary)",
+          "important": false
+        },
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": false
+        },
+        {
+          "property": "--_outer-shape",
+          "value": "var(--md-split-button-container-shape, calc(var(--_height) / 2))",
+          "important": false
+        },
+        {
+          "property": "--_inner-shape",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "--_inner-shape-hover",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "--_between-space",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "--_height",
+          "value": "40px",
+          "important": false
+        },
+        {
+          "property": "--_pad-trim",
+          "value": "calc(var(--md-sys-density-scale, 0) * 2px)",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-split-button-icon-size, 18px)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-size",
+          "value": "22px",
+          "important": false
+        },
+        {
+          "property": "--_leading-padding-left",
+          "value": "16px",
+          "important": false
+        },
+        {
+          "property": "--_leading-padding-right",
+          "value": "14px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-left",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-right",
+          "value": "14px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-center",
+          "value": "13px",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "stretch",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_between-space)",
+          "important": false
+        },
+        {
+          "property": "vertical-align",
+          "value": "middle",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--xs)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_height",
+          "value": "32px",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-split-button-icon-size, 16px)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-size",
+          "value": "22px",
+          "important": false
+        },
+        {
+          "property": "--_inner-shape",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "--_inner-shape-hover",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "--_leading-padding-left",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "--_leading-padding-right",
+          "value": "10px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-left",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-right",
+          "value": "14px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-center",
+          "value": "13px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--sm)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_height",
+          "value": "40px",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-split-button-icon-size, 18px)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-size",
+          "value": "22px",
+          "important": false
+        },
+        {
+          "property": "--_inner-shape",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "--_inner-shape-hover",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "--_leading-padding-left",
+          "value": "16px",
+          "important": false
+        },
+        {
+          "property": "--_leading-padding-right",
+          "value": "14px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-left",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-right",
+          "value": "14px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-center",
+          "value": "13px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--md)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_height",
+          "value": "56px",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-split-button-icon-size, 24px)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-size",
+          "value": "26px",
+          "important": false
+        },
+        {
+          "property": "--_inner-shape",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "--_inner-shape-hover",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "--_leading-padding-left",
+          "value": "24px",
+          "important": false
+        },
+        {
+          "property": "--_leading-padding-right",
+          "value": "20px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-left",
+          "value": "13px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-right",
+          "value": "17px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-center",
+          "value": "15px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--lg)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_height",
+          "value": "96px",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-split-button-icon-size, 36px)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-size",
+          "value": "38px",
+          "important": false
+        },
+        {
+          "property": "--_inner-shape",
+          "value": "12px",
+          "important": false
+        },
+        {
+          "property": "--_inner-shape-hover",
+          "value": "20px",
+          "important": false
+        },
+        {
+          "property": "--_leading-padding-left",
+          "value": "36px",
+          "important": false
+        },
+        {
+          "property": "--_leading-padding-right",
+          "value": "28px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-left",
+          "value": "26px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-right",
+          "value": "32px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-center",
+          "value": "29px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--xl)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_height",
+          "value": "136px",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-split-button-icon-size, 48px)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-size",
+          "value": "50px",
+          "important": false
+        },
+        {
+          "property": "--_inner-shape",
+          "value": "16px",
+          "important": false
+        },
+        {
+          "property": "--_inner-shape-hover",
+          "value": "28px",
+          "important": false
+        },
+        {
+          "property": "--_leading-padding-left",
+          "value": "48px",
+          "important": false
+        },
+        {
+          "property": "--_leading-padding-right",
+          "value": "36px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-left",
+          "value": "37px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-right",
+          "value": "49px",
+          "important": false
+        },
+        {
+          "property": "--_trailing-padding-center",
+          "value": "43px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading,\n.md-split-button__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "relative",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "max(24px, calc(var(--_height) + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_label-color)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--_container-elevation)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "border-radius 200ms var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-large-font-weight, 500)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-label-large-letter-spacing, 0.1px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--xs) .md-split-button__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-label-medium-font-weight, 500)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--md) .md-split-button__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-title-medium-font-weight, 500)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--lg) .md-split-button__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-headline-small-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--xl) .md-split-button__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "max(22px, calc(28px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-headline-medium-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(28px, calc(36px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_outer-shape)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_outer-shape)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_inner-shape)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_inner-shape)",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "max(4px, calc(var(--_leading-padding-left) + var(--_pad-trim)))",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "max(4px, calc(var(--_leading-padding-right) + var(--_pad-trim)))",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--with-icon) .md-split-button__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-inline-start",
+          "value": "max(4px, calc(var(--_leading-padding-left) - 4px + var(--_pad-trim)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading:hover,\n.md-split-button__leading:focus-visible,\n.md-split-button__leading:active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_inner-shape-hover)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "calc(var(--_inner-shape) + var(--md-sys-shape-morph-enabled, 1) * (var(--_inner-shape-hover) - var(--_inner-shape)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_inner-shape)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_inner-shape)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_outer-shape)",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "var(--_outer-shape)",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline-start",
+          "value": "max(4px, calc(var(--_trailing-padding-left) + var(--_pad-trim)))",
+          "important": false
+        },
+        {
+          "property": "padding-inline-end",
+          "value": "max(4px, calc(var(--_trailing-padding-right) + var(--_pad-trim)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__trailing:hover,\n.md-split-button__trailing:focus-visible,\n.md-split-button__trailing:active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "calc(var(--_inner-shape) + var(--md-sys-shape-morph-enabled, 1) * (var(--_inner-shape-hover) - var(--_inner-shape)))",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "var(--_inner-shape-hover)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__trailing.md-split-button__trailing--checked",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "var(--_outer-shape)",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "max(4px, calc(var(--_trailing-padding-center) + var(--_pad-trim)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading-state-layer,\n.md-split-button__trailing-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_state-layer-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity 100ms var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading:hover .md-split-button__leading-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading:focus-visible .md-split-button__leading-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-focus-state-layer-opacity, 0.10)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading:active .md-split-button__leading-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.10)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__trailing:hover .md-split-button__trailing-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__trailing:focus-visible .md-split-button__trailing-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-focus-state-layer-opacity, 0.10)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__trailing:active .md-split-button__trailing-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.10)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__trailing:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__trailing-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "var(--_trailing-icon-size)",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--_trailing-icon-size)",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--_trailing-icon-size)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "var(--_trailing-icon-size)",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform 200ms var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--trailing-checked) .md-split-button__trailing-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "rotate(180deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--filled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-split-button-container-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-split-button-label-color, var(--md-sys-color-on-primary))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-sys-color-on-primary)",
+          "important": false
+        },
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--elevated)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-split-button-container-color, var(--md-sys-color-surface-container-low))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-split-button-label-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-sys-color-primary)",
+          "important": false
+        },
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--elevated) .md-split-button__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "inset(-6px -1px -6px -6px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--elevated) .md-split-button__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "inset(-6px -6px -6px -1px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([dir=\"rtl\"].md-split-button--elevated) .md-split-button__leading,\n:host-context([dir=\"rtl\"]):host(.md-split-button--elevated) .md-split-button__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "inset(-6px -6px -6px -1px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([dir=\"rtl\"].md-split-button--elevated) .md-split-button__trailing,\n:host-context([dir=\"rtl\"]):host(.md-split-button--elevated) .md-split-button__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "inset(-6px -1px -6px -6px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--elevated) .md-split-button__leading:hover,\n:host(.md-split-button--elevated) .md-split-button__trailing:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-2)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--elevated) .md-split-button__leading:active,\n:host(.md-split-button--elevated) .md-split-button__trailing:active,\n:host(.md-split-button--elevated) .md-split-button__leading:focus-visible,\n:host(.md-split-button--elevated) .md-split-button__trailing:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--elevated) .md-split-button__leading:focus-visible,\n:host(.md-split-button--elevated) .md-split-button__trailing:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "inset(-6px)",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--tonal)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-split-button-container-color, var(--md-sys-color-secondary-container))",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-split-button-label-color, var(--md-sys-color-on-secondary-container))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-sys-color-on-secondary-container)",
+          "important": false
+        },
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--tonal) .md-split-button__leading:hover,\n:host(.md-split-button--tonal) .md-split-button__trailing:hover",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--outlined)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "--_label-color",
+          "value": "var(--md-split-button-label-color, var(--md-sys-color-primary))",
+          "important": false
+        },
+        {
+          "property": "--_state-layer-color",
+          "value": "var(--md-sys-color-primary)",
+          "important": false
+        },
+        {
+          "property": "--_container-elevation",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--outlined) .md-split-button__leading,\n:host(.md-split-button--outlined) .md-split-button__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border",
+          "value": "1px solid var(--_outline-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--outlined) .md-split-button__leading:focus-visible,\n:host(.md-split-button--outlined) .md-split-button__trailing:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-color",
+          "value": "var(--md-split-button-outline-color, var(--md-sys-color-primary))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--full-width)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "100%",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--full-width) .md-split-button__leading",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--full-width) .md-split-button__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--full-width) .md-split-button__label",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "block",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_disabled-content-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--_disabled-content-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--disabled) .md-split-button__leading,\n:host(.md-split-button--disabled) .md-split-button__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-0, none)",
+          "important": true
+        },
+        {
+          "property": "background-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_disabled-content-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--disabled) .md-split-button__leading-state-layer,\n:host(.md-split-button--disabled) .md-split-button__trailing-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--disabled.md-split-button--outlined) .md-split-button__leading,\n:host(.md-split-button--disabled.md-split-button--outlined) .md-split-button__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--disabled.md-split-button--elevated) .md-split-button__leading,\n:host(.md-split-button--disabled.md-split-button--elevated) .md-split-button__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled]) .md-split-button__leading,\n:host([soft-disabled]) .md-split-button__trailing",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([soft-disabled]) .md-split-button__leading-state-layer,\n:host([soft-disabled]) .md-split-button__trailing-state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading,\n  .md-split-button__trailing",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading-state-layer,\n  .md-split-button__trailing-state-layer",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__trailing-icon",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading,\n  .md-split-button__trailing",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "ButtonFace",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "ButtonText",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "1px solid ButtonText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading:focus-visible,\n  .md-split-button__trailing:focus-visible",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "outline-color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--disabled) .md-split-button__leading,\n  :host(.md-split-button--disabled) .md-split-button__trailing",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "GrayText",
+          "important": false
+        },
+        {
+          "property": "border-color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-split-button--disabled) .md-split-button__icon",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "GrayText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-split-button__leading-state-layer,\n  .md-split-button__trailing-state-layer",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Split Button",
+  "category": "Actions",
+  "parent": null,
+  "description": "One default action plus a menu of variations. Two fused segments: a leading button that runs the default action, and a trailing toggle that opens a menu. The component renders the button — you supply and position the menu.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-split-button.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-split-button/md-split-button.tsx",
+    "css": "packages/core/src/components/md-split-button/md-split-button.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "icon",
+        "label",
+        "trailingIcon",
+        "trailingChecked",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdLeadingClick",
+        "mdTrailingClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "variant",
+        "size",
+        "menuLabel",
+        "haspopup",
+        "controls",
+        "fullWidth",
+        "ripple",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        ""
+      ],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "disabled",
+        "fullWidth",
+        "icon",
+        "label",
+        "menuLabel",
+        "softDisabled",
+        "trailingChecked",
+        "trailingIcon",
+        "variant"
+      ],
+      "events": [
+        "mdLeadingClick",
+        "mdTrailingClick"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "size",
+        "haspopup",
+        "controls",
+        "ripple",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

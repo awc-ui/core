@@ -1,0 +1,914 @@
+{
+  "tag": "md-table-sort-label",
+  "className": "MdTableSortLabel",
+  "properties": [
+    {
+      "name": "column",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "column",
+      "optional": false,
+      "description": "Column id — matched against the `<md-table>`'s `sort-by` value.\nRequired."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "disabled",
+      "optional": false,
+      "description": "Disabled — non-interactive."
+    },
+    {
+      "name": "defaultOrder",
+      "type": "'asc' | 'desc'",
+      "default": "'asc'",
+      "defaultValue": "asc",
+      "options": [
+        "asc",
+        "desc"
+      ],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "default-order",
+      "optional": false,
+      "description": "Direction the arrow points by default (the value used when this column\nbecomes the active sort for the first time)."
+    },
+    {
+      "name": "iconPosition",
+      "type": "'start' | 'end'",
+      "default": "'end'",
+      "defaultValue": "end",
+      "options": [
+        "start",
+        "end"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "icon-position",
+      "optional": false,
+      "description": "Visual position of the arrow icon relative to the label.\n- `end`   — after the label (default)\n- `start` — before the label"
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "icon",
+      "optional": false,
+      "description": "Custom sort-arrow icon: a Material Symbols ligature name (e.g. \"north\",\n\"expand_less\"). Empty = the built-in SVG arrow. The icon still rotates\n180deg for descending via the same CSS, so pick an \"ascending-pointing\"\nglyph."
+    },
+    {
+      "name": "inactiveIcon",
+      "type": "'always' | 'hover'",
+      "default": "'always'",
+      "defaultValue": "always",
+      "options": [
+        "always",
+        "hover"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "inactive-icon",
+      "optional": false,
+      "description": "When the arrow is visible on a column that is NOT the active sort.\n\n- `always` — dimmed but present at rest (default). The arrow is the only\n  thing distinguishing a sortable column from a fixed one, so hiding it\n  until hover means the affordance cannot be discovered without hovering\n  every header — and cannot be discovered at all on a touch device, which\n  has no hover state to give.\n- `hover`  — invisible until the header is hovered or focused. Quieter in a\n  table where nearly every column sorts and the arrows become noise.\n\nThe ACTIVE column's arrow is always fully opaque under either setting."
+    },
+    {
+      "name": "active",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "active",
+      "optional": false,
+      "description": "Whether this column is the active sort. Pushed by the parent `<md-table>`."
+    },
+    {
+      "name": "order",
+      "type": "'asc' | 'desc' | 'none'",
+      "default": "'none'",
+      "defaultValue": "none",
+      "options": [
+        "asc",
+        "desc",
+        "none"
+      ],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "order",
+      "optional": false,
+      "description": "Active sort direction. Pushed by the parent `<md-table>`."
+    },
+    {
+      "name": "sortedAscendingLabel",
+      "type": "string",
+      "default": "'sorted ascending'",
+      "defaultValue": "sorted ascending",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "sorted-ascending-label",
+      "optional": false,
+      "description": "Live-region announcement for the active ascending sort."
+    },
+    {
+      "name": "sortedDescendingLabel",
+      "type": "string",
+      "default": "'sorted descending'",
+      "defaultValue": "sorted descending",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "sorted-descending-label",
+      "optional": false,
+      "description": "Live-region announcement for the active descending sort."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [],
+  "events": [
+    {
+      "name": "mdSortRequest",
+      "detail": "{ column: string; defaultOrder: 'asc' | 'desc' }",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "icon",
+      "description": "The arrow indicator"
+    },
+    {
+      "name": "label",
+      "description": "The text label"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-table-sort-label-color",
+      "description": "Inactive color"
+    },
+    {
+      "name": "--md-table-sort-label-active-color",
+      "description": "Active color"
+    },
+    {
+      "name": "--md-table-sort-label-icon-size",
+      "description": "Icon size (default 18px)"
+    },
+    {
+      "name": "--md-table-sort-label-gap",
+      "description": "Gap between text and icon"
+    },
+    {
+      "name": "--md-table-sort-label-rest-opacity"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-table-sort-label': true,\n          'md-table-sort-label--active': this.active,\n          'md-table-sort-label--disabled': this.disabled,\n        }"
+      },
+      {
+        "name": "role",
+        "value": "button"
+      },
+      {
+        "name": "tabindex",
+        "value": "this.disabled ? '-1' : '0'"
+      },
+      {
+        "name": "aria-disabled",
+        "value": "this.disabled ? 'true' : null"
+      },
+      {
+        "name": "onClick",
+        "value": "this.handleClick"
+      },
+      {
+        "name": "onKeyDown",
+        "value": "this.handleKeyDown"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.iconPosition === 'start' && this.renderArrow()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table-sort-label__text"
+          },
+          {
+            "name": "part",
+            "value": "label"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "expression",
+        "source": "this.iconPosition === 'end' && this.renderArrow()"
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "span",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-table-sort-label__sr"
+          },
+          {
+            "name": "aria-live",
+            "value": "polite"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.active ? (this.order === 'desc' ? this.sortedDescendingLabel : this.sortedAscendingLabel) : ''"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 24
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-table-sort-label/md-table-sort-label.tsx",
+    "styleUrl": "md-table-sort-label.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "1019bbdc7943e66278c61e003e3e34bd0814f206aef0bc6ce514561b2814e854"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_color",
+          "value": "var(--md-table-sort-label-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        },
+        {
+          "property": "--_active-color",
+          "value": "var(--md-table-sort-label-active-color, var(--md-sys-color-primary, #6750A4))",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-table-sort-label-icon-size, 18px)",
+          "important": false
+        },
+        {
+          "property": "--_gap",
+          "value": "var(--md-table-sort-label-gap, var(--md-sys-spacing-gap-xs, 4px))",
+          "important": false
+        },
+        {
+          "property": "--_spring-spatial",
+          "value": "var(--md-sys-motion-spring-spatial-fast-duration, 350ms)\n    var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.9))",
+          "important": false
+        },
+        {
+          "property": "--_spring-effects",
+          "value": "var(--md-sys-motion-spring-effects-fast-duration, 150ms)\n    var(--md-sys-motion-spring-effects-fast-easing, cubic-bezier(0.31, 0.94, 0.34, 1))",
+          "important": false
+        },
+        {
+          "property": "--_hover-opacity",
+          "value": "0.6",
+          "important": false
+        },
+        {
+          "property": "--_rest-opacity",
+          "value": "var(--md-table-sort-label-rest-opacity, 0.38)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_gap)",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "pointer",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_color)",
+          "important": false
+        },
+        {
+          "property": "-webkit-tap-highlight-color",
+          "value": "transparent",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "4px",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "-4px",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "color var(--_spring-effects)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-table-sort-label--disabled))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_active-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:focus-visible)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-sort-label--active)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_active-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-sort-label--disabled)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.6",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-sort-label__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_icon-size)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "var(--_rest-opacity)",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "rotate(0deg)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--_spring-spatial),\n    opacity var(--_spring-effects)",
+          "important": false
+        },
+        {
+          "property": "flex",
+          "value": "0 0 auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([inactive-icon='hover']) .md-table-sort-label__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-sort-label__icon--desc",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "rotate(180deg)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:hover:not(.md-table-sort-label--disabled)) .md-table-sort-label__icon,\n:host(:focus-visible) .md-table-sort-label__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--_hover-opacity)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-sort-label--active) .md-table-sort-label__icon,\n.md-table-sort-label__icon--active",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-sort-label__text",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "inline-flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-sort-label__sr",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "absolute",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "-1px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "inset(50%)",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host,\n  .md-table-sort-label__icon",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-table-sort-label--active)",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "color",
+          "value": "Highlight",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-table-sort-label__icon-glyph",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-size",
+          "value": "18px",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".material-symbols-outlined",
+      "context": null,
+      "declarations": [
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons')",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "font-style",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "text-transform",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "inline-block",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        },
+        {
+          "property": "overflow-wrap",
+          "value": "normal",
+          "important": false
+        },
+        {
+          "property": "direction",
+          "value": "ltr",
+          "important": false
+        },
+        {
+          "property": "font-feature-settings",
+          "value": "'liga'",
+          "important": false
+        },
+        {
+          "property": "-webkit-font-smoothing",
+          "value": "antialiased",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Table Sort Label",
+  "category": "Data Display",
+  "parent": "md-table",
+  "description": "The sortable-column affordance. Goes inside a header cell, shows the current sort direction, and emits a request to sort — the parent md-table turns that request into sort state and hands it back.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-table-sort-label.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-table-sort-label/md-table-sort-label.tsx",
+    "css": "packages/core/src/components/md-table-sort-label/md-table-sort-label.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "column",
+        "defaultOrder",
+        "active",
+        "order",
+        "disabled"
+      ],
+      "events": [
+        "mdSortRequest"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "iconPosition",
+        "icon",
+        "inactiveIcon",
+        "sortedAscendingLabel",
+        "sortedDescendingLabel",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "column",
+        "defaultOrder",
+        "disabled",
+        "order"
+      ],
+      "events": [
+        "mdSortRequest"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "iconPosition",
+        "icon",
+        "inactiveIcon",
+        "active",
+        "sortedAscendingLabel",
+        "sortedDescendingLabel",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

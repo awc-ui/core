@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>AWC UI · Native compiler lab</title>
+  <link rel="stylesheet" href="/web-dist/md3/md3.css" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <a href="#md-button" class="brand" aria-label="AWC UI home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>AWC<span> UI</span></strong></a>
+    <span class="header-divider"></span><span class="header-title">Native compiler lab <span class="pill experimental">EXPERIMENTAL</span></span>
+    <div class="header-actions"><span class="compiler-status" id="compiler-status"><i></i>Reading source</span><button class="icon-button" id="theme-toggle" aria-label="Switch to dark theme" title="Switch theme">◐</button></div>
+  </header>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Component navigation">
+      <div class="sidebar-heading"><span>COMPONENT LIBRARY</span><span class="count-badge" id="component-count">—</span></div>
+      <label class="search-box"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Find a component…" aria-label="Find a component" /><kbd>/</kbd></label>
+      <div class="filter-row"><button class="filter active" data-filter="all">All components</button><button class="filter" data-filter="findings">With findings</button></div>
+      <nav id="component-list" aria-label="Components"><p class="muted">Reading component manifest…</p></nav>
+      <footer class="sidebar-footer"><span class="tiny-orbit" aria-hidden="true">✧</span><div><strong>Source → native</strong><span>SwiftUI & Jetpack Compose</span></div><span class="version">v0.1</span></footer>
+    </aside>
+    <main>
+      <section class="intro"><div><p class="eyebrow">ONE SYSTEM. EVERY SURFACE.</p><h1>Explore the native boundary.</h1><p class="intro-copy">Inspect the source, try the web reference, and follow each component into SwiftUI and Compose.</p></div><div class="coverage-stat"><strong id="coverage-count">—</strong><span>components in the<br />source contract</span></div></section>
+      <div class="pipeline" aria-label="Compilation pipeline"><span><i class="step-dot">1</i>AWC source</span><b>→</b><span><i class="step-dot">2</i>Portable contract</span><b>→</b><span><i class="step-dot">3</i>SwiftUI + Compose</span><span class="pipeline-tail" id="pipeline-state">Checking generation…</span></div>
+      <section class="component-heading"><div><div class="component-kicker"><span id="category-label">Actions</span><span class="dot-separator">/</span><code id="tag-label">md-button</code></div><h2 id="component-title">Button</h2><p id="component-description"></p></div><button id="reset" class="secondary-button"><span aria-hidden="true">↺</span> Reset props</button></section>
+      <div class="workspace-grid">
+        <section class="preview-panel" aria-label="Component preview">
+          <div class="preview-toolbar"><div class="platform-tabs" role="tablist" aria-label="Preview target"><button id="platform-web" class="active" role="tab" aria-selected="true" data-platform="web">Web reference</button><button id="platform-ios" role="tab" aria-selected="false" data-platform="ios">iOS <span>SwiftUI</span></button><button id="platform-android" role="tab" aria-selected="false" data-platform="android">Android <span>Compose</span></button></div><span id="preview-runtime" class="runtime-badge">LIVE WEB</span></div>
+          <div id="preview-stage" class="preview-stage"><div id="preview-content"></div></div>
+          <div class="preview-footer"><span id="preview-caption">Original AWC web component · browser rendering</span><span id="recipe-status">Interactive reference</span></div>
+        </section>
+        <aside class="props-panel" aria-label="Component properties"><div class="panel-heading"><h3>Properties</h3><span id="props-count" class="count-badge">0</span></div><p class="props-hint">Changes apply to the web reference.</p><div id="props-controls"></div></aside>
+      </div>
+      <section class="inspector-panel" aria-label="Component inspector">
+        <div class="inspector-toolbar"><div class="inspector-tabs" role="tablist" aria-label="Inspector"><button class="active" data-inspector="contract" role="tab" aria-selected="true">Contract</button><button data-inspector="source" role="tab" aria-selected="false">Generated code</button><button data-inspector="diagnostics" role="tab" aria-selected="false">Portability <span id="findings-count">0</span></button><button data-inspector="events" role="tab" aria-selected="false">Events <span id="event-count">0</span></button></div><button id="copy-source" class="text-button" hidden>Copy source</button></div>
+        <div id="inspector-content"></div>
+      </section>
+      <p class="footnote">Native execution belongs in the platform playgrounds. Browser previews do not establish native behavior, accessibility, or visual parity.</p>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

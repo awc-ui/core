@@ -1,0 +1,1861 @@
+{
+  "tag": "md-bottom-sheet",
+  "className": "MdBottomSheet",
+  "properties": [
+    {
+      "name": "open",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": true,
+      "reflect": true,
+      "attribute": "open",
+      "optional": false,
+      "description": "Whether the sheet is visible"
+    },
+    {
+      "name": "variant",
+      "type": "'standard' | 'detached'",
+      "default": "'standard'",
+      "defaultValue": "standard",
+      "options": [
+        "standard",
+        "detached"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "variant",
+      "optional": false,
+      "description": "`standard` (default) anchors the sheet to the bottom edge.\n`detached` floats it with margin on every side.\nBoth variants always render a scrim and trap focus."
+    },
+    {
+      "name": "headline",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "headline",
+      "optional": false,
+      "description": "Headline text (or use the `headline` slot)"
+    },
+    {
+      "name": "showDragHandle",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "show-drag-handle",
+      "optional": false,
+      "description": "Show the drag handle indicator"
+    },
+    {
+      "name": "closeable",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "closeable",
+      "optional": false,
+      "description": "Show a close icon-button in the top-end corner of the header"
+    },
+    {
+      "name": "scrimDismissible",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "scrim-dismissible",
+      "optional": false,
+      "description": "Whether clicking the scrim closes the sheet"
+    },
+    {
+      "name": "topDivider",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "top-divider",
+      "optional": false,
+      "description": "Show divider between header and content"
+    },
+    {
+      "name": "bottomDivider",
+      "type": "boolean",
+      "default": "false",
+      "defaultValue": false,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "bottom-divider",
+      "optional": false,
+      "description": "Show divider between content and actions"
+    },
+    {
+      "name": "sheetAriaLabel",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "aria-label",
+      "optional": false,
+      "description": "Custom aria-label for the container"
+    },
+    {
+      "name": "scrollShadow",
+      "type": "boolean",
+      "default": "true",
+      "defaultValue": true,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "scroll-shadow",
+      "optional": false,
+      "description": "Retained for API compatibility, but now a no-op: the content area\nalways plain-scrolls when it overflows (no scroll shadow / edge fades).\nSetting this has no visual effect."
+    },
+    {
+      "name": "headlineAlign",
+      "type": "'start' | 'center' | 'end'",
+      "default": "'start'",
+      "defaultValue": "start",
+      "options": [
+        "start",
+        "center",
+        "end"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "headline-align",
+      "optional": false,
+      "description": "Inline-axis alignment of the headline text. `start` (default) reads\nleft in LTR / right in RTL, `end` reads right in LTR / left in RTL,\n`center` is direction-agnostic. Use the matching `::part(headline)`\nselector for finer control (e.g. `text-align: justify`)."
+    },
+    {
+      "name": "contentAlign",
+      "type": "'start' | 'center' | 'end'",
+      "default": "'start'",
+      "defaultValue": "start",
+      "options": [
+        "start",
+        "center",
+        "end"
+      ],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "content-align",
+      "optional": false,
+      "description": "Inline-axis alignment of the slotted content. Inherits to all\ndefault-slot children, so prose, lists, and forms all pick it up.\n`start` (default) reads left in LTR / right in RTL, `end` reads\nright in LTR / left in RTL, `center` is direction-agnostic.\nSlotted children that explicitly set their own `text-align` win."
+    },
+    {
+      "name": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "defaultValue": 0,
+      "options": [],
+      "mutable": false,
+      "reflect": true,
+      "attribute": "density",
+      "optional": false,
+      "description": "Local density rung. Drives the same `--md-sys-density-scale` signal that a\nglobal `data-density` ancestor sets, so a local value simply overrides the\ninherited one. 0 = default, -4 = ultra-compact."
+    }
+  ],
+  "state": [
+    {
+      "name": "hasSlottedClose",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasActions",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "dragging",
+      "type": "inferred",
+      "initializer": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "mdOpen",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdClose",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void",
+      "cancelable": true,
+      "bubbles": true,
+      "composed": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "parameters": [],
+      "returnType": "inferred"
+    },
+    {
+      "name": "close",
+      "parameters": [],
+      "returnType": "inferred"
+    }
+  ],
+  "slots": [
+    {
+      "name": ""
+    },
+    {
+      "name": "headline",
+      "description": "Custom headline content"
+    },
+    {
+      "name": "close",
+      "description": "Custom close element"
+    },
+    {
+      "name": "actions",
+      "description": "Bottom action buttons"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "scrim",
+      "description": "Scrim overlay"
+    },
+    {
+      "name": "container",
+      "description": "Sheet surface"
+    },
+    {
+      "name": "drag-handle",
+      "description": "Drag handle hit area"
+    },
+    {
+      "name": "drag-handle-indicator",
+      "description": "Drag handle visible bar"
+    },
+    {
+      "name": "header",
+      "description": "Header row"
+    },
+    {
+      "name": "headline",
+      "description": "Headline text"
+    },
+    {
+      "name": "close",
+      "description": "Close button wrapper"
+    },
+    {
+      "name": "divider-top",
+      "description": "Divider between header and content"
+    },
+    {
+      "name": "content",
+      "description": "Content area wrapper (inline padding)"
+    },
+    {
+      "name": "divider-bottom",
+      "description": "Divider between content and actions"
+    },
+    {
+      "name": "actions",
+      "description": "Bottom action bar"
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--md-bottom-sheet-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-bottom-sheet-container-shape",
+      "description": "Corner radius (top corners"
+    },
+    {
+      "name": "--md-bottom-sheet-content-color",
+      "description": "Content text color"
+    },
+    {
+      "name": "--md-bottom-sheet-headline-color",
+      "description": "Headline text color"
+    },
+    {
+      "name": "--md-bottom-sheet-scrim-color",
+      "description": "Scrim overlay color"
+    },
+    {
+      "name": "--md-bottom-sheet-drag-handle-color",
+      "description": "Drag handle indicator color"
+    },
+    {
+      "name": "--md-bottom-sheet-divider-color",
+      "description": "Top / bottom divider color"
+    },
+    {
+      "name": "--md-bottom-sheet-icon-color",
+      "description": "Close icon color"
+    },
+    {
+      "name": "--md-bottom-sheet-width",
+      "description": "Inline size (default 100%"
+    },
+    {
+      "name": "--md-bottom-sheet-min-width",
+      "description": "Minimum inline size"
+    },
+    {
+      "name": "--md-bottom-sheet-max-width",
+      "description": "Maximum inline size"
+    },
+    {
+      "name": "--md-bottom-sheet-height",
+      "description": "Block size (default `auto`)"
+    },
+    {
+      "name": "--md-bottom-sheet-min-height",
+      "description": "Minimum block size"
+    },
+    {
+      "name": "--md-bottom-sheet-max-height",
+      "description": "Maximum block size"
+    },
+    {
+      "name": "--md-bottom-sheet-detached-margin",
+      "description": "Margin around the container"
+    },
+    {
+      "name": "--md-bottom-sheet-content-padding-inline"
+    }
+  ],
+  "render": {
+    "kind": "element",
+    "tag": "Host",
+    "attributes": [
+      {
+        "name": "class",
+        "value": "{\n          'md-bottom-sheet': true,\n          [`md-bottom-sheet--${this.variant}`]: true,\n          'md-bottom-sheet--open': this.open,\n          'md-bottom-sheet--no-drag-handle': !this.showDragHandle,\n        }"
+      }
+    ],
+    "children": [
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-bottom-sheet__scrim"
+          },
+          {
+            "name": "part",
+            "value": "scrim"
+          },
+          {
+            "name": "aria-hidden",
+            "value": "true"
+          },
+          {
+            "name": "onClick",
+            "value": "this.handleScrimClick"
+          }
+        ],
+        "children": []
+      },
+      {
+        "kind": "text",
+        "value": ""
+      },
+      {
+        "kind": "element",
+        "tag": "div",
+        "attributes": [
+          {
+            "name": "class",
+            "value": "md-bottom-sheet__container"
+          },
+          {
+            "name": "part",
+            "value": "container"
+          },
+          {
+            "name": "role",
+            "value": "dialog"
+          },
+          {
+            "name": "aria-modal",
+            "value": "true"
+          },
+          {
+            "name": "aria-labelledby",
+            "value": "hasHeadline ? this.headlineId : undefined"
+          },
+          {
+            "name": "aria-label",
+            "value": "this.sheetAriaLabel ||\n            (!hasHeadline ? 'Bottom sheet' : undefined)"
+          },
+          {
+            "name": "aria-hidden",
+            "value": "!this.open ? 'true' : undefined"
+          },
+          {
+            "name": "inert",
+            "value": "!this.open"
+          },
+          {
+            "name": "tabindex",
+            "value": "-1"
+          },
+          {
+            "name": "ref",
+            "value": "(el) => (this.containerEl = el!)"
+          }
+        ],
+        "children": [
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-bottom-sheet__focus-guard"
+              },
+              {
+                "name": "tabindex",
+                "value": "0"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              },
+              {
+                "name": "onFocus",
+                "value": "this.handleEndGuardFocus"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.showDragHandle && (\n            <div\n              class={{\n                'md-bottom-sheet__drag-handle': true,\n                'md-bottom-sheet__drag-handle--dragging': this.dragging,\n              }}\n              part=\"drag-handle\"\n              aria-hidden=\"true\"\n              onPointerDown={this.handleDragStart}\n              onPointerMove={this.handleDragMove}\n              onPointerUp={this.handleDragEnd}\n              onPointerCancel={this.handleDragEnd}\n            >\n              <div\n                class=\"md-bottom-sheet__drag-handle-indicator\"\n                part=\"drag-handle-indicator\"\n              ></div>\n            </div>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "showHeader && (\n            <div class=\"md-bottom-sheet__header\" part=\"header\">\n              {hasHeadline && (\n                <span\n                  id={this.headlineId}\n                  class=\"md-bottom-sheet__headline\"\n                  part=\"headline\"\n                >\n                  <slot name=\"headline\">{this.headline}</slot>\n                </span>\n              )}\n\n              {(this.closeable || this.hasSlottedClose) && (\n                <div class=\"md-bottom-sheet__close\" part=\"close\">\n                  <slot name=\"close\">\n                    <md-icon-button\n                      variant=\"standard\"\n                      icon=\"close\"\n                      aria-label=\"Close bottom sheet\"\n                      onClick={this.handleCloseClick}\n                    ></md-icon-button>\n                  </slot>\n                </div>\n              )}\n            </div>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.topDivider && (\n            <div\n              class=\"md-bottom-sheet__divider\"\n              part=\"divider-top\"\n              aria-hidden=\"true\"\n            ></div>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "div",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-bottom-sheet__content"
+              },
+              {
+                "name": "part",
+                "value": "content"
+              }
+            ],
+            "children": [
+              {
+                "kind": "text",
+                "value": ""
+              },
+              {
+                "kind": "element",
+                "tag": "slot",
+                "attributes": [],
+                "children": []
+              },
+              {
+                "kind": "text",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.hasActions && this.bottomDivider && (\n            <div\n              class=\"md-bottom-sheet__divider md-bottom-sheet__divider--bottom\"\n              part=\"divider-bottom\"\n              aria-hidden=\"true\"\n            ></div>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "expression",
+            "source": "this.hasActions && (\n            <div class=\"md-bottom-sheet__actions\" part=\"actions\">\n              <slot name=\"actions\"></slot>\n            </div>\n          )"
+          },
+          {
+            "kind": "text",
+            "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "span",
+            "attributes": [
+              {
+                "name": "class",
+                "value": "md-bottom-sheet__focus-guard"
+              },
+              {
+                "name": "tabindex",
+                "value": "0"
+              },
+              {
+                "name": "aria-hidden",
+                "value": "true"
+              },
+              {
+                "name": "onFocus",
+                "value": "this.handleStartGuardFocus"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "value": ""
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 156
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 170
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 181
+    },
+    {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Document access requires a native adapter.",
+      "line": 194
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 205
+    },
+    {
+      "code": "DOM_MUTATION",
+      "severity": "warning",
+      "message": "classList depends on browser semantics and requires a native adapter.",
+      "line": 383
+    },
+    {
+      "code": "CANCELABLE_EVENT",
+      "severity": "warning",
+      "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
+      "line": 52
+    }
+  ],
+  "source": {
+    "file": "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.tsx",
+    "styleUrl": "md-bottom-sheet.css",
+    "shadow": true,
+    "formAssociated": false,
+    "sha256": "f1c1e6ef918e9490d407ebe9ae952653cba82d7703e79d0b1843516ab649c788"
+  },
+  "styles": [
+    {
+      "selector": ":host",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--md-bottom-sheet-container-color, var(--md-sys-color-surface-container-low, #F7F2FA))",
+          "important": false
+        },
+        {
+          "property": "--_container-shape",
+          "value": "var(--md-bottom-sheet-container-shape, max(16px, calc(28px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "--_content-color",
+          "value": "var(--md-bottom-sheet-content-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        },
+        {
+          "property": "--_headline-color",
+          "value": "var(--md-bottom-sheet-headline-color, var(--md-sys-color-on-surface, #1C1B1F))",
+          "important": false
+        },
+        {
+          "property": "--_scrim-color",
+          "value": "var(--md-bottom-sheet-scrim-color, rgba(0, 0, 0, 0.32))",
+          "important": false
+        },
+        {
+          "property": "--_drag-handle-color",
+          "value": "var(--md-bottom-sheet-drag-handle-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_divider-color",
+          "value": "var(--md-bottom-sheet-divider-color, var(--md-sys-color-outline-variant, #CAC4D0))",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-bottom-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--_min-width",
+          "value": "var(--md-bottom-sheet-min-width, 0)",
+          "important": false
+        },
+        {
+          "property": "--_max-width",
+          "value": "var(--md-bottom-sheet-max-width, 100%)",
+          "important": false
+        },
+        {
+          "property": "--_width",
+          "value": "var(--md-bottom-sheet-width, 100%)",
+          "important": false
+        },
+        {
+          "property": "--_min-height",
+          "value": "var(--md-bottom-sheet-min-height, 0)",
+          "important": false
+        },
+        {
+          "property": "--_max-height",
+          "value": "var(--md-bottom-sheet-max-height, 80vh)",
+          "important": false
+        },
+        {
+          "property": "--_height",
+          "value": "var(--md-bottom-sheet-height, auto)",
+          "important": false
+        },
+        {
+          "property": "--_detached-margin",
+          "value": "var(--md-bottom-sheet-detached-margin, 16px)",
+          "important": false
+        },
+        {
+          "property": "--_content-padding-inline",
+          "value": "var(--md-bottom-sheet-content-padding-inline, max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "contents",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-body-medium-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-body-medium-letter-spacing, 0.25px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_content-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:not(.md-bottom-sheet--open))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__scrim",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "fixed",
+          "important": false
+        },
+        {
+          "property": "inset",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_scrim-color)",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "var(--md-sys-z-index-popup, 1000)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-bottom-sheet--open) .md-bottom-sheet__scrim",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "fixed",
+          "important": false
+        },
+        {
+          "property": "inset-inline",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "z-index",
+          "value": "var(--md-sys-z-index-dialog-scrim, 1001)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "var(--_width)",
+          "important": false
+        },
+        {
+          "property": "min-inline-size",
+          "value": "var(--_min-width)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "var(--_max-width)",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "var(--_height)",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_min-height)",
+          "important": false
+        },
+        {
+          "property": "max-block-size",
+          "value": "var(--_max-height)",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_container-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_content-color)",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "pointer-events",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(100%)",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "transform var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),\n    opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "padding-block-end",
+          "value": "env(safe-area-inset-bottom, 0px)",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "outline",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-bottom-sheet--open) .md-bottom-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "pointer-events",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateY(0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-bottom-sheet--standard) .md-bottom-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-start-start-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "border-start-end-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "border-end-start-radius",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border-end-end-radius",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-bottom-sheet--detached) .md-bottom-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inset-inline",
+          "value": "var(--_detached-margin)",
+          "important": false
+        },
+        {
+          "property": "inset-block-end",
+          "value": "var(--_detached-margin)",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "var(--_container-shape)",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "var(--md-sys-elevation-3)",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "min(var(--_max-width), calc(100% - calc(var(--_detached-margin) * 2)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (max-width: 639.98px)",
+      "declarations": [
+        {
+          "property": "--_width",
+          "value": "var(--md-bottom-sheet-width, 100%)",
+          "important": false
+        },
+        {
+          "property": "--_max-width",
+          "value": "var(--md-bottom-sheet-max-width, 100%)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host",
+      "context": "@media (min-width: 640px)",
+      "declarations": [
+        {
+          "property": "--_width",
+          "value": "var(--md-bottom-sheet-width, 640px)",
+          "important": false
+        },
+        {
+          "property": "--_max-width",
+          "value": "var(--md-bottom-sheet-max-width, calc(100% - 112px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__drag-handle",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "justify-content",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "max(12px, calc(22px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "grab",
+          "important": false
+        },
+        {
+          "property": "touch-action",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "user-select",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__drag-handle--dragging",
+      "context": null,
+      "declarations": [
+        {
+          "property": "cursor",
+          "value": "grabbing",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__drag-handle-indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "max(3px, calc(4px + var(--md-sys-density-scale, 0) * 0.25px))",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "2px",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_drag-handle-color)",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "0.4",
+          "important": false
+        },
+        {
+          "property": "transition",
+          "value": "opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, ease)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__drag-handle:hover .md-bottom-sheet__drag-handle-indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0.6",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__drag-handle--dragging .md-bottom-sheet__drag-handle-indicator",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0.8",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-bottom-sheet--no-drag-handle) .md-bottom-sheet__container",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding-block-start",
+          "value": "max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__header",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "0 max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__headline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-headline-small-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-headline-small-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-headline-small-letter-spacing, 0)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_headline-color)",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "text-overflow",
+          "value": "ellipsis",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([headline-align='center']) .md-bottom-sheet__headline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([headline-align='end']) .md-bottom-sheet__headline",
+      "context": null,
+      "declarations": [
+        {
+          "property": "text-align",
+          "value": "end",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__close",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin-inline-start",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "margin-inline-end",
+          "value": "calc(-12px - var(--md-sys-density-scale, 0) * 1px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__close md-icon-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--_icon-color)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-size",
+          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__divider",
+      "context": null,
+      "declarations": [
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "background-color",
+          "value": "var(--_divider-color)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__divider--bottom",
+      "context": null,
+      "declarations": [
+        {
+          "property": "margin-block-start",
+          "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex",
+          "value": "1 1 auto",
+          "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "inherit",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_content-color)",
+          "important": false
+        },
+        {
+          "property": "text-align",
+          "value": "start",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([content-align='center']) .md-bottom-sheet__content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "text-align",
+          "value": "center",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([content-align='end']) .md-bottom-sheet__content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "text-align",
+          "value": "end",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__content",
+      "context": null,
+      "declarations": [
+        {
+          "property": "overflow-y",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--_content-padding-inline)",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--md-sys-spacing-inset-sm, 8px) var(--md-sys-spacing-inset-lg, 16px)",
+          "important": false
+        },
+        {
+          "property": "scrollbar-width",
+          "value": "thin",
+          "important": false
+        },
+        {
+          "property": "scrollbar-color",
+          "value": "var(--md-sys-color-outline-variant, #CAC4D0) transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__content::-webkit-scrollbar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "inline-size",
+          "value": "4px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__content::-webkit-scrollbar-thumb",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "var(--md-sys-color-outline-variant, #CAC4D0)",
+          "important": false
+        },
+        {
+          "property": "border-radius",
+          "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__content::-webkit-scrollbar-track",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "transparent",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__actions",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--md-sys-spacing-gap-sm, 8px)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "var(--md-sys-spacing-inset-xl, 24px)",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--md-sys-spacing-inset-lg, 16px) var(--md-sys-spacing-inset-xl, 24px)",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot=\"actions\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__focus-guard",
+      "context": null,
+      "declarations": [
+        {
+          "property": "position",
+          "value": "fixed",
+          "important": false
+        },
+        {
+          "property": "overflow",
+          "value": "hidden",
+          "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "inset(50%)",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "1px",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "border",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "margin",
+          "value": "-1px",
+          "important": false
+        },
+        {
+          "property": "white-space",
+          "value": "nowrap",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__container:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "outline",
+          "value": "3px solid var(--md-sys-color-secondary, #625B71)",
+          "important": false
+        },
+        {
+          "property": "outline-offset",
+          "value": "-3px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__container,\n  .md-bottom-sheet__scrim",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__container",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "border",
+          "value": "1px solid CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__divider",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "CanvasText",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-bottom-sheet__drag-handle-indicator",
+      "context": "@media (forced-colors: active)",
+      "declarations": [
+        {
+          "property": "background-color",
+          "value": "CanvasText",
+          "important": false
+        },
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-1'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-1",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-2'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-2",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-3'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-3",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([density='-4'])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-sys-density-scale",
+          "value": "-4",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([hidden])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "none",
+          "important": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "lowering": {
+    "strategy": "explicit-native-adapter",
+    "arbitraryTypeScriptTranslated": false,
+    "arbitraryCSSTranslated": false
+  },
+  "name": "Bottom Sheet",
+  "category": "Containment",
+  "parent": null,
+  "description": "Supplementary content anchored to the bottom of the screen. Slides up over the page with a drag handle, an optional headline and close button, and an optional actions row. Both variants are modal: they render a scrim, trap focus, lock body scroll and close on Escape.",
+  "swiftPath": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+  "kotlinPath": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+  "irPath": "packages/native-compiler/generated/ir/md-bottom-sheet.json",
+  "sources": {
+    "stencil": "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.tsx",
+    "css": "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.css",
+    "swift": "packages/native-ios/Sources/AWCUI/Generated/Components.swift",
+    "kotlin": "packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt",
+    "swiftImplementation": "packages/native-ios/Sources/AWCUI/AWCNativeView.swift",
+    "kotlinImplementation": "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt"
+  },
+  "support": {
+    "ios": {
+      "status": "adapter-implemented",
+      "properties": [
+        "open",
+        "headline",
+        "showDragHandle",
+        "closeable",
+        "scrimDismissible",
+        "topDivider",
+        "bottomDivider"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose",
+        "mdCancel"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "headline",
+        "actions"
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "sheetAriaLabel",
+        "scrollShadow",
+        "headlineAlign",
+        "contentAlign",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "close"
+      ],
+      "unsupportedSlots": [
+        "close"
+      ],
+      "notes": [
+        "System sheet detents replace detached/standard CSS layouts."
+      ],
+      "verification": "not-device-verified"
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "bottomDivider",
+        "closeable",
+        "headline",
+        "open",
+        "scrimDismissible",
+        "showDragHandle",
+        "topDivider"
+      ],
+      "events": [
+        "mdCancel",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "actions"
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "sheetAriaLabel",
+        "scrollShadow",
+        "headlineAlign",
+        "contentAlign",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "close"
+      ],
+      "unsupportedSlots": [
+        "headline",
+        "close"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ],
+      "verification": "not-device-verified"
+    }
+  }
+}

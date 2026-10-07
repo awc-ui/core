@@ -1,0 +1,3230 @@
+{
+  "platform": "ios",
+  "schemaVersion": 1,
+  "renderer": "SwiftUI + Canvas; no WebView",
+  "verification": {
+    "swiftLibrary": "macOS SwiftUI compile and link passed; iOS SDK not available in current environment",
+    "playground": "macOS native executable compiled; iOS Xcode project syntax validated",
+    "behaviorParity": "partial: see per-component unsupported properties, events, methods and slots",
+    "offscreenSnapshots": "162 native NSHostingView PNGs rendered. This does not verify iOS device rendering or interactions."
+  },
+  "globalNotes": [
+    "Source AST generates typed properties and component wrappers; these hand-authored native adapters implement portable behavior. This is not arbitrary TSX/CSS machine translation.",
+    "No JavaScript functions, DOM selectors, CSS cascade/parts, nativeEvent objects or imperative HTMLElement methods are executed. Control components using property updates and consume serializable events.",
+    "AWCGeneratedTokens.light/dark supply native primary, secondary, tertiary, error, surface, onPrimary and onSurface colors.",
+    "Material glyphs map to common SF Symbols. Native platform text/gesture/focus behavior applies.",
+    "Method API is not implemented: all components use declarative property updates."
+  ],
+  "components": {
+    "md-button": {
+      "status": "native-adapter",
+      "properties": [
+        "variant",
+        "size",
+        "shape",
+        "loading",
+        "icon",
+        "trailingIcon",
+        "href",
+        "toggle",
+        "selected",
+        "fullWidth",
+        "value",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdClick",
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "leading-icon",
+        "trailing-icon",
+        "loader"
+      ],
+      "unsupportedProperties": [
+        "type",
+        "ripple",
+        "target",
+        "shapeMorph",
+        "mirrorIcon",
+        "suppressExpandIconFlip",
+        "connectedLeft",
+        "connectedRight",
+        "groupTabindex",
+        "roleOverride",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native links use openURL. HTML submit/reset, target, cancelable DOM events, ripple shape morph, focus delegation and connected corner geometry are not reproduced.",
+        "mdClick includes value, toggle, selected, href and target; mdChange includes selected and value. originalEvent is omitted."
+      ]
+    },
+    "md-icon-button": {
+      "status": "native-adapter",
+      "properties": [
+        "variant",
+        "size",
+        "shape",
+        "toggle",
+        "selected",
+        "icon",
+        "selectedIcon",
+        "href",
+        "value",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "buttonWidth",
+        "shapeMorph",
+        "ripple",
+        "target",
+        "connectedLeft",
+        "connectedRight",
+        "groupTabindex",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "",
+        "selected"
+      ],
+      "notes": [
+        "Icons map Material names to SF Symbols; raw SF Symbol names are accepted. Arbitrary Material glyph coverage is not guaranteed."
+      ]
+    },
+    "md-fab": {
+      "status": "native-adapter",
+      "properties": [
+        "variant",
+        "size",
+        "icon",
+        "label",
+        "extended",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "lowered",
+        "ripple",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "setMenuIcon"
+      ],
+      "unsupportedSlots": [
+        "icon"
+      ],
+      "notes": []
+    },
+    "md-fab-menu-item": {
+      "status": "native-adapter",
+      "properties": [
+        "icon",
+        "label",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "rovingFocusVisible",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "icon"
+      ],
+      "notes": []
+    },
+    "md-split-button": {
+      "status": "native-adapter",
+      "properties": [
+        "icon",
+        "label",
+        "trailingIcon",
+        "trailingChecked",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdLeadingClick",
+        "mdTrailingClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "variant",
+        "size",
+        "menuLabel",
+        "haspopup",
+        "controls",
+        "fullWidth",
+        "ripple",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        ""
+      ],
+      "notes": []
+    },
+    "md-segmented-button": {
+      "status": "native-adapter",
+      "properties": [
+        "value",
+        "selected",
+        "icon",
+        "label",
+        "noCheckmark",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdSegmentClick"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "icon"
+      ],
+      "unsupportedProperties": [
+        "ripple",
+        "segmentIndex",
+        "segmentTotal",
+        "segmentDensity",
+        "segmentMultiselect",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-segmented-button-set": {
+      "status": "native-adapter",
+      "properties": [
+        "multiselect"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Coordinates selected children."
+      ]
+    },
+    "md-button-group": {
+      "status": "native-adapter",
+      "properties": [
+        "variant",
+        "selectionMode",
+        "required",
+        "fullWidth"
+      ],
+      "events": [
+        "mdSelectionChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "size",
+        "shape",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Coordinates selected child indices and values. Native selection payload omits DOM button references.",
+        "mdSelectionChange includes values, added and removed; originalEvent is omitted."
+      ]
+    },
+    "md-checkbox": {
+      "status": "native-adapter",
+      "properties": [
+        "checked",
+        "indeterminate",
+        "required",
+        "value",
+        "error",
+        "errorText",
+        "supportingText",
+        "valueMissingLabel",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdChange",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "name",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-radio": {
+      "status": "native-adapter",
+      "properties": [
+        "checked",
+        "required",
+        "value",
+        "valueMissingLabel",
+        "disabled",
+        "softDisabled",
+        "name"
+      ],
+      "events": [
+        "mdChange",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdFocus",
+        "mdBlur"
+      ],
+      "unsupportedMethods": [
+        "syncValidityFromGroup",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity",
+        "setFocus",
+        "setBlur",
+        "select"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native name groups share selected values within a nested tree or an explicit AWCNativeScope. The host can also update checked declaratively."
+      ]
+    },
+    "md-switch": {
+      "status": "native-adapter",
+      "properties": [
+        "selected",
+        "required",
+        "valueMissingLabel",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [
+        "selected-icon",
+        "unselected-icon"
+      ],
+      "unsupportedProperties": [
+        "name",
+        "value",
+        "icons",
+        "showOnlySelectedIcon",
+        "selectedIcon",
+        "unselectedIcon",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "setFocus",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-chip": {
+      "status": "native-adapter",
+      "properties": [
+        "variant",
+        "icon",
+        "trailingIcon",
+        "selected",
+        "selectable",
+        "removable",
+        "label",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdClick",
+        "mdSelect",
+        "mdRemove"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "leading-icon",
+        "trailing-icon"
+      ],
+      "unsupportedProperties": [
+        "appearance",
+        "color",
+        "elevated",
+        "contentAlign",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-text-field": {
+      "status": "native-adapter",
+      "properties": [
+        "label",
+        "value",
+        "placeholder",
+        "type",
+        "readOnly",
+        "required",
+        "error",
+        "errorText",
+        "supportingText",
+        "prefixText",
+        "suffixText",
+        "maxLength",
+        "clearable",
+        "passwordToggle",
+        "showPasswordLabel",
+        "hidePasswordLabel",
+        "multiline",
+        "rows",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdSearch",
+        "mdClear",
+        "mdPasswordToggle",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [
+        "leading-icon",
+        "trailing-icon"
+      ],
+      "unsupportedProperties": [
+        "reserveSupportingSpace",
+        "variant",
+        "name",
+        "pattern",
+        "minLength",
+        "min",
+        "max",
+        "step",
+        "autocomplete",
+        "inputMode",
+        "enterKeyHint",
+        "autoCapitalize",
+        "spellcheck",
+        "density",
+        "speechToText",
+        "speechLang",
+        "restrict",
+        "formatter",
+        "parser",
+        "formatOn",
+        "focusBorderWidth",
+        "appearFocused",
+        "chipsWrap",
+        "debounce",
+        "throttle",
+        "inputRole",
+        "inputExpanded",
+        "inputAriaAutocomplete"
+      ],
+      "unsupportedEvents": [
+        "mdSpeechResult"
+      ],
+      "unsupportedMethods": [
+        "setFocus",
+        "select",
+        "getInputElement",
+        "getValidity",
+        "setCustomValidity",
+        "checkValidity",
+        "reportValidity"
+      ],
+      "unsupportedSlots": [
+        "chips",
+        "clear-icon",
+        "password-toggle-icon",
+        "speech-icon",
+        "error-icon"
+      ],
+      "notes": [
+        "Native keyboard input and secure entry. Change commits on submit; HTML validity flags beyond required, JS formatter/parser/restrict and speech recognition remain unsupported.",
+        "clearable/passwordToggle external modes emit intent without mutating native state; internal and boolean true modes perform the change."
+      ]
+    },
+    "md-number-field": {
+      "status": "native-adapter",
+      "properties": [
+        "label",
+        "placeholder",
+        "supportingText",
+        "error",
+        "errorText",
+        "readOnly",
+        "required",
+        "value",
+        "min",
+        "max",
+        "step",
+        "steppers",
+        "incrementLabel",
+        "decrementLabel",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "variant",
+        "name",
+        "density",
+        "locale",
+        "formatOptions",
+        "smallStep",
+        "largeStep",
+        "snapOnStep",
+        "allowOutOfRange",
+        "allowWheelScrub",
+        "valueMissingLabel",
+        "reserveSupportingSpace"
+      ],
+      "unsupportedEvents": [
+        "mdValidityChange"
+      ],
+      "unsupportedMethods": [
+        "setFocus",
+        "select",
+        "stepUp",
+        "stepDown",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native text entry uses decimal dot. Bounds constrain steppers; locale formatting and arbitrary typed out-of-range normalization are not implemented."
+      ]
+    },
+    "md-otp-field": {
+      "status": "native-adapter",
+      "properties": [
+        "length",
+        "value",
+        "validationType",
+        "transform",
+        "mask",
+        "readOnly",
+        "required",
+        "error",
+        "errorText",
+        "supportingText",
+        "label",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdComplete",
+        "mdInvalidInput",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "autoSubmit",
+        "groupSize",
+        "inputMode",
+        "name",
+        "cellLabelTemplate",
+        "valueMissingLabel",
+        "incompleteLabel",
+        "density",
+        "reserveSupportingSpace"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "setFocus",
+        "clear",
+        "getValidity",
+        "setCustomValidity",
+        "checkValidity",
+        "reportValidity"
+      ],
+      "unsupportedSlots": [
+        "separator"
+      ],
+      "notes": [
+        "Single native one-time-code input with visual cells, sanitation, paste handling and completion. Per-cell focus and autoSubmit differ from web."
+      ]
+    },
+    "md-slider": {
+      "status": "native-adapter",
+      "properties": [
+        "min",
+        "max",
+        "value",
+        "step",
+        "range",
+        "valueStart",
+        "valueEnd",
+        "labeled",
+        "valueIndicator",
+        "icon",
+        "sliderAriaLabel",
+        "ariaLabelStart",
+        "ariaLabelEnd",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdDragStart",
+        "mdDragEnd"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "name",
+        "nameStart",
+        "nameEnd",
+        "variant",
+        "stops",
+        "size",
+        "orientation",
+        "fullHeight",
+        "insetIcon",
+        "valueText",
+        "valueStartText",
+        "valueEndText",
+        "controlled",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdFocus",
+        "mdBlur"
+      ],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "inset-icon"
+      ],
+      "notes": [
+        "Range uses two accessible native sliders. Vertical layout, centered track, tick marks and DOM thumb metadata are not implemented.",
+        "Range value events retain source value plus valueStart/valueEnd. Drag events include value fields and thumb single/start/end."
+      ]
+    },
+    "md-rating": {
+      "status": "native-adapter",
+      "properties": [
+        "value",
+        "defaultValue",
+        "max",
+        "precision",
+        "size",
+        "readonly",
+        "icon",
+        "emptyIcon",
+        "showValueLabel",
+        "ratingLabel",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "outlineEmpty",
+        "getLabel",
+        "name",
+        "hover",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdHover"
+      ],
+      "unsupportedMethods": [
+        "focusRating"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Tap an already full star to choose its half value when precision is 0.5. Native hover preview is not implemented."
+      ]
+    },
+    "md-select": {
+      "status": "native-adapter",
+      "properties": [
+        "label",
+        "placeholder",
+        "value",
+        "required",
+        "error",
+        "errorText",
+        "supportingText",
+        "clearable",
+        "options",
+        "filterable",
+        "searchPlaceholder",
+        "noResultsText",
+        "noOptionsText",
+        "clearLabel",
+        "loadingText",
+        "loading",
+        "open",
+        "dropdownIcon",
+        "valueMissingLabel",
+        "disabled"
+      ],
+      "events": [
+        "mdChange",
+        "mdOpen",
+        "mdClose",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "reserveSupportingSpace",
+        "variant",
+        "density",
+        "matchTriggerWidth",
+        "placement",
+        "maxHeight",
+        "virtualize",
+        "filterMode",
+        "rowHeight",
+        "name",
+        "filterLabel",
+        "searchingLabel",
+        "clearIcon",
+        "fullWidth"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "close",
+        "focusTrigger",
+        "reset",
+        "loadOptions",
+        "setQuery",
+        "getLabels",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [
+        "",
+        "loader",
+        "dropdown-icon"
+      ],
+      "notes": [
+        "Native searchable sheet replaces anchored web listbox. Default-slot select-option children are parsed as option data."
+      ]
+    },
+    "md-multi-select": {
+      "status": "native-adapter",
+      "properties": [
+        "label",
+        "placeholder",
+        "supportingText",
+        "error",
+        "errorText",
+        "required",
+        "options",
+        "value",
+        "maxSelected",
+        "showSelectAll",
+        "selectAllLabel",
+        "displayMode",
+        "searchPlaceholder",
+        "noResultsText",
+        "noOptionsText",
+        "loadingText",
+        "loading",
+        "clearable",
+        "clearLabel",
+        "dropdownIcon",
+        "open",
+        "valueMissingLabel",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdChange",
+        "mdOpen",
+        "mdClose",
+        "mdRemove",
+        "mdClear",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "reserveSupportingSpace",
+        "variant",
+        "density",
+        "virtualize",
+        "filterable",
+        "filterMode",
+        "rowHeight",
+        "placement",
+        "maxHeight",
+        "matchTriggerWidth",
+        "chipOverflow",
+        "chipPosition",
+        "trigger",
+        "triggerIcon",
+        "triggerLabel",
+        "countFormatter",
+        "filterLabel",
+        "searchingLabel",
+        "clearIcon",
+        "name"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "close",
+        "focusTrigger",
+        "reset",
+        "loadOptions",
+        "setQuery",
+        "getLabels",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [
+        "",
+        "trigger",
+        "trigger-leading",
+        "trigger-trailing",
+        "loader",
+        "dropdown-icon",
+        "menu-header",
+        "menu-loader"
+      ],
+      "notes": [
+        "Selection supports chips, remove, clear, disabled options and maximum count; count/text layout and anchor placement differ."
+      ]
+    },
+    "md-autocomplete": {
+      "status": "native-adapter",
+      "properties": [
+        "label",
+        "placeholder",
+        "supportingText",
+        "error",
+        "errorText",
+        "required",
+        "options",
+        "multiple",
+        "value",
+        "inputValue",
+        "freeSolo",
+        "maxSelected",
+        "loading",
+        "noOptionsText",
+        "noResultsText",
+        "loadingText",
+        "disableCloseOnSelect",
+        "clearable",
+        "dropdownIcon",
+        "limitResults",
+        "open",
+        "valueMissingLabel",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdChange",
+        "mdInput",
+        "mdOpen",
+        "mdClose",
+        "mdClear",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "reserveSupportingSpace",
+        "variant",
+        "density",
+        "chipPosition",
+        "statusTemplate",
+        "clearOnBlur",
+        "clearIcon",
+        "filterer",
+        "virtualize",
+        "filterMode",
+        "rowHeight",
+        "placement",
+        "matchTriggerWidth",
+        "maxHeight",
+        "name"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "focusInput",
+        "showMenu",
+        "closeMenu",
+        "loadOptions",
+        "getLabels",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [
+        "loader",
+        "dropdown-icon"
+      ],
+      "notes": [
+        "Native searchable sheet, free-form submit and multiple selection. Custom JS filtering and virtualization not executed."
+      ]
+    },
+    "md-select-option": {
+      "status": "native-adapter",
+      "properties": [
+        "value",
+        "label",
+        "selected",
+        "icon",
+        "supportingText",
+        "disabled"
+      ],
+      "events": [
+        "mdSelectOptionChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "iconColor"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-date-picker": {
+      "status": "native-adapter",
+      "properties": [
+        "value",
+        "label",
+        "min",
+        "max",
+        "open",
+        "required",
+        "clearable",
+        "clearLabel",
+        "error",
+        "errorText",
+        "supportingText",
+        "headline",
+        "cancelLabel",
+        "okLabel",
+        "commitOnSelect",
+        "valueMissingLabel",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdSelected",
+        "mdChange",
+        "mdOpen",
+        "mdClose",
+        "mdCancel",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "reserveSupportingSpace",
+        "variant",
+        "placeholder",
+        "locale",
+        "dateSeparator",
+        "fieldVariant",
+        "firstDayOfWeek",
+        "selectDateLabel",
+        "enterDatesLabel",
+        "invalidDateLabel",
+        "previousMonthLabel",
+        "nextMonthLabel",
+        "previousYearLabel",
+        "nextYearLabel",
+        "chooseMonthLabel",
+        "chooseYearLabel",
+        "chooseMonthYearLabel",
+        "chooseMonthAndYearLabel",
+        "toggleCalendarLabel",
+        "toggleTextLabel",
+        "openCalendarLabel",
+        "closeCalendarLabel",
+        "calendarIcon",
+        "yearGridLabel",
+        "scrimDismissible",
+        "outsideClickDismissible",
+        "name",
+        "isDateDisabled",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdViewChange",
+        "mdMenuOpen",
+        "mdMenuSelect",
+        "mdModeChange"
+      ],
+      "unsupportedMethods": [
+        "show",
+        "close",
+        "clear",
+        "focusInput",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "unsupportedSlots": [
+        "leading-icon",
+        "calendar-icon",
+        "header",
+        "actions"
+      ],
+      "notes": [
+        "System DatePicker replaces Material calendar and its month/year menus. Date objects serialize to ISO strings. Bounds are supported; predicate callbacks are not."
+      ]
+    },
+    "md-time-picker": {
+      "status": "native-adapter",
+      "properties": [
+        "value",
+        "min",
+        "max",
+        "required",
+        "label",
+        "supportingText",
+        "error",
+        "errorText",
+        "headline",
+        "open",
+        "cancelLabel",
+        "okLabel",
+        "hideTrigger",
+        "valueMissingLabel",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdOpen",
+        "mdClose",
+        "mdCancel",
+        "mdValidityChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "variant",
+        "format",
+        "name",
+        "reserveSupportingSpace",
+        "headlineInputLabel",
+        "headlineDialLabel",
+        "rangeUnderflowLabel",
+        "rangeOverflowLabel",
+        "rangeOutsideLabel",
+        "minuteStep",
+        "amLabel",
+        "pmLabel",
+        "hourLabel",
+        "minuteLabel",
+        "toggleDialLabel",
+        "toggleInputLabel",
+        "periodLabel",
+        "periodLayout",
+        "orientation",
+        "responsive",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdModeChange"
+      ],
+      "unsupportedMethods": [
+        "show",
+        "hide",
+        "checkValidity",
+        "reportValidity",
+        "getValidity"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "System DatePicker replaces dial/input variants. Event dates serialize to ISO strings. MinuteStep/12-hour labels and overnight bounds are not supported."
+      ]
+    },
+    "md-color-picker": {
+      "status": "native-adapter",
+      "properties": [
+        "value",
+        "alpha",
+        "showHex",
+        "presets",
+        "ariaLabelProp",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "locale",
+        "variant",
+        "format",
+        "showInputs",
+        "open",
+        "dismissOnOutsideClick",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdOpenChange"
+      ],
+      "unsupportedMethods": [
+        "show",
+        "close"
+      ],
+      "unsupportedSlots": [
+        "trigger"
+      ],
+      "notes": [
+        "System ColorPicker. Serializes RGB as hex; alpha can be picked but alpha serialization, alternate formats and programmatic open remain unsupported."
+      ]
+    },
+    "md-divider": {
+      "status": "native-adapter",
+      "properties": [
+        "inset",
+        "insetStart",
+        "insetEnd",
+        "vertical"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-avatar": {
+      "status": "native-adapter",
+      "properties": [
+        "src",
+        "alt",
+        "name",
+        "initials",
+        "size",
+        "shape",
+        "label"
+      ],
+      "events": [
+        "mdLoad",
+        "mdError"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "colorFromName",
+        "loading",
+        "crossorigin",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        ""
+      ],
+      "notes": [
+        "AsyncImage loads remote images. Native image cache/loading replaces browser loading/crossorigin."
+      ]
+    },
+    "md-badge": {
+      "status": "native-adapter",
+      "properties": [
+        "variant",
+        "value",
+        "max",
+        "icon",
+        "shape"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "icon"
+      ],
+      "notes": []
+    },
+    "md-status-dot": {
+      "status": "native-adapter",
+      "properties": [
+        "state",
+        "shape",
+        "label"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "size",
+        "inline",
+        "live",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native semantic color dot; flashing live indicator not implemented."
+      ]
+    },
+    "md-skeleton": {
+      "status": "native-adapter",
+      "properties": [
+        "variant",
+        "lines",
+        "width",
+        "height",
+        "ariaLabelProp"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "animation",
+        "fullWidth",
+        "fullHeight",
+        "announce",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Static native skeleton; CSS percentage dimensions and pulse/wave animation are not implemented."
+      ]
+    },
+    "md-progress-indicator": {
+      "status": "native-adapter",
+      "properties": [
+        "variant",
+        "value",
+        "max",
+        "indeterminate",
+        "thickness",
+        "size",
+        "label",
+        "complete"
+      ],
+      "events": [
+        "mdComplete"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "wave",
+        "waveAmplitude",
+        "waveLength",
+        "waveSpeed",
+        "fourColor",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Uses native determinate/indeterminate progress. Expressive wave/four-color animations not implemented."
+      ]
+    },
+    "md-meter": {
+      "status": "native-adapter",
+      "properties": [
+        "value",
+        "min",
+        "max",
+        "label",
+        "showLabel",
+        "showValue",
+        "valueText",
+        "variant",
+        "size",
+        "thickness"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "locale",
+        "formatOptions",
+        "color",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-loading-indicator": {
+      "status": "native-adapter",
+      "properties": [
+        "label"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "variant",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-ripple": {
+      "status": "native-adapter",
+      "properties": [
+        "disabled"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "whenSettled",
+        "trigger"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native pressed state feedback, not CSS radial ripple geometry."
+      ]
+    },
+    "md-card": {
+      "status": "native-adapter",
+      "properties": [
+        "variant",
+        "interactive",
+        "fullWidth",
+        "density",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "dragEnabled",
+        "ripple",
+        "fullHeight"
+      ],
+      "unsupportedEvents": [
+        "mdDragStart",
+        "mdDragMove",
+        "mdDragEnd"
+      ],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native rounded surface; DOM MutationObserver role inference and draggable positioning are not implemented."
+      ]
+    },
+    "md-accordion-item": {
+      "status": "native-adapter",
+      "properties": [
+        "headline",
+        "supportingText",
+        "icon",
+        "expanded",
+        "collapsible",
+        "density",
+        "disabled"
+      ],
+      "events": [
+        "mdItemToggle"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "leading-icon",
+        "headline",
+        "trailing-icon"
+      ],
+      "unsupportedProperties": [
+        "headingLevel",
+        "regionRole",
+        "contentMaxHeight"
+      ],
+      "unsupportedEvents": [
+        "mdItemRequestFocus",
+        "mdItemRequestReorder"
+      ],
+      "unsupportedMethods": [
+        "toggle",
+        "focusHeader"
+      ],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-accordion": {
+      "status": "native-adapter",
+      "properties": [
+        "exclusive",
+        "keepOneExpanded",
+        "defaultExpanded",
+        "density"
+      ],
+      "events": [
+        "mdToggle"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "elevation",
+        "reorderable",
+        "floating",
+        "initialX",
+        "initialY",
+        "bringToFront",
+        "headingLevel",
+        "region",
+        "regionThreshold",
+        "transition"
+      ],
+      "unsupportedEvents": [
+        "mdReorder",
+        "mdDragStart",
+        "mdDragMove",
+        "mdDragEnd"
+      ],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Coordinates child expansion, exclusive mode and keep-one-open. Dragging/reorder/floating/window positioning not implemented."
+      ]
+    },
+    "md-list-item": {
+      "status": "native-adapter",
+      "properties": [
+        "headline",
+        "overline",
+        "supportingText",
+        "trailingSupportingText",
+        "leadingIcon",
+        "trailingIcon",
+        "leadingAvatar",
+        "leadingAvatarAlt",
+        "leadingAvatarName",
+        "href",
+        "selected",
+        "expandable",
+        "expanded",
+        "selectionMode",
+        "disabled",
+        "softDisabled",
+        "type"
+      ],
+      "events": [
+        "mdClick",
+        "mdItemClick",
+        "mdItemSelect",
+        "mdExpand"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "leading",
+        "overline",
+        "headline",
+        "supporting-text",
+        "trailing",
+        "trailing-supporting-text",
+        "expanded-content"
+      ],
+      "unsupportedProperties": [
+        "leadingAvatarLabel",
+        "leadingImage",
+        "leadingImageAlt",
+        "lines",
+        "target",
+        "tabbable",
+        "rovingFocusVisible",
+        "interactionMode",
+        "containerRole",
+        "reorderable",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdRequestActivation",
+        "mdItemRequestReorder"
+      ],
+      "unsupportedMethods": [
+        "setFocus",
+        "focusItem",
+        "toggle",
+        "expand",
+        "collapse"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Event item DOM references become stable native node IDs. Nested focus and keyboard reorder are not implemented."
+      ]
+    },
+    "md-list": {
+      "status": "native-adapter",
+      "properties": [
+        "listStyle",
+        "selectionMode",
+        "label"
+      ],
+      "events": [
+        "mdSelect",
+        "mdActivate"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "interactionMode",
+        "reorderable",
+        "labelledby",
+        "roleOverride",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdReorder"
+      ],
+      "unsupportedMethods": [
+        "activateNext",
+        "activatePrevious",
+        "selectItem",
+        "getSelectedIndices"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Coordinates native child selection. DOM references in events become native node IDs."
+      ]
+    },
+    "md-app-bar": {
+      "status": "native-adapter",
+      "properties": [
+        "variant",
+        "titleAlignment",
+        "searchPlaceholder",
+        "searchValue",
+        "searchDisabled",
+        "headline",
+        "subtitle",
+        "leadingIcon",
+        "leadingIconLabel"
+      ],
+      "events": [
+        "mdLeadingClick",
+        "mdSearchActivate",
+        "mdSearchInput"
+      ],
+      "methods": [],
+      "slots": [
+        "headline",
+        "subtitle",
+        "search",
+        "search-trailing",
+        "leading",
+        "trailing"
+      ],
+      "unsupportedProperties": [
+        "searchAriaLabel",
+        "scrolled",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-toolbar": {
+      "status": "native-adapter",
+      "properties": [
+        "variant",
+        "layout",
+        "ariaLabelProp"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        "",
+        "leading",
+        "trailing",
+        "fab"
+      ],
+      "unsupportedProperties": [
+        "color",
+        "alignment",
+        "containerSemantics",
+        "ariaLabelledby",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "setFocus"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Preserves authored child order and native horizontal/vertical layout."
+      ]
+    },
+    "md-navigation-bar": {
+      "status": "native-adapter",
+      "properties": [
+        "activeIndex"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "labelBehavior",
+        "manualActivation",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "select",
+        "focusTab"
+      ],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-navigation-rail": {
+      "status": "native-adapter",
+      "properties": [
+        "activeIndex",
+        "orientation",
+        "expandable",
+        "toggleLabel"
+      ],
+      "events": [
+        "mdTabChange",
+        "mdExpand",
+        "mdCollapse"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "logo",
+        "logo-expanded",
+        "header",
+        "fab",
+        "footer-leading",
+        "footer-content",
+        "footer"
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "modal",
+        "fullHeight",
+        "alignment",
+        "labelVisibility",
+        "label",
+        "disableFocusManagement",
+        "density",
+        "maxVisible",
+        "overflowLabel",
+        "overflowIcon"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "expand",
+        "collapse",
+        "toggle",
+        "focusTab"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native rail expansion event supplied, but responsive maxVisible/overflow/modal positioning are not implemented."
+      ]
+    },
+    "md-tabs": {
+      "status": "native-adapter",
+      "properties": [
+        "activeTabIndex"
+      ],
+      "events": [
+        "mdTabChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "divider",
+        "ariaLabelProp",
+        "tabWidth",
+        "width"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "selectTab"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Updates linked md-tab-panels within the same native tree or AWCNativeScope using native node IDs."
+      ]
+    },
+    "md-navigation-tab": {
+      "status": "native-adapter",
+      "properties": [
+        "active",
+        "label",
+        "icon",
+        "activeIcon",
+        "badge",
+        "badgeValue",
+        "href",
+        "disabled",
+        "softDisabled"
+      ],
+      "events": [
+        "mdTabClick"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "active-icon",
+        "icon"
+      ],
+      "unsupportedProperties": [
+        "badgeMax",
+        "target",
+        "labelBehavior",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "focusEl"
+      ],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-navigation-rail-tab": {
+      "status": "native-adapter",
+      "properties": [
+        "active",
+        "icon",
+        "label",
+        "badge",
+        "badgeValue",
+        "href",
+        "value",
+        "labelVisibility",
+        "disabled"
+      ],
+      "events": [
+        "mdTabClick"
+      ],
+      "methods": [],
+      "slots": [
+        "icon"
+      ],
+      "unsupportedProperties": [
+        "target",
+        "expanded",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdSubmenuToggle"
+      ],
+      "unsupportedMethods": [
+        "clearSubmenuSelection"
+      ],
+      "unsupportedSlots": [
+        "submenu"
+      ],
+      "notes": [
+        "Submenu expansion not implemented."
+      ]
+    },
+    "md-tab": {
+      "status": "native-adapter",
+      "properties": [
+        "label",
+        "icon",
+        "active",
+        "badge",
+        "disabled"
+      ],
+      "events": [
+        "mdTabClick"
+      ],
+      "methods": [],
+      "slots": [
+        "icon",
+        "badge"
+      ],
+      "unsupportedProperties": [
+        "inlineIcon",
+        "variant",
+        "controls",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-tab-panel": {
+      "status": "native-adapter",
+      "properties": [
+        "active"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-tab-panels": {
+      "status": "native-adapter",
+      "properties": [
+        "for"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "sizing"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "The for property matches an md-tabs native node ID within the same tree or AWCNativeScope. Browser DOM querying and stable max-height measuring are not reproduced."
+      ]
+    },
+    "md-breadcrumbs": {
+      "status": "native-adapter",
+      "properties": [
+        "label",
+        "expandLabel",
+        "separator",
+        "maxItems",
+        "itemsBeforeCollapse",
+        "itemsAfterCollapse"
+      ],
+      "events": [
+        "mdExpand"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "expand",
+        "collapse"
+      ],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-breadcrumb-item": {
+      "status": "native-adapter",
+      "properties": [
+        "href",
+        "current",
+        "icon",
+        "itemIndex",
+        "disabled"
+      ],
+      "events": [
+        "mdSelect"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "icon"
+      ],
+      "unsupportedProperties": [
+        "target",
+        "rel",
+        "collapsed",
+        "itemTotal",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native event has index and href; DOM MouseEvent omitted."
+      ]
+    },
+    "md-step": {
+      "status": "native-adapter",
+      "properties": [
+        "label",
+        "description",
+        "completed",
+        "active",
+        "error",
+        "errorText",
+        "optional",
+        "disabled"
+      ],
+      "events": [
+        "mdStepClick"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "editable",
+        "icon",
+        "completedIcon",
+        "errorIcon",
+        "accessibleName",
+        "hideActions",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdStepNext",
+        "mdStepBack"
+      ],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-stepper": {
+      "status": "native-adapter",
+      "properties": [
+        "active",
+        "autoComplete",
+        "nav",
+        "readonly",
+        "nextDisabled",
+        "loading",
+        "mode",
+        "label",
+        "nextLabel",
+        "backLabel",
+        "finishLabel"
+      ],
+      "events": [
+        "mdBeforeChange",
+        "mdStepChange",
+        "mdComplete"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "orientation",
+        "indicator",
+        "variant",
+        "lazy",
+        "stepWord",
+        "ofWord",
+        "completedWord",
+        "currentWord",
+        "errorWord",
+        "optionalWord",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "next",
+        "prev",
+        "goTo",
+        "reset"
+      ],
+      "unsupportedSlots": [
+        "content"
+      ],
+      "notes": [
+        "Native linear/nonlinear progression. mdBeforeChange is an observation; it cannot cancel via preventDefault. Layout is vertical in this adapter."
+      ]
+    },
+    "md-dialog": {
+      "status": "native-adapter",
+      "properties": [
+        "open",
+        "headline",
+        "icon",
+        "closeLabel",
+        "cancelLabel",
+        "okLabel",
+        "divider",
+        "headerDivider",
+        "scrimDismissible"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose",
+        "mdCancel"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "actions",
+        "header-action",
+        "icon",
+        "headline"
+      ],
+      "unsupportedProperties": [
+        "fullscreen",
+        "locale",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "whenClosed",
+        "close"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "System sheet replaces browser modal. Built-in trigger supports playground/native standalone usage; open can also be supplied externally."
+      ]
+    },
+    "md-bottom-sheet": {
+      "status": "native-adapter",
+      "properties": [
+        "open",
+        "headline",
+        "showDragHandle",
+        "closeable",
+        "scrimDismissible",
+        "topDivider",
+        "bottomDivider"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose",
+        "mdCancel"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "headline",
+        "actions"
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "sheetAriaLabel",
+        "scrollShadow",
+        "headlineAlign",
+        "contentAlign",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "close"
+      ],
+      "unsupportedSlots": [
+        "close"
+      ],
+      "notes": [
+        "System sheet detents replace detached/standard CSS layouts."
+      ]
+    },
+    "md-side-sheet": {
+      "status": "native-adapter",
+      "properties": [
+        "open",
+        "headline",
+        "closeable",
+        "showBack",
+        "scrimDismissible",
+        "topDivider",
+        "bottomDivider"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose",
+        "mdCancel",
+        "mdBack"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "headline",
+        "actions"
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "side",
+        "detached",
+        "sheetAriaLabel",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "whenClosed",
+        "close"
+      ],
+      "unsupportedSlots": [
+        "back",
+        "close"
+      ],
+      "notes": [
+        "System sheet replaces desktop side edge positioning."
+      ]
+    },
+    "md-menu": {
+      "status": "native-adapter",
+      "properties": [
+        "open",
+        "persistent",
+        "emptyText",
+        "layout",
+        "listLabel"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "header"
+      ],
+      "unsupportedProperties": [
+        "anchor",
+        "placement",
+        "quick",
+        "variant",
+        "useGap",
+        "matchAnchorWidth",
+        "responsive",
+        "autoFocus",
+        "maxHeight",
+        "listbox",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "setComboboxElement",
+        "setVirtualProvider",
+        "getScrollViewport",
+        "show",
+        "reposition",
+        "whenClosed",
+        "close"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native expandable menu surface; anchor selectors and popover collision placement have no native equivalent."
+      ]
+    },
+    "md-fab-menu": {
+      "status": "native-adapter",
+      "properties": [
+        "open",
+        "menuLabel"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "anchor",
+        "variant",
+        "placement",
+        "quick",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "whenClosed",
+        "close"
+      ],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-menu-item": {
+      "status": "native-adapter",
+      "properties": [
+        "headline",
+        "supportingText",
+        "trailingText",
+        "selected",
+        "type",
+        "divider",
+        "badge",
+        "disabled"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        "leading-icon",
+        "trailing-icon"
+      ],
+      "unsupportedProperties": [
+        "indeterminate",
+        "keepOpen",
+        "gap",
+        "checkPosition",
+        "presentation",
+        "roleOverride",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-menu-item-group": {
+      "status": "native-adapter",
+      "properties": [
+        "label"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-sub-menu-item": {
+      "status": "native-adapter",
+      "properties": [
+        "headline",
+        "supportingText",
+        "divider",
+        "badge",
+        "disabled"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        "leading-icon",
+        "submenu"
+      ],
+      "unsupportedProperties": [
+        "gap",
+        "openDelay",
+        "closeDelay",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "collapse"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Tap opens submenu. Browser pointer hover delays not implemented."
+      ]
+    },
+    "md-snackbar": {
+      "status": "native-adapter",
+      "properties": [
+        "open",
+        "message",
+        "action",
+        "closeable",
+        "autoHide",
+        "autoHideDuration",
+        "dismissLabel"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose",
+        "mdAction"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "action",
+        "close"
+      ],
+      "unsupportedProperties": [
+        "position",
+        "stacked",
+        "politeness",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "hide"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native inline snackbar surface, not global window overlay stacking."
+      ]
+    },
+    "md-tooltip": {
+      "status": "native-adapter",
+      "properties": [
+        "text",
+        "subhead",
+        "variant",
+        "open",
+        "disabled"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "subhead",
+        "content",
+        "actions"
+      ],
+      "unsupportedProperties": [
+        "position",
+        "autoPosition",
+        "offset",
+        "crossOffset",
+        "showDelay",
+        "hideDelay",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "show",
+        "hide"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Tap toggles native details surface; hover delays and viewport anchor positioning not implemented."
+      ]
+    },
+    "md-search": {
+      "status": "native-adapter",
+      "properties": [
+        "value",
+        "placeholder",
+        "open",
+        "leadingIcon",
+        "showClearButton",
+        "loading",
+        "loadingLabel",
+        "noResultsLabel",
+        "disabled"
+      ],
+      "events": [
+        "mdInput",
+        "mdSearch",
+        "mdSubmit",
+        "mdChange",
+        "mdOpen",
+        "mdClose",
+        "mdClear",
+        "mdLeadingIconClick"
+      ],
+      "methods": [],
+      "slots": [
+        "trailing",
+        "results"
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "layout",
+        "trigger",
+        "triggerIcon",
+        "triggerFor",
+        "triggerElement",
+        "fullWidth",
+        "elevation",
+        "openLeadingIcon",
+        "voiceSearch",
+        "escapeCloses",
+        "dismissOnOutsideClick",
+        "scrollShadow",
+        "maxBlockSize",
+        "inputAriaLabel",
+        "initialFocus",
+        "announceResults",
+        "resultsLabel",
+        "debounce",
+        "throttle",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdVoice",
+        "mdTrailingIconClick"
+      ],
+      "unsupportedMethods": [
+        "show",
+        "close",
+        "whenClosed",
+        "toggle",
+        "focusInput",
+        "startVoice",
+        "stopVoice"
+      ],
+      "unsupportedSlots": [
+        "trigger",
+        "leading",
+        "loader"
+      ],
+      "notes": [
+        "Native search field. App must supply filtered result children; no implicit content filtering. Voice recognition and debounce are not implemented."
+      ]
+    },
+    "md-table-container": {
+      "status": "native-adapter",
+      "properties": [
+        "maxHeight"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "variant",
+        "shape",
+        "minHeight",
+        "vibrant",
+        "elevation"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "top",
+        "bottom"
+      ],
+      "notes": [
+        "Native scroll container. minHeight, elevation and shape variants not reproduced."
+      ]
+    },
+    "md-table": {
+      "status": "native-adapter",
+      "properties": [
+        "caption",
+        "loading",
+        "empty",
+        "label",
+        "selection",
+        "sortBy",
+        "sortOrder"
+      ],
+      "events": [
+        "mdSortChange",
+        "mdSelectionChange"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "empty"
+      ],
+      "unsupportedProperties": [
+        "density",
+        "columnTemplate",
+        "columns",
+        "minWidth",
+        "stickyHeader",
+        "frozenHeader",
+        "keepHeight",
+        "scrollbar",
+        "pinMode",
+        "pinIcon",
+        "stickyFooter",
+        "striped",
+        "noDividers",
+        "hoverable",
+        "motion",
+        "loadingMode",
+        "loadingRows",
+        "summary",
+        "rowOffset",
+        "rowCount"
+      ],
+      "unsupportedEvents": [
+        "mdPinChange",
+        "mdColumnVisibilityChange",
+        "mdScroll"
+      ],
+      "unsupportedMethods": [
+        "getSelection",
+        "selectAll",
+        "deselectAll",
+        "toggleSelectAll",
+        "setSort",
+        "pinColumn",
+        "setColumnVisibility",
+        "animateNextChange"
+      ],
+      "unsupportedSlots": [
+        "head",
+        "loader",
+        "loading"
+      ],
+      "notes": [
+        "Native composed rows; sorts source row cell text/numbers by column and coordinates row selection. Event DOM references become IDs. Column pinning, spans, visibility and sticky headers remain unsupported.",
+        "mdSelectionChange includes count, total, values, all and indeterminate; header checkbox selects all eligible rows."
+      ]
+    },
+    "md-table-head": {
+      "status": "native-adapter",
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-table-body": {
+      "status": "native-adapter",
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "presentational"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-table-foot": {
+      "status": "native-adapter",
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "presentational"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-table-row": {
+      "status": "native-adapter",
+      "properties": [
+        "selected",
+        "selectable",
+        "clickable",
+        "value",
+        "expandable",
+        "expanded",
+        "highlight",
+        "disabled"
+      ],
+      "events": [
+        "mdRowClick",
+        "mdRowSelectionChange",
+        "mdRowExpandedChange"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "expanded"
+      ],
+      "unsupportedProperties": [
+        "rowgroup"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "toggle"
+      ],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-table-cell": {
+      "status": "native-adapter",
+      "properties": [
+        "align",
+        "numeric",
+        "padding",
+        "head",
+        "ellipsis",
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "scope",
+        "sticky",
+        "colSpan",
+        "rowSpan",
+        "noPinIndicator",
+        "pinIcon",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native equal-flex columns; colSpan/rowSpan and sticky pinning are not supported."
+      ]
+    },
+    "md-table-toolbar": {
+      "status": "native-adapter",
+      "properties": [
+        "headline",
+        "supportingText",
+        "numSelected",
+        "labelSelected"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "autoBind",
+        "compact",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
+        "leading",
+        "headline",
+        "supporting-text",
+        "title-area",
+        "selection-actions",
+        "actions"
+      ],
+      "notes": []
+    },
+    "md-table-sort-label": {
+      "status": "native-adapter",
+      "properties": [
+        "column",
+        "defaultOrder",
+        "active",
+        "order",
+        "disabled"
+      ],
+      "events": [
+        "mdSortRequest"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [
+        "iconPosition",
+        "icon",
+        "inactiveIcon",
+        "sortedAscendingLabel",
+        "sortedDescendingLabel",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": []
+    },
+    "md-table-pagination": {
+      "status": "native-adapter",
+      "properties": [
+        "count",
+        "page",
+        "rowsPerPage",
+        "rowsPerPageOptions",
+        "showFirstLast",
+        "labelRowsPerPage",
+        "labelFirstPage",
+        "labelPreviousPage",
+        "labelNextPage",
+        "labelLastPage",
+        "compact",
+        "disabled"
+      ],
+      "events": [
+        "mdPageChange",
+        "mdRowsPerPageChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "labelDisplayedRows",
+        "labelAll",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "goToPage",
+        "setRowsPerPage"
+      ],
+      "unsupportedSlots": [
+        "actions"
+      ],
+      "notes": [
+        "Positive page sizes supported; web -1 all-rows sentinel and format templates are not implemented."
+      ]
+    },
+    "md-table-expand-toggle": {
+      "status": "native-adapter",
+      "properties": [
+        "buttonLabel",
+        "icon"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Routes native internal awcExpand to containing row."
+      ]
+    },
+    "md-transfer-list": {
+      "status": "native-adapter",
+      "properties": [
+        "items",
+        "value",
+        "sourceTitle",
+        "targetTitle",
+        "searchable",
+        "sourceSearchPlaceholder",
+        "targetSearchPlaceholder",
+        "showSelectAll",
+        "emptyText",
+        "singleStepOnly",
+        "moveRightLabel",
+        "moveLeftLabel",
+        "moveAllRightLabel",
+        "moveAllLeftLabel",
+        "disabled"
+      ],
+      "events": [
+        "mdChange",
+        "mdMove"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "searchIcon",
+        "moveRightIcon",
+        "moveLeftIcon",
+        "moveAllRightIcon",
+        "moveAllLeftIcon",
+        "emptyIcon",
+        "countTemplate",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "moveSelectedRight",
+        "moveSelectedLeft"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native dual-list transfer supports disabled options, checked selection, select-all, per-side search and directional moves."
+      ]
+    },
+    "md-organization-chart": {
+      "status": "native-adapter",
+      "properties": [
+        "nodes",
+        "selectionMode",
+        "selectedIds",
+        "collapsible",
+        "label",
+        "expandLabel",
+        "collapseLabel"
+      ],
+      "events": [
+        "mdSelectionChange",
+        "mdNodeToggle"
+      ],
+      "methods": [],
+      "slots": [
+        "empty"
+      ],
+      "unsupportedProperties": [
+        "orientation",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native indented tree. Horizontal node layout and browser keyboard roving-focus scheme are not implemented."
+      ]
+    },
+    "md-line-chart": {
+      "status": "native-adapter",
+      "properties": [
+        "label",
+        "subtitle",
+        "series",
+        "heightProp",
+        "legend",
+        "loading",
+        "loadingLabel",
+        "labelEmpty",
+        "summary",
+        "showMarks",
+        "showLine",
+        "lineWidth",
+        "grid",
+        "connectNulls",
+        "showLabels",
+        "area"
+      ],
+      "events": [
+        "mdMarkerClick",
+        "mdLegendClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [
+        "header",
+        "empty",
+        "loader",
+        "loading",
+        "footer"
+      ],
+      "unsupportedProperties": [
+        "markLines",
+        "titleAlign",
+        "xAxis",
+        "yAxis",
+        "yAxes",
+        "curve",
+        "stack",
+        "markSize",
+        "tooltip",
+        "axisTicks",
+        "inverted",
+        "seriesLabels",
+        "zoom",
+        "locale",
+        "labelPlot",
+        "labelPoint",
+        "labelZoomStart",
+        "labelZoomEnd",
+        "tableLabels",
+        "valueFormatter",
+        "tooltipRenderer",
+        "noAnimation",
+        "animation",
+        "animationDuration",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdLineClick",
+        "mdAreaClick",
+        "mdAxisClick",
+        "mdHover",
+        "mdZoom"
+      ],
+      "unsupportedMethods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "toDataURL",
+        "getInstance",
+        "setZoom",
+        "resetZoom"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Canvas plots. Supports scalar/y/value points and gaps; linear curves, unstacked single-axis. Tap probes first visible series. JS formatters, zoom, marks, multi-axis, stack, smooth curves and exact pointer event metadata remain unsupported."
+      ]
+    },
+    "md-area-chart": {
+      "status": "native-adapter",
+      "properties": [
+        "label",
+        "subtitle",
+        "series",
+        "heightProp",
+        "legend",
+        "loading",
+        "loadingLabel",
+        "labelEmpty",
+        "summary",
+        "showMarks",
+        "showLine",
+        "lineWidth",
+        "fillOpacity",
+        "grid",
+        "connectNulls",
+        "showLabels"
+      ],
+      "events": [
+        "mdAreaClick",
+        "mdLegendClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [
+        "header",
+        "empty",
+        "loader",
+        "loading",
+        "footer"
+      ],
+      "unsupportedProperties": [
+        "titleAlign",
+        "xAxis",
+        "yAxis",
+        "curve",
+        "stack",
+        "markSize",
+        "tooltip",
+        "zoom",
+        "locale",
+        "valueFormatter",
+        "tooltipRenderer",
+        "noAnimation",
+        "animation",
+        "animationDuration",
+        "inverted",
+        "seriesLabels",
+        "tableLabels",
+        "labelZoomStart",
+        "labelZoomEnd",
+        "axisTicks",
+        "labelPlot",
+        "labelPoint",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdMarkerClick",
+        "mdLineClick",
+        "mdAxisClick",
+        "mdHover",
+        "mdZoom"
+      ],
+      "unsupportedMethods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "toDataURL",
+        "getInstance",
+        "setZoom",
+        "resetZoom"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Canvas area fill. Linear, unstacked, single axis. Tap probes first visible series. Browser advanced chart features listed unsupported."
+      ]
+    },
+    "md-bar-chart": {
+      "status": "native-adapter",
+      "properties": [
+        "label",
+        "subtitle",
+        "series",
+        "heightProp",
+        "legend",
+        "loading",
+        "loadingLabel",
+        "showLabels",
+        "barWidth",
+        "cornerRadius"
+      ],
+      "events": [
+        "mdBarClick",
+        "mdLegendClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [
+        "header",
+        "empty",
+        "loader",
+        "loading",
+        "footer"
+      ],
+      "unsupportedProperties": [
+        "titleAlign",
+        "xAxis",
+        "yAxis",
+        "yAxis2",
+        "layout",
+        "stack",
+        "categoryGap",
+        "barGap",
+        "tooltip",
+        "zoom",
+        "locale",
+        "valueFormatter",
+        "tooltipRenderer",
+        "noAnimation",
+        "animation",
+        "animationDuration",
+        "showTotals",
+        "chevron",
+        "polar",
+        "polarHole",
+        "polarSweep",
+        "axisTicks",
+        "clickable",
+        "labelZoomStart",
+        "labelZoomEnd",
+        "labelPlot",
+        "labelPoint",
+        "density"
+      ],
+      "unsupportedEvents": [
+        "mdHover",
+        "mdZoom"
+      ],
+      "unsupportedMethods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "drill",
+        "toDataURL",
+        "getInstance",
+        "setZoom",
+        "resetZoom"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Canvas grouped vertical bars. Stacking, polar, inverted/horizontal layout, custom axes and zoom not implemented. Tap probes first series."
+      ]
+    },
+    "md-pie-chart": {
+      "status": "native-adapter",
+      "properties": [
+        "label",
+        "subtitle",
+        "data",
+        "innerRadius",
+        "startAngle",
+        "endAngle",
+        "paddingAngle",
+        "showLabels",
+        "labelMode",
+        "legend",
+        "heightProp",
+        "loading",
+        "loadingLabel",
+        "labelEmpty",
+        "summary"
+      ],
+      "events": [
+        "mdSliceClick",
+        "mdLegendClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [
+        "header",
+        "empty",
+        "loader",
+        "loading",
+        "footer"
+      ],
+      "unsupportedProperties": [
+        "titleAlign",
+        "outerRadius",
+        "cornerRadius",
+        "monochrome",
+        "gradient",
+        "highlight",
+        "tooltip",
+        "locale",
+        "tableLabels",
+        "labelPlot",
+        "labelPoint",
+        "tooltipRenderer",
+        "valueFormatter",
+        "ringWidths",
+        "noAnimation",
+        "animation",
+        "animationDuration",
+        "density"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "drill",
+        "toDataURL",
+        "getInstance"
+      ],
+      "unsupportedSlots": [
+        "center"
+      ],
+      "notes": [
+        "Native Canvas pie/donut. Negative values clamp to zero. Hit testing supports full circle; custom partial sweeps are visual only. Gradients/ring widths and browser tooltip renderer unsupported."
+      ]
+    },
+    "md-sparkline": {
+      "status": "native-adapter",
+      "properties": [
+        "data",
+        "variant",
+        "color",
+        "heightProp",
+        "min",
+        "max",
+        "lineWidth",
+        "barWidth",
+        "cornerRadius",
+        "showMarks"
+      ],
+      "events": [
+        "mdSparkClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [
+        "labels",
+        "curve",
+        "showTooltip",
+        "referenceAreas",
+        "valueFormatter",
+        "noAnimation",
+        "markSize"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "refreshTheme",
+        "resize",
+        "getInstance"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Native Canvas sparkline, scalar/y/value data. Linear curves; referenceAreas and custom formatter not implemented."
+      ]
+    }
+  }
+}

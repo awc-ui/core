@@ -1,0 +1,1660 @@
+{
+  "platform": "android",
+  "components": {
+    "md-accordion": {
+      "properties": [
+        "defaultExpanded",
+        "exclusive",
+        "keepOneExpanded"
+      ],
+      "events": [
+        "mdToggle"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native exclusive and keep-one-expanded coordination with comma-separated defaultExpanded indices. Reorder and floating drag remain unsupported."
+      ]
+    },
+    "md-accordion-item": {
+      "properties": [
+        "collapsible",
+        "disabled",
+        "expanded",
+        "headline",
+        "icon",
+        "supportingText"
+      ],
+      "events": [
+        "mdItemToggle"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-app-bar": {
+      "properties": [
+        "density",
+        "headline",
+        "leadingIcon",
+        "leadingIconLabel",
+        "subtitle"
+      ],
+      "events": [
+        "mdLeadingClick"
+      ],
+      "methods": [],
+      "slots": [
+        "leading",
+        "trailing"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-area-chart": {
+      "properties": [
+        "connectNulls",
+        "fillOpacity",
+        "grid",
+        "heightProp",
+        "label",
+        "labelEmpty",
+        "legend",
+        "lineWidth",
+        "loading",
+        "loadingLabel",
+        "markSize",
+        "series",
+        "showMarks",
+        "subtitle",
+        "summary",
+        "xAxis"
+      ],
+      "events": [
+        "mdAreaClick",
+        "mdLegendClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ]
+    },
+    "md-autocomplete": {
+      "properties": [
+        "clearable",
+        "disabled",
+        "error",
+        "errorText",
+        "freeSolo",
+        "inputValue",
+        "label",
+        "limitResults",
+        "loading",
+        "maxHeight",
+        "maxSelected",
+        "multiple",
+        "noOptionsText",
+        "noResultsText",
+        "open",
+        "options",
+        "placeholder",
+        "softDisabled",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdClear",
+        "mdClose",
+        "mdInput",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-avatar": {
+      "properties": [
+        "alt",
+        "initials",
+        "label",
+        "name",
+        "shape",
+        "size",
+        "src"
+      ],
+      "events": [
+        "mdError",
+        "mdLoad"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native asynchronous HTTP(S) bitmap loading with initials/name fallback. CSS loading/crossorigin policies do not map to Android."
+      ]
+    },
+    "md-badge": {
+      "properties": [
+        "max",
+        "value",
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-bar-chart": {
+      "properties": [
+        "cornerRadius",
+        "heightProp",
+        "label",
+        "legend",
+        "loading",
+        "loadingLabel",
+        "series",
+        "subtitle",
+        "xAxis"
+      ],
+      "events": [
+        "mdBarClick",
+        "mdLegendClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ]
+    },
+    "md-bottom-sheet": {
+      "properties": [
+        "bottomDivider",
+        "closeable",
+        "headline",
+        "open",
+        "scrimDismissible",
+        "showDragHandle",
+        "topDivider"
+      ],
+      "events": [
+        "mdCancel",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-breadcrumb-item": {
+      "properties": [
+        "collapsed",
+        "current",
+        "disabled",
+        "href",
+        "icon"
+      ],
+      "events": [
+        "mdSelect"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-breadcrumbs": {
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Composition row. Automatic collapse/maxItems and generated separators are not yet implemented."
+      ]
+    },
+    "md-button": {
+      "properties": [
+        "disabled",
+        "fullWidth",
+        "href",
+        "icon",
+        "loading",
+        "selected",
+        "softDisabled",
+        "target",
+        "toggle",
+        "trailingIcon",
+        "value",
+        "variant"
+      ],
+      "events": [
+        "mdChange",
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "leading-icon",
+        "trailing-icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-button-group": {
+      "properties": [
+        "fullWidth",
+        "required",
+        "selectionMode"
+      ],
+      "events": [
+        "mdSelectionChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native single/multi selection and required coordination. DOM originalEvent is omitted from payloads."
+      ]
+    },
+    "md-card": {
+      "properties": [
+        "disabled",
+        "fullWidth",
+        "interactive",
+        "softDisabled",
+        "variant"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-checkbox": {
+      "properties": [
+        "checked",
+        "disabled",
+        "error",
+        "errorText",
+        "indeterminate",
+        "softDisabled",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-chip": {
+      "properties": [
+        "disabled",
+        "icon",
+        "label",
+        "removable",
+        "selectable",
+        "selected",
+        "softDisabled",
+        "variant"
+      ],
+      "events": [
+        "mdClick",
+        "mdRemove",
+        "mdSelect"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-color-picker": {
+      "properties": [
+        "alpha",
+        "ariaLabelProp",
+        "disabled",
+        "dismissOnOutsideClick",
+        "open",
+        "presets",
+        "showHex",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdInput",
+        "mdOpenChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native RGB sliders, alpha and presets; HEX/RGB output implemented. HSL output and complete source color parsing remain unsupported."
+      ]
+    },
+    "md-date-picker": {
+      "properties": [
+        "cancelLabel",
+        "disabled",
+        "error",
+        "errorText",
+        "label",
+        "max",
+        "min",
+        "okLabel",
+        "open",
+        "scrimDismissible",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdCancel",
+        "mdChange",
+        "mdClose",
+        "mdOpen",
+        "mdSelected"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Uses Material DatePicker; ISO date strings replace JavaScript Date objects in event details."
+      ]
+    },
+    "md-dialog": {
+      "properties": [
+        "cancelLabel",
+        "fullscreen",
+        "headline",
+        "icon",
+        "okLabel",
+        "open",
+        "scrimDismissible"
+      ],
+      "events": [
+        "mdCancel",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-divider": {
+      "properties": [
+        "inset",
+        "insetEnd",
+        "insetStart",
+        "vertical"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-fab": {
+      "properties": [
+        "disabled",
+        "icon",
+        "label",
+        "softDisabled",
+        "variant"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        "icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-fab-menu": {
+      "properties": [
+        "menuLabel",
+        "open"
+      ],
+      "events": [
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-fab-menu-item": {
+      "properties": [
+        "disabled",
+        "icon",
+        "label",
+        "softDisabled"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-icon-button": {
+      "properties": [
+        "disabled",
+        "href",
+        "icon",
+        "selected",
+        "selectedIcon",
+        "softDisabled",
+        "target",
+        "toggle",
+        "value",
+        "variant"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-line-chart": {
+      "properties": [
+        "area",
+        "connectNulls",
+        "grid",
+        "heightProp",
+        "label",
+        "labelEmpty",
+        "legend",
+        "lineWidth",
+        "loading",
+        "loadingLabel",
+        "markSize",
+        "series",
+        "showMarks",
+        "subtitle",
+        "summary",
+        "xAxis"
+      ],
+      "events": [
+        "mdLegendClick",
+        "mdMarkerClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ]
+    },
+    "md-list": {
+      "properties": [
+        "label",
+        "listStyle",
+        "selectionMode"
+      ],
+      "events": [
+        "mdSelect"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native single/multi selection; native events omit DOM item references. Reordering remains unsupported."
+      ]
+    },
+    "md-list-item": {
+      "properties": [
+        "disabled",
+        "expandable",
+        "expanded",
+        "headline",
+        "leadingIcon",
+        "overline",
+        "selected",
+        "softDisabled",
+        "supportingText",
+        "trailingSupportingText"
+      ],
+      "events": [
+        "mdClick",
+        "mdExpand",
+        "mdItemClick",
+        "mdItemSelect"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "expanded-content",
+        "leading",
+        "trailing"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-loading-indicator": {
+      "properties": [
+        "label"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-menu": {
+      "properties": [
+        "open"
+      ],
+      "events": [
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-menu-item": {
+      "properties": [
+        "disabled",
+        "divider",
+        "headline",
+        "selected",
+        "supportingText",
+        "trailingText",
+        "type"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-menu-item-group": {
+      "properties": [
+        "label"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-meter": {
+      "properties": [
+        "label",
+        "max",
+        "min",
+        "showLabel",
+        "showValue",
+        "value",
+        "valueText",
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-multi-select": {
+      "properties": [
+        "clearLabel",
+        "clearable",
+        "disabled",
+        "error",
+        "errorText",
+        "filterable",
+        "label",
+        "loading",
+        "maxHeight",
+        "maxSelected",
+        "noOptionsText",
+        "noResultsText",
+        "open",
+        "options",
+        "placeholder",
+        "searchPlaceholder",
+        "selectAllLabel",
+        "showSelectAll",
+        "softDisabled",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdClear",
+        "mdClose",
+        "mdOpen",
+        "mdRemove"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-navigation-bar": {
+      "properties": [
+        "activeIndex"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-navigation-rail": {
+      "properties": [
+        "activeIndex"
+      ],
+      "events": [
+        "mdTabChange"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "footer",
+        "header"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-navigation-rail-tab": {
+      "properties": [
+        "active",
+        "badge",
+        "badgeValue",
+        "disabled",
+        "icon",
+        "label",
+        "labelVisibility"
+      ],
+      "events": [
+        "mdTabClick"
+      ],
+      "methods": [],
+      "slots": [
+        "submenu"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-navigation-tab": {
+      "properties": [
+        "active",
+        "activeIcon",
+        "badge",
+        "badgeValue",
+        "disabled",
+        "icon",
+        "label",
+        "labelBehavior",
+        "softDisabled"
+      ],
+      "events": [
+        "mdTabClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-number-field": {
+      "properties": [
+        "allowOutOfRange",
+        "decrementLabel",
+        "disabled",
+        "error",
+        "errorText",
+        "incrementLabel",
+        "label",
+        "max",
+        "min",
+        "placeholder",
+        "readOnly",
+        "required",
+        "step",
+        "steppers",
+        "supportingText",
+        "value",
+        "variant"
+      ],
+      "events": [
+        "mdChange",
+        "mdInput"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-organization-chart": {
+      "properties": [
+        "collapseLabel",
+        "collapsible",
+        "expandLabel",
+        "label",
+        "nodes",
+        "selectedIds",
+        "selectionMode"
+      ],
+      "events": [
+        "mdNodeToggle",
+        "mdSelectionChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native indented tree with accessible cards; horizontal connector layout is not yet ported.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ]
+    },
+    "md-otp-field": {
+      "properties": [
+        "disabled",
+        "error",
+        "errorText",
+        "label",
+        "length",
+        "mask",
+        "readOnly",
+        "required",
+        "supportingText",
+        "transform",
+        "validationType",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdComplete",
+        "mdInput",
+        "mdInvalidInput"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Uses a native constrained text entry; separated cells, grouping and automatic form submission are not yet ported."
+      ]
+    },
+    "md-pie-chart": {
+      "properties": [
+        "data",
+        "endAngle",
+        "heightProp",
+        "innerRadius",
+        "label",
+        "labelEmpty",
+        "legend",
+        "loading",
+        "loadingLabel",
+        "startAngle",
+        "subtitle",
+        "summary"
+      ],
+      "events": [
+        "mdLegendClick",
+        "mdReady",
+        "mdSliceClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ]
+    },
+    "md-progress-indicator": {
+      "properties": [
+        "indeterminate",
+        "label",
+        "max",
+        "value",
+        "variant"
+      ],
+      "events": [
+        "mdComplete"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-radio": {
+      "properties": [
+        "checked",
+        "disabled",
+        "softDisabled",
+        "value"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-rating": {
+      "properties": [
+        "defaultValue",
+        "disabled",
+        "max",
+        "readonly",
+        "showValueLabel",
+        "softDisabled",
+        "value"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native whole-star rating; fractional precision, hover and custom icon rendering remain unsupported."
+      ]
+    },
+    "md-ripple": {
+      "properties": [
+        "disabled"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Uses the Compose ripple on a tappable native surface; standalone DOM ripple attachment has no native counterpart."
+      ]
+    },
+    "md-search": {
+      "properties": [
+        "disabled",
+        "placeholder",
+        "showClearButton",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdClear",
+        "mdInput",
+        "mdSearch",
+        "mdSubmit"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-segmented-button": {
+      "properties": [
+        "disabled",
+        "icon",
+        "label",
+        "selected",
+        "softDisabled",
+        "value"
+      ],
+      "events": [
+        "mdSegmentClick"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-segmented-button-set": {
+      "properties": [
+        "multiselect"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native exclusive/multiple selection coordinated by child identity; supports duplicate child values."
+      ]
+    },
+    "md-select": {
+      "properties": [
+        "clearLabel",
+        "clearable",
+        "disabled",
+        "error",
+        "errorText",
+        "filterable",
+        "label",
+        "loading",
+        "maxHeight",
+        "noOptionsText",
+        "noResultsText",
+        "open",
+        "options",
+        "placeholder",
+        "searchPlaceholder",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-select-option": {
+      "properties": [
+        "disabled",
+        "label",
+        "selected",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdSelectOptionChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-side-sheet": {
+      "properties": [
+        "closeable",
+        "headline",
+        "open",
+        "scrimDismissible",
+        "showBack",
+        "side"
+      ],
+      "events": [
+        "mdBack",
+        "mdCancel",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-skeleton": {
+      "properties": [
+        "announce",
+        "ariaLabelProp",
+        "height",
+        "lines",
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Static native skeleton blocks; shimmer/pulse motion remains unsupported."
+      ]
+    },
+    "md-slider": {
+      "properties": [
+        "disabled",
+        "labeled",
+        "max",
+        "min",
+        "range",
+        "sliderAriaLabel",
+        "step",
+        "value",
+        "valueEnd",
+        "valueIndicator",
+        "valueStart",
+        "valueText"
+      ],
+      "events": [
+        "mdChange",
+        "mdInput"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Horizontal Compose slider/range slider; vertical, custom icons and drag event parity remain unsupported."
+      ]
+    },
+    "md-snackbar": {
+      "properties": [
+        "action",
+        "autoHide",
+        "autoHideDuration",
+        "closeable",
+        "dismissLabel",
+        "message",
+        "open",
+        "stacked"
+      ],
+      "events": [
+        "mdAction",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-sparkline": {
+      "properties": [
+        "cornerRadius",
+        "data",
+        "heightProp",
+        "lineWidth",
+        "markSize",
+        "max",
+        "min",
+        "showMarks",
+        "variant"
+      ],
+      "events": [
+        "mdReady",
+        "mdSparkClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ]
+    },
+    "md-split-button": {
+      "properties": [
+        "disabled",
+        "fullWidth",
+        "icon",
+        "label",
+        "menuLabel",
+        "softDisabled",
+        "trailingChecked",
+        "trailingIcon",
+        "variant"
+      ],
+      "events": [
+        "mdLeadingClick",
+        "mdTrailingClick"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-status-dot": {
+      "properties": [
+        "inline",
+        "label",
+        "shape",
+        "state"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-step": {
+      "properties": [
+        "active",
+        "completed",
+        "description",
+        "disabled",
+        "editable",
+        "error",
+        "errorText",
+        "hideActions",
+        "label"
+      ],
+      "events": [
+        "mdStepBack",
+        "mdStepClick",
+        "mdStepNext"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-stepper": {
+      "properties": [
+        "active",
+        "backLabel",
+        "finishLabel",
+        "loading",
+        "nextDisabled",
+        "nextLabel",
+        "readonly"
+      ],
+      "events": [
+        "mdBeforeChange",
+        "mdComplete",
+        "mdStepChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-sub-menu-item": {
+      "properties": [
+        "disabled",
+        "divider",
+        "headline",
+        "supportingText"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        "submenu"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-switch": {
+      "properties": [
+        "disabled",
+        "selected",
+        "softDisabled",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdInput"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-tab": {
+      "properties": [
+        "active",
+        "disabled",
+        "icon",
+        "label"
+      ],
+      "events": [
+        "mdTabClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-tab-panel": {
+      "properties": [
+        "active"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-tab-panels": {
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Composition container. Pass active on child panels; HTML for/id linkage is not available."
+      ]
+    },
+    "md-table": {
+      "properties": [
+        "caption",
+        "loading"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-body": {
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-cell": {
+      "properties": [
+        "align",
+        "head",
+        "numeric",
+        "padding"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-container": {
+      "properties": [
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-expand-toggle": {
+      "properties": [
+        "buttonLabel"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Standalone visual toggle; nested table row has its own bound expansion control."
+      ]
+    },
+    "md-table-foot": {
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-head": {
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-pagination": {
+      "properties": [
+        "count",
+        "disabled",
+        "labelNextPage",
+        "labelPreviousPage",
+        "page",
+        "rowsPerPage",
+        "rowsPerPageOptions",
+        "showFirstLast"
+      ],
+      "events": [
+        "mdPageChange",
+        "mdRowsPerPageChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-row": {
+      "properties": [
+        "clickable",
+        "disabled",
+        "expandable",
+        "expanded",
+        "selectable",
+        "selected",
+        "value"
+      ],
+      "events": [
+        "mdRowClick",
+        "mdRowExpandedChange",
+        "mdRowSelectionChange"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "expanded"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-sort-label": {
+      "properties": [
+        "column",
+        "defaultOrder",
+        "disabled",
+        "order"
+      ],
+      "events": [
+        "mdSortRequest"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-toolbar": {
+      "properties": [
+        "headline",
+        "labelSelected",
+        "numSelected",
+        "supportingText"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        "actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-tabs": {
+      "properties": [
+        "activeTabIndex",
+        "divider"
+      ],
+      "events": [
+        "mdTabChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-text-field": {
+      "properties": [
+        "clearable",
+        "disabled",
+        "error",
+        "errorText",
+        "hidePasswordLabel",
+        "label",
+        "maxLength",
+        "multiline",
+        "passwordToggle",
+        "placeholder",
+        "prefixText",
+        "readOnly",
+        "required",
+        "rows",
+        "showPasswordLabel",
+        "suffixText",
+        "supportingText",
+        "type",
+        "value",
+        "variant"
+      ],
+      "events": [
+        "mdChange",
+        "mdClear",
+        "mdInput",
+        "mdPasswordToggle",
+        "mdSearch"
+      ],
+      "methods": [],
+      "slots": [
+        "trailing-icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-time-picker": {
+      "properties": [
+        "cancelLabel",
+        "disabled",
+        "error",
+        "errorText",
+        "format",
+        "headline",
+        "hideTrigger",
+        "label",
+        "max",
+        "min",
+        "minuteStep",
+        "okLabel",
+        "open",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdCancel",
+        "mdChange",
+        "mdClose",
+        "mdInput",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Uses Material TimePicker; dialog native layout replaces docked web variants."
+      ]
+    },
+    "md-toolbar": {
+      "properties": [
+        "density"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        "",
+        "leading",
+        "trailing"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-tooltip": {
+      "properties": [
+        "disabled",
+        "open",
+        "subhead",
+        "text"
+      ],
+      "events": [
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native visible tooltip surface toggles on tap; platform hover/delay/anchor positioning is not ported."
+      ]
+    },
+    "md-transfer-list": {
+      "properties": [
+        "disabled",
+        "emptyText",
+        "items",
+        "moveAllLeftLabel",
+        "moveAllRightLabel",
+        "moveLeftLabel",
+        "moveRightLabel",
+        "searchable",
+        "showSelectAll",
+        "singleStepOnly",
+        "sourceSearchPlaceholder",
+        "sourceTitle",
+        "targetSearchPlaceholder",
+        "targetTitle",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdMove"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    }
+  }
+}
