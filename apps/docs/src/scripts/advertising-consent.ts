@@ -226,11 +226,15 @@ export function initializeAdvertisingConsent(): void {
   const root = document.createElement("div");
   root.className = "awc-advertising";
   root.innerHTML = `<section class="awc-advertising-panel" aria-labelledby="awc-advertising-title" aria-describedby="awc-advertising-description" hidden>
-    <h2 id="awc-advertising-title" tabindex="-1">Advertising preferences</h2>
-    <p id="awc-advertising-description">With your permission, we use Google Ads to measure advertising. When enabled, Meta, Reddit and Google Ads also receive a signup event from our server after a new waitlist signup, using their advertising identifiers. We do not send your email address, name or raw IP address in these server events. Advertising measurement is optional; joining works either way.</p>
-    <p>We remember your choice for up to 90 days. <a href="/privacy/#advertising-measurement">Read about advertising and your data</a>.</p>
-    <div class="awc-advertising-actions"><button type="button" data-advertising-reject>Reject advertising</button><button type="button" data-advertising-accept>Accept advertising</button></div>
-    <button type="button" data-advertising-close hidden>Keep current choice</button>
+    <div class="awc-advertising-copy">
+      <h2 id="awc-advertising-title" tabindex="-1">Advertising preferences</h2>
+      <p id="awc-advertising-description">Allow Google Ads, Meta and Reddit to use advertising identifiers to measure ads and waitlist signups. Joining works either way.</p>
+      <p class="awc-advertising-details">Your choice lasts up to 90 days. <a href="/privacy/#advertising-measurement" aria-label="Read about advertising and your data">Details</a></p>
+    </div>
+    <div class="awc-advertising-actions"><button type="button" aria-label="Reject advertising" data-advertising-reject>Reject</button><button type="button" aria-label="Accept advertising" data-advertising-accept>Accept</button></div>
+    <button class="awc-advertising-close" type="button" data-advertising-close aria-label="Close advertising preferences">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg>
+    </button>
     <p data-advertising-status role="status" aria-live="polite"></p>
   </section><button class="awc-advertising-preferences" type="button" data-advertising-preferences>Advertising preferences</button>`;
   document.body.append(root);
@@ -241,8 +245,7 @@ export function initializeAdvertisingConsent(): void {
   const show = (focus = false) => {
     panel.hidden = false;
     preferences.hidden = true;
-    close.hidden = !valid(choice);
-    status.textContent = choice?.decision === "accepted" ? "Advertising measurement is currently accepted. Reject advertising to withdraw permission." : "Advertising measurement is off unless you accept.";
+    status.textContent = choice?.decision === "accepted" ? "Currently on. Choose Reject to withdraw permission." : "";
     if (focus) root.querySelector<HTMLElement>("h2")!.focus();
   };
   const hide = () => { panel.hidden = true; preferences.hidden = false; };
@@ -324,7 +327,7 @@ export function initializeAdvertisingConsent(): void {
   preferences.addEventListener("click", () => show(true));
   close.addEventListener("click", () => { hide(); preferences.focus(); });
   panel.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && valid(choice)) { hide(); preferences.focus(); }
+    if (event.key === "Escape") { hide(); preferences.focus(); }
   });
   window.addEventListener("storage", (event) => {
     if (event.key === CHOICE_KEY || event.key === null) {
