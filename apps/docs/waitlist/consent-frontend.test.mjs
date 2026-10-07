@@ -447,6 +447,9 @@ test("90-day expiry is enforced while the page remains open without renewing con
 test("mobile consent actions have equal emphasis, remain keyboard accessible and can be changed", async (t) => {
   const { page } = await harness(t, { viewport: { width: 320, height: 620 }, url: "https://awc-ui.dev/?fbclid=click" });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  assert.ok((await page.locator("section").boundingBox()).height < 280, "compact banner leaves the page accessible at 320px");
+  await page.getByRole("textbox", { name: "Email address" }).fill("reader@example.com");
+  assert.equal(await measurement(page), undefined);
   const buttons = page.locator(".awc-advertising-actions button");
   const styles = await buttons.evaluateAll((items) => items.map((item) => {
     const style = getComputedStyle(item);
@@ -455,13 +458,30 @@ test("mobile consent actions have equal emphasis, remain keyboard accessible and
   assert.deepEqual(styles[0], styles[1]);
   await buttons.nth(0).focus();
   await page.keyboard.press("Tab");
-  assert.equal(await page.evaluate(() => document.activeElement.textContent), "Accept advertising");
+  assert.equal(await page.evaluate(() => document.activeElement.textContent), "Accept");
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Enter");
   await preferences(page);
   assert.equal(await page.evaluate(() => document.activeElement.id), "awc-advertising-title");
   await page.keyboard.press("Escape");
   assert.equal(await page.locator("section").isVisible(), false);
+});
+
+test("dismissing the banner leaves consent undecided and measurement off", async (t) => {
+  const { page, context, external } = await harness(t);
+  assert.ok((await page.locator("section").boundingBox()).height < 180, "desktop banner stays compact");
+  await page.getByRole("button", { name: "Close advertising preferences" }).click();
+  assert.equal(await page.locator("section").isVisible(), false);
+  assert.equal(await page.evaluate((key) => localStorage.getItem(key), CHOICE), null);
+  assert.equal(await measurement(page), undefined);
+  assert.deepEqual(await cookies(context), []);
+  assert.equal(external.length, 0);
+  await preferences(page);
+  await page.keyboard.press("Escape");
+  assert.equal(await page.locator("section").isVisible(), false);
+  await preferences(page);
+  await accept(page);
+  assert.ok(await measurement(page));
 });
 
 
