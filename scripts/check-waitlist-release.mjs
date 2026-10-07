@@ -6,21 +6,28 @@ import { pathToFileURL } from "node:url";
 export function checkWaitlistRelease(env = process.env) {
   const enabled = env.PUBLIC_WAITLIST_ENABLED;
   const signupCheckEnabled = env.PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED;
+  const measurementFlags = [
+    ["PUBLIC_META_MEASUREMENT_ENABLED", "Meta"],
+    ["PUBLIC_REDDIT_MEASUREMENT_ENABLED", "Reddit"],
+    ["PUBLIC_GOOGLE_MEASUREMENT_ENABLED", "Google"],
+  ];
   for (const [name, value] of [
     ["PUBLIC_WAITLIST_ENABLED", enabled],
     ["PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED", signupCheckEnabled],
-    ["PUBLIC_META_MEASUREMENT_ENABLED", env.PUBLIC_META_MEASUREMENT_ENABLED],
+    ...measurementFlags.map(([name]) => [name, env[name]]),
   ]) {
     if (![undefined, "", "false", "true"].includes(value))
       throw new Error(`${name} must be true or false.`);
   }
-  if (
-    env.PUBLIC_META_MEASUREMENT_ENABLED === "true" &&
-    (env.CONTEXT !== "production" || enabled !== "true")
-  )
-    throw new Error(
-      "Meta measurement requires the production public waitlist.",
-    );
+  for (const [name, provider] of measurementFlags) {
+    if (
+      env[name] === "true" &&
+      (env.CONTEXT !== "production" || enabled !== "true")
+    )
+      throw new Error(
+        `${provider} measurement requires the production public waitlist.`,
+      );
+  }
   if (enabled !== "true" && signupCheckEnabled !== "true")
     return { enabled: false };
   if (signupCheckEnabled === "true" && enabled !== "false")

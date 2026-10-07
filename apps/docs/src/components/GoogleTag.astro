@@ -3,8 +3,10 @@ interface Props { sensitive?: boolean; }
 const production = import.meta.env.PROD && import.meta.env.CONTEXT === 'production';
 const { sensitive = false } = Astro.props;
 const meta = production && !sensitive && import.meta.env.PUBLIC_META_MEASUREMENT_ENABLED === 'true';
+const reddit = production && !sensitive && import.meta.env.PUBLIC_REDDIT_MEASUREMENT_ENABLED === 'true';
+const googleMeasurement = production && !sensitive && import.meta.env.PUBLIC_GOOGLE_MEASUREMENT_ENABLED === 'true';
 ---
-<meta data-advertising-config data-production={String(production)} data-google={String(!sensitive)} data-meta={String(meta)} />
+<meta data-advertising-config data-production={String(production)} data-google={String(!sensitive)} data-meta={String(meta)} data-reddit={String(reddit)} data-google-measurement={String(googleMeasurement)} />
 <script>
   import { initializeAdvertisingConsent } from '../scripts/advertising-consent';
   if (document.readyState === 'loading') {

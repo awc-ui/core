@@ -231,6 +231,7 @@ test(
       for (const filename of [
         "202610020001_create_waitlist.sql",
         "202610060001_advertising_measurement.sql",
+        "202610070001_advertising_providers.sql",
       ])
         await pool.query(
           await readFile(

@@ -10,29 +10,31 @@ const valid = {
   PUBLIC_WAITLIST_CONTACT_ADDRESS: "10 Testing Street, Test City",
 };
 
-test("Meta attribution defaults off and can only accompany the production public form", () => {
-  assert.deepEqual(
-    checkWaitlistRelease({ ...valid, PUBLIC_META_MEASUREMENT_ENABLED: "true" }),
-    { enabled: true },
-  );
-  for (const overrides of [
-    { CONTEXT: "deploy-preview" },
-    { PUBLIC_WAITLIST_ENABLED: "false" },
-    { PUBLIC_WAITLIST_ENABLED: undefined },
-  ])
-    assert.throws(
-      () =>
-        checkWaitlistRelease({
-          ...valid,
-          PUBLIC_META_MEASUREMENT_ENABLED: "true",
-          ...overrides,
-        }),
-      /Meta measurement/,
-    );
-  assert.throws(
-    () => checkWaitlistRelease({ PUBLIC_META_MEASUREMENT_ENABLED: "yes" }),
-    /true or false/,
-  );
+test("each provider attribution defaults off and can only accompany the production public form", () => {
+  for (const provider of ["META", "REDDIT", "GOOGLE"]) {
+    const flag = `PUBLIC_${provider}_MEASUREMENT_ENABLED`;
+    assert.deepEqual(checkWaitlistRelease({ ...valid, [flag]: "true" }), { enabled: true });
+    for (const value of [undefined, "", "false"]) {
+      assert.deepEqual(checkWaitlistRelease({ [flag]: value }), { enabled: false });
+    }
+    for (const overrides of [
+      { CONTEXT: "deploy-preview" },
+      { CONTEXT: undefined },
+      { CONTEXT: "branch-deploy" },
+      { PUBLIC_WAITLIST_ENABLED: "false" },
+      { PUBLIC_WAITLIST_ENABLED: undefined },
+      { PUBLIC_WAITLIST_ENABLED: "false", PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED: "true" },
+    ])
+      assert.throws(
+        () => checkWaitlistRelease({ ...valid, [flag]: "true", ...overrides }),
+        /measurement requires the production public waitlist/,
+      );
+    for (const value of ["yes", "TRUE", true, 1])
+      assert.throws(() => checkWaitlistRelease({ ...valid, [flag]: value }), /true or false/);
+    for (const name of ["PUBLIC_WAITLIST_CONTROLLER_NAME", "PUBLIC_WAITLIST_CONTACT_ADDRESS"])
+      assert.throws(() => checkWaitlistRelease({ ...valid, [flag]: "true", [name]: "" }), /completed PUBLIC/);
+  }
+  assert.deepEqual(checkWaitlistRelease({ ...valid, PUBLIC_META_MEASUREMENT_ENABLED: "true", PUBLIC_REDDIT_MEASUREMENT_ENABLED: "true", PUBLIC_GOOGLE_MEASUREMENT_ENABLED: "true" }), { enabled: true });
 });
 
 test("disabled builds need no provider configuration and never expose a signup form", () => {

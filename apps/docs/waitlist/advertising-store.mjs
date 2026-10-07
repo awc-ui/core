@@ -43,17 +43,28 @@ export async function queueAdvertising(
   );
   if (consent.rows[0].revoked_at || new Date(consent.rows[0].expires_at) <= now)
     return;
-  await client.query(
-    `INSERT INTO waitlist_advertising_outbox (id, subscriber_id, consent_key, user_data, created_at, next_attempt_at)
-     VALUES ($1, $2, $3, $4::jsonb, $5, $5)`,
-    [
-      randomUUID(),
-      subscriberId,
-      measurement.consentKey,
-      JSON.stringify(measurement.userData),
-      now,
-    ],
-  );
+  const destinations = {
+    ...(measurement.userData ? { meta: measurement.userData } : {}),
+    ...(measurement.providers ?? {}),
+  };
+  for (const [provider, userData] of Object.entries(destinations)) {
+    if (!["meta", "reddit", "google"].includes(provider))
+      throw new TypeError("Invalid provider");
+    await client.query(
+      `INSERT INTO waitlist_advertising_outbox
+       (id, subscriber_id, consent_key, provider, user_data, created_at, next_attempt_at, destination_key)
+       VALUES ($1, $2, $3, $4, $5::jsonb, $6, $6, $7)`,
+      [
+        randomUUID(),
+        subscriberId,
+        measurement.consentKey,
+        provider,
+        JSON.stringify(userData),
+        now,
+        measurement.destinations?.[provider] ?? null,
+      ],
+    );
+  }
 }
 
 export function createAdvertisingStore(transaction) {
@@ -81,7 +92,7 @@ export function createAdvertisingStore(transaction) {
       await client.query(
         `UPDATE waitlist_advertising_outbox SET state = 'cancelled', user_data = '{}'::jsonb,
          completed_at = $2, claim_token = NULL, lease_until = NULL
-         WHERE consent_key = $1 AND state IN ('pending', 'sending')`,
+         WHERE consent_key = $1 AND state IN ('pending', 'sending', 'processing')`,
         [consentKey, timestamp],
       );
     });
@@ -91,35 +102,48 @@ export function createAdvertisingStore(transaction) {
     await client.query(
       `UPDATE waitlist_advertising_outbox SET state = 'expired', user_data = '{}'::jsonb,
        completed_at = $1, claim_token = NULL, lease_until = NULL
-       WHERE state IN ('pending', 'sending') AND (created_at <= $2 OR attempts >= $3 AND lease_until <= $1)`,
+       WHERE state IN ('pending', 'sending', 'processing') AND (created_at <= $2 OR ((remote_request_id IS NULL AND attempts >= $3) OR poll_attempts >= 48) AND (lease_until IS NULL OR lease_until <= $1))`,
       [now, new Date(now.getTime() - AD_EVENT_MAX_AGE_MS), AD_MAX_ATTEMPTS],
     );
     // Network ambiguity is safe to retry with the SAME id, unlike SMTP. Never
     // replay outside the bounded 24-hour event window.
     await client.query(
       `UPDATE waitlist_advertising_outbox SET state = 'pending', claim_token = NULL, lease_until = NULL
-       WHERE state = 'sending' AND lease_until <= $1 AND attempts < $2`,
+       WHERE state = 'sending' AND lease_until <= $1
+       AND ((remote_request_id IS NULL AND attempts < $2) OR (remote_request_id IS NOT NULL AND poll_attempts < 48))`,
       [now, AD_MAX_ATTEMPTS],
     );
   }
 
-  async function claimAdvertising({ now }) {
+  async function claimAdvertising({ now, providers = ["meta"] }) {
+    if (
+      !Array.isArray(providers) ||
+      !providers.length ||
+      providers.some(
+        (provider) => !["meta", "reddit", "google"].includes(provider),
+      )
+    )
+      throw new TypeError("Invalid providers");
     const timestamp = instant(now);
     return transaction(async (client) => {
       await expire(client, timestamp);
       const jobs = await client.query(
         `SELECT job.* FROM waitlist_advertising_outbox AS job
          JOIN advertising_consents AS consent ON consent.consent_key = job.consent_key
-         WHERE job.state = 'pending' AND job.next_attempt_at <= $1 AND job.attempts < $2
+         WHERE job.state IN ('pending', 'processing') AND job.next_attempt_at <= $1
+         AND ((job.remote_request_id IS NULL AND job.attempts < $2) OR (job.remote_request_id IS NOT NULL AND job.poll_attempts < 48))
+         AND job.provider = ANY($3::text[])
          AND consent.revoked_at IS NULL AND consent.expires_at > $1
          ORDER BY job.created_at, job.id LIMIT 1 FOR UPDATE OF job SKIP LOCKED`,
-        [timestamp, AD_MAX_ATTEMPTS],
+        [timestamp, AD_MAX_ATTEMPTS, providers],
       );
       if (!jobs.rowCount) return null;
       const job = jobs.rows[0];
       const claimToken = randomUUID();
       await client.query(
-        `UPDATE waitlist_advertising_outbox SET state = 'sending', attempts = attempts + 1,
+        `UPDATE waitlist_advertising_outbox SET state = 'sending',
+         attempts = attempts + CASE WHEN remote_request_id IS NULL THEN 1 ELSE 0 END,
+         poll_attempts = poll_attempts + CASE WHEN remote_request_id IS NOT NULL THEN 1 ELSE 0 END,
          claim_token = $2, lease_until = $3 WHERE id = $1`,
         [job.id, claimToken, new Date(timestamp.getTime() + 60_000)],
       );
@@ -127,6 +151,9 @@ export function createAdvertisingStore(transaction) {
         id: job.id,
         claimToken,
         userData: job.user_data,
+        provider: job.provider,
+        remoteRequestId: job.remote_request_id,
+        destinationKey: job.destination_key,
         createdAt: job.created_at,
       };
     });
@@ -147,6 +174,29 @@ export function createAdvertisingStore(transaction) {
           timestamp,
           new Date(timestamp.getTime() - AD_EVENT_MAX_AGE_MS),
         ],
+      );
+      return result.rowCount === 1;
+    });
+  }
+
+  async function deferAdvertising({ id, claimToken, requestId, now }) {
+    if (
+      typeof requestId !== "string" ||
+      requestId.length < 1 ||
+      requestId.length > 512 ||
+      /[\r\n\0]/.test(requestId)
+    )
+      throw new TypeError("Invalid provider request ID");
+    const timestamp = instant(now);
+    return transaction(async (client) => {
+      // Google acknowledges ingestion before processing. Save its opaque request
+      // ID and verify diagnostics later, rather than reporting a conversion now.
+      const result = await client.query(
+        `UPDATE waitlist_advertising_outbox SET state = 'processing', remote_request_id = $3, user_data = '{}'::jsonb,
+         next_attempt_at = $4::timestamptz + LEAST(3600000, 1800000 * POWER(1.3, poll_attempts)) * INTERVAL '1 millisecond',
+         claim_token = NULL, lease_until = NULL
+         WHERE id = $1 AND claim_token = $2 AND state = 'sending' AND provider = 'google'`,
+        [id, claimToken, requestId, timestamp],
       );
       return result.rowCount === 1;
     });
@@ -176,17 +226,22 @@ export function createAdvertisingStore(transaction) {
       throw new TypeError("Invalid error code");
     return transaction(async (client) => {
       const result = await client.query(
-        "SELECT attempts, created_at FROM waitlist_advertising_outbox WHERE id = $1 AND claim_token = $2 AND state = 'sending' FOR UPDATE",
+        "SELECT attempts, poll_attempts, remote_request_id, created_at FROM waitlist_advertising_outbox WHERE id = $1 AND claim_token = $2 AND state = 'sending' FOR UPDATE",
         [id, claimToken],
       );
       if (!result.rowCount) return false;
       const job = result.rows[0];
       const nextAttempt = new Date(
-        timestamp.getTime() + 60_000 * 2 ** (job.attempts - 1),
+        timestamp.getTime() +
+          (job.remote_request_id
+            ? Math.min(3600000, 1800000 * 1.3 ** job.poll_attempts)
+            : 60_000 * 2 ** (job.attempts - 1)),
       );
       const retry =
         retryable === true &&
-        job.attempts < AD_MAX_ATTEMPTS &&
+        (job.remote_request_id
+          ? job.poll_attempts < 48
+          : job.attempts < AD_MAX_ATTEMPTS) &&
         nextAttempt.getTime() <
           new Date(job.created_at).getTime() + AD_EVENT_MAX_AGE_MS;
       await client.query(
@@ -227,6 +282,7 @@ export function createAdvertisingStore(transaction) {
     claimAdvertising,
     advertisingCanSend,
     completeAdvertising,
+    deferAdvertising,
     failAdvertising,
     maintainAdvertising,
   };
