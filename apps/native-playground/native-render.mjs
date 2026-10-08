@@ -30,7 +30,7 @@ export function validateRenderRequest(value, tags) {
   return {tag:value.tag,properties:canonical(props),dark:value.dark??false,width:Math.round(Math.min(1200,Math.max(320,value.width??640)))};
 }
 
-export async function readRenderRequest(req, tags) {
+export async function readLocalJSONRequest(req) {
   if (!/^application\/json(?:;|$)/i.test(req.headers['content-type']??'')) throw new RenderError(415,'JSON_REQUIRED','Send application/json.');
   const host = req.headers.host??'';
   if (!/^(?:127\.0\.0\.1|localhost)(?::\d+)?$/.test(host)) throw new RenderError(403,'LOCAL_ONLY','Native rendering is available only on localhost.');
@@ -42,7 +42,11 @@ export async function readRenderRequest(req, tags) {
     chunks.push(chunk);
   }
   let value;try{value=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw new RenderError(400,'INVALID_JSON','Properties must be valid JSON.');}
-  return validateRenderRequest(value,tags);
+  return value;
+}
+
+export async function readRenderRequest(req, tags) {
+  return validateRenderRequest(await readLocalJSONRequest(req),tags);
 }
 
 export function createNativeRenderer({repoRoot, executable=process.env.AWC_NATIVE_RENDERER, renderRoot, platform=process.platform, execute=run}={}) {

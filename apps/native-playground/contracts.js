@@ -69,3 +69,118 @@ export function createLatestRequest() {
 export function nativeRenderRequest(tag, properties, dark) {
   return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640 };
 }
+
+// A session owns one ordered request stream: input always precedes the next
+// poll, and a late create response is closed even after navigation.
+export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onError, pollInterval = 250, schedule = setTimeout, unschedule = clearTimeout }) {
+  let active = null;
+  let visible = true;
+  const close = id => id && Promise.resolve(send(`${id}/close`, {})).catch(() => {});
+  function stop() {
+    const previous = active;
+    active = null;
+    if (!previous) return;
+    previous.closed = true;
+    unschedule(previous.timer);
+    previous.queue.length = 0;
+    void close(previous.id);
+  }
+  function accept(session, result) {
+    if (active !== session || session.closed) return;
+    if (result.sessionId !== session.id) throw new Error('The native host returned a different session. Reconnect to continue.');
+    const events = (result.events || []).filter((event, index) => {
+      const id = event.id ?? `${result.revision}:${index}`;
+      if (session.eventIDs.has(id)) return false;
+      session.eventIDs.add(id);
+      if (session.eventIDs.size > 1000) session.eventIDs.delete(session.eventIDs.values().next().value);
+      return true;
+    });
+    if (events.length) onEvents(events);
+    if (Number.isFinite(result.revision) && result.revision > session.revision) {
+      session.revision = result.revision;
+      onFrame(result);
+    }
+  }
+  async function pump(session) {
+    if (active !== session || session.closed || session.busy || !session.id) return;
+    unschedule(session.timer);
+    const input = session.queue.shift();
+    if (!input && !visible) return;
+    session.busy = true;
+    let received = false;
+    try {
+      const result = await send(`${session.id}/${input ? 'input' : 'frame'}`, input || {});
+      received = true;
+      accept(session, result);
+      session.pollFailures = 0;
+    } catch (error) {
+      if (active === session) {
+        // Retrying an input could duplicate a native action. Only idempotent
+        // frame reads recover from transient browser transport failures.
+        if (!input && !received && error?.name === 'TypeError' && session.pollFailures < 2) session.pollFailures++;
+        else { stop(); onError(error); }
+      }
+    } finally {
+      session.busy = false;
+      if (active === session && !session.closed) {
+        if (session.queue.length) void pump(session);
+        else if (visible) session.timer = schedule(() => pump(session), pollInterval * Math.max(1, session.pollFailures));
+      }
+    }
+  }
+  async function start(payload) {
+    stop();
+    const session = { id: null, closed: false, busy: true, queue: [], revision: -1, eventIDs: new Set(), timer: undefined, pollFailures: 0 };
+    active = session;
+    try {
+      const result = await send('session', payload);
+      session.id = result.sessionId;
+      if (active !== session || session.closed) { void close(session.id); return; }
+      if (!session.id) throw new Error('The native host did not return a session.');
+      accept(session, result);
+      session.busy = false;
+      if (visible) session.timer = schedule(() => pump(session), pollInterval);
+    } catch (error) {
+      if (active === session) { stop(); onError(error); }
+    }
+  }
+  return {
+    start, stop,
+    input(command) {
+      if (!active?.id || active.closed) return false;
+      // A stuck host must not accumulate unbounded text or key commands.
+      if (active.queue.length >= 100) return false;
+      active.queue.push(command);
+      void pump(active);
+      return true;
+    },
+    setVisible(value) {
+      visible = Boolean(value);
+      if (!active) return;
+      unschedule(active.timer);
+      if (visible) void pump(active);
+    },
+  };
+}
+
+export function nativeImagePoint(rect, pixelWidth, pixelHeight, logicalWidth, logicalHeight, clientX, clientY) {
+  if (![rect.width, rect.height, pixelWidth, pixelHeight, logicalWidth, logicalHeight].every(value => Number.isFinite(value) && value > 0)) return null;
+  const scale = Math.min(rect.width / pixelWidth, rect.height / pixelHeight);
+  const width = pixelWidth * scale, height = pixelHeight * scale;
+  const x = clientX - rect.left - (rect.width - width) / 2;
+  const y = clientY - rect.top - (rect.height - height) / 2;
+  if (x < 0 || y < 0 || x >= width || y >= height) return null;
+  return { x: x / width * logicalWidth, y: y / height * logicalHeight };
+}
+
+export function nativeTextChunks(value) {
+  const encoder = new TextEncoder(), chunks = [];
+  let chunk = '', size = 0;
+  for (const char of value) {
+    const bytes = encoder.encode(char).length;
+    if (size + bytes > 4000) { chunks.push(chunk); chunk = ''; size = 0; }
+    chunk += char; size += bytes;
+  }
+  if (chunk) chunks.push(chunk);
+  return chunks;
+}

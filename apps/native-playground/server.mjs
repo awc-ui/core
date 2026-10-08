@@ -2,7 +2,8 @@ import http from 'node:http';
 import { readFile, stat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createNativeRenderer, readRenderRequest, RenderError } from './native-render.mjs';
+import { createNativeRenderer, readRenderRequest, readLocalJSONRequest, validateRenderRequest, RenderError } from './native-render.mjs';
+import { createNativeLiveRenderer } from './native-live.mjs';
 
 const appRoot = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appRoot, '../..');
@@ -48,14 +49,54 @@ export async function resolveAsset(rawUrl, options = {}) {
   } catch { return null; }
 }
 
+export async function handleNativeLiveRequest(req, res, { renderer, tags, json }) {
+  const pathname = (req.url || '/').split('?')[0];
+  if (!pathname.startsWith('/api/native-live/')) return false;
+  try {
+    if (pathname === '/api/native-live/status' && req.method === 'GET') {
+      json(res, 200, await renderer.status());
+      return true;
+    }
+    if (req.method !== 'POST') {
+      res.writeHead(405, { Allow: pathname === '/api/native-live/status' ? 'GET' : 'POST' });
+      res.end();
+      return true;
+    }
+    const body = await readLocalJSONRequest(req);
+    if (pathname === '/api/native-live/session') {
+      const result = await renderer.create(validateRenderRequest(body, await tags()));
+      if (res.destroyed) await renderer.close(result.sessionId);
+      else json(res, 200, result);
+      return true;
+    }
+    const match = /^\/api\/native-live\/([a-f0-9-]{36})\/(input|frame|close)$/.exec(pathname);
+    if (!match) throw new RenderError(404, 'UNKNOWN_ENDPOINT', 'Unknown native preview endpoint.');
+    const [, sessionId, action] = match;
+    if (action === 'close') {
+      await renderer.close(sessionId);
+      json(res, 200, { closed: true });
+    } else {
+      json(res, 200, await (action === 'input' ? renderer.input(sessionId, body) : renderer.frame(sessionId)));
+    }
+  } catch (error) {
+    json(res, error instanceof RenderError ? error.status : 500, {
+      error: error instanceof RenderError ? error.code : 'LIVE_PREVIEW_FAILED',
+      message: error instanceof RenderError ? error.message : 'Unable to update the native preview.',
+    });
+  }
+  return true;
+}
+
 export function createServer(options = {}) {
   const renderer = options.renderer || createNativeRenderer({repoRoot:options.repoRoot||repoRoot,renderRoot:options.renderRoot,executable:options.nativeExecutable});
+  const liveRenderer = options.liveRenderer || createNativeLiveRenderer({repoRoot:options.repoRoot||repoRoot,executable:options.nativeLiveExecutable});
   let tagPromise;
   const tags = () => tagPromise ||= readFile(path.join(options.repoRoot||repoRoot,'packages/core/custom-elements.json'),'utf8')
     .then(JSON.parse).then(manifest=>new Set(manifest.modules.flatMap(m=>m.declarations||[]).map(c=>c.tagName).filter(Boolean)));
   const json = (res,status,value) => {res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
-  return http.createServer(async (req, res) => {
+  const server = http.createServer(async (req, res) => {
     const pathname=(req.url||'/').split('?')[0];
+    if (await handleNativeLiveRequest(req, res, { renderer: liveRenderer, tags, json })) return;
     if(pathname==='/api/native-render/status' && req.method==='GET'){
       try{json(res,200,await renderer.status());}catch{json(res,503,{available:false,platform:'macos',renderer:'SwiftUI',message:'Native renderer is unavailable.'});}return;
     }
@@ -79,11 +120,14 @@ export function createServer(options = {}) {
       res.end(req.method === 'HEAD' ? undefined : content);
     } catch { res.writeHead(500); res.end('Unable to read asset'); }
   });
+  server.once('close', () => liveRenderer.dispose());
+  return server;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT || 4177);
   const server = createServer();
-  server.listen(port, '127.0.0.1', () => process.stdout.write(`AWC Native Compiler Lab: http://127.0.0.1:${port}\nWeb reference and native SwiftUI snapshots. Full interaction runs in the native playgrounds.\n`));
+  server.listen(port, '127.0.0.1', () => process.stdout.write(`AWC Native Compiler Lab: http://127.0.0.1:${port}\nWeb reference, live macOS SwiftUI previews and native snapshots.\n`));
   server.on('error', error => { process.stderr.write(`${error.message}\n`); process.exitCode = 1; });
+  for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => server.close(() => process.exit(0)));
 }

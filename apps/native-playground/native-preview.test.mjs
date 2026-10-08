@@ -38,3 +38,127 @@ test('leaving native preview invalidates a pending image callback without a repl
   assert.equal(returned.isCurrent(), true);
   assert.equal(current.isCurrent(), false);
 });
+
+const turn = () => new Promise(resolve => setImmediate(resolve));
+const frame = (sessionId, revision, events = []) => ({ sessionId, revision, events, platform: 'macos', renderer: 'SwiftUI', imageUrl: 'data:image/png;base64,aA==', logicalWidth: 640, logicalHeight: 260, width: 1280, height: 520 });
+
+test('live session serializes polls and native inputs, keeps one host, and deduplicates native events', async () => {
+  const { createNativeLiveClient } = await import('./contracts.js');
+  const calls = [], scheduled = [], frames = [], events = [];
+  let releasePoll;
+  let revision = 0;
+  const emitted = { id: 'session:1', name: 'mdInput', detail: 'Salut Ștefan 👋' };
+  const client = createNativeLiveClient({
+    send: async (route, body) => {
+      calls.push({ route, body });
+      if (route === 'session') return frame('session', revision++);
+      if (route === 'session/frame') return new Promise(resolve => { releasePoll = () => resolve(frame('session', revision++, [emitted])); });
+      if (route === 'session/input') return frame('session', revision++, [emitted]);
+      return {};
+    },
+    onFrame: value => frames.push(value.revision), onEvents: value => events.push(...value), onError: error => { throw error; },
+    schedule: callback => { scheduled.push(callback); return callback; }, unschedule: () => {},
+  });
+  await client.start({ tag: 'md-text-field' });
+  scheduled.shift()();
+  assert.equal(client.input({ command: 'text', text: 'Salut Ștefan 👋' }), true);
+  client.input({ command: 'key', key: 'ArrowLeft', modifiers: [] });
+  assert.deepEqual(calls.map(call => call.route), ['session', 'session/frame']);
+  releasePoll(); await turn();
+  assert.deepEqual(calls.map(call => call.route), ['session', 'session/frame', 'session/input', 'session/input']);
+  assert.equal(calls[2].body.text, 'Salut Ștefan 👋');
+  assert.deepEqual(frames, [0, 1, 2, 3]);
+  assert.deepEqual(events, [emitted]);
+  client.stop();
+  assert.equal(calls.at(-1).route, 'session/close');
+});
+
+test('a session created after navigation is closed and never rendered', async () => {
+  const { createNativeLiveClient } = await import('./contracts.js');
+  const calls = [];
+  let finishCreate;
+  const client = createNativeLiveClient({ send: (route) => { calls.push(route); return route === 'session' ? new Promise(resolve => { finishCreate = resolve; }) : Promise.resolve({}); }, onFrame: () => assert.fail('Abandoned frame must not render'), onError: () => assert.fail('Abandoned session must not show an error') });
+  const creating = client.start({ tag: 'md-chip' });
+  client.stop();
+  finishCreate(frame('abandoned', 0));
+  await creating;
+  assert.deepEqual(calls, ['session', 'abandoned/close']);
+});
+
+test('hidden previews pause polling and disconnect invalidates queued input and late responses', async () => {
+  const { createNativeLiveClient } = await import('./contracts.js');
+  const calls = [], frames = [], errors = [];
+  let finishInput;
+  const client = createNativeLiveClient({
+    send: (route) => {
+      calls.push(route);
+      if (route === 'session') return Promise.resolve(frame('hidden', 0));
+      if (route === 'hidden/input') return new Promise(resolve => { finishInput = resolve; });
+      return Promise.resolve({});
+    }, onFrame: value => frames.push(value.revision), onError: error => errors.push(error),
+    schedule: () => assert.fail('Hidden preview must not schedule polls'), unschedule: () => {},
+  });
+  client.setVisible(false);
+  await client.start({ tag: 'md-chip' });
+  client.input({ command: 'click', x: 10, y: 20 });
+  client.input({ command: 'text', text: 'queued' });
+  client.stop();
+  finishInput(frame('hidden', 1)); await turn();
+  assert.deepEqual(calls, ['session', 'hidden/input', 'hidden/close']);
+  assert.deepEqual(frames, [0]);
+  assert.deepEqual(errors, []);
+  assert.equal(client.input({ command: 'click', x: 0, y: 0 }), false);
+});
+
+test('native coordinates account for Retina scaling, responsive size and letterboxing', async () => {
+  const { nativeImagePoint } = await import('./contracts.js');
+  assert.deepEqual(nativeImagePoint({ left: 10, top: 20, width: 640, height: 100 }, 1280, 200, 640, 100, 330, 70), { x: 320, y: 50 });
+  assert.deepEqual(nativeImagePoint({ left: 10, top: 20, width: 320, height: 50 }, 1280, 200, 640, 100, 170, 45), { x: 320, y: 50 });
+  assert.deepEqual(nativeImagePoint({ left: 10, top: 20, width: 640, height: 400 }, 1280, 200, 640, 100, 330, 220), { x: 320, y: 50 });
+  assert.equal(nativeImagePoint({ left: 10, top: 20, width: 640, height: 400 }, 1280, 200, 640, 100, 330, 50), null);
+  assert.equal(nativeImagePoint({ left: 10, top: 20, width: 640, height: 100 }, 1280, 200, 640, 100, 650, 70), null);
+  assert.equal(nativeImagePoint({ left: 0, top: 0, width: 0, height: 100 }, 1280, 200, 640, 100, 0, 0), null);
+});
+
+test('native text forwarding preserves Unicode across the transport byte limit', async () => {
+  const { nativeTextChunks } = await import('./contracts.js');
+  const text = 'Salut Ștefan 👋🏽 — 漢字\n'.repeat(1000);
+  const chunks = nativeTextChunks(text);
+  assert.equal(chunks.join(''), text);
+  assert.ok(chunks.length > 1);
+  for (const chunk of chunks) {
+    assert.ok(Buffer.byteLength(chunk, 'utf8') <= 4000);
+    assert.equal(Buffer.from(chunk, 'utf8').toString('utf8'), chunk);
+  }
+  assert.deepEqual(nativeTextChunks(''), []);
+});
+
+test('live client retries only transient frame transport failures, never uncertain native inputs', async () => {
+  const { createNativeLiveClient } = await import('./contracts.js');
+  const scheduled = [], errors = [], revisions = [], calls = [];
+  let frameAttempts = 0;
+  const client = createNativeLiveClient({
+    send: async route => {
+      calls.push(route);
+      if (route === 'session') return frame('retry', 0);
+      if (route === 'retry/frame') {
+        if (++frameAttempts <= 2) throw new TypeError('Failed to fetch');
+        return frame('retry', 1);
+      }
+      if (route === 'retry/input') throw new TypeError('Connection lost after sending input');
+      return {};
+    },
+    onFrame: value => revisions.push(value.revision), onError: error => errors.push(error),
+    schedule: callback => { scheduled.push(callback); return callback; }, unschedule: () => {},
+  });
+  await client.start({ tag: 'md-chip' });
+  for (let attempt = 0; attempt < 3; attempt++) { scheduled.shift()(); await turn(); }
+  assert.equal(frameAttempts, 3);
+  assert.deepEqual(revisions, [0, 1]);
+  assert.deepEqual(errors, []);
+  client.input({ command: 'click', x: 10, y: 10 }); await turn();
+  assert.equal(calls.filter(route => route === 'retry/input').length, 1);
+  assert.equal(errors.length, 1);
+  assert.equal(calls.at(-1), 'retry/close');
+  client.stop();
+});

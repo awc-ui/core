@@ -43,6 +43,43 @@ apps/native-ios-playground/scripts/build-macos-app.sh
 swift run --package-path apps/native-ios-playground AWCSnapshots /tmp/awc-native-snapshots
 ```
 
+## Interactive preview in the browser
+
+The browser workbench can control a persistent native SwiftUI view on this Mac:
+
+```sh
+swift build --package-path apps/native-ios-playground
+node apps/native-playground/server.mjs
+```
+
+Open <http://127.0.0.1:4177/?platform=ios#md-chip> and select **Live**. Click the
+rendered component, or click a text field and type. Native state persists between
+frames, and the browser Events panel displays callbacks from the actual AWC
+adapter. Changing initial properties or the theme restarts the native session.
+
+`AWCLivePreview --stdio` uses bounded JSON lines to configure one native view and
+accept click, text, key and frame commands. Each response contains a PNG frame,
+pixel and logical dimensions, a request ID, and native events since the last
+response. The Node server owns session lifetime and validates browser requests.
+The host realizes its own window outside the displays, without activating it;
+events stay inside that process. Links are disabled in the remote preview.
+
+This requires a logged-in macOS desktop session with access to WindowServer.
+Restricted processes or headless sessions may permit static snapshots but reject
+interactive window creation. It runs macOS SwiftUI, not an iOS simulator.
+Clicks and text editing are supported; drag gestures, hover, scrolling, system
+menus, sheets and native accessibility require testing in the full native app.
+
+Run the real native interaction check after building:
+
+```sh
+node apps/native-ios-playground/scripts/test-live-preview.mjs
+```
+
+The check exercises native Chip toggling, persistent state, Unicode text entry,
+Backspace, Enter submission and event delivery. The Node/browser transport has
+separate tests in `apps/native-playground`.
+
 ## Single-component render API
 
 The snapshot executable also accepts a data-only JSON request. Supplied properties override the root fixture while preserving its example children. No Swift, JavaScript or source strings are evaluated.

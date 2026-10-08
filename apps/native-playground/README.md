@@ -3,8 +3,9 @@
 A dependency-free browser workbench for the AWC native compiler. It presents the
 original web components as an interactive **web reference**, alongside the actual
 SwiftUI and Jetpack Compose output and explicit portability coverage. On macOS,
-the SwiftUI tab also displays real native snapshots rendered by the local
-`AWCSnapshots` executable.
+the SwiftUI tab connects to a persistent native view through the local
+`AWCLivePreview` executable. The browser displays native frames and forwards clicks
+and text input to that view. `AWCSnapshots` also provides a static preview mode.
 
 ## Run
 
@@ -13,7 +14,7 @@ native sources:
 
 ```sh
 node packages/native-compiler/src/cli.mjs build
-swift build --package-path apps/native-ios-playground --product AWCSnapshots
+swift build --package-path apps/native-ios-playground
 node apps/native-playground/server.mjs
 ```
 
@@ -34,17 +35,29 @@ the component browser falls back to the core custom elements manifest and clearl
 marks compiler output as unavailable. Refresh after regenerating native sources.
 
 The Swift build is optional for source inspection and requires macOS with the
-Swift/macOS SDK. It enables native images for all 81 components. The renderer
-merges inspector properties into each native example, preserving that example's
-children, then renders with SwiftUI and AppKit. Editing properties or the theme
-requests a new image; identical requests are cached until the executable changes.
-`AWC_NATIVE_RENDERER` can point at an executable built in another directory.
+Swift/macOS SDK. Each live session hosts an actual SwiftUI view in a separate
+local process. Its native state survives between input commands and frames.
+The Events inspector displays events emitted by the native AWC adapter. The
+browser does not simulate the component's selection or text state in JavaScript.
 
-These are **macOS SwiftUI snapshots**, not iOS simulator screenshots. They are
-static images: interact through the inspector, or launch a native playground for
-direct control interaction. Web slots and event behavior are not translated into
-the snapshots. The Android tab still provides source inspection and launch
-directions for its native playground. Existing API gaps remain visible.
+The renderer merges inspector properties into each native example while
+preserving its example children. Changing these initial properties or the theme
+starts a new session. Focus the preview to send text and supported keys; Escape
+releases browser focus. Navigation closes the previous session, hidden tabs stop
+polling, and idle sessions expire after 60 seconds. At most two native sessions
+can run at once. Retry starts a fresh native view after an error or expiry.
+
+Live previews run on **macOS SwiftUI**, not an iOS simulator. Clicks and typing are
+supported; dragging, hover, scrolling, separate native windows, sheets and system
+menus are not validated by this transport. Browser accessibility does not expose
+the native accessibility tree. Use the native app for full platform interaction
+and accessibility testing. Web slot content is not translated into the native
+fixture. The Android tab still provides source inspection and launch directions.
+Existing adapter API gaps remain visible.
+
+Snapshot mode renders one image per property/theme change and caches identical
+requests until the executable changes. `AWC_NATIVE_RENDERER` and
+`AWC_NATIVE_LIVE_RENDERER` can point at executables built in another directory.
 
 ## Included
 
@@ -55,9 +68,9 @@ directions for its native playground. Existing API gaps remain visible.
   unions preserve boolean and numeric values (for example, `multiline=false`).
 - Light/dark themes, locally served fonts and icons, responsive layout, and the
   `/` keyboard shortcut for search.
-- Native SwiftUI snapshots with loading/error states, retry, and cancellation of
-  stale results when navigating or changing the inspector.
-- Web event capture, contract metadata, compiler IR, actual generated source
+- Persistent SwiftUI previews with clicks, text input, native events, explicit
+  session lifecycle and static snapshot fallback.
+- Web and native event capture, contract metadata, compiler IR, actual generated source
   excerpts, complete-file links, and native runtime source links.
 - Per-platform supported and unsupported property/event/method/slot coverage.
   Navigation findings combine static diagnostics and native API gaps.
@@ -67,11 +80,13 @@ directions for its native playground. Existing API gaps remain visible.
 No code is uploaded and no build is triggered by this server. It serves the
 workbench assets, selected native source directories, generated compiler artifacts,
 core manifest, fonts, the configured web build and generated PNGs. Its local
-`POST /api/native-render` endpoint accepts bounded JSON requests for known tags
-and invokes a fixed native executable without a shell. It rejects foreign origins,
-traversal and symlink escapes, and uses a same-origin content policy. All other
-routes support GET/HEAD only. Generated images live in the ignored
-`.cache/native-playground/renders` directory.
+`POST /api/native-render` and `/api/native-live/*` endpoints accept bounded JSON
+requests and invoke fixed native executables without a shell. Live sessions accept
+only allowlisted input commands, scoped to their own native window; they do not
+inject global OS input. It rejects foreign origins, traversal and symlink escapes,
+and uses a same-origin content policy. Other routes support GET/HEAD only.
+Snapshot images live in the ignored `.cache/native-playground/renders` directory;
+live frames travel in memory as PNG data URLs.
 
 ## Checks
 
@@ -82,6 +97,7 @@ node --test apps/native-playground/*.test.mjs
 The tests cover route traversal, private-file exposure, symlink escape handling,
 external web build roots, intentional reference recipes for every current
 manifest element, typed render payloads, stale-result cancellation, render request
-validation, caching, process failures, mixed literal value round-trips and
-coverage-only findings. Native builds and interaction tests belong to the separate
-platform projects; snapshots do not establish native parity.
+validation, caching, process failure/timeout cleanup, bounded native sessions,
+input serialization, mixed literal value round-trips and coverage-only findings.
+Native builds and full interaction tests belong to the separate platform projects;
+a working remote preview does not establish native parity.

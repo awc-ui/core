@@ -4,5 +4,9 @@ let package = Package(
     name: "AWCNativePlayground",
     platforms: [.macOS(.v14)],
     dependencies: [.package(path: "../../packages/native-ios")],
-    targets: [.executableTarget(name: "AWCPlayground", dependencies: [.product(name: "AWCUI", package: "native-ios")], path: "AWCPlayground"), .executableTarget(name: "AWCSnapshots", dependencies: [.product(name: "AWCUI", package: "native-ios")], path: "SnapshotRenderer")]
+    targets: [
+        .executableTarget(name: "AWCPlayground", dependencies: [.product(name: "AWCUI", package: "native-ios")], path: "AWCPlayground"),
+        .executableTarget(name: "AWCSnapshots", dependencies: [.product(name: "AWCUI", package: "native-ios")], path: "SnapshotRenderer"),
+        .executableTarget(name: "AWCLivePreview", dependencies: [.product(name: "AWCUI", package: "native-ios")], path: "LiveRenderer")
+    ]
 )
