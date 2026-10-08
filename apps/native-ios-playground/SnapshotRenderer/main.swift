@@ -1,12 +1,93 @@
 import Foundation
 import SwiftUI
 import AppKit
+import Darwin
 import AWCUI
 
 @main
 struct SnapshotRenderer {
-    @MainActor static func main() throws {
-        let output = URL(fileURLWithPath: CommandLine.arguments.dropFirst().first ?? "/tmp/awc-native-snapshots", isDirectory: true)
+    private struct RenderRequest: Decodable {
+        let tag: String
+        let properties: [String: AWCValue]
+        let dark: Bool
+        let width: Double?
+    }
+    private struct RenderMetadata: Encodable {
+        let platform = "macos"
+        let renderer = "SwiftUI"
+        let tag: String
+        let width: Int
+        let height: Int
+    }
+    private struct RenderFailure: LocalizedError {
+        let message: String
+        var errorDescription: String? { message }
+    }
+
+    @MainActor static func main() {
+        do {
+            let arguments = Array(CommandLine.arguments.dropFirst())
+            if arguments.first == "--request" {
+                guard arguments.count == 4, arguments[2] == "--output",
+                      !arguments[1].isEmpty, !arguments[3].isEmpty else {
+                    throw RenderFailure(message: "Usage: AWCSnapshots --request INPUT_JSON --output OUTPUT_PNG")
+                }
+                try renderRequest(input: URL(fileURLWithPath: arguments[1]), output: URL(fileURLWithPath: arguments[3]))
+            } else {
+                guard arguments.count <= 1, arguments.first?.hasPrefix("--") != true else {
+                    throw RenderFailure(message: "Usage: AWCSnapshots [OUTPUT_DIRECTORY] or AWCSnapshots --request INPUT_JSON --output OUTPUT_PNG")
+                }
+                try renderBatch(output: URL(fileURLWithPath: arguments.first ?? "/tmp/awc-native-snapshots", isDirectory: true))
+            }
+        } catch {
+            FileHandle.standardError.write(Data(("AWCSnapshots: " + error.localizedDescription + "\n").utf8))
+            exit(EXIT_FAILURE)
+        }
+    }
+
+    @MainActor private static func renderRequest(input: URL, output: URL) throws {
+        guard input.standardizedFileURL != output.standardizedFileURL else {
+            throw RenderFailure(message: "Request and output must use different file paths.")
+        }
+        let request = try JSONDecoder().decode(RenderRequest.self, from: Data(contentsOf: input))
+        guard AWCComponentCatalog.tags.contains(request.tag) else {
+            throw RenderFailure(message: "Unknown native component tag: \(request.tag)")
+        }
+        let requestedWidth = request.width ?? 640
+        guard requestedWidth.isFinite else { throw RenderFailure(message: "Width must be a finite number.") }
+        let width = min(1200, max(320, requestedWidth)).rounded()
+        var node = AWCExamples.node(for: request.tag)
+        node.properties.merge(request.properties) { _, supplied in supplied }
+        let view = AWCNativeView(node: node)
+            .padding(24).frame(width: width, alignment: .leading)
+            .frame(minHeight: 100, alignment: .topLeading)
+            .background(request.dark ? Color(white: 0.08) : .white)
+            .environment(\.colorScheme, request.dark ? .dark : .light)
+            .awcTheme(.generated(dark: request.dark))
+        let host = NSHostingView(rootView: view)
+        let measuredHeight = host.fittingSize.height
+        guard measuredHeight.isFinite, measuredHeight > 0 else {
+            throw RenderFailure(message: "Component produced invalid native layout dimensions.")
+        }
+        let height = min(2000, max(100, measuredHeight.rounded(.up)))
+        host.frame = NSRect(x: 0, y: 0, width: width, height: height)
+        host.layoutSubtreeIfNeeded()
+        guard let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds) else {
+            throw RenderFailure(message: "Native bitmap allocation failed.")
+        }
+        host.cacheDisplay(in: host.bounds, to: bitmap)
+        guard let png = bitmap.representation(using: .png, properties: [:]) else {
+            throw RenderFailure(message: "Native PNG encoding failed.")
+        }
+        try FileManager.default.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try png.write(to: output, options: .atomic)
+        let metadata = RenderMetadata(tag: request.tag, width: bitmap.pixelsWide, height: bitmap.pixelsHigh)
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+        let json = try encoder.encode(metadata)
+        FileHandle.standardOutput.write(json + Data("\n".utf8))
+    }
+
+    @MainActor private static func renderBatch(output: URL) throws {
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
         var failed: [String] = []
         for dark in [false, true] {

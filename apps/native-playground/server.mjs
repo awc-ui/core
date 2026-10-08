@@ -2,6 +2,7 @@ import http from 'node:http';
 import { readFile, stat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createNativeRenderer, readRenderRequest, RenderError } from './native-render.mjs';
 
 const appRoot = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appRoot, '../..');
@@ -15,7 +16,11 @@ export async function resolveAsset(rawUrl, options = {}) {
   try { pathname = decodeURIComponent(rawUrl.split('?')[0]); } catch { return null; }
   if (pathname.includes('\0') || pathname.includes('\\') || pathname.split('/').includes('..')) return null;
   let root, relative;
-  if (pathname.startsWith('/web-dist/')) {
+  if (pathname.startsWith('/native-renders/')) {
+    relative = pathname.slice('/native-renders/'.length);
+    if (!/^[a-f0-9]{64}\.png$/.test(relative)) return null;
+    root = options.renderRoot || path.join(repo, '.cache/native-playground/renders');
+  } else if (pathname.startsWith('/web-dist/')) {
     root = options.webDist || process.env.AWC_WEB_DIST || path.join(repo, 'packages/core/dist');
     relative = pathname.slice('/web-dist/'.length);
   } else if (pathname.startsWith('/fonts/')) {
@@ -44,9 +49,23 @@ export async function resolveAsset(rawUrl, options = {}) {
 }
 
 export function createServer(options = {}) {
+  const renderer = options.renderer || createNativeRenderer({repoRoot:options.repoRoot||repoRoot,renderRoot:options.renderRoot,executable:options.nativeExecutable});
+  let tagPromise;
+  const tags = () => tagPromise ||= readFile(path.join(options.repoRoot||repoRoot,'packages/core/custom-elements.json'),'utf8')
+    .then(JSON.parse).then(manifest=>new Set(manifest.modules.flatMap(m=>m.declarations||[]).map(c=>c.tagName).filter(Boolean)));
+  const json = (res,status,value) => {res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
   return http.createServer(async (req, res) => {
+    const pathname=(req.url||'/').split('?')[0];
+    if(pathname==='/api/native-render/status' && req.method==='GET'){
+      try{json(res,200,await renderer.status());}catch{json(res,503,{available:false,platform:'macos',renderer:'SwiftUI',message:'Native renderer is unavailable.'});}return;
+    }
+    if(pathname==='/api/native-render'){
+      if(req.method!=='POST'){res.writeHead(405,{Allow:'POST'});res.end();return;}
+      try{const request=await readRenderRequest(req,await tags());json(res,200,await renderer.render(request));}
+      catch(error){json(res,error instanceof RenderError?error.status:500,{error:error.code||'RENDER_FAILED',message:error instanceof RenderError?error.message:'Unable to prepare native preview.'});}return;
+    }
     if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405, { Allow: 'GET, HEAD' }); res.end(); return; }
-    const file = await resolveAsset(req.url || '/', options);
+    const file = await resolveAsset(req.url || '/', {...options,renderRoot:renderer.directory});
     if (!file) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('Not found'); return; }
     try {
       const content = await readFile(file);
@@ -65,6 +84,6 @@ export function createServer(options = {}) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT || 4177);
   const server = createServer();
-  server.listen(port, '127.0.0.1', () => process.stdout.write(`AWC Native Compiler Lab: http://127.0.0.1:${port}\nWeb reference only. Run the native playgrounds to inspect native UI.\n`));
+  server.listen(port, '127.0.0.1', () => process.stdout.write(`AWC Native Compiler Lab: http://127.0.0.1:${port}\nWeb reference and native SwiftUI snapshots. Full interaction runs in the native playgrounds.\n`));
   server.on('error', error => { process.stderr.write(`${error.message}\n`); process.exitCode = 1; });
 }

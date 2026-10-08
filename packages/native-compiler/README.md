@@ -14,7 +14,7 @@ pnpm native:check
 pnpm native:playground
 ```
 
-The browser workbench opens at `http://127.0.0.1:4177`. It shows the **web reference**, actual generated Swift/Kotlin code, source contracts, and native support gaps. Build `@awc-ui/core` first if its `dist` directory does not exist. The web preview does not emulate a native UI.
+The browser workbench opens at `http://127.0.0.1:4177`. It shows the **web reference**, actual generated Swift/Kotlin code, source contracts, and native support gaps. Build `@awc-ui/core` first if its `dist` directory does not exist. On macOS, run `swift build --package-path apps/native-ios-playground --product AWCSnapshots` to enable real SwiftUI snapshot previews in the iOS tab. These static images are rendered with the macOS SDK; iOS interaction still requires the native playground and an iOS SDK. See `apps/native-playground/README.md` for setup and preview behavior.
 
 Native playgrounds:
 
@@ -55,7 +55,7 @@ The standard Custom Elements Manifest supplies documentation and slot metadata. 
 | `packages/native-android` | Compose adapters and generated Kotlin APIs |
 | `apps/native-ios-playground` | iOS Xcode app, macOS SwiftUI app, native snapshot tool |
 | `apps/native-android-playground` | Android app and instrumentation tests |
-| `apps/native-playground` | Browser reference, source, and support inspector |
+| `apps/native-playground` | Browser reference, native SwiftUI snapshots, source and support inspector |
 
 Generated files are checked in so Xcode and Gradle consumers do not need Node just to build. Regenerate after changing a component, theme tokens, the compiler, or a native support policy. Native runtime implementations live outside the `Generated`/`generated` directories and are not overwritten.
 

@@ -1,8 +1,9 @@
-import { literalChoices, encodeLiteralChoice, decodeLiteralChoice, literalChoiceLabel, portabilityFindings } from './contracts.js';
+import { literalChoices, encodeLiteralChoice, decodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest } from './contracts.js';
 import { recipeFor, categoryFor, categoryOrder, displayName, icons } from './recipes.js';
 
 const $ = selector => document.querySelector(selector);
 const state = { components: [], selected: null, platform: 'web', inspector: 'contract', filter: 'all', props: {}, events: [], catalog: null, ready: false, target: null, sourcePlatform: 'ios', sourceText: '', sourceCache: new Map(), renderVersion: 0 };
+const nativeRequests = createLatestRequest();
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const text = (selector, value) => { $(selector).textContent = String(value ?? ''); };
 const sourceURL = value => value && !value.startsWith('/') && !value.split('/').includes('..') ? `/repo/${value}` : null;
@@ -47,6 +48,8 @@ async function init() {
     const hashTag = location.hash.slice(1);
     selectComponent(state.components.some(component => component.tag === hashTag) ? hashTag : 'md-button');
     bindEvents();
+    const requestedPlatform = new URLSearchParams(location.search).get('platform');
+    if (['ios', 'android'].includes(requestedPlatform)) selectPlatform(requestedPlatform);
     window.__awcNativeLab = { componentCount: state.components.length, generatedCount: generated.size, selectComponent, getState: () => ({ selected: state.selected?.tag, platform: state.platform, props: { ...state.props }, events: state.events.length, webReady: state.ready }) };
   } catch (error) {
     $('#component-list').innerHTML = `<p class="load-error">${escape(error.message)}</p>`;
@@ -60,19 +63,24 @@ function bindEvents() {
   document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => { state.filter = button.dataset.filter; document.querySelectorAll('[data-filter]').forEach(item => item.classList.toggle('active', item === button)); renderNavigation(); }));
   $('#component-list').addEventListener('click', event => { const button = event.target.closest('[data-tag]'); if (button) { location.hash = button.dataset.tag; if (state.selected?.tag === button.dataset.tag) selectComponent(button.dataset.tag); } });
   window.addEventListener('hashchange', () => { const tag = location.hash.slice(1); if (state.components.some(component => component.tag === tag)) selectComponent(tag); });
-  $('#theme-toggle').addEventListener('click', () => { const dark = document.documentElement.dataset.theme !== 'dark'; document.documentElement.dataset.theme = dark ? 'dark' : 'light'; try { localStorage.setItem('awc-native-theme', dark ? 'dark' : 'light'); } catch { /* Optional storage. */ } updateThemeLabel(); });
-  $('#reset').addEventListener('click', () => { selectComponent(state.selected.tag); toast('Reference properties reset'); });
-  document.querySelectorAll('[data-platform]').forEach(button => button.addEventListener('click', () => {
-    state.platform = button.dataset.platform;
-    document.querySelectorAll('[data-platform]').forEach(item => { item.classList.toggle('active', item === button); item.setAttribute('aria-selected', String(item === button)); });
-    if (state.platform !== 'web') { state.sourcePlatform = state.platform; selectInspector('source'); }
-    renderPreview();
-  }));
+  $('#theme-toggle').addEventListener('click', () => { const dark = document.documentElement.dataset.theme !== 'dark'; document.documentElement.dataset.theme = dark ? 'dark' : 'light'; try { localStorage.setItem('awc-native-theme', dark ? 'dark' : 'light'); } catch { /* Optional storage. */ } updateThemeLabel(); scheduleNativeRender(); });
+  $('#reset').addEventListener('click', () => { selectComponent(state.selected.tag); toast('Component properties reset'); });
+  document.querySelectorAll('[data-platform]').forEach(button => button.addEventListener('click', () => selectPlatform(button.dataset.platform)));
   document.querySelectorAll('[data-inspector]').forEach(button => button.addEventListener('click', () => selectInspector(button.dataset.inspector)));
   $('#copy-source').addEventListener('click', async () => { try { await navigator.clipboard.writeText(state.sourceText); toast('Generated source copied'); } catch { toast('Clipboard unavailable in this browser'); } });
   document.addEventListener('keydown', event => { if (event.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) { event.preventDefault(); $('#search').focus(); } });
 }
 function updateThemeLabel() { const dark = document.documentElement.dataset.theme === 'dark'; $('#theme-toggle').setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} theme`); $('#theme-toggle').textContent = dark ? '☼' : '◐'; }
+function selectPlatform(platform) {
+  if (!['web', 'ios', 'android'].includes(platform)) return;
+  state.platform = platform;
+  const url = new URL(location.href);
+  if (platform === 'web') url.searchParams.delete('platform'); else url.searchParams.set('platform', platform);
+  history.replaceState(null, '', url);
+  document.querySelectorAll('[data-platform]').forEach(button => { const active = button.dataset.platform === platform; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); });
+  if (platform !== 'web') { state.sourcePlatform = platform; selectInspector('source'); }
+  renderPreview();
+}
 function toast(message) { text('#toast', message); $('#toast').classList.add('visible'); clearTimeout(state.toastTimer); state.toastTimer = setTimeout(() => $('#toast').classList.remove('visible'), 2000); }
 function renderNavigation() {
   const query = $('#search').value.trim().toLowerCase();
@@ -90,9 +98,13 @@ function selectComponent(tag) {
   renderNavigation(); renderPreview(); renderProperties(); renderInspector();
 }
 function renderPreview() {
+  clearTimeout(state.nativeRenderTimer); nativeRequests.cancel();
   const root = $('#preview-content'); root.replaceChildren(); state.target = null;
   const isWeb = state.platform === 'web'; $('#preview-stage').classList.toggle('native-mode', !isWeb);
-  text('#preview-runtime', isWeb ? 'LIVE WEB' : 'NATIVE TARGET');
+  $('#preview-stage').classList.toggle('snapshot-mode', state.platform === 'ios');
+  text('#preview-runtime', isWeb ? 'LIVE WEB' : state.platform === 'ios' ? 'NATIVE SNAPSHOT' : 'NATIVE TARGET');
+  text('.props-hint', state.platform === 'ios' ? 'Changes rerender the native snapshot.' : 'Changes apply to the web reference.');
+  if (state.platform === 'ios') { renderNativePreview(); return; }
   if (!isWeb) {
     const ios = state.platform === 'ios'; const path = ios ? state.selected.swiftPath : state.selected.kotlinPath;
     const support = state.selected.support?.[state.platform];
@@ -122,6 +134,76 @@ function renderPreview() {
   root.addEventListener('click', event => { if (event.composedPath().some(element => element?.tagName === 'A')) event.preventDefault(); });
   text('#preview-caption', 'Original AWC web component · browser rendering'); text('#recipe-status', recipe.note);
 }
+
+function renderNativePreview() {
+  const component = state.selected;
+  const support = component.support?.ios;
+  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="SwiftUI native snapshot"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> SwiftUI · macOS native render</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><button class="secondary-button" id="native-render-button" type="button">Render again</button></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div><p class="snapshot-status" id="native-render-status" role="status" aria-live="polite"></p><p class="snapshot-note">Static snapshot — interact in the native app. For iOS, open the native playground.</p><details class="snapshot-details"><summary>Fixture & native playground</summary><p>The native example uses this component’s root properties. Its child content and text may differ from the web reference.</p><p>${support ? `${support.unsupportedProperties?.length || 0} unsupported properties · ${support.unsupportedEvents?.length || 0} unsupported events. Inspect full coverage in Portability.` : 'Adapter coverage has not been reported.'}</p><code>open apps/native-ios-playground/AWCPlayground.xcodeproj</code></details></section>`;
+  $('#native-render-button').addEventListener('click', () => scheduleNativeRender(0));
+  text('#preview-caption', 'Rendered by SwiftUI on this Mac · displayed as a PNG');
+  text('#recipe-status', 'Native fixture + current root properties');
+  scheduleNativeRender(0);
+}
+
+function nativeRenderState(kind, message) {
+  const frame = $('#native-render-frame');
+  if (!frame) return;
+  frame.dataset.state = kind;
+  frame.setAttribute('aria-busy', String(kind === 'loading'));
+  frame.replaceChildren();
+  if (kind !== 'ready') {
+    const marker = document.createElement('span');
+    marker.className = kind === 'loading' ? 'snapshot-spinner' : 'snapshot-error-symbol';
+    marker.setAttribute('aria-hidden', 'true');
+    if (kind !== 'loading') marker.textContent = '◇';
+    const label = document.createElement('p'); label.textContent = kind === 'loading' ? 'Rendering native component…' : 'Native render unavailable';
+    frame.append(marker, label);
+  }
+  text('#native-render-status', message);
+  text('#native-render-button', kind === 'error' ? 'Retry render' : kind === 'loading' ? 'Restart render' : 'Render again');
+}
+
+function scheduleNativeRender(delay = 300) {
+  if (state.platform !== 'ios' || !$('#native-render-frame')) return;
+  clearTimeout(state.nativeRenderTimer);
+  const request = nativeRequests.start();
+  const payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark');
+  nativeRenderState('loading', delay ? 'Waiting for property changes…' : 'Checking the native renderer…');
+  state.nativeRenderTimer = setTimeout(() => fetchNativeRender(payload, request), delay);
+}
+
+async function fetchNativeRender(payload, request) {
+  const current = () => request.isCurrent() && state.platform === 'ios' && state.selected.tag === payload.tag;
+  async function readResponse(response) {
+    let result;
+    try { result = await response.json(); } catch { throw new Error(`The render server returned an invalid response (${response.status}). Restart the playground server and retry.`); }
+    if (!response.ok) throw new Error(result.message || result.error || `Native rendering failed (${response.status}).`);
+    return result;
+  }
+  try {
+    const status = await readResponse(await fetch('/api/native-render/status', { signal: request.signal }));
+    if (!current()) return;
+    if (!status.available) throw new Error(status.message || 'The SwiftUI renderer is not available on this host.');
+    text('#native-render-status', 'SwiftUI is rendering this component on your Mac…');
+    const result = await readResponse(await fetch('/api/native-render', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: request.signal }));
+    if (!current()) return;
+    if (result.tag !== payload.tag || result.platform !== 'macos' || result.renderer !== 'SwiftUI' || !/^\/native-renders\/[a-f\d]+\.png$/.test(result.imageUrl || '')) throw new Error('The renderer returned an unexpected component or image. Retry this render.');
+    const snapshot = new Image();
+    snapshot.className = 'snapshot-image';
+    snapshot.style.width = `${payload.width}px`; // PNG pixels may be 2× the logical SwiftUI width on Retina displays.
+    snapshot.alt = `${displayName(payload.tag)} rendered natively by SwiftUI on macOS in ${payload.dark ? 'dark' : 'light'} mode`;
+    snapshot.addEventListener('load', () => {
+      if (!current()) return;
+      nativeRenderState('ready', `${result.width} × ${result.height} px · ${payload.dark ? 'Dark' : 'Light'} appearance · ${payload.tag}`);
+      $('#native-render-frame').append(snapshot);
+    }, { once: true });
+    snapshot.addEventListener('error', () => { if (current()) nativeRenderState('error', 'The native render completed, but the snapshot could not be loaded. Retry the render.'); }, { once: true });
+    snapshot.src = result.imageUrl;
+  } catch (error) {
+    if (current() && error.name !== 'AbortError') nativeRenderState('error', error.message || 'The native render failed. Retry the render.');
+  }
+}
+
 function renderProperties() {
   const fields = state.selected.properties || [];
   const preferred = ['label', 'headline', 'variant', 'size', 'shape', 'value', 'selected', 'checked', 'disabled', 'loading', 'icon', 'supportingText', 'options', 'series', 'data', 'nodes'];
@@ -145,6 +227,7 @@ function renderProperties() {
     if (state.editedTag !== state.selected.tag) { state.editedTag = state.selected.tag; state.editedProps = {}; }
     state.editedProps[input.dataset.prop] = value;
     if (state.target) state.target[input.dataset.prop] = value;
+    scheduleNativeRender();
   }));
 }
 function syncReferenceState() {
@@ -161,6 +244,7 @@ function syncReferenceState() {
   }
 }
 function recordEvent(event) {
+  if (state.platform !== 'web') return;
   requestAnimationFrame(syncReferenceState);
   let detail = event.detail;
   if (detail && typeof detail === 'object') { try { detail = JSON.parse(JSON.stringify(detail, (_, value) => value instanceof Element ? `<${value.tagName.toLowerCase()}>` : value)); } catch { detail = '[Non-serializable event detail]'; } }

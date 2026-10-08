@@ -43,6 +43,29 @@ apps/native-ios-playground/scripts/build-macos-app.sh
 swift run --package-path apps/native-ios-playground AWCSnapshots /tmp/awc-native-snapshots
 ```
 
+## Single-component render API
+
+The snapshot executable also accepts a data-only JSON request. Supplied properties override the root fixture while preserving its example children. No Swift, JavaScript or source strings are evaluated.
+
+```json
+{"tag":"md-chip","properties":{"label":"Design system","selected":true},"dark":false,"width":640}
+```
+
+```sh
+swift run --package-path apps/native-ios-playground AWCSnapshots \
+  --request /tmp/awc-request.json --output /tmp/awc-component.png
+```
+
+`tag`, `properties` and `dark` are required. `width` is optional (default 640), rounded to whole layout points and clamped to 320–1200. The layout height is clamped to 100–2000 points. Output metadata reports physical pixels, which can be larger on Retina displays. Unknown tags, malformed JSON, invalid field types and invalid native dimensions fail with nonzero status and a diagnostic on stderr. The output directory is created if needed and the PNG is written atomically.
+
+A successful single render writes one JSON object to stdout:
+
+```json
+{"height":100,"platform":"macos","renderer":"SwiftUI","tag":"md-chip","width":640}
+```
+
+These are native **macOS SwiftUI** renders, not iOS simulator screenshots. No GUI application needs to be opened. Existing directory-based batch rendering remains available.
+
 ## Scope and verification
 
 The package and generated wrappers were compiled and linked with the macOS SwiftUI SDK. The iOS project was structurally validated; an iOS SDK was unavailable in the development environment. See `packages/native-ios/NativeSupport.json` for property, event, method and slot support, including platform differences. The Properties panel exposes the source contract, which includes properties not yet handled by the native adapter.

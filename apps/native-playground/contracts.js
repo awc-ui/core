@@ -48,3 +48,24 @@ export function portabilityFindings(component) {
   }
   return { source, ...platforms, total: source + platforms.ios + platforms.android };
 }
+
+// Abort fetches eagerly, and guard callbacks (including image load events) that
+// may still arrive after cancellation or a component/platform change.
+export function createLatestRequest() {
+  let controller;
+  let generation = 0;
+  const cancel = () => { generation++; controller?.abort(); controller = undefined; };
+  return {
+    cancel,
+    start() {
+      cancel();
+      const currentGeneration = generation;
+      controller = new AbortController();
+      return { signal: controller.signal, isCurrent: () => currentGeneration === generation };
+    },
+  };
+}
+
+export function nativeRenderRequest(tag, properties, dark) {
+  return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640 };
+}
