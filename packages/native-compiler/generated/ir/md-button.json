@@ -2584,7 +2584,12 @@
         "fullWidth",
         "value",
         "disabled",
-        "softDisabled"
+        "softDisabled",
+        "shapeMorph",
+        "density",
+        "ripple",
+        "connectedLeft",
+        "connectedRight"
       ],
       "events": [
         "mdClick",
@@ -2599,23 +2604,21 @@
       ],
       "unsupportedProperties": [
         "type",
-        "ripple",
         "target",
-        "shapeMorph",
         "mirrorIcon",
         "suppressExpandIconFlip",
-        "connectedLeft",
-        "connectedRight",
         "groupTabindex",
-        "roleOverride",
-        "density"
+        "roleOverride"
       ],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native links use openURL. HTML submit/reset, target, cancelable DOM events, ripple shape morph, focus delegation and connected corner geometry are not reproduced.",
-        "mdClick includes value, toggle, selected, href and target; mdChange includes selected and value. originalEvent is omitted."
+        "Dedicated native Button uses source size/density metrics, variant/toggle/disabled color tokens, Roboto and Material Symbols fonts, slot fallback, and source loader placement.",
+        "Actual SwiftUI isPressed drives shape morphing (200ms press, 400ms release) and a centered ripple (450ms growth, 150ms fade). Reduce Motion suppresses these animations. Pointer-origin ripple and per-instance CSS overrides are not reproduced.",
+        "Native links use openURL. HTML submit/reset, browser target contexts, cancelable DOM events, role overrides and group roving tab order are not reproduced. Soft-disabled controls suppress activation but do not preserve web keyboard focusability.",
+        "Loading uses a native ProgressView rather than the web morphing loading indicator. Connected corner props render native corner geometry; native button groups do not automatically inject those props.",
+        "mdClick describes the proposed state before commit and includes value, toggle, selected, href and target; mdChange follows commit and includes selected and value. originalEvent is omitted."
       ],
       "verification": "not-device-verified"
     },

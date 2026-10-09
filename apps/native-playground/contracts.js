@@ -72,7 +72,7 @@ export function nativeRenderRequest(tag, properties, dark) {
 
 // A session owns one ordered request stream: input always precedes the next
 // poll, and a late create response is closed even after navigation.
-export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onError, pollInterval = 250, schedule = setTimeout, unschedule = clearTimeout }) {
+export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onError, pollInterval = 250, interactiveInterval = 1000 / 30, animationTail = 600, now = Date.now, schedule = setTimeout, unschedule = clearTimeout }) {
   let active = null;
   let visible = true;
   const close = id => id && Promise.resolve(send(`${id}/close`, {})).catch(() => {});
@@ -107,6 +107,7 @@ export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onE
     const input = session.queue.shift();
     if (!input && !visible) return;
     session.busy = true;
+    const requestStartedAt = now();
     let received = false;
     try {
       const result = await send(`${session.id}/${input ? 'input' : 'frame'}`, input || {});
@@ -124,13 +125,19 @@ export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onE
       session.busy = false;
       if (active === session && !session.closed) {
         if (session.queue.length) void pump(session);
-        else if (visible) session.timer = schedule(() => pump(session), pollInterval * Math.max(1, session.pollFailures));
+        else if (visible) {
+          // Spend the frame budget on native work, rather than adding another
+          // 33 ms after a render that already took longer than that budget.
+          const fast = session.pointerHeld || now() < session.animateUntil;
+          const delay = fast && !session.pollFailures ? Math.max(0, interactiveInterval - (now() - requestStartedAt)) : pollInterval * Math.max(1, session.pollFailures);
+          session.timer = schedule(() => pump(session), delay);
+        }
       }
     }
   }
   async function start(payload) {
     stop();
-    const session = { id: null, closed: false, busy: true, queue: [], revision: -1, eventIDs: new Set(), timer: undefined, pollFailures: 0 };
+    const session = { id: null, closed: false, busy: true, queue: [], revision: -1, eventIDs: new Set(), timer: undefined, pollFailures: 0, pointerHeld: false, animateUntil: 0 };
     active = session;
     try {
       const result = await send('session', payload);
@@ -149,7 +156,12 @@ export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onE
     input(command) {
       if (!active?.id || active.closed) return false;
       // A stuck host must not accumulate unbounded text or key commands.
-      if (active.queue.length >= 100) return false;
+      const releasing = command.command === 'pointer' && ['up', 'cancel'].includes(command.phase);
+      if (active.queue.length >= 100 && !releasing) return false;
+      if (command.command === 'pointer') {
+        active.pointerHeld = command.phase === 'down';
+        active.animateUntil = now() + animationTail;
+      }
       active.queue.push(command);
       void pump(active);
       return true;
@@ -171,6 +183,33 @@ export function nativeImagePoint(rect, pixelWidth, pixelHeight, logicalWidth, lo
   const y = clientY - rect.top - (rect.height - height) / 2;
   if (x < 0 || y < 0 || x >= width || y >= height) return null;
   return { x: x / width * logicalWidth, y: y / height * logicalHeight };
+}
+
+// One physical pointer owns a native press. Cancellation must never turn into
+// an activation, and lost capture after a normal release must be a no-op.
+export function createNativePointerInput(send) {
+  let held = null;
+  return {
+    get pointerId() { return held?.id ?? null; },
+    down(id, point) {
+      if (held || !point) return false;
+      if (send({ command: 'pointer', phase: 'down', ...point }) === false) return false;
+      held = { id, point };
+      return true;
+    },
+    up(id, point) {
+      if (!held || held.id !== id) return false;
+      const previous = held;
+      held = null;
+      return send({ command: 'pointer', phase: point ? 'up' : 'cancel', ...(point || previous.point) }) !== false;
+    },
+    cancel(id = held?.id) {
+      if (!held || held.id !== id) return false;
+      const previous = held;
+      held = null;
+      return send({ command: 'pointer', phase: 'cancel', ...previous.point }) !== false;
+    },
+  };
 }
 
 export function nativeTextChunks(value) {

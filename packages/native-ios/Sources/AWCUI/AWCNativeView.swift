@@ -88,7 +88,8 @@ public struct AWCNativeView: View {
     @ViewBuilder var rendered: some View {
         switch node.tag {
         case "#text": Text(s("text"))
-        case "md-button", "md-icon-button", "md-fab", "md-fab-menu-item": actionButton
+        case "md-button": nativeButton
+        case "md-icon-button", "md-fab", "md-fab-menu-item": actionButton
         case "md-split-button": splitButton
         case "md-button-group", "md-segmented-button-set": selectionGroup
         case "md-segmented-button": segmentedButton

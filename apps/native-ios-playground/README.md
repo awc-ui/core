@@ -35,6 +35,10 @@ To create a local `.app` bundle:
 apps/native-ios-playground/scripts/build-macos-app.sh
 ```
 
+The bundle includes the web reference's Roboto and Material Symbols font files,
+registered only inside the app process. Keep its `Contents/Resources` directory
+when distributing the app.
+
 ## Offscreen rendering
 
 `AWCSnapshots` renders every catalog fixture in both appearances using a native `NSHostingView`. It writes PNGs to the supplied directory; these are native macOS renders, not iOS simulator screenshots. This does not test user interaction, accessibility navigation, keyboard focus, or presented sheets.
@@ -58,7 +62,8 @@ frames, and the browser Events panel displays callbacks from the actual AWC
 adapter. Changing initial properties or the theme restarts the native session.
 
 `AWCLivePreview --stdio` uses bounded JSON lines to configure one native view and
-accept click, text, key and frame commands. Each response contains a PNG frame,
+accept click, text, key and frame commands, plus separate pointer down/up/cancel
+commands for `md-button`. Each response contains a PNG frame,
 pixel and logical dimensions, a request ID, and native events since the last
 response. The Node server owns session lifetime and validates browser requests.
 The host realizes its own window outside the displays, without activating it;
@@ -67,7 +72,7 @@ events stay inside that process. Links are disabled in the remote preview.
 This requires a logged-in macOS desktop session with access to WindowServer.
 Restricted processes or headless sessions may permit static snapshots but reject
 interactive window creation. It runs macOS SwiftUI, not an iOS simulator.
-Clicks and text editing are supported; drag gestures, hover, scrolling, system
+Clicks, held button presses and text editing are supported; drag gestures, hover, scrolling, system
 menus, sheets and native accessibility require testing in the full native app.
 
 Run the real native interaction check after building:
@@ -77,8 +82,17 @@ node apps/native-ios-playground/scripts/test-live-preview.mjs
 ```
 
 The check exercises native Chip toggling, persistent state, Unicode text entry,
-Backspace, Enter submission and event delivery. The Node/browser transport has
+Backspace, Enter submission, held button presses, cancellation and event delivery. The Node/browser transport has
 separate tests in `apps/native-playground`.
+
+`md-button` uses source size/density rules, five variant palettes, bundled Roboto
+and Material Symbols, and native press-driven shape morphing. The ripple uses the
+source grow/fade timing but starts at the center; web pointer-origin waves and
+the web morphing loading indicator remain differences. With Xcode's XCTest SDK,
+its isolated metric, palette and corner regressions run with
+`swift test --package-path packages/native-ios`. The Command Line Tools SDK can
+build the playground and run the real interaction script above, but does not
+include XCTest.
 
 ## Single-component render API
 

@@ -4,5 +4,8 @@ let package = Package(
     name: "AWCUI",
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [.library(name: "AWCUI", targets: ["AWCUI"])],
-    targets: [.target(name: "AWCUI")]
+    targets: [
+        .target(name: "AWCUI", resources: [.copy("Resources/Fonts")]),
+        .testTarget(name: "AWCUITests", dependencies: ["AWCUI"])
+    ]
 )

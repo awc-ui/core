@@ -13,6 +13,7 @@ private struct PreviewRequest: Decodable {
     let width: Double?
     let x: Double?
     let y: Double?
+    let phase: String?
     let text: String?
     let key: String?
     let modifiers: [String]?
@@ -107,10 +108,12 @@ private final class NativeSession {
     private var tag = ""
     private let events = EventBuffer()
     private var eventNumber = 0
+    private var pointerHeld = false
     private var inputNotice: String?
     private var activity: NSObjectProtocol?
 
     func close() {
+        try? cancelPointer()
         window?.close(); window = nil; host = nil
         if let activity { ProcessInfo.processInfo.endActivity(activity); self.activity = nil }
     }
@@ -120,12 +123,14 @@ private final class NativeSession {
         switch request.command {
         case "configure": try configure(request)
         case "click": try click(request)
+        case "pointer": try pointer(request)
         case "text": try insert(request)
         case "key": try key(request)
         case "frame": try requireConfigured()
         default: throw PreviewFailure("Unsupported command: \(request.command)")
         }
-        Self.pump(0.04)
+        // Held presses and animation frames should not wait a full click settling interval.
+        Self.pump(request.command == "pointer" || request.command == "frame" ? 0.008 : 0.04)
         var response = try frame()
         response["id"] = request.id ?? .null
         response["events"] = events.drain()
@@ -181,6 +186,7 @@ private final class NativeSession {
 
     private func click(_ request: PreviewRequest) throws {
         try requireConfigured()
+        try cancelPointer()
         guard let host, let window, let x = request.x, let y = request.y,
               x.isFinite, y.isFinite, x >= 0, y >= 0, x < host.bounds.width, y < host.bounds.height else {
             throw PreviewFailure("Click coordinates must be finite and inside the logical preview bounds.")
@@ -198,15 +204,58 @@ private final class NativeSession {
         eventNumber += 2
         let now = ProcessInfo.processInfo.systemUptime
         guard let down = NSEvent.mouseEvent(with: .leftMouseDown, location: location, modifierFlags: [], timestamp: now,
-                                            windowNumber: window.windowNumber, context: nil, eventNumber: eventNumber, clickCount: 1, pressure: 1),
+                                            windowNumber: window.windowNumber, context: nil, eventNumber: eventNumber - 1, clickCount: 1, pressure: 1),
               let up = NSEvent.mouseEvent(with: .leftMouseUp, location: location, modifierFlags: [], timestamp: now + 0.01,
-                                          windowNumber: window.windowNumber, context: nil, eventNumber: eventNumber + 1, clickCount: 1, pressure: 0) else {
+                                          windowNumber: window.windowNumber, context: nil, eventNumber: eventNumber, clickCount: 1, pressure: 0) else {
             throw PreviewFailure("Could not construct a native pointer event.")
         }
         // Queue the release before synchronous mouseDown: AppKit controls can enter a tracking loop.
         // postEvent targets only this process's NSApplication queue, never the system event stream.
         NSApp.postEvent(up, atStart: false)
         window.sendEvent(down)
+    }
+
+    private func pointer(_ request: PreviewRequest) throws {
+        try requireConfigured()
+        guard tag == "md-button" else { throw PreviewFailure("Held pointer input is supported only for md-button previews.") }
+        guard let host, let window, let phase = request.phase, ["down", "up", "cancel"].contains(phase),
+              let x = request.x, let y = request.y, x.isFinite, y.isFinite else {
+            throw PreviewFailure("Pointer input requires a supported phase and finite coordinates.")
+        }
+        let inside = x >= 0 && y >= 0 && x < host.bounds.width && y < host.bounds.height
+        if phase == "cancel" || (phase == "up" && !inside) { try cancelPointer(); return }
+        guard inside else { throw PreviewFailure("Pointer down must be inside the logical preview bounds.") }
+        if phase == "down" && pointerHeld { inputNotice = "A native pointer press is already held."; return }
+        if phase == "up" && !pointerHeld { inputNotice = "No native pointer press is held."; return }
+        let point = NSPoint(x: x, y: host.isFlipped ? y : host.bounds.height - y)
+        let location = host.convert(point, to: nil)
+        let event = try pointerEvent(phase == "down" ? .leftMouseDown : .leftMouseUp, at: location)
+        pointerHeld = phase == "down"
+        // SwiftUI's Button gesture accepts down without entering AppKit's blocking tracking loop.
+        // Separate commands preserve its real ButtonStyle.isPressed state until the matching up.
+        // Dispatch stays inside this process's private offscreen window; no global event is posted.
+        window.sendEvent(event)
+    }
+
+    private func pointerEvent(_ type: NSEvent.EventType, at location: NSPoint) throws -> NSEvent {
+        guard let window else { throw PreviewFailure("Native window unavailable.") }
+        eventNumber += 1
+        guard let event = NSEvent.mouseEvent(with: type, location: location, modifierFlags: [],
+                                             timestamp: ProcessInfo.processInfo.systemUptime,
+                                             windowNumber: window.windowNumber, context: nil,
+                                             eventNumber: eventNumber, clickCount: 1,
+                                             pressure: type == .leftMouseDown ? 1 : 0) else {
+            throw PreviewFailure("Could not construct a native pointer event.")
+        }
+        return event
+    }
+
+    private func cancelPointer() throws {
+        guard pointerHeld, let window else { return }
+        pointerHeld = false
+        // A release outside our own window cancels the SwiftUI gesture without activating it.
+        // Cancel coordinates intentionally ignore the last in-bounds position from the browser.
+        window.sendEvent(try pointerEvent(.leftMouseUp, at: NSPoint(x: -1000, y: -1000)))
     }
 
     private func insert(_ request: PreviewRequest) throws {

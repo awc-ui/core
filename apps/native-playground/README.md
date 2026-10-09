@@ -48,12 +48,20 @@ polling, and idle sessions expire after 60 seconds. At most two native sessions
 can run at once. Retry starts a fresh native view after an error or expiry.
 
 Live previews run on **macOS SwiftUI**, not an iOS simulator. Clicks and typing are
-supported; dragging, hover, scrolling, separate native windows, sheets and system
+supported. `md-button` also forwards separate press/release/cancel commands, so
+holding the pointer keeps its actual SwiftUI pressed state. Frame polling speeds
+up while pressed and during release animation; visible frame rate depends on
+native rendering and transport time. Dragging, hover, scrolling, separate native windows, sheets and system
 menus are not validated by this transport. Browser accessibility does not expose
 the native accessibility tree. Use the native app for full platform interaction
 and accessibility testing. Web slot content is not translated into the native
 fixture. The Android tab still provides source inspection and launch directions.
 Existing adapter API gaps remain visible.
+
+The web reference uses the same generated light/dark tokens as the native view.
+The Button examples share their label, size and preview canvas. Native Button
+matches the source variant palettes, density rules, fonts and press shape timing;
+its ripple starts at the center and its loader remains a native progress view.
 
 Snapshot mode renders one image per property/theme change and caches identical
 requests until the executable changes. `AWC_NATIVE_RENDERER` and

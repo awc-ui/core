@@ -23,7 +23,7 @@ function validEventDetail(detail) {
 }
 
 /** Validate local view input. No command can name an OS window, selector, or executable. */
-export function validateLiveInput(value, { logicalWidth, logicalHeight }) {
+export function validateLiveInput(value, { logicalWidth, logicalHeight, tag }) {
   if (!record(value)) throw failure(400, 'INVALID_INPUT', 'Send a native preview input object.');
   const exactKeys = allowed => {
     if (Object.keys(value).some(key => !allowed.includes(key))) throw failure(400, 'INVALID_INPUT', 'The native input contains unsupported fields.');
@@ -34,6 +34,18 @@ export function validateLiveInput(value, { logicalWidth, logicalHeight }) {
       throw failure(400, 'INVALID_COORDINATES', 'Click inside the native preview.');
     }
     return { command: 'click', x: value.x, y: value.y };
+  }
+  if (value.command === 'pointer') {
+    exactKeys(['command', 'phase', 'x', 'y']);
+    if (tag !== 'md-button' || !['down', 'up', 'cancel'].includes(value.phase)) {
+      throw failure(400, 'INVALID_POINTER', 'Held pointer input is available only for button previews.');
+    }
+    if (![value.x, value.y].every(Number.isFinite)) throw failure(400, 'INVALID_COORDINATES', 'Pointer coordinates must be finite.');
+    const inside = value.x >= 0 && value.y >= 0 && value.x < logicalWidth && value.y < logicalHeight;
+    if (value.phase === 'down' && !inside) throw failure(400, 'INVALID_COORDINATES', 'Press inside the native preview.');
+    // Captured browser releases can arrive outside the image; cancel instead of activating a control.
+    const phase = value.phase === 'up' && !inside ? 'cancel' : value.phase;
+    return { command: 'pointer', phase, x: Math.min(logicalWidth - 0.001, Math.max(0, value.x)), y: Math.min(logicalHeight - 0.001, Math.max(0, value.y)) };
   }
   if (value.command === 'text') {
     exactKeys(['command', 'text']);
@@ -50,7 +62,7 @@ export function validateLiveInput(value, { logicalWidth, logicalHeight }) {
     }
     return { command: 'key', key: value.key, modifiers };
   }
-  throw failure(400, 'INVALID_INPUT', 'Use click, text, or key for native input.');
+  throw failure(400, 'INVALID_INPUT', 'Use pointer, click, text, or key for native input.');
 }
 
 /** One isolated SwiftUI process per session; commands are serialized within that view. */
@@ -189,8 +201,11 @@ export function createNativeLiveRenderer({
     if (session.closed || session.pending || !session.queue.length) return;
     const pending = session.queue.shift();
     // A preceding action may have resized the view while this click waited in the queue.
-    if (pending.payload.command === 'click') {
-      try { validateLiveInput(pending.payload, session); }
+    if (['click', 'pointer'].includes(pending.payload.command)) {
+      try {
+        pending.payload = validateLiveInput(pending.payload, session);
+        pending.line = `${JSON.stringify({ ...pending.payload, id: pending.id })}\n`;
+      }
       catch (error) { pending.reject(error); queueMicrotask(() => dispatch(session)); return; }
     }
     session.pending = pending;

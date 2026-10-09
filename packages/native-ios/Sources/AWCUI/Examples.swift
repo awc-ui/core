@@ -9,7 +9,7 @@ public enum AWCExamples {
         func text(_ value: String, slot: String? = nil) -> AWCNode { .text(value, slot: slot) }
         let choices: AWCValue = [["value": "design", "label": "Design", "icon": "edit"], ["value": "engineering", "label": "Engineering", "icon": "settings"], ["value": "research", "label": "Research", "icon": "search"], ["value": "archived", "label": "Archived", "disabled": true]]
         switch tag {
-        case "md-button": set(["toggle": true, "icon": "add"]); children = [text("Create project")]
+        case "md-button": set(["variant": "filled", "size": "md"]); children = [text("Continue")]
         case "md-icon-button": set(["icon": "favorite", "toggle": true, "selectedIcon": "favorite"])
         case "md-fab": set(["icon": "add", "label": "New project", "extended": true])
         case "md-fab-menu-item": set(["icon": "edit", "label": "Write a note"])

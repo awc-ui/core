@@ -1,4 +1,4 @@
-import { literalChoices, encodeLiteralChoice, decodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, createNativeLiveClient, nativeImagePoint, nativeTextChunks } from './contracts.js';
+import { literalChoices, encodeLiteralChoice, decodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, createNativeLiveClient, createNativePointerInput, nativeImagePoint, nativeTextChunks } from './contracts.js';
 import { recipeFor, categoryFor, categoryOrder, displayName, icons } from './recipes.js';
 
 const $ = selector => document.querySelector(selector);
@@ -32,12 +32,14 @@ async function init() {
   try {
     try { if (localStorage.getItem('awc-native-theme') === 'dark') document.documentElement.dataset.theme = 'dark'; } catch { /* Storage may be disabled. */ }
     updateThemeLabel();
-    const [manifestResult, catalogResult, runtimeResult] = await Promise.allSettled([
-      getJSON('/repo/packages/core/custom-elements.json'), getJSON('/repo/packages/native-compiler/generated/catalog.json'), import('/web-dist/md3/md3.esm.js'),
+    const [manifestResult, catalogResult, runtimeResult, tokensResult] = await Promise.allSettled([
+      getJSON('/repo/packages/core/custom-elements.json'), getJSON('/repo/packages/native-compiler/generated/catalog.json'), import('/web-dist/md3/md3.esm.js'), getJSON('/repo/packages/native-compiler/generated/tokens.json'),
     ]);
     if (manifestResult.status !== 'fulfilled') throw new Error('Unable to read the AWC component manifest. Start the server from the repository checkout.');
     const contracts = normalizeManifest(manifestResult.value);
     state.catalog = catalogResult.status === 'fulfilled' ? catalogResult.value : null;
+    state.tokens = tokensResult.status === 'fulfilled' ? tokensResult.value : null;
+    applyPreviewTheme();
     const generated = new Map((state.catalog?.components || []).map(component => [component.tag, component]));
     state.components = contracts.map(component => {
       const output = generated.get(component.tag);
@@ -65,10 +67,10 @@ function bindEvents() {
   document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => { state.filter = button.dataset.filter; document.querySelectorAll('[data-filter]').forEach(item => item.classList.toggle('active', item === button)); renderNavigation(); }));
   $('#component-list').addEventListener('click', event => { const button = event.target.closest('[data-tag]'); if (button) { location.hash = button.dataset.tag; if (state.selected?.tag === button.dataset.tag) selectComponent(button.dataset.tag); } });
   window.addEventListener('hashchange', () => { const tag = location.hash.slice(1); if (state.components.some(component => component.tag === tag)) selectComponent(tag); });
-  window.addEventListener('pagehide', () => { nativeRequests.cancel(); clearTimeout(state.nativeRenderTimer); nativeLive.stop(); });
+  window.addEventListener('pagehide', () => { disposeNativePointer(); nativeRequests.cancel(); clearTimeout(state.nativeRenderTimer); nativeLive.stop(); });
   window.addEventListener('pageshow', event => { if (event.persisted && state.platform === 'ios') renderPreview(); });
   document.addEventListener('visibilitychange', () => nativeLive.setVisible(!document.hidden));
-  $('#theme-toggle').addEventListener('click', () => { const dark = document.documentElement.dataset.theme !== 'dark'; document.documentElement.dataset.theme = dark ? 'dark' : 'light'; try { localStorage.setItem('awc-native-theme', dark ? 'dark' : 'light'); } catch { /* Optional storage. */ } updateThemeLabel(); scheduleNativeRender(); });
+  $('#theme-toggle').addEventListener('click', () => { const dark = document.documentElement.dataset.theme !== 'dark'; document.documentElement.dataset.theme = dark ? 'dark' : 'light'; try { localStorage.setItem('awc-native-theme', dark ? 'dark' : 'light'); } catch { /* Optional storage. */ } updateThemeLabel(); applyPreviewTheme(); scheduleNativeRender(); });
   $('#reset').addEventListener('click', () => { selectComponent(state.selected.tag); toast('Component properties reset'); });
   document.querySelectorAll('[data-platform]').forEach(button => button.addEventListener('click', () => selectPlatform(button.dataset.platform)));
   document.querySelectorAll('[data-inspector]').forEach(button => button.addEventListener('click', () => selectInspector(button.dataset.inspector)));
@@ -76,6 +78,13 @@ function bindEvents() {
   document.addEventListener('keydown', event => { if (event.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) { event.preventDefault(); $('#search').focus(); } });
 }
 function updateThemeLabel() { const dark = document.documentElement.dataset.theme === 'dark'; $('#theme-toggle').setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} theme`); $('#theme-toggle').textContent = dark ? '☼' : '◐'; }
+function applyPreviewTheme() {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  const tokens = { ...state.tokens?.light, ...(dark ? state.tokens?.dark : {}) };
+  for (const [name, value] of Object.entries(tokens)) {
+    if (/^--md-[a-z0-9-]+$/.test(name) && typeof value === 'string') $('#preview-content').style.setProperty(name, value);
+  }
+}
 function selectPlatform(platform) {
   if (!['web', 'ios', 'android'].includes(platform)) return;
   state.platform = platform;
@@ -103,10 +112,11 @@ function selectComponent(tag) {
   renderNavigation(); renderPreview(); renderProperties(); renderInspector();
 }
 function renderPreview() {
-  clearTimeout(state.nativeRenderTimer); nativeRequests.cancel(); nativeLive.stop();
+  disposeNativePointer(); clearTimeout(state.nativeRenderTimer); nativeRequests.cancel(); nativeLive.stop();
   state.liveFrame = null; state.liveDisplayedRevision = -1; state.liveImageVersion = (state.liveImageVersion || 0) + 1;
   const root = $('#preview-content'); root.replaceChildren(); state.target = null;
   const isWeb = state.platform === 'web'; $('#preview-stage').classList.toggle('native-mode', !isWeb);
+  root.classList.toggle('button-reference', isWeb && state.selected.tag === 'md-button');
   $('#preview-stage').classList.toggle('snapshot-mode', state.platform === 'ios');
   text('#preview-runtime', isWeb ? 'LIVE WEB' : state.platform === 'ios' ? 'NATIVE PREVIEW' : 'NATIVE TARGET');
   text('.props-hint', state.platform === 'ios' ? 'Changes rerender the native snapshot.' : 'Changes apply to the web reference.');
@@ -174,7 +184,7 @@ function nativeRenderState(kind, message) {
 function scheduleNativeRender(delay = 300) {
   if (state.platform !== 'ios' || !$('#native-render-frame')) return;
   clearTimeout(state.nativeRenderTimer);
-  nativeLive.stop(); state.liveFrame = null; state.liveDisplayedRevision = -1; state.liveImageVersion = (state.liveImageVersion || 0) + 1;
+  disposeNativePointer(); nativeLive.stop(); state.liveFrame = null; state.liveDisplayedRevision = -1; state.liveImageVersion = (state.liveImageVersion || 0) + 1;
   const request = nativeRequests.start();
   const payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark');
   nativeRenderState('loading', delay ? 'Waiting for property changes…' : 'Checking the native renderer…');
@@ -201,7 +211,7 @@ function setNativeMode(mode, fallbackMessage = '') {
   document.querySelectorAll('[data-native-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.nativeMode === mode)));
   text('#preview-runtime', mode === 'live' ? 'CONNECTING' : 'NATIVE SNAPSHOT');
   text('.props-hint', mode === 'live' ? 'Initial properties · editing restarts the native session.' : 'Changes rerender the native snapshot.');
-  text('#native-preview-note', mode === 'live' ? 'Click the native view, then type. Esc releases keyboard focus. Clicks and typing are live; dragging, hover and sheets are not validated.' : `${fallbackMessage ? `${fallbackMessage} ` : ''}Static snapshot — interact in the native app. For iOS, open the native playground.`);
+  text('#native-preview-note', mode === 'live' ? state.selected.tag === 'md-button' ? 'Press and hold to see the native button response; release to activate. Esc cancels and releases keyboard focus. Frames stream from SwiftUI; hover and dragging are not forwarded.' : 'Click the native view, then type. Esc releases keyboard focus. Clicks and typing are live; dragging, hover and sheets are not validated.' : `${fallbackMessage ? `${fallbackMessage} ` : ''}Static snapshot — interact in the native app. For iOS, open the native playground.`);
   text('#preview-caption', mode === 'live' ? 'Persistent macOS SwiftUI app · live frames and native events' : 'Rendered by SwiftUI on this Mac · displayed as a PNG');
   text('#recipe-status', mode === 'live' ? 'Click & type · native state persists' : 'Native fixture + current root properties');
   text('#native-render-button', state.nativeFallback ? 'Retry Live' : mode === 'live' ? 'Reconnect' : 'Render again');
@@ -263,21 +273,53 @@ function updateNativeLiveFrameMetadata(result) {
 }
 
 function reportNativeLiveError(error) {
+  disposeNativePointer();
   state.liveImageVersion = (state.liveImageVersion || 0) + 1; state.liveFrame = null;
   text('#preview-runtime', 'DISCONNECTED');
   nativeRenderState('error', `${error.message} Reconnect starts a fresh native session.`);
 }
 
 function queueNativeInput(command) {
-  if (!nativeLive.input(command)) text('#native-render-status', 'Native input is busy or disconnected. Reconnect to start a fresh session.');
+  const accepted = nativeLive.input(command);
+  if (!accepted) text('#native-render-status', 'Native input is busy or disconnected. Reconnect to start a fresh session.');
+  return accepted;
 }
 
+function disposeNativePointer() { const cleanup = state.nativePointerCleanup; state.nativePointerCleanup = null; cleanup?.(); }
+
 function bindNativeInput(surface, input) {
+  const pointerPoint = event => {
+    const image = surface.querySelector('img'), frame = state.liveFrame;
+    return image && frame ? nativeImagePoint(image.getBoundingClientRect(), image.naturalWidth, image.naturalHeight, frame.logicalWidth, frame.logicalHeight, event.clientX, event.clientY) : null;
+  };
+  const pressable = state.selected.tag === 'md-button';
+  if (pressable) {
+    surface.classList.add('native-live-pressable');
+    surface.setAttribute('aria-label', 'Live native SwiftUI button. Press and hold, then release to activate. Escape cancels.');
+    const pointer = createNativePointerInput(queueNativeInput);
+    const releaseCapture = id => { if (id !== null && surface.hasPointerCapture(id)) surface.releasePointerCapture(id); };
+    const cancel = () => { const id = pointer.pointerId; pointer.cancel(); releaseCapture(id); };
+    const hidden = () => { if (document.hidden) cancel(); };
+    surface.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || event.isPrimary === false || !pointer.down(event.pointerId, pointerPoint(event))) return;
+      event.preventDefault(); input.focus({ preventScroll: true });
+      try { surface.setPointerCapture(event.pointerId); } catch { cancel(); }
+    });
+    surface.addEventListener('pointerup', event => {
+      if (event.pointerId !== pointer.pointerId) return;
+      event.preventDefault(); pointer.up(event.pointerId, pointerPoint(event)); releaseCapture(event.pointerId);
+    });
+    surface.addEventListener('pointercancel', event => { if (event.pointerId === pointer.pointerId) cancel(); });
+    surface.addEventListener('lostpointercapture', event => pointer.cancel(event.pointerId));
+    input.addEventListener('blur', cancel);
+    window.addEventListener('blur', cancel);
+    document.addEventListener('visibilitychange', hidden);
+    state.nativePointerCleanup = () => { cancel(); input.removeEventListener('blur', cancel); window.removeEventListener('blur', cancel); document.removeEventListener('visibilitychange', hidden); };
+  }
   surface.addEventListener('focus', () => input.focus({ preventScroll: true }));
   surface.addEventListener('click', event => {
-    const image = surface.querySelector('img'), frame = state.liveFrame;
-    if (!image || !frame) return;
-    const point = nativeImagePoint(image.getBoundingClientRect(), image.naturalWidth, image.naturalHeight, frame.logicalWidth, frame.logicalHeight, event.clientX, event.clientY);
+    if (pressable) { event.preventDefault(); event.stopPropagation(); return; }
+    const point = pointerPoint(event);
     if (!point) return;
     input.focus({ preventScroll: true }); queueNativeInput({ command: 'click', ...point });
   });

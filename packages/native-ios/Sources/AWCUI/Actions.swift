@@ -6,10 +6,7 @@ extension AWCNativeView {
         Button {
             if b("toggle") { set("selected", .bool(!b("selected"))) }
             if node.tag == "md-icon-button" { emit("mdClick", ["selected": .bool(b("selected"))]) }
-            else if node.tag == "md-button" {
-                emit("mdClick", ["value": p("value"), "toggle": .bool(b("toggle")), "selected": .bool(b("selected")), "href": .string(s("href")), "target": .string(s("target", "_self"))])
-                if b("toggle") { emit("mdChange", ["value": p("value"), "selected": .bool(b("selected"))]) }
-            } else { emit("mdClick") }
+            else { emit("mdClick") }
             activateLink()
         } label: {
             HStack(spacing: 8) {

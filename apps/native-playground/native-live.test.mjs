@@ -19,6 +19,7 @@ class FakeChild extends EventEmitter {
     this.signals = [];
     this.value = '';
     this.selected = false;
+    this.held = false;
     this.stdout = new PassThrough();
     this.stderr = new PassThrough();
     this.stdin = new Writable({ write: (data, _encoding, done) => {
@@ -39,6 +40,16 @@ class FakeChild extends EventEmitter {
     if (command.command === 'text') {
       this.value += command.text;
       events.push({ name: 'mdInput', tag: request.tag, nodeID: 'component', detail: { value: this.value } });
+    }
+    if (command.command === 'pointer') {
+      if (command.phase === 'down') this.held = true;
+      else {
+        if (command.phase === 'up' && this.held) {
+          this.selected = !this.selected;
+          events.push({ name: 'mdClick', tag: 'md-button', nodeID: 'component', detail: { selected: this.selected } });
+        }
+        this.held = false;
+      }
     }
     this.stdout.write(`${JSON.stringify({ id: command.id, png: PNG, width: 1, height: 1, ...bounds, events, ...changes })}\n`);
   }
@@ -88,6 +99,58 @@ test('live input accepts only bounded view-local coordinates, Unicode text, and 
     { command: 'key', key: 'Tab', modifiers: ['shift', 'shift'] }, { command: 'key', key: 'Tab', modifiers: 'shift' }]) {
     assert.throws(() => validateLiveInput(value, bounds), error => error.status === 400);
   }
+});
+
+test('pointer input is scoped to buttons, validates phases, and converts outside releases to cancellation', () => {
+  const button = { ...bounds, tag: 'md-button' };
+  assert.deepEqual(validateLiveInput({ command: 'pointer', phase: 'down', x: 20.5, y: 50 }, button), { command: 'pointer', phase: 'down', x: 20.5, y: 50 });
+  assert.deepEqual(validateLiveInput({ command: 'pointer', phase: 'up', x: -10, y: 500 }, button), { command: 'pointer', phase: 'cancel', x: 0, y: 199.999 });
+  assert.deepEqual(validateLiveInput({ command: 'pointer', phase: 'cancel', x: 700, y: -1 }, button), { command: 'pointer', phase: 'cancel', x: 639.999, y: 0 });
+  for (const value of [
+    { command: 'pointer', phase: 'down', x: -1, y: 20 },
+    { command: 'pointer', phase: 'down', x: 640, y: 20 },
+    { command: 'pointer', phase: 'move', x: 20, y: 20 },
+    { command: 'pointer', phase: 'up', x: Infinity, y: 20 },
+    { command: 'pointer', phase: 'cancel', x: 20, y: NaN },
+    { command: 'pointer', phase: 'down', x: 20, y: 20, button: 'right' },
+  ]) assert.throws(() => validateLiveInput(value, button), error => error.status === 400);
+  assert.throws(() => validateLiveInput({ command: 'pointer', phase: 'down', x: 20, y: 20 }, { ...bounds, tag: 'md-chip' }), errorCode('INVALID_POINTER'));
+});
+
+test('held pointer commands retain one process and do not synthesize click or release while polling', async t => {
+  const { renderer, children } = fixture(t);
+  const { sessionId } = await renderer.create({ ...request, tag: 'md-button', properties: { toggle: true } });
+  const down = await renderer.input(sessionId, { command: 'pointer', phase: 'down', x: 20, y: 30 });
+  assert.deepEqual(down.events, []);
+  assert.equal(children[0].held, true);
+  assert.deepEqual((await renderer.frame(sessionId)).events, []);
+  assert.equal(children[0].held, true);
+  const up = await renderer.input(sessionId, { command: 'pointer', phase: 'up', x: 20, y: 30 });
+  assert.equal(up.events[0].name, 'mdClick');
+  assert.equal(children[0].held, false);
+  await renderer.input(sessionId, { command: 'pointer', phase: 'down', x: 20, y: 30 });
+  const canceled = await renderer.input(sessionId, { command: 'pointer', phase: 'up', x: 800, y: 30 });
+  assert.deepEqual(canceled.events, []);
+  assert.equal(children[0].held, false);
+  assert.equal(children[0].commands.at(-1).phase, 'cancel');
+  assert.deepEqual(children[0].commands.map(command => command.command), ['configure', 'pointer', 'frame', 'pointer', 'pointer', 'pointer']);
+});
+
+test('a queued release outside newly resized bounds is canceled before reaching the renderer', async t => {
+  const { renderer, children } = fixture(t);
+  const { sessionId } = await renderer.create({ ...request, tag: 'md-button' });
+  const child = children[0];
+  await renderer.input(sessionId, { command: 'pointer', phase: 'down', x: 500, y: 30 });
+  child.auto = false;
+  const resize = renderer.frame(sessionId);
+  const release = renderer.input(sessionId, { command: 'pointer', phase: 'up', x: 500, y: 30 });
+  child.respond(undefined, { logicalWidth: 320 });
+  await resize;
+  assert.equal(child.commands.at(-1).phase, 'cancel');
+  assert.equal(child.commands.at(-1).x, 319.999);
+  child.respond();
+  assert.deepEqual((await release).events, []);
+  assert.equal(child.held, false);
 });
 
 test('a persistent process receives configure once and serializes actions and frame requests', async t => {

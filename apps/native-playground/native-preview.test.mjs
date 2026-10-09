@@ -133,6 +133,60 @@ test('native text forwarding preserves Unicode across the transport byte limit',
   assert.deepEqual(nativeTextChunks(''), []);
 });
 
+test('native button press tracks one pointer and emits one release without a duplicate click', async () => {
+  const { createNativePointerInput } = await import('./contracts.js');
+  const sent = [], pointer = createNativePointerInput(command => { sent.push(command); return true; });
+  assert.equal(pointer.down(7, { x: 20, y: 30 }), true);
+  assert.equal(pointer.down(8, { x: 22, y: 32 }), false);
+  assert.equal(pointer.up(8, { x: 22, y: 32 }), false);
+  assert.equal(pointer.pointerId, 7);
+  assert.equal(pointer.up(7, { x: 24, y: 34 }), true);
+  assert.equal(pointer.cancel(7), false);
+  assert.equal(pointer.up(7, { x: 24, y: 34 }), false);
+  assert.equal(pointer.pointerId, null);
+  assert.deepEqual(sent, [{ command: 'pointer', phase: 'down', x: 20, y: 30 }, { command: 'pointer', phase: 'up', x: 24, y: 34 }]);
+});
+
+test('native press cancels outside the image or on lost focus, without activating', async () => {
+  const { createNativePointerInput } = await import('./contracts.js');
+  const sent = [], pointer = createNativePointerInput(command => { sent.push(command); return true; });
+  pointer.down(1, { x: 20, y: 30 }); pointer.up(1, null);
+  pointer.down(2, { x: 40, y: 50 }); pointer.cancel(); pointer.cancel();
+  assert.deepEqual(sent.map(command => command.phase), ['down', 'cancel', 'down', 'cancel']);
+  assert.deepEqual(sent.at(-1), { command: 'pointer', phase: 'cancel', x: 40, y: 50 });
+  assert.equal(pointer.pointerId, null);
+  const disconnected = createNativePointerInput(() => false);
+  assert.equal(disconnected.down(1, { x: 20, y: 30 }), false);
+  assert.equal(disconnected.pointerId, null);
+});
+
+test('held native presses stream frames at transport speed, then return to idle polling', async () => {
+  const { createNativeLiveClient } = await import('./contracts.js');
+  const scheduled = [], calls = [];
+  let clock = 1000, revision = 0;
+  const client = createNativeLiveClient({
+    send: async (route, body) => { calls.push({ route, body }); clock += 40; return frame('held', revision++); },
+    onFrame: () => {}, onError: error => { throw error; }, now: () => clock,
+    schedule: (callback, delay) => { const timer = { callback, delay, canceled: false }; scheduled.push(timer); return timer; },
+    unschedule: timer => { if (timer) timer.canceled = true; },
+  });
+  await client.start({ tag: 'md-button' });
+  assert.equal(scheduled.at(-1).delay, 250);
+  client.input({ command: 'pointer', phase: 'down', x: 20, y: 30 }); await turn();
+  assert.equal(scheduled[0].canceled, true);
+  assert.equal(scheduled.at(-1).delay, 0, '40 ms native render already spent the frame budget');
+  scheduled.at(-1).callback(); await turn();
+  assert.equal(calls.at(-1).route, 'held/frame');
+  assert.equal(scheduled.at(-1).delay, 0);
+  client.input({ command: 'pointer', phase: 'up', x: 20, y: 30 }); await turn();
+  assert.equal(scheduled.at(-1).delay, 0, 'release animation continues streaming');
+  clock += 400; scheduled.at(-1).callback(); await turn();
+  assert.equal(scheduled.at(-1).delay, 0, 'quick-press ripple still needs its growth and fade frames');
+  clock += 200; scheduled.at(-1).callback(); await turn();
+  assert.equal(scheduled.at(-1).delay, 250);
+  client.stop();
+});
+
 test('live client retries only transient frame transport failures, never uncertain native inputs', async () => {
   const { createNativeLiveClient } = await import('./contracts.js');
   const scheduled = [], errors = [], revisions = [], calls = [];

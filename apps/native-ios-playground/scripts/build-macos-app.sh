@@ -7,8 +7,9 @@ APP_DEST=${1:-"$PACKAGE_DIR/.build/AWC Native Playground.app"}
 BUILD_ROOT=${2:-"$PACKAGE_DIR/.build/macos"}
 swift build --package-path "$PACKAGE_DIR" --scratch-path "$BUILD_ROOT" --product AWCPlayground
 BIN_DIR=$(swift build --package-path "$PACKAGE_DIR" --scratch-path "$BUILD_ROOT" --show-bin-path)
-mkdir -p "$APP_DEST/Contents/MacOS"
+mkdir -p "$APP_DEST/Contents/MacOS" "$APP_DEST/Contents/Resources"
 cp "$BIN_DIR/AWCPlayground" "$APP_DEST/Contents/MacOS/AWCPlayground"
+ditto "$BIN_DIR/AWCUI_AWCUI.bundle" "$APP_DEST/Contents/Resources/AWCUI_AWCUI.bundle"
 cat > "$APP_DEST/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
