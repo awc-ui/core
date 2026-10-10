@@ -14,6 +14,7 @@ private struct PreviewRequest: Decodable {
     let x: Double?
     let y: Double?
     let phase: String?
+    let enabled: Bool?
     let text: String?
     let key: String?
     let modifiers: [String]?
@@ -68,6 +69,58 @@ private final class InputQueue: @unchecked Sendable {
     }
 }
 
+/// Stdout can back up when a browser stops consuming frames. Keep pipe writes
+/// off AppKit's main thread and retain only the newest unsent picture.
+private final class OutputQueue: @unchecked Sendable {
+    private let lock = NSCondition()
+    private var responses: [[String: AWCValue]] = []
+    private var latestFrame: [String: AWCValue]?
+    private var ended = false
+    private let completed = DispatchSemaphore(value: 0)
+    var isClosed: Bool { lock.lock(); defer { lock.unlock() }; return ended }
+
+    @discardableResult func append(_ response: [String: AWCValue], streaming: Bool = false) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        guard !ended else { return false }
+        if streaming {
+            var frame = response
+            if let previous = latestFrame {
+                // Coalescing an old picture must not discard its asynchronous events.
+                frame["events"] = .array(Array(((previous["events"]?.array ?? []) + (frame["events"]?.array ?? [])).suffix(256)))
+            }
+            latestFrame = frame
+        } else {
+            guard responses.count < 16 else { ended = true; lock.broadcast(); return false }
+            responses.append(response)
+        }
+        lock.signal()
+        return true
+    }
+
+    func close() { lock.lock(); ended = true; responses.removeAll(); latestFrame = nil; lock.broadcast(); lock.unlock() }
+    func finish() {
+        lock.lock(); ended = true; lock.broadcast(); lock.unlock()
+        // EOF should still flush its final response. Never wait indefinitely for a dead reader.
+        _ = completed.wait(timeout: .now() + 1)
+    }
+
+    func write() {
+        defer { completed.signal() }
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+        while true {
+            lock.lock()
+            while !ended && responses.isEmpty && latestFrame == nil { lock.wait() }
+            if ended && responses.isEmpty && latestFrame == nil { lock.unlock(); return }
+            let response: [String: AWCValue]
+            if !responses.isEmpty { response = responses.removeFirst() }
+            else { response = latestFrame!; latestFrame = nil }
+            lock.unlock()
+            do { try FileHandle.standardOutput.write(contentsOf: encoder.encode(response) + Data([10])) }
+            catch { close(); return }
+        }
+    }
+}
+
 @MainActor
 private final class EventBuffer {
     var events: [[String: AWCValue]] = []
@@ -88,6 +141,7 @@ private struct PreviewRoot: View {
     let width: Double
     let dark: Bool
     let onEvent: (AWCEvent) -> Void
+    let pointerState: AWCNativePointerState
     var body: some View {
         AWCNativeView(node: node, onEvent: onEvent)
             .padding(24)
@@ -97,6 +151,8 @@ private struct PreviewRoot: View {
             .environment(\.colorScheme, dark ? .dark : .light)
             .environment(\.openURL, OpenURLAction { _ in .discarded })
             .awcTheme(.generated(dark: dark))
+            .environment(\.awcNativePointerState, pointerState)
+            .coordinateSpace(name: "awc-native-preview")
     }
 }
 
@@ -109,10 +165,15 @@ private final class NativeSession {
     private let events = EventBuffer()
     private var eventNumber = 0
     private var pointerHeld = false
+    private let pointerState = AWCNativePointerState()
+    private var streaming = false
+    private var nextStreamFrame: Double = 0
+    private let streamInterval: Double = 1 / 60
     private var inputNotice: String?
     private var activity: NSObjectProtocol?
 
     func close() {
+        streaming = false
         try? cancelPointer()
         window?.close(); window = nil; host = nil
         if let activity { ProcessInfo.processInfo.endActivity(activity); self.activity = nil }
@@ -127,14 +188,37 @@ private final class NativeSession {
         case "text": try insert(request)
         case "key": try key(request)
         case "frame": try requireConfigured()
+        case "stream":
+            try requireConfigured()
+            guard let enabled = request.enabled else { throw PreviewFailure("Stream requires an enabled boolean.") }
+            streaming = enabled
+            nextStreamFrame = ProcessInfo.processInfo.systemUptime
         default: throw PreviewFailure("Unsupported command: \(request.command)")
         }
-        // Held presses and animation frames should not wait a full click settling interval.
-        Self.pump(request.command == "pointer" || request.command == "frame" ? 0.008 : 0.04)
+        if request.command == "stream" || (streaming && request.command != "configure" && request.command != "frame") {
+            var response: [String: AWCValue] = ["id": request.id ?? .null, "ack": true, "events": events.drain()]
+            if let inputNotice { response["inputIgnored"] = .string(inputNotice) }
+            return response
+        }
+        // Keep legacy input settling, but a plain frame never adds an artificial wait.
+        if request.command != "frame" { Self.pump(request.command == "pointer" ? 0.008 : 0.04) }
         var response = try frame()
         response["id"] = request.id ?? .null
         response["events"] = events.drain()
         if let inputNotice { response["inputIgnored"] = .string(inputNotice) }
+        return response
+    }
+
+    func streamFrameIfDue() throws -> [String: AWCValue]? {
+        guard streaming else { return nil }
+        let now = ProcessInfo.processInfo.systemUptime
+        guard now >= nextStreamFrame else { return nil }
+        // Advance a monotonic deadline and skip missed intervals rather than queuing frames.
+        nextStreamFrame += max(1, floor((now - nextStreamFrame) / streamInterval) + 1) * streamInterval
+        var response = try frame()
+        response["id"] = .null
+        response["kind"] = "frame"
+        response["events"] = events.drain()
         return response
     }
 
@@ -156,13 +240,15 @@ private final class NativeSession {
         var node = AWCExamples.node(for: requestedTag)
         node.properties.merge(request.properties ?? [:]) { _, supplied in supplied }
         tag = requestedTag
-        let newHost = NSHostingView(rootView: PreviewRoot(node: node, width: logicalWidth, dark: request.dark ?? false, onEvent: events.append))
+        let newHost = NSHostingView(rootView: PreviewRoot(node: node, width: logicalWidth, dark: request.dark ?? false, onEvent: events.append, pointerState: pointerState))
         // The window is realized outside every display, never activated, and never made key.
         let left = NSScreen.screens.map { $0.frame.minX }.min() ?? 0
         let bottom = NSScreen.screens.map { $0.frame.minY }.min() ?? 0
         let newWindow = NSWindow(contentRect: NSRect(x: left - 10000, y: bottom - 10000, width: logicalWidth, height: 100),
                                  styleMask: .borderless, backing: .buffered, defer: false)
         newWindow.isReleasedWhenClosed = false
+        newWindow.colorSpace = .sRGB
+        newWindow.acceptsMouseMovedEvents = true
         newWindow.isExcludedFromWindowsMenu = true
         newWindow.collectionBehavior = [.transient, .ignoresCycle]
         newWindow.contentView = newHost
@@ -193,6 +279,7 @@ private final class NativeSession {
         }
         let point = NSPoint(x: x, y: host.isFlipped ? y : host.bounds.height - y)
         let location = host.convert(point, to: nil)
+        pointerState.update(phase: .down, location: CGPoint(x: x, y: y))
         // Native menus/color panels create separate windows outside this single-surface protocol.
         var target = host.hitTest(location)
         while let view = target {
@@ -213,16 +300,24 @@ private final class NativeSession {
         // postEvent targets only this process's NSApplication queue, never the system event stream.
         NSApp.postEvent(up, atStart: false)
         window.sendEvent(down)
+        DispatchQueue.main.async { [weak self] in self?.pointerState.update(phase: .up, location: CGPoint(x: x, y: y)) }
     }
 
     private func pointer(_ request: PreviewRequest) throws {
         try requireConfigured()
         guard tag == "md-button" else { throw PreviewFailure("Held pointer input is supported only for md-button previews.") }
-        guard let host, let window, let phase = request.phase, ["down", "up", "cancel"].contains(phase),
+        guard let host, let window, let phase = request.phase, ["down", "up", "cancel", "move", "leave"].contains(phase),
               let x = request.x, let y = request.y, x.isFinite, y.isFinite else {
             throw PreviewFailure("Pointer input requires a supported phase and finite coordinates.")
         }
         let inside = x >= 0 && y >= 0 && x < host.bounds.width && y < host.bounds.height
+        if phase == "move" || phase == "leave" {
+            pointerState.update(phase: phase == "leave" || !inside ? .leave : .move, location: inside ? CGPoint(x: x, y: y) : nil)
+            let point = phase == "leave" || !inside ? NSPoint(x: -1000, y: -1000)
+                : host.convert(NSPoint(x: x, y: host.isFlipped ? y : host.bounds.height - y), to: nil)
+            window.sendEvent(try pointerEvent(pointerHeld ? .leftMouseDragged : .mouseMoved, at: point))
+            return
+        }
         if phase == "cancel" || (phase == "up" && !inside) { try cancelPointer(); return }
         guard inside else { throw PreviewFailure("Pointer down must be inside the logical preview bounds.") }
         if phase == "down" && pointerHeld { inputNotice = "A native pointer press is already held."; return }
@@ -230,6 +325,7 @@ private final class NativeSession {
         let point = NSPoint(x: x, y: host.isFlipped ? y : host.bounds.height - y)
         let location = host.convert(point, to: nil)
         let event = try pointerEvent(phase == "down" ? .leftMouseDown : .leftMouseUp, at: location)
+        pointerState.update(phase: phase == "down" ? .down : .up, location: CGPoint(x: x, y: y))
         pointerHeld = phase == "down"
         // SwiftUI's Button gesture accepts down without entering AppKit's blocking tracking loop.
         // Separate commands preserve its real ButtonStyle.isPressed state until the matching up.
@@ -243,14 +339,15 @@ private final class NativeSession {
         guard let event = NSEvent.mouseEvent(with: type, location: location, modifierFlags: [],
                                              timestamp: ProcessInfo.processInfo.systemUptime,
                                              windowNumber: window.windowNumber, context: nil,
-                                             eventNumber: eventNumber, clickCount: 1,
-                                             pressure: type == .leftMouseDown ? 1 : 0) else {
+                                             eventNumber: eventNumber, clickCount: type == .mouseMoved ? 0 : 1,
+                                             pressure: type == .leftMouseDown || type == .leftMouseDragged ? 1 : 0) else {
             throw PreviewFailure("Could not construct a native pointer event.")
         }
         return event
     }
 
     private func cancelPointer() throws {
+        pointerState.update(phase: .cancel)
         guard pointerHeld, let window else { return }
         pointerHeld = false
         // A release outside our own window cancels the SwiftUI gesture without activating it.
@@ -324,6 +421,8 @@ private final class NativeSession {
     private func frame() throws -> [String: AWCValue] {
         try requireConfigured()
         guard let host, let window else { throw PreviewFailure("Native window unavailable.") }
+        let profiling = ProcessInfo.processInfo.environment["AWC_NATIVE_PROFILE"] == "1"
+        let start = ProcessInfo.processInfo.systemUptime
         host.layoutSubtreeIfNeeded()
         let fitting = host.fittingSize.height
         guard fitting.isFinite, fitting > 0 else { throw PreviewFailure("Component produced invalid native layout dimensions.") }
@@ -333,9 +432,20 @@ private final class NativeSession {
             host.frame = NSRect(x: 0, y: 0, width: logicalWidth, height: height)
             host.layoutSubtreeIfNeeded()
         }
+        let layoutDone = ProcessInfo.processInfo.systemUptime
         guard let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { throw PreviewFailure("Native bitmap allocation failed.") }
         host.cacheDisplay(in: host.bounds, to: bitmap)
-        guard let png = bitmap.representation(using: .png, properties: [:]) else { throw PreviewFailure("Native PNG encoding failed.") }
+        let captureDone = ProcessInfo.processInfo.systemUptime
+        guard let output = bitmap.colorSpace == .sRGB ? bitmap : bitmap.converting(to: .sRGB, renderingIntent: .default),
+              let png = output.representation(using: .png, properties: [:]) else { throw PreviewFailure("Native sRGB PNG encoding failed.") }
+        if profiling {
+            let end = ProcessInfo.processInfo.systemUptime
+            let profile: [String: Double] = ["layoutMs": (layoutDone - start) * 1000, "captureMs": (captureDone - layoutDone) * 1000,
+                                            "encodeMs": (end - captureDone) * 1000, "totalMs": (end - start) * 1000, "bytes": Double(png.count)]
+            if let json = try? JSONSerialization.data(withJSONObject: ["nativeFrameProfile": profile], options: [.sortedKeys]) {
+                FileHandle.standardError.write(json + Data([10]))
+            }
+        }
         return ["platform": "macos", "renderer": "SwiftUI", "tag": .string(tag), "png": .string(png.base64EncodedString()),
                 "width": .number(Double(bitmap.pixelsWide)), "height": .number(Double(bitmap.pixelsHigh)),
                 "logicalWidth": .number(logicalWidth), "logicalHeight": .number(height)]
@@ -345,7 +455,7 @@ private final class NativeSession {
         let end = Date().addingTimeInterval(seconds)
         repeat {
             while let event = NSApp.nextEvent(matching: .any, until: Date(), inMode: .default, dequeue: true) { NSApp.sendEvent(event) }
-            _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.004))
+            _ = RunLoop.current.run(mode: .default, before: min(end, Date().addingTimeInterval(0.001)))
         } while Date() < end
     }
 }
@@ -360,11 +470,12 @@ private struct LiveRenderer {
         NSApplication.shared.setActivationPolicy(.accessory)
         NSApplication.shared.finishLaunching()
         let queue = InputQueue()
+        let output = OutputQueue()
         DispatchQueue.global(qos: .userInitiated).async { queue.read() }
+        DispatchQueue.global(qos: .userInitiated).async { output.write() }
         let session = NativeSession()
-        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
         var finished = false
-        while !finished {
+        while !finished && !output.isClosed {
             if let entry = queue.take() {
                 var id: AWCValue?
                 do {
@@ -377,13 +488,20 @@ private struct LiveRenderer {
                         id = request.id
                         response = try session.handle(request)
                     }
-                    try FileHandle.standardOutput.write(contentsOf: encoder.encode(response) + Data([10]))
+                    if !output.append(response) { finished = true }
                 } catch {
-                    do { try FileHandle.standardOutput.write(contentsOf: encoder.encode(session.failure(error, id: id)) + Data([10])) }
-                    catch { finished = true }
+                    if !output.append(session.failure(error, id: id)) { finished = true }
                 }
-            } else { NativeSession.pump(0.008) }
+            }
+            do {
+                if let frame = try session.streamFrameIfDue() { output.append(frame, streaming: true) }
+            } catch {
+                output.append(session.failure(error, id: nil))
+                finished = true
+            }
+            NativeSession.pump(0.001)
         }
         session.close()
+        output.finish()
     }
 }

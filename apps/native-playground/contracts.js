@@ -70,9 +70,9 @@ export function nativeRenderRequest(tag, properties, dark) {
   return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640 };
 }
 
-// A session owns one ordered request stream: input always precedes the next
-// poll, and a late create response is closed even after navigation.
-export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onError, pollInterval = 250, interactiveInterval = 1000 / 30, animationTail = 600, now = Date.now, schedule = setTimeout, unschedule = clearTimeout }) {
+// Input stays ordered independently of the native frame stream. Legacy clients
+// can still poll; a late create response is closed even after navigation.
+export function createNativeLiveClient({ send, subscribe, onFrame, onEvents = () => {}, onError, pollInterval = 250, interactiveInterval = 1000 / 60, animationTail = 600, now = Date.now, schedule = setTimeout, unschedule = clearTimeout }) {
   let active = null;
   let visible = true;
   const close = id => id && Promise.resolve(send(`${id}/close`, {})).catch(() => {});
@@ -81,6 +81,7 @@ export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onE
     active = null;
     if (!previous) return;
     previous.closed = true;
+    endStream(previous);
     unschedule(previous.timer);
     previous.queue.length = 0;
     void close(previous.id);
@@ -96,7 +97,7 @@ export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onE
       return true;
     });
     if (events.length) onEvents(events);
-    if (Number.isFinite(result.revision) && result.revision > session.revision) {
+    if (typeof result.imageUrl === 'string' && Number.isFinite(result.revision) && result.revision > session.revision) {
       session.revision = result.revision;
       onFrame(result);
     }
@@ -105,7 +106,7 @@ export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onE
     if (active !== session || session.closed || session.busy || !session.id) return;
     unschedule(session.timer);
     const input = session.queue.shift();
-    if (!input && !visible) return;
+    if (!input && (!visible || subscribe)) return;
     session.busy = true;
     const requestStartedAt = now();
     let received = false;
@@ -125,15 +126,28 @@ export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onE
       session.busy = false;
       if (active === session && !session.closed) {
         if (session.queue.length) void pump(session);
-        else if (visible) {
+        else if (visible && !subscribe) {
           // Spend the frame budget on native work, rather than adding another
-          // 33 ms after a render that already took longer than that budget.
+          // frame interval after a render that already spent that budget.
           const fast = session.pointerHeld || now() < session.animateUntil;
           const delay = fast && !session.pollFailures ? Math.max(0, interactiveInterval - (now() - requestStartedAt)) : pollInterval * Math.max(1, session.pollFailures);
           session.timer = schedule(() => pump(session), delay);
         }
       }
     }
+  }
+  function endStream(session) {
+    session.streamGeneration = (session.streamGeneration || 0) + 1;
+    const closeStream = session.closeStream; session.closeStream = null; closeStream?.();
+  }
+  function beginStream(session) {
+    endStream(session);
+    const generation = session.streamGeneration;
+    const current = () => active === session && !session.closed && visible && generation === session.streamGeneration;
+    session.closeStream = subscribe(session.id, result => {
+      if (!current()) return;
+      try { accept(session, result); } catch (error) { stop(); onError(error); }
+    }, error => { if (current()) { stop(); onError(error); } });
   }
   async function start(payload) {
     stop();
@@ -146,7 +160,7 @@ export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onE
       if (!session.id) throw new Error('The native host did not return a session.');
       accept(session, result);
       session.busy = false;
-      if (visible) session.timer = schedule(() => pump(session), pollInterval);
+      if (visible) { if (subscribe) beginStream(session); else session.timer = schedule(() => pump(session), pollInterval); }
     } catch (error) {
       if (active === session) { stop(); onError(error); }
     }
@@ -159,18 +173,23 @@ export function createNativeLiveClient({ send, onFrame, onEvents = () => {}, onE
       const releasing = command.command === 'pointer' && ['up', 'cancel'].includes(command.phase);
       if (active.queue.length >= 100 && !releasing) return false;
       if (command.command === 'pointer') {
-        active.pointerHeld = command.phase === 'down';
+        if (['down', 'up', 'cancel'].includes(command.phase)) active.pointerHeld = command.phase === 'down';
         active.animateUntil = now() + animationTail;
       }
-      active.queue.push(command);
+      // Pointer motion never queues stale positions ahead of a release.
+      const previous = active.queue.at(-1);
+      if (command.command === 'pointer' && ['move', 'leave'].includes(command.phase) && previous?.command === 'pointer' && ['move', 'leave'].includes(previous.phase)) active.queue[active.queue.length - 1] = command;
+      else active.queue.push(command);
       void pump(active);
       return true;
     },
     setVisible(value) {
+      if (visible === Boolean(value)) return;
       visible = Boolean(value);
       if (!active) return;
       unschedule(active.timer);
-      if (visible) void pump(active);
+      if (subscribe) { if (visible && active.id) beginStream(active); else endStream(active); }
+      else if (visible) void pump(active);
     },
   };
 }

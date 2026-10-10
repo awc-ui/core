@@ -63,22 +63,27 @@ adapter. Changing initial properties or the theme restarts the native session.
 
 `AWCLivePreview --stdio` uses bounded JSON lines to configure one native view and
 accept click, text, key and frame commands, plus separate pointer down/up/cancel
-commands for `md-button`. Each response contains a PNG frame,
-pixel and logical dimensions, a request ID, and native events since the last
-response. The Node server owns session lifetime and validates browser requests.
+commands for `md-button` (including move/leave for hover). By default each response
+contains a PNG frame, dimensions, a request ID, and native events since the last
+response. `{ "command": "stream", "enabled": true }` starts a 60 Hz native frame
+producer: unsolicited `kind: "frame"` messages carry lossless sRGB PNGs, while
+inputs receive fast acknowledgments with their request ID and events. Frames and
+inputs no longer wait for each other's browser round trips. The Node server owns
+session lifetime and validates browser requests.
 The host realizes its own window outside the displays, without activating it;
 events stay inside that process. Links are disabled in the remote preview.
 
 This requires a logged-in macOS desktop session with access to WindowServer.
 Restricted processes or headless sessions may permit static snapshots but reject
 interactive window creation. It runs macOS SwiftUI, not an iOS simulator.
-Clicks, held button presses and text editing are supported; drag gestures, hover, scrolling, system
+Clicks, held button presses, button hover and text editing are supported; general drag gestures, scrolling, system
 menus, sheets and native accessibility require testing in the full native app.
 
 Run the real native interaction check after building:
 
 ```sh
 node apps/native-ios-playground/scripts/test-live-preview.mjs
+node apps/native-ios-playground/scripts/test-live-stream.mjs
 ```
 
 The check exercises native Chip toggling, persistent state, Unicode text entry,
@@ -87,8 +92,11 @@ separate tests in `apps/native-playground`.
 
 `md-button` uses source size/density rules, five variant palettes, bundled Roboto
 and Material Symbols, and native press-driven shape morphing. The ripple uses the
-source grow/fade timing but starts at the center; web pointer-origin waves and
-the web morphing loading indicator remain differences. With Xcode's XCTest SDK,
+pointer origin and source grow/fade timing; the loader uses the source polygon
+keyframes. The stream test reports real frame intervals and input acknowledgment
+latency; set `AWC_NATIVE_PERF_MIN_FPS=50` to require that rate on a desktop test host.
+Font rasterization and accessibility behavior still depend on the native platform.
+With Xcode's XCTest SDK,
 its isolated metric, palette and corner regressions run with
 `swift test --package-path packages/native-ios`. The Command Line Tools SDK can
 build the playground and run the real interaction script above, but does not

@@ -6,6 +6,12 @@ import AWCUI
 
 @main
 struct SnapshotRenderer {
+    private static func png(_ bitmap: NSBitmapImageRep) -> Data? {
+        // A monitor's Color LCD profile is neither portable nor comparable to CSS sRGB.
+        // Convert pixels, rather than merely changing the profile tag, before exporting.
+        guard let output = bitmap.colorSpace == .sRGB ? bitmap : bitmap.converting(to: .sRGB, renderingIntent: .default) else { return nil }
+        return output.representation(using: .png, properties: [:])
+    }
     private struct RenderRequest: Decodable {
         let tag: String
         let properties: [String: AWCValue]
@@ -76,7 +82,7 @@ struct SnapshotRenderer {
             throw RenderFailure(message: "Native bitmap allocation failed.")
         }
         host.cacheDisplay(in: host.bounds, to: bitmap)
-        guard let png = bitmap.representation(using: .png, properties: [:]) else {
+        guard let png = png(bitmap) else {
             throw RenderFailure(message: "Native PNG encoding failed.")
         }
         try FileManager.default.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -102,7 +108,7 @@ struct SnapshotRenderer {
                 host.layoutSubtreeIfNeeded()
                 guard let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { failed.append(tag); continue }
                 host.cacheDisplay(in: host.bounds, to: bitmap)
-                guard let png = bitmap.representation(using: .png, properties: [:]) else { failed.append(tag); continue }
+                guard let png = png(bitmap) else { failed.append(tag); continue }
                 try png.write(to: output.appendingPathComponent("\(tag)-\(dark ? "dark" : "light").png"))
             }
         }
@@ -121,7 +127,7 @@ struct SnapshotRenderer {
                 }
             }
             NSGraphicsContext.restoreGraphicsState()
-            if let png = bitmap.representation(using: .png, properties: [:]) { try png.write(to: output.appendingPathComponent("overview.png")) }
+            if let png = png(bitmap) { try png.write(to: output.appendingPathComponent("overview.png")) }
         }
         print("Rendered \(AWCComponentCatalog.tags.count * 2) native SwiftUI snapshots to \(output.path)")
     }

@@ -5,7 +5,7 @@ const $ = selector => document.querySelector(selector);
 const state = { components: [], selected: null, platform: 'web', inspector: 'contract', filter: 'all', props: {}, events: [], catalog: null, ready: false, target: null, sourcePlatform: 'ios', sourceText: '', sourceCache: new Map(), renderVersion: 0 };
 const nativeRequests = createLatestRequest();
 state.nativeMode = 'live';
-const nativeLive = createNativeLiveClient({ send: sendNativeLive, onFrame: showNativeLiveFrame, onEvents: recordNativeEvents, onError: reportNativeLiveError });
+const nativeLive = createNativeLiveClient({ send: sendNativeLive, subscribe: subscribeNativeLive, onFrame: showNativeLiveFrame, onEvents: recordNativeEvents, onError: reportNativeLiveError });
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const text = (selector, value) => { $(selector).textContent = String(value ?? ''); };
 const sourceURL = value => value && !value.startsWith('/') && !value.split('/').includes('..') ? `/repo/${value}` : null;
@@ -205,13 +205,40 @@ async function sendNativeLive(route, payload) {
   return readNativeResponse(response);
 }
 
+function subscribeNativeLive(id, onFrame, onError) {
+  const controller = new AbortController();
+  void (async () => {
+    const response = await fetch(`/api/native-live/${id}/stream`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', signal: controller.signal });
+    if (!response.ok) { await readNativeResponse(response); return; }
+    const reader = response.body.getReader(), decoder = new TextDecoder();
+    let pending = '';
+    try {
+      while (!controller.signal.aborted) {
+        const { value, done } = await reader.read();
+        if (done) throw new Error('The native frame stream ended. Reconnect to continue.');
+        pending += decoder.decode(value, { stream: true });
+        let end;
+        while ((end = pending.indexOf('\n')) !== -1) {
+          const line = pending.slice(0, end); pending = pending.slice(end + 1);
+          if (line.length > 16 * 1024 * 1024) throw new Error('Native frame exceeds the stream size limit.');
+          const frame = JSON.parse(line);
+          if (frame.error) throw new Error(frame.message || 'Native stream failed.');
+          if (!controller.signal.aborted) onFrame(frame);
+        }
+        if (pending.length > 16 * 1024 * 1024) throw new Error('Native frame exceeds the stream size limit.');
+      }
+    } finally { await reader.cancel().catch(() => {}); reader.releaseLock(); }
+  })().catch(error => { if (!controller.signal.aborted) onError(error); });
+  return () => controller.abort();
+}
+
 function setNativeMode(mode, fallbackMessage = '') {
   state.activeNativeMode = mode;
   state.nativeFallback = Boolean(fallbackMessage);
   document.querySelectorAll('[data-native-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.nativeMode === mode)));
   text('#preview-runtime', mode === 'live' ? 'CONNECTING' : 'NATIVE SNAPSHOT');
   text('.props-hint', mode === 'live' ? 'Initial properties · editing restarts the native session.' : 'Changes rerender the native snapshot.');
-  text('#native-preview-note', mode === 'live' ? state.selected.tag === 'md-button' ? 'Press and hold to see the native button response; release to activate. Esc cancels and releases keyboard focus. Frames stream from SwiftUI; hover and dragging are not forwarded.' : 'Click the native view, then type. Esc releases keyboard focus. Clicks and typing are live; dragging, hover and sheets are not validated.' : `${fallbackMessage ? `${fallbackMessage} ` : ''}Static snapshot — interact in the native app. For iOS, open the native playground.`);
+  text('#native-preview-note', mode === 'live' ? state.selected.tag === 'md-button' ? 'Press and hold to see the native button response; release to activate. Esc cancels and releases keyboard focus. Frames stream directly from SwiftUI; hover and pointer position are forwarded.' : 'Click the native view, then type. Esc releases keyboard focus. Clicks and typing are live; dragging, hover and sheets are not validated.' : `${fallbackMessage ? `${fallbackMessage} ` : ''}Static snapshot — interact in the native app. For iOS, open the native playground.`);
   text('#preview-caption', mode === 'live' ? 'Persistent macOS SwiftUI app · live frames and native events' : 'Rendered by SwiftUI on this Mac · displayed as a PNG');
   text('#recipe-status', mode === 'live' ? 'Click & type · native state persists' : 'Native fixture + current root properties');
   text('#native-render-button', state.nativeFallback ? 'Retry Live' : mode === 'live' ? 'Reconnect' : 'Render again');
@@ -241,34 +268,60 @@ async function chooseNativePreview(payload, request) {
 function showNativeLiveFrame(result) {
   if (state.platform !== 'ios' || state.activeNativeMode !== 'live') return;
   if (result.platform !== 'macos' || result.renderer !== 'SwiftUI' || !/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(result.imageUrl || '') || ![result.logicalWidth, result.logicalHeight].every(size => Number.isFinite(size) && size > 0)) throw new Error('The live host returned an invalid native frame.');
-  if ($('#native-live-surface') && state.liveFrame?.sessionId === result.sessionId && state.liveFrame.imageUrl === result.imageUrl && state.liveFrame.logicalWidth === result.logicalWidth && state.liveFrame.logicalHeight === result.logicalHeight) {
-    updateNativeLiveFrameMetadata(result);
-    return;
-  }
+  const now = performance.now();
+  if (state.nativePerf?.sessionId !== result.sessionId) state.nativePerf = { sessionId: result.sessionId, since: now, received: 0, presented: 0, windowFrames: 0, fps: 0, decodeMs: 0 };
+  state.nativePerf.received++;
   const imageVersion = state.liveImageVersion;
+  const queue = image => {
+    if (imageVersion !== state.liveImageVersion || result.revision < state.liveDisplayedRevision) return;
+    if (!state.nextNativeFrame || state.nextNativeFrame.imageVersion !== imageVersion || result.revision > state.nextNativeFrame.result.revision) state.nextNativeFrame = { image, result, imageVersion };
+    if (state.nativePresentation) return;
+    state.nativePresentation = requestAnimationFrame(() => {
+      state.nativePresentation = null;
+      const next = state.nextNativeFrame; state.nextNativeFrame = null;
+      if (!next || next.imageVersion !== state.liveImageVersion || state.platform !== 'ios' || state.activeNativeMode !== 'live' || next.result.revision < state.liveDisplayedRevision) return;
+      presentNativeLiveFrame(next.image, next.result);
+    });
+  };
+  if ($('#native-live-surface') && state.liveFrame?.sessionId === result.sessionId && state.liveFrame.imageUrl === result.imageUrl && state.liveFrame.logicalWidth === result.logicalWidth && state.liveFrame.logicalHeight === result.logicalHeight) { queue(null); return; }
   const image = new Image(); image.className = 'snapshot-image native-live-image'; image.style.width = `${result.logicalWidth}px`; image.draggable = false;
   image.alt = `${displayName(state.selected.tag)} live SwiftUI view on macOS`;
   image.addEventListener('load', () => {
-    if (state.platform !== 'ios' || state.activeNativeMode !== 'live' || imageVersion !== state.liveImageVersion || result.revision < state.liveDisplayedRevision) return;
-    let surface = $('#native-live-surface');
-    if (!surface) {
-      nativeRenderState('ready', 'Native session connected.');
-      surface = document.createElement('div'); surface.id = 'native-live-surface'; surface.className = 'native-live-surface'; surface.tabIndex = 0; surface.setAttribute('role', 'group'); surface.setAttribute('aria-label', 'Live native SwiftUI view. Click or focus, then type. Escape releases keyboard.');
-      const input = document.createElement('textarea'); input.className = 'native-keyboard-input'; input.setAttribute('aria-label', 'Keyboard input for the native SwiftUI view'); input.tabIndex = -1; input.autocomplete = 'off'; input.autocapitalize = 'off'; input.spellcheck = false;
-      surface.append(image, input); bindNativeInput(surface, input);
-      $('#native-render-frame').append(surface);
-    } else surface.querySelector('img').replaceWith(image);
-    updateNativeLiveFrameMetadata(result);
+    if (imageVersion !== state.liveImageVersion) return;
+    state.nativePerf.decodeMs = performance.now() - now;
+    queue(image);
   }, { once: true });
   image.addEventListener('error', () => { if (imageVersion === state.liveImageVersion && result.revision >= state.liveDisplayedRevision && state.platform === 'ios' && state.activeNativeMode === 'live') { nativeLive.stop(); reportNativeLiveError(new Error('The live native frame could not be decoded.')); } }, { once: true });
   image.src = result.imageUrl;
+}
+
+function presentNativeLiveFrame(image, result) {
+  let surface = $('#native-live-surface');
+  if (!surface) {
+    if (!image) return;
+    nativeRenderState('ready', 'Native session connected.');
+    surface = document.createElement('div'); surface.id = 'native-live-surface'; surface.className = 'native-live-surface'; surface.tabIndex = 0; surface.setAttribute('role', 'group'); surface.setAttribute('aria-label', 'Live native SwiftUI view. Click or focus, then type. Escape releases keyboard.');
+    const input = document.createElement('textarea'); input.className = 'native-keyboard-input'; input.setAttribute('aria-label', 'Keyboard input for the native SwiftUI view'); input.tabIndex = -1; input.autocomplete = 'off'; input.autocapitalize = 'off'; input.spellcheck = false;
+    surface.append(image, input); bindNativeInput(surface, input);
+    $('#native-render-frame').append(surface);
+  } else if (image) surface.querySelector('img').replaceWith(image);
+  const perf = state.nativePerf;
+  perf.presented++; perf.windowFrames++;
+  const now = performance.now();
+  if (now - perf.since >= 1000) {
+    perf.fps = Math.round(perf.windowFrames * 1000 / (now - perf.since));
+    perf.windowFrames = 0; perf.since = now;
+    // Read-only QA measurements also distinguish arrival rate from actual paints.
+    surface.dataset.frameMetrics = JSON.stringify({ received: perf.received, presented: perf.presented, fps: perf.fps, decodeMs: +perf.decodeMs.toFixed(2) });
+  }
+  updateNativeLiveFrameMetadata(result);
 }
 
 function updateNativeLiveFrameMetadata(result) {
   state.liveDisplayedRevision = result.revision; state.liveFrame = result;
   if ($('#preview-runtime').textContent !== 'LIVE SWIFTUI') text('#preview-runtime', 'LIVE SWIFTUI');
   // Do not announce every poll to screen readers or replace an unchanged image.
-  const status = `Live · ${result.logicalWidth} × ${result.logicalHeight} pt · ${state.selected.tag}`;
+  const status = `Live stream${state.nativePerf?.fps ? ` · ${state.nativePerf.fps} fps` : ''} · ${result.logicalWidth} × ${result.logicalHeight} pt · ${state.selected.tag}`;
   if ($('#native-render-status').textContent !== status) text('#native-render-status', status);
 }
 
@@ -298,17 +351,30 @@ function bindNativeInput(surface, input) {
     surface.setAttribute('aria-label', 'Live native SwiftUI button. Press and hold, then release to activate. Escape cancels.');
     const pointer = createNativePointerInput(queueNativeInput);
     const releaseCapture = id => { if (id !== null && surface.hasPointerCapture(id)) surface.releasePointerCapture(id); };
-    const cancel = () => { const id = pointer.pointerId; pointer.cancel(); releaseCapture(id); };
+    let motionFrame, motion;
+    const clearMotion = () => { if (motionFrame) cancelAnimationFrame(motionFrame); motionFrame = null; motion = null; };
+    const leave = () => queueNativeInput({ command: 'pointer', phase: 'leave', x: 0, y: 0 });
+    const cancel = () => { clearMotion(); const id = pointer.pointerId; pointer.cancel(); releaseCapture(id); leave(); };
     const hidden = () => { if (document.hidden) cancel(); };
     surface.addEventListener('pointerdown', event => {
       if (event.button !== 0 || event.isPrimary === false || !pointer.down(event.pointerId, pointerPoint(event))) return;
-      event.preventDefault(); input.focus({ preventScroll: true });
+      clearMotion(); event.preventDefault(); input.focus({ preventScroll: true });
       try { surface.setPointerCapture(event.pointerId); } catch { cancel(); }
     });
     surface.addEventListener('pointerup', event => {
       if (event.pointerId !== pointer.pointerId) return;
-      event.preventDefault(); pointer.up(event.pointerId, pointerPoint(event)); releaseCapture(event.pointerId);
+      clearMotion(); event.preventDefault(); pointer.up(event.pointerId, pointerPoint(event)); releaseCapture(event.pointerId);
     });
+    surface.addEventListener('pointermove', event => {
+      if (event.isPrimary === false) return;
+      motion = pointerPoint(event);
+      if (!motionFrame) motionFrame = requestAnimationFrame(() => {
+        motionFrame = null;
+        if (motion) queueNativeInput({ command: 'pointer', phase: 'move', ...motion });
+        else leave();
+      });
+    });
+    surface.addEventListener('pointerleave', () => { clearMotion(); leave(); });
     surface.addEventListener('pointercancel', event => { if (event.pointerId === pointer.pointerId) cancel(); });
     surface.addEventListener('lostpointercapture', event => pointer.cancel(event.pointerId));
     input.addEventListener('blur', cancel);

@@ -50,18 +50,27 @@ can run at once. Retry starts a fresh native view after an error or expiry.
 Live previews run on **macOS SwiftUI**, not an iOS simulator. Clicks and typing are
 supported. `md-button` also forwards separate press/release/cancel commands, so
 holding the pointer keeps its actual SwiftUI pressed state. Frame polling speeds
-up while pressed and during release animation; visible frame rate depends on
-native rendering and transport time. Dragging, hover, scrolling, separate native windows, sheets and system
+up while pressed and during release animation when using the polling fallback.
+Button hover and pointer position are forwarded too. General dragging, scrolling, separate native windows, sheets and system
 menus are not validated by this transport. Browser accessibility does not expose
 the native accessibility tree. Use the native app for full platform interaction
 and accessibility testing. Web slot content is not translated into the native
 fixture. The Android tab still provides source inspection and launch directions.
 Existing adapter API gaps remain visible.
 
+Native frames are pushed over one bounded NDJSON connection at a target 60 fps,
+independently of input acknowledgments. The browser presents decoded frames on
+`requestAnimationFrame`; the live status reports the measured presentation rate.
+Hidden tabs close their frame stream. Slow consumers retain only the latest
+picture plus a bounded event batch instead of building up animation latency.
+Retina PNGs stay lossless and are converted to sRGB; SwiftUI draws the animation.
+Achievable frame rate depends on the host, component size and tab visibility.
+
 The web reference uses the same generated light/dark tokens as the native view.
 The Button examples share their label, size and preview canvas. Native Button
 matches the source variant palettes, density rules, fonts and press shape timing;
-its ripple starts at the center and its loader remains a native progress view.
+its ripple follows the pointer position and its native loader uses the source
+polygon keyframes and easing. Text rasterization remains platform-dependent.
 
 Snapshot mode renders one image per property/theme change and caches identical
 requests until the executable changes. `AWC_NATIVE_RENDERER` and

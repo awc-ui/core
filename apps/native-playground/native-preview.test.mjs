@@ -216,3 +216,60 @@ test('live client retries only transient frame transport failures, never uncerta
   assert.equal(calls.at(-1), 'retry/close');
   client.stop();
 });
+
+test('pushed native frames keep arriving while input is pending and never schedule polls', async () => {
+  const { createNativeLiveClient } = await import('./contracts.js');
+  const calls = [], frames = [], events = [], streams = [];
+  let finishInput;
+  const client = createNativeLiveClient({
+    send: (route, body) => {
+      calls.push({ route, body });
+      if (route === 'session') return Promise.resolve(frame('streamed', 0));
+      if (route.endsWith('/input')) return new Promise(resolve => { finishInput = resolve; });
+      return Promise.resolve({});
+    },
+    subscribe: (id, onFrame, onError) => { const stream = { id, onFrame, onError, closed: false }; streams.push(stream); return () => { stream.closed = true; }; },
+    onFrame: value => frames.push(value.revision), onEvents: value => events.push(...value), onError: error => { throw error; },
+    schedule: () => assert.fail('Streaming sessions must not poll'), unschedule: () => {},
+  });
+  await client.start({ tag: 'md-button' });
+  client.input({ command: 'pointer', phase: 'down', x: 30, y: 40 });
+  streams[0].onFrame(frame('streamed', 1));
+  streams[0].onFrame(frame('streamed', 2));
+  const event = { id: 'click', name: 'mdClick' };
+  finishInput({ sessionId: 'streamed', revision: 2, events: [event] }); await turn();
+  streams[0].onFrame(frame('streamed', 3, [event]));
+  assert.deepEqual(frames, [0, 1, 2, 3]);
+  assert.deepEqual(events, [event]);
+  assert.deepEqual(calls.map(call => call.route), ['session', 'streamed/input']);
+  client.setVisible(false); assert.equal(streams[0].closed, true);
+  streams[0].onFrame(frame('streamed', 4));
+  client.setVisible(true); assert.equal(streams.length, 2);
+  client.setVisible(true); assert.equal(streams.length, 2, 'Redundant visibility must not start duplicate streams');
+  streams[1].onFrame(frame('streamed', 5));
+  assert.deepEqual(frames, [0, 1, 2, 3, 5]);
+  client.stop(); assert.equal(streams[1].closed, true);
+  streams[1].onFrame(frame('streamed', 6));
+  assert.equal(frames.at(-1), 5);
+});
+
+test('pointer motion coalesces while an input is pending without losing release order', async () => {
+  const { createNativeLiveClient } = await import('./contracts.js');
+  const sent = []; let finish;
+  const client = createNativeLiveClient({
+    send: (route, body) => {
+      if (route === 'session') return Promise.resolve(frame('motion', 0));
+      if (route.endsWith('/input')) { sent.push(body); return new Promise(resolve => { finish = () => resolve({ sessionId: 'motion', revision: 0, events: [] }); }); }
+      return Promise.resolve({});
+    }, subscribe: () => () => {}, onFrame: () => {}, onError: error => { throw error; },
+  });
+  await client.start({ tag: 'md-button' });
+  client.input({ command: 'pointer', phase: 'down', x: 30, y: 40 });
+  for (let x = 31; x < 100; x++) client.input({ command: 'pointer', phase: 'move', x, y: 40 });
+  client.input({ command: 'pointer', phase: 'up', x: 99, y: 40 });
+  finish(); await turn();
+  assert.deepEqual(sent.map(value => [value.phase, value.x]), [['down', 30], ['move', 99]]);
+  finish(); await turn();
+  assert.deepEqual(sent.map(value => value.phase), ['down', 'move', 'up']);
+  finish(); await turn(); client.stop();
+});

@@ -20,6 +20,7 @@ class FakeChild extends EventEmitter {
     this.value = '';
     this.selected = false;
     this.held = false;
+    this.streaming = false;
     this.stdout = new PassThrough();
     this.stderr = new PassThrough();
     this.stdin = new Writable({ write: (data, _encoding, done) => {
@@ -43,7 +44,7 @@ class FakeChild extends EventEmitter {
     }
     if (command.command === 'pointer') {
       if (command.phase === 'down') this.held = true;
-      else {
+      else if (['up', 'cancel'].includes(command.phase)) {
         if (command.phase === 'up' && this.held) {
           this.selected = !this.selected;
           events.push({ name: 'mdClick', tag: 'md-button', nodeID: 'component', detail: { selected: this.selected } });
@@ -51,7 +52,16 @@ class FakeChild extends EventEmitter {
         this.held = false;
       }
     }
+    if (command.command === 'stream') this.streaming = command.enabled;
+    if (command.command === 'stream' || (this.streaming && command.command !== 'frame')) {
+      this.stdout.write(`${JSON.stringify({ id: command.id, ack: true, events, ...changes })}\n`);
+      return;
+    }
     this.stdout.write(`${JSON.stringify({ id: command.id, png: PNG, width: 1, height: 1, ...bounds, events, ...changes })}\n`);
+  }
+
+  pushFrame(changes = {}) {
+    this.stdout.write(`${JSON.stringify({ kind: 'frame', id: null, png: PNG, width: 1, height: 1, ...bounds, events: [], ...changes })}\n`);
   }
 
   kill(signal) {
@@ -106,10 +116,13 @@ test('pointer input is scoped to buttons, validates phases, and converts outside
   assert.deepEqual(validateLiveInput({ command: 'pointer', phase: 'down', x: 20.5, y: 50 }, button), { command: 'pointer', phase: 'down', x: 20.5, y: 50 });
   assert.deepEqual(validateLiveInput({ command: 'pointer', phase: 'up', x: -10, y: 500 }, button), { command: 'pointer', phase: 'cancel', x: 0, y: 199.999 });
   assert.deepEqual(validateLiveInput({ command: 'pointer', phase: 'cancel', x: 700, y: -1 }, button), { command: 'pointer', phase: 'cancel', x: 639.999, y: 0 });
+  assert.deepEqual(validateLiveInput({ command: 'pointer', phase: 'move', x: 20, y: 30 }, button), { command: 'pointer', phase: 'move', x: 20, y: 30 });
+  assert.deepEqual(validateLiveInput({ command: 'pointer', phase: 'move', x: -10, y: 500 }, button), { command: 'pointer', phase: 'leave', x: 0, y: 199.999 });
+  assert.deepEqual(validateLiveInput({ command: 'pointer', phase: 'leave', x: 700, y: -1 }, button), { command: 'pointer', phase: 'leave', x: 639.999, y: 0 });
   for (const value of [
     { command: 'pointer', phase: 'down', x: -1, y: 20 },
     { command: 'pointer', phase: 'down', x: 640, y: 20 },
-    { command: 'pointer', phase: 'move', x: 20, y: 20 },
+    { command: 'pointer', phase: 'drag-global-window', x: 20, y: 20 },
     { command: 'pointer', phase: 'up', x: Infinity, y: 20 },
     { command: 'pointer', phase: 'cancel', x: 20, y: NaN },
     { command: 'pointer', phase: 'down', x: 20, y: 20, button: 'right' },
@@ -318,6 +331,75 @@ test('unresponsive children are force-killed and dispose removes its exit handle
   assert.equal(process.listenerCount('exit'), listeners);
   assert.equal((await renderer.status()).available, false);
   await assert.rejects(renderer.create(request), errorCode('LIVE_RENDERER_UNAVAILABLE'));
+});
+
+test('pushed frames interleave with separate input acknowledgements without frame polling', async t => {
+  const { renderer, children } = fixture(t);
+  const { sessionId } = await renderer.create(request);
+  const frames = [], errors = [];
+  const unsubscribe = renderer.subscribe(sessionId, frame => frames.push(frame), error => errors.push(error));
+  await nextTurn();
+  const child = children[0];
+  assert.equal(child.streaming, true);
+  assert.throws(() => renderer.subscribe(sessionId, () => {}, () => {}), errorCode('STREAM_EXISTS'));
+  child.auto = false;
+  const typing = renderer.input(sessionId, { command: 'text', text: 'Salut 👋' });
+  child.pushFrame({ events: [{ id: 'native-event-1', name: 'mdFocus', tag: request.tag, nodeID: 'component', detail: null }] });
+  assert.equal(frames.length, 1);
+  assert.equal(frames[0].revision, 2);
+  assert.equal(frames[0].events[0].id, 'native-event-1');
+  child.respond();
+  const ack = await typing;
+  assert.equal(ack.imageUrl, undefined, 'input ACK must not introduce a second image pipeline');
+  assert.equal(ack.events.length, 1);
+  assert.equal(ack.events[0].detail.value, 'Salut 👋');
+  child.pushFrame();
+  assert.deepEqual(frames.map(frame => frame.revision), [2, 3]);
+  assert.deepEqual(frames[1].events, []);
+  assert.equal(child.commands.some(command => command.command === 'frame'), false);
+  child.auto = true;
+  unsubscribe(); unsubscribe(); await nextTurn();
+  assert.deepEqual(child.commands.filter(command => command.command === 'stream').map(command => command.enabled), [true, false]);
+  assert.equal(child.streaming, false);
+  assert.deepEqual(errors, []);
+});
+
+test('detaching a stream retains bounded events from in-flight frames for the next subscriber', async t => {
+  const { renderer, children } = fixture(t);
+  const { sessionId } = await renderer.create(request);
+  const first = [], resumed = [];
+  const unsubscribe = renderer.subscribe(sessionId, frame => first.push(frame), () => {});
+  await nextTurn();
+  const child = children[0];
+  child.auto = false;
+  unsubscribe();
+  for (let index = 0; index < 270; index++) child.pushFrame({ events: [{ id: `native:${index}`, name: 'mdInput', tag: request.tag, nodeID: 'component', detail: index }] });
+  assert.deepEqual(first, []);
+  child.respond(); await nextTurn();
+  child.auto = true;
+  const stopResumed = renderer.subscribe(sessionId, frame => resumed.push(frame), () => {});
+  await nextTurn();
+  assert.equal(resumed.length, 1);
+  assert.equal(resumed[0].events.length, 256);
+  assert.equal(resumed[0].events[0].id, 'native:14');
+  assert.equal(resumed[0].events.at(-1).id, 'native:269');
+  stopResumed();
+});
+
+test('malformed pushed output closes the stream and rejects pending input exactly once', async t => {
+  const { renderer, children } = fixture(t);
+  const { sessionId } = await renderer.create(request);
+  const errors = [];
+  renderer.subscribe(sessionId, () => assert.fail('Invalid frame must not render'), error => errors.push(error));
+  await nextTurn();
+  const child = children[0]; child.auto = false;
+  const pending = assert.rejects(renderer.input(sessionId, { command: 'text', text: 'pending' }), errorCode('INVALID_LIVE_FRAME'));
+  child.pushFrame({ png: 'YWJjZA==' });
+  await pending;
+  assert.equal(errors.length, 1);
+  assert.equal(errors[0].code, 'INVALID_LIVE_FRAME');
+  assert.deepEqual(child.signals, ['SIGTERM']);
+  await assert.rejects(renderer.frame(sessionId), errorCode('SESSION_NOT_FOUND'));
 });
 
 test('unsupported platforms and absent executables do not spawn native processes', async t => {

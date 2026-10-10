@@ -6374,7 +6374,9 @@
             "density",
             "ripple",
             "connectedLeft",
-            "connectedRight"
+            "connectedRight",
+            "mirrorIcon",
+            "suppressExpandIconFlip"
           ],
           "events": [
             "mdClick",
@@ -6390,8 +6392,6 @@
           "unsupportedProperties": [
             "type",
             "target",
-            "mirrorIcon",
-            "suppressExpandIconFlip",
             "groupTabindex",
             "roleOverride"
           ],
@@ -6400,9 +6400,9 @@
           "unsupportedSlots": [],
           "notes": [
             "Dedicated native Button uses source size/density metrics, variant/toggle/disabled color tokens, Roboto and Material Symbols fonts, slot fallback, and source loader placement.",
-            "Actual SwiftUI isPressed drives shape morphing (200ms press, 400ms release) and a centered ripple (450ms growth, 150ms fade). Reduce Motion suppresses these animations. Pointer-origin ripple and per-instance CSS overrides are not reproduced.",
+            "Actual SwiftUI isPressed drives shape morphing (200ms press, 400ms release). Pointer-origin ripple uses source farthest-corner geometry and 450ms growth/150ms fade; hover and pointer geometry are forwarded by the native preview. Reduce Motion suppresses shape/ripple animations. Per-instance CSS overrides are not reproduced.",
             "Native links use openURL. HTML submit/reset, browser target contexts, cancelable DOM events, role overrides and group roving tab order are not reproduced. Soft-disabled controls suppress activation but do not preserve web keyboard focusability.",
-            "Loading uses a native ProgressView rather than the web morphing loading indicator. Connected corner props render native corner geometry; native button groups do not automatically inject those props.",
+            "Loading draws the source 48-vertex morphing polygons with the original 4.55s keyframes and easing; Reduce Motion uses the source opacity pulse. Native button groups do not automatically inject connected corner props. RTL icon mirroring uses native layout direction; expanded trailing-icon rotation requires an explicit aria-expanded property on the native node.",
             "mdClick describes the proposed state before commit and includes value, toggle, selected, href and target; mdChange follows commit and includes selected and value. originalEvent is omitted."
           ],
           "verification": "not-device-verified"

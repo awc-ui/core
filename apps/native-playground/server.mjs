@@ -69,22 +69,64 @@ export async function handleNativeLiveRequest(req, res, { renderer, tags, json }
       else json(res, 200, result);
       return true;
     }
-    const match = /^\/api\/native-live\/([a-f0-9-]{36})\/(input|frame|close)$/.exec(pathname);
+    const match = /^\/api\/native-live\/([a-f0-9-]{36})\/(input|frame|close|stream)$/.exec(pathname);
     if (!match) throw new RenderError(404, 'UNKNOWN_ENDPOINT', 'Unknown native preview endpoint.');
     const [, sessionId, action] = match;
-    if (action === 'close') {
+    if (action === 'stream') {
+      streamNativeFrames(res, renderer, sessionId);
+    } else if (action === 'close') {
       await renderer.close(sessionId);
       json(res, 200, { closed: true });
     } else {
       json(res, 200, await (action === 'input' ? renderer.input(sessionId, body) : renderer.frame(sessionId)));
     }
   } catch (error) {
+    if (res.headersSent) { res.destroy(); return true; }
     json(res, error instanceof RenderError ? error.status : 500, {
       error: error instanceof RenderError ? error.code : 'LIVE_PREVIEW_FAILED',
       message: error instanceof RenderError ? error.message : 'Unable to update the native preview.',
     });
   }
   return true;
+}
+
+// Lossless native frames on one connection. A slow reader keeps only the newest
+// image, while retaining the bounded event batch between rendered frames.
+export function streamNativeFrames(res, renderer, sessionId) {
+  if (res.destroyed) return;
+  let unsubscribe, stopped = false, blocked = false, latest = null, stallTimer;
+  const cleanup = () => {
+    if (stopped) return;
+    stopped = true; clearTimeout(stallTimer); latest = null; unsubscribe?.();
+  };
+  const write = frame => {
+    if (stopped || res.destroyed) return;
+    if (!res.headersSent) {
+      res.writeHead(200, { 'Content-Type': 'application/x-ndjson', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'X-Accel-Buffering': 'no' });
+      res.flushHeaders?.();
+    }
+    blocked = !res.write(`${JSON.stringify(frame)}\n`);
+    if (blocked) { clearTimeout(stallTimer); stallTimer = setTimeout(() => { cleanup(); res.destroy(); }, 15000); stallTimer.unref?.(); }
+  };
+  res.on('close', cleanup);
+  res.on('drain', () => {
+    blocked = false; clearTimeout(stallTimer);
+    if (latest) { const next = latest; latest = null; write(next); }
+  });
+  try {
+    unsubscribe = renderer.subscribe(sessionId, frame => {
+      if (stopped) return;
+      if (!blocked) { write(frame); return; }
+      const events = [...(latest?.events || []), ...frame.events];
+      if (events.length > 256) { cleanup(); res.destroy(); return; }
+      latest = { ...frame, events };
+    }, error => {
+      if (stopped) return;
+      if (!blocked) write({ error: error.code || 'STREAM_FAILED', message: error.message || 'Native frame stream disconnected.' });
+      cleanup(); res.end();
+    });
+    if (stopped) unsubscribe();
+  } catch (error) { cleanup(); throw error; }
 }
 
 export function createServer(options = {}) {

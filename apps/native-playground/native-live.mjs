@@ -37,14 +37,14 @@ export function validateLiveInput(value, { logicalWidth, logicalHeight, tag }) {
   }
   if (value.command === 'pointer') {
     exactKeys(['command', 'phase', 'x', 'y']);
-    if (tag !== 'md-button' || !['down', 'up', 'cancel'].includes(value.phase)) {
+    if (tag !== 'md-button' || !['down', 'up', 'cancel', 'move', 'leave'].includes(value.phase)) {
       throw failure(400, 'INVALID_POINTER', 'Held pointer input is available only for button previews.');
     }
     if (![value.x, value.y].every(Number.isFinite)) throw failure(400, 'INVALID_COORDINATES', 'Pointer coordinates must be finite.');
     const inside = value.x >= 0 && value.y >= 0 && value.x < logicalWidth && value.y < logicalHeight;
     if (value.phase === 'down' && !inside) throw failure(400, 'INVALID_COORDINATES', 'Press inside the native preview.');
     // Captured browser releases can arrive outside the image; cancel instead of activating a control.
-    const phase = value.phase === 'up' && !inside ? 'cancel' : value.phase;
+    const phase = value.phase === 'up' && !inside ? 'cancel' : value.phase === 'move' && !inside ? 'leave' : value.phase;
     return { command: 'pointer', phase, x: Math.min(logicalWidth - 0.001, Math.max(0, value.x)), y: Math.min(logicalHeight - 0.001, Math.max(0, value.y)) };
   }
   if (value.command === 'text') {
@@ -112,6 +112,8 @@ export function createNativeLiveRenderer({
     finishCommand(session, error);
     for (const pending of session.queue.splice(0)) pending.reject(error);
     session.buffer = Buffer.alloc(0);
+    const subscriber = session.subscriber; session.subscriber = null;
+    subscriber?.onError(error);
     if (session.child && !session.exited) {
       session.child.stdin.end();
       session.child.kill('SIGTERM');
@@ -130,6 +132,17 @@ export function createNativeLiveRenderer({
     session.idleTimer.unref();
   }
 
+  function eventResult(session, values) {
+    if (!Array.isArray(values) || values.length > 256) throw failure(502, 'INVALID_LIVE_FRAME', 'The renderer returned invalid events.');
+    return values.map(event => {
+      if (!record(event) || typeof event.name !== 'string' || event.name.length > 128 || typeof event.tag !== 'string' || event.tag.length > 128 || typeof event.nodeID !== 'string' || event.nodeID.length > 256 ||
+        (event.id !== undefined && (typeof event.id !== 'string' || !event.id.length || event.id.length > 256)) || !validEventDetail(event.detail ?? null)) {
+        throw failure(502, 'INVALID_LIVE_FRAME', 'The live renderer returned an invalid event.');
+      }
+      return { id: event.id ?? `${session.id}:${++session.eventSequence}`, name: event.name, tag: event.tag, nodeID: event.nodeID, detail: event.detail ?? null };
+    });
+  }
+
   function frameResult(session, message) {
     const dimensions = ['width', 'height'];
     if (dimensions.some(key => !Number.isSafeInteger(message[key]) || message[key] <= 0 || message[key] > 16384) || message.width * message.height > 32 * 1024 * 1024 ||
@@ -142,16 +155,10 @@ export function createNativeLiveRenderer({
     if (png.length < 24 || !png.subarray(0, 8).equals(PNG_SIGNATURE) || png.toString('ascii', 12, 16) !== 'IHDR' || png.readUInt32BE(16) !== message.width || png.readUInt32BE(20) !== message.height) {
       throw failure(502, 'INVALID_LIVE_FRAME', 'The live renderer did not return a valid PNG frame.');
     }
-    const events = message.events.map(event => {
-      if (!record(event) || typeof event.name !== 'string' || event.name.length > 128 || typeof event.tag !== 'string' || event.tag.length > 128 || typeof event.nodeID !== 'string' || event.nodeID.length > 256 ||
-        (event.id !== undefined && (typeof event.id !== 'string' || !event.id.length || event.id.length > 256)) || !validEventDetail(event.detail ?? null)) {
-        throw failure(502, 'INVALID_LIVE_FRAME', 'The live renderer returned an invalid event.');
-      }
-      return { id: event.id ?? `${session.id}:${++session.eventSequence}`, name: event.name, tag: event.tag, nodeID: event.nodeID, detail: event.detail ?? null };
-    });
+    const events = eventResult(session, message.events);
     session.logicalWidth = message.logicalWidth;
     session.logicalHeight = message.logicalHeight;
-    return {
+    return session.lastFrame = {
       sessionId: session.id,
       platform: 'macos',
       renderer: 'SwiftUI',
@@ -168,7 +175,7 @@ export function createNativeLiveRenderer({
 
   function receive(session, chunk) {
     if (session.closed) return;
-    // A command produces exactly one line. Reject excess data before allocating a larger buffer.
+    // Both replies and unsolicited stream frames are bounded JSON lines.
     if (session.buffer.length + chunk.length > maxLineBytes) {
       stop(session, failure(502, 'LIVE_OUTPUT_LIMIT', 'The live renderer exceeded the frame size limit.'));
       return;
@@ -181,6 +188,14 @@ export function createNativeLiveRenderer({
       let message;
       try { message = JSON.parse(line.toString('utf8')); }
       catch { stop(session, failure(502, 'INVALID_LIVE_RESPONSE', 'The live renderer returned invalid JSON.')); return; }
+      if (record(message) && message.kind === 'frame' && message.id === null && session.streamAllowed) {
+        try {
+          const frame = frameResult(session, message);
+          if (session.subscriber) { session.subscriber.onFrame(frame); touch(session); }
+          else session.undeliveredEvents = [...session.undeliveredEvents, ...frame.events].slice(-256);
+        } catch (error) { stop(session, error); return; }
+        continue;
+      }
       if (!record(message) || !session.pending || message.id !== session.pending.id) {
         stop(session, failure(502, 'INVALID_LIVE_RESPONSE', 'The live renderer returned an unexpected response.'));
         return;
@@ -189,7 +204,16 @@ export function createNativeLiveRenderer({
         stop(session, failure(502, 'LIVE_RENDER_FAILED', 'SwiftUI could not process this preview input. Start a new preview.'));
         return;
       }
-      try { finishCommand(session, null, frameResult(session, message)); }
+      try {
+        const result = message.ack === true
+          ? { sessionId: session.id, revision: session.revision, events: eventResult(session, message.events) }
+          : frameResult(session, message);
+        if (session.pending.payload.command === 'stream' && session.pending.payload.enabled === false) {
+          session.undeliveredEvents = [...session.undeliveredEvents, ...result.events].slice(-256);
+          result.events = [];
+        } else result.events = [...session.undeliveredEvents.splice(0), ...result.events];
+        finishCommand(session, null, result);
+      }
       catch (error) { stop(session, error); return; }
       touch(session);
       // Dispatch after parsing this chunk so extra unsolicited output cannot match a new command.
@@ -240,7 +264,7 @@ export function createNativeLiveRenderer({
     const availability = await status();
     if (!availability.available || disposed) throw failure(503, 'LIVE_RENDERER_UNAVAILABLE', availability.message);
     if (children.size >= maxSessions) throw failure(429, 'LIVE_RENDERER_BUSY', 'Two native previews are already open. Close one or wait for it to expire.');
-    const session = { id: randomUUID(), tag: request.tag, revision: 0, eventSequence: 0, queue: [], buffer: Buffer.alloc(0), stderrBytes: 0, closed: false, exited: false };
+    const session = { id: randomUUID(), tag: request.tag, revision: 0, eventSequence: 0, queue: [], buffer: Buffer.alloc(0), stderrBytes: 0, closed: false, exited: false, subscriber: null, streamAllowed: false, undeliveredEvents: [] };
     sessions.set(session.id, session);
     try {
       session.child = spawnProcess(binary, ['--stdio'], { stdio: ['pipe', 'pipe', 'pipe'], shell: false, windowsHide: true });
@@ -275,6 +299,25 @@ export function createNativeLiveRenderer({
 
   async function frame(id) { return enqueue(getSession(id), { command: 'frame' }); }
 
+  // One subscriber per view; frames do not wait for a browser round trip.
+  function subscribe(id, onFrame, onError) {
+    const session = getSession(id);
+    if (session.subscriber) throw failure(409, 'STREAM_EXISTS', 'This preview already has a frame stream.');
+    const subscriber = { onFrame, onError };
+    session.subscriber = subscriber;
+    session.streamAllowed = true;
+    const unsubscribe = () => {
+      if (session.subscriber !== subscriber) return;
+      session.subscriber = null;
+      if (!session.closed) void enqueue(session, { command: 'stream', enabled: false }).catch(error => stop(session, error));
+    };
+    void enqueue(session, { command: 'stream', enabled: true }).then(result => {
+      if (session.subscriber !== subscriber) return;
+      if (result.events.length && session.lastFrame) onFrame({ ...session.lastFrame, events: result.events });
+    }).catch(error => { if (session.subscriber === subscriber) { unsubscribe(); onError(error); } });
+    return unsubscribe;
+  }
+
   function close(id) {
     const session = getSession(id);
     stop(session);
@@ -298,5 +341,5 @@ export function createNativeLiveRenderer({
     process.removeListener('exit', onExit);
   }
 
-  return { status, create, input, frame, close, dispose };
+  return { status, create, input, frame, subscribe, close, dispose };
 }

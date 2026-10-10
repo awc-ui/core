@@ -122,32 +122,36 @@ private func awcButtonNumber(_ value: String?, _ fallback: Double) -> Double {
     return Double(value.replacingOccurrences(of: "px", with: "").replacingOccurrences(of: "ms", with: "")) ?? fallback
 }
 
-/// Center-origin native equivalent of md-ripple's 450ms grow / 150ms fade.
-/// Pointer-positioned waves and per-instance CSS ripple overrides remain web-only.
+/// md-ripple's farthest-corner geometry and 450ms grow / 150ms release fade.
 private struct AWCNativeButtonRipple: View {
     let pressed: Bool
     let color: Color
+    let origin: CGPoint?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var started: Date?
     @State private var released: Date?
     @State private var completion: Task<Void, Never>?
+    @State private var waveOrigin: CGPoint?
 
     var body: some View {
         GeometryReader { geometry in
             TimelineView(.animation(minimumInterval: 1 / 60, paused: started == nil || reduceMotion)) { context in
                 let elapsed = started.map { context.date.timeIntervalSince($0) } ?? 0
-                let growth = reduceMotion ? 1 : Self.ease(min(1, max(0, elapsed / 0.45)))
+                let growth = reduceMotion ? 1 : AWCNativeButtonTiming.cubic(min(1, max(0, elapsed / 0.45)), x1: 0.2, y1: 0, x2: 0, y2: 1)
                 let fadeStart = max(0.45, released.flatMap { release in started.map { release.timeIntervalSince($0) } } ?? .infinity)
-                let alpha = reduceMotion ? (pressed ? 0.12 : 0) : started == nil ? 0 : 0.12 * (1 - Self.ease(min(1, max(0, (elapsed - fadeStart) / 0.15))))
-                let diameter = hypot(geometry.size.width, geometry.size.height)
+                let alpha = reduceMotion ? (pressed ? 0.12 : 0) : started == nil ? 0 : 0.12 * (1 - AWCNativeButtonTiming.cubic(min(1, max(0, (elapsed - fadeStart) / 0.15)), x1: 0.2, y1: 0, x2: 0, y2: 1))
+                let point = waveOrigin ?? CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
+                let dx = max(abs(point.x), abs(geometry.size.width - point.x))
+                let dy = max(abs(point.y), abs(geometry.size.height - point.y))
+                let diameter = 2 * hypot(dx, dy)
                 Circle().fill(color.opacity(alpha)).frame(width: diameter, height: diameter)
-                    .scaleEffect(growth).position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+                    .scaleEffect(growth).position(point)
             }
         }
         .allowsHitTesting(false).accessibilityHidden(true)
         .onChange(of: pressed) { _, down in
             completion?.cancel()
-            if down { started = Date(); released = nil }
+            if down { started = Date(); released = nil; waveOrigin = origin }
             else if let started {
                 let release = Date(); released = release
                 let remaining = max(0, 0.45 - release.timeIntervalSince(started)) + 0.15
@@ -161,18 +165,6 @@ private struct AWCNativeButtonRipple: View {
         .onDisappear { completion?.cancel() }
     }
 
-    // Solve the source cubic-bezier(0.2, 0, 0, 1) by x, then evaluate y.
-    private static func ease(_ progress: Double) -> Double {
-        if progress <= 0 || progress >= 1 { return progress }
-        var low = 0.0, high = 1.0
-        for _ in 0..<16 {
-            let t = (low + high) / 2
-            let x = 0.6 * (1 - t) * (1 - t) * t + t * t * t
-            if x < progress { low = t } else { high = t }
-        }
-        let t = (low + high) / 2
-        return 3 * (1 - t) * t * t + t * t * t
-    }
 }
 
 private struct AWCNativeButtonStyle: ButtonStyle {
@@ -190,10 +182,40 @@ private struct AWCNativeButtonStyle: ButtonStyle {
     let focused: Bool
     let connectedLeft: Bool
     let connectedRight: Bool
+    func makeBody(configuration: Configuration) -> some View {
+        AWCNativeButtonStyleBody(metrics: metrics, palette: palette, theme: theme,
+                                 variant: variant, shape: shape, shapeMorph: shapeMorph,
+                                 selected: selected, ripple: ripple, blocked: blocked,
+                                 loading: loading, fullWidth: fullWidth, focused: focused,
+                                 connectedLeft: connectedLeft, connectedRight: connectedRight,
+                                 configuration: configuration)
+    }
+}
+
+private struct AWCNativeButtonStyleBody: View {
+    let metrics: AWCNativeButtonMetrics
+    let palette: AWCNativeButtonPalette
+    let theme: AWCTheme
+    let variant: String
+    let shape: String
+    let shapeMorph: Bool
+    let selected: Bool
+    let ripple: Bool
+    let blocked: Bool
+    let loading: Bool
+    let fullWidth: Bool
+    let focused: Bool
+    let connectedLeft: Bool
+    let connectedRight: Bool
+    let configuration: ButtonStyleConfiguration
     @State private var hovered = false
+    @State private var frame = CGRect.zero
+    @State private var localOrigin: CGPoint?
+    @State private var localPointerDown = false
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isEnabled) private var enabled
+    @Environment(\.awcNativePointerState) private var pointer
 
     private var tokens: [String: String] { colorScheme == .dark ? AWCGeneratedTokens.dark : AWCGeneratedTokens.light }
     private func color(_ role: String?) -> Color {
@@ -215,49 +237,85 @@ private struct AWCNativeButtonStyle: ButtonStyle {
         return pressed ? .timingCurve(0.2, 0, 0, 1, duration: seconds) : .timingCurve(0.05, 0.7, 0.1, 1, duration: seconds)
     }
 
-    func makeBody(configuration: Configuration) -> some View {
+    var body: some View {
         let active = enabled && !blocked
         let pressed = active && configuration.isPressed
+        let isHovered = pointer.map { state in state.location.map(frame.contains) ?? false } ?? hovered
+        let pointerOrigin = pointer.flatMap { state in
+            state.isPointerDown ? state.pressLocation.map { CGPoint(x: $0.x - frame.minX, y: $0.y - frame.minY) } : nil
+        } ?? (localPointerDown ? localOrigin : nil)
         let corners = AWCNativeButtonCorners(metrics: metrics, shape: shape, shapeMorph: shapeMorph,
                                              selected: selected, pressed: pressed, connectedLeft: connectedLeft, connectedRight: connectedRight)
         let outline = UnevenRoundedRectangle(topLeadingRadius: corners.topLeading, bottomLeadingRadius: corners.bottomLeading,
                                              bottomTrailingRadius: corners.bottomTrailing, topTrailingRadius: corners.topTrailing, style: .circular)
-        let stateOpacity = !active ? 0 : pressed ? opacity("pressed-state-layer", 0.12) : focused ? opacity("focus-state-layer", 0.12) : hovered ? opacity("hover-state-layer", 0.08) : 0
-        let borderColor = active && (hovered || focused) && palette.outlineRole == "outline" ? color("primary") : color(palette.outlineRole)
-        let elevation = active && hovered && !pressed && !focused ? palette.hoverElevation : palette.restingElevation
+        let stateOpacity = !active ? 0 : pressed ? opacity("pressed-state-layer", 0.12) : focused ? opacity("focus-state-layer", 0.12) : isHovered ? opacity("hover-state-layer", 0.08) : 0
+        let borderColor = active && (isHovered || focused) && palette.outlineRole == "outline" ? color("primary") : color(palette.outlineRole)
+        let elevation = active && isHovered && !pressed && !focused ? palette.hoverElevation : palette.restingElevation
         let disabledPalette = palette.labelOpacity < 1
         let containerOpacity = disabledPalette ? opacity("disabled-container", 0.12) : palette.containerOpacity
         let contentOpacity = disabledPalette ? opacity("disabled-content", 0.38) : palette.labelOpacity
-        return configuration.label
+        // CSS gives colors/shadows 100ms, radius 400ms; the pressed class uses
+        // 200ms for the host transitions. Scope animations to avoid stretching
+        // a color change across the radius's slower release transition.
+        let colorAnimation: Animation? = reduceMotion || disabledPalette ? nil : pressed && shapeMorph
+            ? .timingCurve(0.2, 0, 0, 1, duration: 0.2)
+            : .timingCurve(0.2, 0, 0, 1, duration: 0.1)
+        let shapeAnimation = disabledPalette ? nil : animation(pressed: pressed)
+        let label = AnyView(configuration.label
             .font(AWCNativeFonts.label(size: metrics.fontSize, regular: metrics.fontWeight < 500))
             .tracking(metrics.letterSpacing)
             .lineLimit(1)
-            .foregroundStyle(color(palette.labelRole).opacity(contentOpacity))
-            .padding(.horizontal, metrics.horizontalPadding + (variant == "outlined" ? 1 : 0))
+            .animation(colorAnimation) { content in content.foregroundStyle(color(palette.labelRole).opacity(contentOpacity)) })
+        let surface = AnyView(label.padding(.horizontal, metrics.horizontalPadding + (variant == "outlined" ? 1 : 0))
             .frame(minWidth: metrics.minimumWidth, minHeight: metrics.minimumHeight)
             .frame(maxWidth: fullWidth ? .infinity : nil)
             .background {
-                outline.fill(color(palette.containerRole).opacity(containerOpacity))
+                Rectangle().fill(color(palette.containerRole).opacity(containerOpacity))
+                    .animation(colorAnimation, value: selected)
                     .overlay {
-                        outline.fill(color(palette.stateRole).opacity(stateOpacity))
+                        Rectangle().fill(color(palette.stateRole).opacity(stateOpacity))
                             .animation(reduceMotion ? nil : .timingCurve(pressed ? 0.05 : 0.2, pressed ? 0.7 : 0, pressed ? 0.1 : 0, 1, duration: pressed ? 0.05 : 0.1), value: stateOpacity)
                     }
                     .overlay {
-                        if ripple { AWCNativeButtonRipple(pressed: pressed, color: color(palette.labelRole)) }
+                        if ripple { AWCNativeButtonRipple(pressed: pressed, color: color(palette.labelRole), origin: pointerOrigin) }
+                    }
+            })
+        let bordered = AnyView(surface.overlay {
+                outline.strokeBorder(lineWidth: variant == "outlined" ? 1 : 0)
+                    .animation(shapeAnimation, value: corners)
+                    .animation(colorAnimation) { content in
+                        content.foregroundStyle(borderColor.opacity(disabledPalette ? opacity("disabled-container", 0.12) : palette.outlineOpacity))
                     }
             }
-            .overlay { outline.strokeBorder(borderColor.opacity(disabledPalette ? opacity("disabled-container", 0.12) : palette.outlineOpacity), lineWidth: variant == "outlined" ? 1 : 0) }
             .contentShape(outline)
-            .clipShape(outline)
-            .shadow(color: color("shadow").opacity(elevation > 0 ? 0.3 : 0), radius: 1, x: 0, y: elevation > 0 ? 1 : 0)
-            .shadow(color: color("shadow").opacity(elevation > 0 ? 0.15 : 0), radius: elevation == 2 ? 3 : 1.5, x: 0, y: elevation == 2 ? 2 : elevation == 1 ? 1 : 0)
-            .overlay {
+            .animation(shapeAnimation) { content in content.clipShape(outline) }
+            .background {
+                ZStack {
+                    outline.inset(by: elevation == 2 ? -2 : -1).fill(color("shadow"))
+                        .animation(shapeAnimation, value: corners)
+                        .animation(colorAnimation) { content in
+                            content.blur(radius: elevation == 2 ? 3 : 1.5).offset(y: elevation == 2 ? 2 : 1).opacity(elevation > 0 ? 0.15 : 0)
+                        }
+                    outline.fill(color("shadow"))
+                        .animation(shapeAnimation, value: corners)
+                        .animation(colorAnimation) { content in content.blur(radius: 1).offset(y: 1).opacity(elevation > 0 ? 0.3 : 0) }
+                }
+            })
+        return bordered.overlay {
                 if focused && active {
-                    outline.stroke(color("secondary"), lineWidth: 3).padding(-3.5)
+                    outline.stroke(color("secondary"), lineWidth: 3).padding(-3.5).animation(shapeAnimation, value: corners)
                 }
             }
-            .animation(animation(pressed: pressed), value: corners)
-            .animation(reduceMotion ? nil : .timingCurve(0.2, 0, 0, 1, duration: 0.1), value: hovered)
+            .background {
+                GeometryReader { geometry in
+                    Color.clear.onChange(of: geometry.frame(in: .named("awc-native-preview")), initial: true) { _, bounds in
+                        frame = bounds
+                    }
+                }
+            }
+            .simultaneousGesture(DragGesture(minimumDistance: 0).onChanged { value in
+                localPointerDown = true; localOrigin = value.startLocation
+            }.onEnded { _ in localPointerDown = false }, including: pointer == nil ? .all : .none)
             .onHover { hovered = $0 }
     }
 }
@@ -268,8 +326,10 @@ private struct AWCNativeButtonControl<Label: View>: View {
     let style: AWCNativeButtonStyle
     let blocked: Bool
     let action: () -> Void
+    let direction: String
     @ViewBuilder let label: () -> Label
     @FocusState private var focused: Bool
+    @Environment(\.layoutDirection) private var inheritedDirection
     var body: some View {
         Button(action: action, label: label)
             .buttonStyle(AWCNativeButtonStyle(metrics: style.metrics, palette: style.palette, theme: style.theme,
@@ -280,6 +340,26 @@ private struct AWCNativeButtonControl<Label: View>: View {
             .focused($focused)
             .focusEffectDisabled()
             .disabled(blocked)
+            .environment(\.layoutDirection, direction == "rtl" ? .rightToLeft : direction == "ltr" ? .leftToRight : inheritedDirection)
+    }
+}
+
+private struct AWCNativeButtonIconAppearance<Content: View>: View {
+    let mirrored: Bool
+    let expanded: Bool
+    let suppressFlip: Bool
+    @ViewBuilder let content: () -> Content
+    @Environment(\.layoutDirection) private var direction
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        let flipped = mirrored && direction == .rightToLeft
+        // The source's later RTL rule replaces the expanded transform.
+        let angle: Double = expanded && !suppressFlip && !flipped ? 180 : 0
+        content().scaleEffect(x: flipped ? -1 : 1, y: 1)
+            .rotationEffect(.degrees(angle))
+            .animation(reduceMotion ? nil : .timingCurve(0.2, 0, 0, 1, duration: 0.1), value: angle)
+            .animation(reduceMotion ? nil : .timingCurve(0.2, 0, 0, 1, duration: 0.1), value: flipped)
     }
 }
 
@@ -294,7 +374,7 @@ extension AWCNativeView {
                                          shape: s("shape", "round"), shapeMorph: b("shapeMorph", true), selected: b("selected"), ripple: b("ripple", true),
                                          blocked: blocked, loading: b("loading"), fullWidth: b("fullWidth"), focused: false,
                                          connectedLeft: b("connectedLeft"), connectedRight: b("connectedRight"))
-        return AWCNativeButtonControl(style: style, blocked: blocked, action: activateNativeButton) {
+        return AWCNativeButtonControl(style: style, blocked: blocked, action: activateNativeButton, direction: s("dir")) {
             HStack(spacing: metrics.gap) {
                 buttonIcon(slot: "leading-icon", fallback: s("icon"), size: metrics.iconSize)
                 let textChildren = node.children.filter { $0.slot == nil }
@@ -311,10 +391,7 @@ extension AWCNativeView {
                 if b("loading") {
                     let loaders = node.children.filter { $0.slot == "loader" }
                     if loaders.isEmpty {
-                        ProgressView().progressViewStyle(.circular).controlSize(.mini)
-                            .tint(buttonLabelColor(palette.labelRole, tokens: tokens))
-                            .scaleEffect(metrics.loadingSize / 12)
-                            .frame(width: metrics.loadingSize, height: metrics.loadingSize)
+                        AWCNativeButtonLoading(size: metrics.loadingSize)
                     } else {
                         ForEach(loaders) { child($0).frame(width: metrics.loadingSize, height: metrics.loadingSize) }
                     }
@@ -325,20 +402,18 @@ extension AWCNativeView {
         .accessibilityAddTraits(b("toggle") && b("selected") ? .isSelected : [])
     }
 
-    private func buttonLabelColor(_ role: String, tokens: [String: String]) -> Color {
-        if role == "primary" { return theme.primary }
-        if role == "on-primary" { return theme.onPrimary }
-        if role == "on-surface" { return theme.onSurface }
-        return Color(awcHex: tokens["--md-sys-color-" + role] ?? "#000000")
-    }
-
     @ViewBuilder private func buttonIcon(slot: String, fallback: String, size: CGFloat) -> some View {
         let icons = node.children.filter { $0.slot == slot }
-        if !icons.isEmpty {
-            ForEach(icons) { child($0).frame(width: size, height: size) }
-        } else if !fallback.isEmpty {
-            Text(fallback).font(AWCNativeFonts.symbol(size: size)).tracking(0)
-                .frame(width: size, height: size).accessibilityHidden(true)
+        let expanded = slot == "trailing-icon" && (b("ariaExpanded") || b("aria-expanded") || s("aria-expanded") == "true")
+        if !icons.isEmpty || !fallback.isEmpty {
+            AWCNativeButtonIconAppearance(mirrored: b("mirrorIcon"), expanded: expanded, suppressFlip: b("suppressExpandIconFlip")) {
+                if !icons.isEmpty {
+                    ForEach(icons) { child($0).frame(width: size, height: size) }
+                } else {
+                    Text(fallback).font(AWCNativeFonts.symbol(size: size)).tracking(0)
+                        .frame(width: size, height: size).accessibilityHidden(true)
+                }
+            }
         }
     }
 
