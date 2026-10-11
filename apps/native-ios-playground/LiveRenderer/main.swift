@@ -11,6 +11,7 @@ private struct PreviewRequest: Decodable {
     let properties: [String: AWCValue]?
     let dark: Bool?
     let width: Double?
+    let scenario: String?
     let x: Double?
     let y: Double?
     let phase: String?
@@ -142,8 +143,13 @@ private struct PreviewRoot: View {
     let dark: Bool
     let onEvent: (AWCEvent) -> Void
     let pointerState: AWCNativePointerState
+    let scenario: String?
+    @ViewBuilder private var example: some View {
+        if scenario == "button-behavior" { AWCButtonBehaviorDemo(properties: node.properties, onEvent: onEvent) }
+        else { AWCNativeView(node: node, onEvent: onEvent) }
+    }
     var body: some View {
-        AWCNativeView(node: node, onEvent: onEvent)
+        example
             .padding(24)
             .frame(width: width, alignment: .leading)
             .frame(minHeight: 100, alignment: .topLeading)
@@ -237,10 +243,11 @@ private final class NativeSession {
             throw PreviewFailure("Native interaction requires access to the macOS WindowServer. Run the preview server in a desktop session outside a restricted process sandbox.")
         }
         logicalWidth = min(1200, max(320, width)).rounded()
+        guard request.scenario == nil || (request.scenario == "button-behavior" && requestedTag == "md-button") else { throw PreviewFailure("Unknown native example.") }
         var node = AWCExamples.node(for: requestedTag)
         node.properties.merge(request.properties ?? [:]) { _, supplied in supplied }
         tag = requestedTag
-        let newHost = NSHostingView(rootView: PreviewRoot(node: node, width: logicalWidth, dark: request.dark ?? false, onEvent: events.append, pointerState: pointerState))
+        let newHost = NSHostingView(rootView: PreviewRoot(node: node, width: logicalWidth, dark: request.dark ?? false, onEvent: events.append, pointerState: pointerState, scenario: request.scenario))
         // The window is realized outside every display, never activated, and never made key.
         let left = NSScreen.screens.map { $0.frame.minX }.min() ?? 0
         let bottom = NSScreen.screens.map { $0.frame.minY }.min() ?? 0

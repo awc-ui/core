@@ -98,6 +98,13 @@ function fixture(t, options = {}, childOptions = {}) {
   return { renderer, children };
 }
 
+test('SwiftUI receives the explicit behavior example without polluting component properties', async t => {
+  const { renderer, children } = fixture(t);
+  await renderer.create({ ...request, tag: 'md-button', scenario: 'button-behavior' });
+  assert.equal(children[0].commands[0].scenario, 'button-behavior');
+  assert.deepEqual(children[0].commands[0].properties, request.properties);
+});
+
 test('live input accepts only bounded view-local coordinates, Unicode text, and known keys', () => {
   assert.deepEqual(validateLiveInput({ command: 'click', x: 0, y: 199.5 }, bounds), { command: 'click', x: 0, y: 199.5 });
   assert.deepEqual(validateLiveInput({ command: 'text', text: 'Salut, România 👋' }, bounds), { command: 'text', text: 'Salut, România 👋' });

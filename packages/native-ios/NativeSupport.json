@@ -13,7 +13,7 @@
     "No JavaScript functions, DOM selectors, CSS cascade/parts, nativeEvent objects or imperative HTMLElement methods are executed. Control components using property updates and consume serializable events.",
     "AWCGeneratedTokens.light/dark supply native primary, secondary, tertiary, error, surface, onPrimary and onSurface colors.",
     "Material glyphs generally map to common SF Symbols. md-button bundles the web Roboto and Material Symbols fonts. Native platform text/gesture/focus behavior applies.",
-    "Method API is not implemented: all components use declarative property updates."
+    "Source HTMLElement methods are not implemented. Components use declarative properties; explicit native AWCFormState, event scopes and URL routers provide documented host APIs."
   ],
   "components": {
     "md-button": {
@@ -38,7 +38,9 @@
         "connectedLeft",
         "connectedRight",
         "mirrorIcon",
-        "suppressExpandIconFlip"
+        "suppressExpandIconFlip",
+        "type",
+        "target"
       ],
       "events": [
         "mdClick",
@@ -52,8 +54,6 @@
         "loader"
       ],
       "unsupportedProperties": [
-        "type",
-        "target",
         "groupTabindex",
         "roleOverride"
       ],
@@ -63,10 +63,65 @@
       "notes": [
         "Dedicated native Button uses source size/density metrics, variant/toggle/disabled color tokens, Roboto and Material Symbols fonts, slot fallback, and source loader placement.",
         "Actual SwiftUI isPressed drives shape morphing (200ms press, 400ms release). Pointer-origin ripple uses source farthest-corner geometry and 450ms growth/150ms fade; hover and pointer geometry are forwarded by the native preview. Reduce Motion suppresses shape/ripple animations. Per-instance CSS overrides are not reproduced.",
-        "Native links use openURL. HTML submit/reset, browser target contexts, cancelable DOM events, role overrides and group roving tab order are not reproduced. Soft-disabled controls suppress activation but do not preserve web keyboard focusability.",
         "Loading draws the source 48-vertex morphing polygons with the original 4.55s keyframes and easing; Reduce Motion uses the source opacity pulse. Native button groups do not automatically inject connected corner props. RTL icon mirroring uses native layout direction; expanded trailing-icon rotation requires an explicit aria-expanded property on the native node.",
-        "mdClick describes the proposed state before commit and includes value, toggle, selected, href and target; mdChange follows commit and includes selected and value. originalEvent is omitted."
-      ]
+        "mdClick describes the proposed state before commit and includes value, toggle, selected, href and target; mdChange follows commit and includes selected and value. originalEvent is omitted.",
+        "AWCButtonAction synchronously dispatches cancelable mdClick through AWCEventScope before any toggle, routing or form action. Legacy onEvent observes the result through AWCEvent.defaultPrevented; mdChange follows a committed toggle. Native form state and URL routing are explicit equivalents, not HTML/DOM emulation. Soft-disabled controls suppress activation without preserving web keyboard focusability.",
+        "type submit/reset uses the nearest AWCFormScope. Named text/number/OTP/select/multi-select/autocomplete, checkbox and switch controls register by stable per-view identity; other values can register explicitly. Reset restores first-registered values and native bindings. target is carried to an injectable AWCURLRouter; the default SwiftUI openURL fallback does not reproduce browser target contexts. Any raw nonempty href, including an unsafe one, suppresses form actions."
+      ],
+      "nativeEquivalents": {
+        "HTML_FORM": {
+          "status": "partial",
+          "api": "AWCFormState / AWCFormScope / AWCButtonAction.perform",
+          "description": "Explicit native field registration, values, validation, submit and reset-to-initial state. The actual md-button type submit/reset uses the nearest native scope.",
+          "limitations": [
+            "Native required, length, numeric range, ICU-pattern and custom validation differ from HTML constraint validation and browser validation UI.",
+            "Only documented control families auto-register; other values require explicit registration. Checkbox/switch values use native booleans rather than HTML successful-control serialization.",
+            "No ElementInternals, implicit Enter submission, HTML form owner lookup, HTTP form encoding or browser submit/reset event semantics."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "partial",
+          "api": "AWCEventContext / AWCEventDispatcher / AWCEventScope",
+          "description": "Synchronous inner-to-outer native scopes can prevent md-button default actions or stop propagation. Cancellation precedes toggle, URL and form effects; legacy onEvent remains an observer.",
+          "limitations": [
+            "No DOM capture phase, composed/shadow retargeting, originalEvent or underlying browser click event.",
+            "Propagation follows explicitly installed native scopes; only the md-button activation is cancelable in this adapter."
+          ]
+        },
+        "DOM_GLOBAL": {
+          "status": "partial",
+          "api": "AWCURLRouter / AWCURLRequest",
+          "description": "Safe explicit URL routing carries URL, original href, target and node identity to a host handler. Raw rejected links cannot fall through into form actions.",
+          "limitations": [
+            "No window/document object or browser browsing-context creation. The host decides how to interpret target; default openURL ignores browsing targets.",
+            "Relative URLs require an explicit base URL. URL schemes and control characters are validated using native rules rather than the browser URL parser."
+          ]
+        },
+        "SHADOW_DOM": {
+          "status": "implemented",
+          "api": "AWCNode / AWCNativeView",
+          "description": "An explicit native component tree owns nested content and rendering without accessing browser shadow roots.",
+          "limitations": [
+            "This replaces component content ownership; it does not implement CSS shadow-tree encapsulation or DOM retargeting."
+          ]
+        },
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "AWCNode.firstDescendant(id:) / AWCNode.descendants(tag:)",
+          "description": "Typed tree traversal finds native descendants by stable node ID or source tag without querying browser elements.",
+          "limitations": [
+            "Supports explicit native ID/tag lookup, not arbitrary CSS selectors, live DOM collections or imperative HTMLElement references."
+          ]
+        },
+        "SLOT_INTROSPECTION": {
+          "status": "implemented",
+          "api": "AWCNode.children(inSlot:fallback:)",
+          "description": "Native named-child lookup and dynamic fallback are used by md-button for default content, leading/trailing icons and loader.",
+          "limitations": [
+            "Operates on declarative native child values; browser assignedElements, slotchange events and flattened DOM slot semantics do not exist."
+          ]
+        }
+      }
     },
     "md-icon-button": {
       "status": "native-adapter",

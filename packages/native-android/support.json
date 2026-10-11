@@ -257,8 +257,10 @@
         "size",
         "softDisabled",
         "suppressExpandIconFlip",
+        "target",
         "toggle",
         "trailingIcon",
+        "type",
         "value",
         "variant"
       ],
@@ -274,9 +276,61 @@
         "trailing-icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Platform elevation shadows, antialiasing, HTML submit/reset, target contexts, cancelable DOM events, role overrides and group keyboard navigation remain different. Soft-disabled controls block activation without web focusability. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated."
-      ]
+        "Native Compose button with explicit forms, cancelable action scopes, safe routing and named content; browser-specific gaps are described in nativeEquivalents.",
+        "Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Explicit native form scopes implement validation, submit and reset; native action scopes can synchronously cancel defaults or stop scoped propagation; safe application routing carries target metadata. Browser form association, browsing contexts, DOM propagation, platform elevation shadows, antialiasing, role overrides and group keyboard navigation remain different. Soft-disabled controls block activation without web focusability. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated."
+      ],
+      "nativeEquivalents": {
+        "HTML_FORM": {
+          "status": "partial",
+          "api": "AWCFormState / AWCFormScope / rememberAWCFormField",
+          "description": "Explicitly registered native fields provide observable values, validation errors, submit callbacks and reset to initial values. Button type submit/reset uses the nearest form scope.",
+          "limitations": [
+            "No ElementInternals, implicit HTML form association, browser constraint parser or automatic discovery of unregistered controls.",
+            "Applications bind each field to native controls and provide validation rules."
+          ]
+        },
+        "SHADOW_DOM": {
+          "status": "implemented",
+          "api": "AWCSlotsScope / AWCSlotRegistry",
+          "description": "Scoped Compose content supplies the button label, leading/trailing icons and loader without a shadow root.",
+          "limitations": [
+            "This is native composition; browser style encapsulation and DOM node access are not exposed."
+          ]
+        },
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry / AWCNavigationScope",
+          "description": "Explicit named-content lookup and injected navigation replace the button-specific anchor and slot queries.",
+          "limitations": [
+            "Arbitrary CSS selectors and DOM traversal are not provided."
+          ]
+        },
+        "SLOT_INTROSPECTION": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry.contains / AWCSlotsScope",
+          "description": "Observable composition replaces slot assignment inspection; adding/removing registered content updates the button and restores absent-slot fallbacks. Legacy content lambdas remain supported.",
+          "limitations": [
+            "Slots contain composables rather than HTMLElement collections. Custom icon content retains its own transforms."
+          ]
+        },
+        "DOM_GLOBAL": {
+          "status": "partial",
+          "api": "AWCURLRouter / AWCNavigationScope / AWCNavigationRequest",
+          "description": "Allowlisted navigation requests carry the safe URL and original target to an application router; the default handler opens absolute native URIs. Unsafe raw links never fall through to form actions.",
+          "limitations": [
+            "Browser target contexts, page origins, modified-click navigation and window APIs are not reproduced.",
+            "Relative routes require an application router; URLs must parse as native URIs."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "partial",
+          "api": "AWCActionEvent / AWCActionScope",
+          "description": "Synchronous mdClick cancellation runs before selection, routing and form defaults; stopPropagation stops enclosing native action scopes while legacy onEvent still observes mdClick.",
+          "limitations": [
+            "Propagation is limited to explicitly nested AWC action scopes; no DOM capture phase, originalEvent or native OS event cancellation is claimed."
+          ]
+        }
+      }
     },
     "md-button-group": {
       "properties": [

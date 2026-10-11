@@ -36,7 +36,7 @@ extension AWCNativeView {
     }
     var fieldBinding: Binding<String> {
         Binding(get: { s("value") }, set: { text in
-            let value = String(text.prefix(max(0, Int(n("maxLength", 1000000)))))
+            let value = String(text.prefix(AWCFormRules.lengthConstraint(local["maxLength"]) ?? 1000000))
             set("value", .string(value)); emit("mdInput", .string(value))
         })
     }

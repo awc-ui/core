@@ -52,7 +52,7 @@ extension AWCNativeView {
             ForEach(Array(node.children.enumerated()), id: \.element.id) { index, item in
                 child(item, properties: ["selected": .bool(groupSelection.contains(index))]) { event in
                     onEvent(event)
-                    guard ["mdClick", "mdSegmentClick"].contains(event.name) else { return }
+                    guard !event.defaultPrevented, ["mdClick", "mdSegmentClick"].contains(event.name) else { return }
                     let previousSelection = groupSelection
                     var selection = previousSelection
                     let multiple = b("multiselect") || s("selectionMode") == "multi-select"

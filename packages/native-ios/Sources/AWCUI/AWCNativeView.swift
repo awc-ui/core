@@ -16,6 +16,11 @@ public struct AWCNativeView: View {
     @Environment(\.awcTheme) var customTheme
     @Environment(\.openURL) var openURL
     @Environment(\.colorScheme) var colorScheme
+    @Environment(\.awcFormState) var formState
+    @Environment(\.awcEventDispatcher) var eventDispatcher
+    @Environment(\.awcURLRouter) var urlRouter
+    @State var registeredForm: AWCFormState?
+    @State var formRegistrationID = UUID().uuidString
 
     public init(node: AWCNode, onEvent: @escaping (AWCEvent) -> Void = { _ in }) {
         self.node = node; self.onEvent = onEvent
@@ -31,8 +36,10 @@ public struct AWCNativeView: View {
             .disabled(disabled)
             .accessibilityIdentifier(node.id)
             .environment(\.awcInteractionStore, interactionStore)
-            .onAppear { synchronizeLinkedState() }
-            .onChange(of: node.properties) { _, value in local = (AWCComponentCatalog.defaults[node.tag] ?? [:]).merging(value) { _, new in new }; synchronizeLinkedState() }
+            .onAppear { synchronizeLinkedState(); synchronizeFormRegistration() }
+            .onDisappear { registeredForm?.unregister(id: formRegistrationID) }
+            .onChange(of: formState?.id) { _, _ in synchronizeFormRegistration() }
+            .onChange(of: node.properties) { _, value in local = (AWCComponentCatalog.defaults[node.tag] ?? [:]).merging(value) { _, new in new }; synchronizeLinkedState(); synchronizeFormRegistration() }
     }
     func synchronizeLinkedState() {
         if node.tag == "md-tabs" { interactionStore.tabIndices[node.id] = Int(n("activeTabIndex")) }
@@ -45,8 +52,11 @@ public struct AWCNativeView: View {
     func n(_ key: String, _ fallback: Double = 0) -> Double { local[key]?.number ?? fallback }
     func b(_ key: String, _ fallback: Bool = false) -> Bool { local[key]?.bool ?? fallback }
     func a(_ key: String) -> [AWCValue] { p(key).array }
-    func set(_ key: String, _ value: AWCValue) { local[key] = value }
-    func emit(_ name: String, _ detail: AWCValue = .null) { onEvent(AWCEvent(name: name, tag: node.tag, nodeID: node.id, detail: detail)) }
+    func set(_ key: String, _ value: AWCValue) { local[key] = value; if key == nativeFormValueKey { formState?.setValue(value, for: formRegistrationID) } }
+    func emit(_ name: String, _ detail: AWCValue = .null) {
+        let event = AWCEvent(name: name, tag: node.tag, nodeID: node.id, detail: detail)
+        onEvent(eventDispatcher?.dispatch(event).observedEvent ?? event)
+    }
     var label: String { [s("label"), s("headline"), s("text"), node.children.filter { $0.tag == "#text" && $0.slot == nil }.compactMap { $0.properties["text"]?.string }.joined(separator: " ")].first { !$0.isEmpty } ?? "" }
     var spacing: CGFloat { max(4, 12 + CGFloat(n("density")) * 2) }
     var radius: CGFloat { s("shape") == "square" ? 12 : 24 }
@@ -61,7 +71,7 @@ public struct AWCNativeView: View {
     }
     func content(_ slot: String? = nil) -> AnyView {
         AnyView(VStack(alignment: .leading, spacing: spacing) {
-            ForEach(node.children.filter { ($0.slot ?? "") == (slot ?? "") }) { child($0) }
+            ForEach(node.children(inSlot: slot)) { child($0) }
         })
     }
     @ViewBuilder func symbol(_ name: String, fallback: String = "") -> some View {

@@ -9,7 +9,7 @@ text='variant label value placeholder type disabled softDisabled readOnly requir
 select='label placeholder options value disabled softDisabled open error errorText supportingText filterable searchPlaceholder noOptionsText noResultsText clearable clearLabel loading maxHeight'
 chart='label subtitle series xAxis heightProp loading loadingLabel labelEmpty summary legend showMarks markSize lineWidth connectNulls'
 props={
-'md-button':actions.replace(' target','')+' size shape shapeMorph density ripple connectedLeft connectedRight mirrorIcon suppressExpandIconFlip','md-icon-button':actions+' selectedIcon','md-fab':actions,'md-fab-menu-item':actions,'md-split-button':actions+' menuLabel trailingChecked','md-segmented-button':actions,
+'md-button':actions+' type size shape shapeMorph density ripple connectedLeft connectedRight mirrorIcon suppressExpandIconFlip','md-icon-button':actions+' selectedIcon','md-fab':actions,'md-fab-menu-item':actions,'md-split-button':actions+' menuLabel trailingChecked','md-segmented-button':actions,
 'md-checkbox':shared+' checked indeterminate value error errorText supportingText','md-radio':shared+' checked value','md-switch':shared+' selected value',
 'md-slider':'min max value step disabled range valueStart valueEnd sliderAriaLabel labeled valueIndicator valueText',
 'md-rating':shared+' value defaultValue max readonly showValueLabel',
@@ -56,7 +56,7 @@ slots={
 'md-table':'','md-table-container':'','md-table-head':'','md-table-body':'','md-table-foot':'','md-table-row':'|expanded','md-table-cell':'','md-table-sort-label':'','md-table-toolbar':'actions'
 }
 notes={
-'md-button':'Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Platform elevation shadows, antialiasing, HTML submit/reset, target contexts, cancelable DOM events, role overrides and group keyboard navigation remain different. Soft-disabled controls block activation without web focusability. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated.',
+'md-button':'Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Explicit native form scopes implement validation, submit and reset; native action scopes can synchronously cancel defaults or stop scoped propagation; safe application routing carries target metadata. Browser form association, browsing contexts, DOM propagation, platform elevation shadows, antialiasing, role overrides and group keyboard navigation remain different. Soft-disabled controls block activation without web focusability. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated.',
 'md-avatar':'Native asynchronous HTTP(S) bitmap loading with initials/name fallback. CSS loading/crossorigin policies do not map to Android.',
 'md-button-group':'Native single/multi selection and required coordination. DOM originalEvent is omitted from payloads.',
 'md-segmented-button-set':'Native exclusive/multiple selection coordinated by child identity; supports duplicate child values.',
@@ -76,6 +76,14 @@ notes={
 'md-time-picker':'Uses Material TimePicker; dialog native layout replaces docked web variants.',
 'md-skeleton':'Static native skeleton blocks; shimmer/pulse motion remains unsupported.',
 }
+button_equivalents={
+ 'HTML_FORM': {'status':'partial','api':'AWCFormState / AWCFormScope / rememberAWCFormField','description':'Explicitly registered native fields provide observable values, validation errors, submit callbacks and reset to initial values. Button type submit/reset uses the nearest form scope.','limitations':['No ElementInternals, implicit HTML form association, browser constraint parser or automatic discovery of unregistered controls.','Applications bind each field to native controls and provide validation rules.']},
+ 'SHADOW_DOM': {'status':'implemented','api':'AWCSlotsScope / AWCSlotRegistry','description':'Scoped Compose content supplies the button label, leading/trailing icons and loader without a shadow root.','limitations':['This is native composition; browser style encapsulation and DOM node access are not exposed.']},
+ 'DOM_QUERY': {'status':'implemented','api':'AWCSlotRegistry / AWCNavigationScope','description':'Explicit named-content lookup and injected navigation replace the button-specific anchor and slot queries.','limitations':['Arbitrary CSS selectors and DOM traversal are not provided.']},
+ 'SLOT_INTROSPECTION': {'status':'implemented','api':'AWCSlotRegistry.contains / AWCSlotsScope','description':'Observable composition replaces slot assignment inspection; adding/removing registered content updates the button and restores absent-slot fallbacks. Legacy content lambdas remain supported.','limitations':['Slots contain composables rather than HTMLElement collections. Custom icon content retains its own transforms.']},
+ 'DOM_GLOBAL': {'status':'partial','api':'AWCURLRouter / AWCNavigationScope / AWCNavigationRequest','description':'Allowlisted navigation requests carry the safe URL and original target to an application router; the default handler opens absolute native URIs. Unsafe raw links never fall through to form actions.','limitations':['Browser target contexts, page origins, modified-click navigation and window APIs are not reproduced.','Relative routes require an application router; URLs must parse as native URIs.']},
+ 'CANCELABLE_EVENT': {'status':'partial','api':'AWCActionEvent / AWCActionScope','description':'Synchronous mdClick cancellation runs before selection, routing and form defaults; stopPropagation stops enclosing native action scopes while legacy onEvent still observes mdClick.','limitations':['Propagation is limited to explicitly nested AWC action scopes; no DOM capture phase, originalEvent or native OS event cancellation is claimed.']},
+}
 components={}
 for source in sorted((ROOT/'packages/core/src/components').glob('md-*/*.tsx')):
  tag=source.parent.name; text=source.read_text()
@@ -85,8 +93,10 @@ for source in sorted((ROOT/'packages/core/src/components').glob('md-*/*.tsx')):
  assert tag in props,tag
  handled=set(props[tag].split())
  n=['Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.']
+ if tag=='md-button':n=['Native Compose button with explicit forms, cancelable action scopes, safe routing and named content; browser-specific gaps are described in nativeEquivalents.']
  if tag in notes:n.append(notes[tag])
  if 'chart' in tag or tag=='md-sparkline':n.append('Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete.')
  components[tag]={'properties':sorted(handled & source_props),'events':sorted(set(events.get(tag,'').split()) & source_events),'methods':[],'slots':sorted(set(slots[tag].split('|')) & source_slots) if tag in slots else [],'notes':n}
+ if tag=='md-button':components[tag]['nativeEquivalents']=button_equivalents
 Path(__file__).with_name('support.json').write_text(json.dumps({'platform':'android','components':components},indent=2)+'\n')
 print(f'{len(components)} native Android adapter contracts')

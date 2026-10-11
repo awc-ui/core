@@ -83,7 +83,7 @@ internal data class NativeButtonPalette(val container: String?, val label: Strin
     "on-surface" -> onSurface; "outline" -> outline; "secondary" -> secondary; else -> Color.Transparent
 } }
 
-private data class NativeWave(val press: PressInteraction.Press, val start: Long, val release: Long? = null)
+private data class NativeWave(val press: PressInteraction.Press, val start: Long? = null, val release: Long? = null, val released: Boolean = false)
 
 /** A true Compose click/press target; no simulated JavaScript state or web surface. */
 @Composable internal fun NativeButton(p: Props, emit: EventSink, slot: Slot?) {
@@ -95,6 +95,15 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     DisposableEffect(group, identity) { onDispose { group?.remove(identity) } }
     LaunchedEffect(p["selected"]) { if(group != null) group.states[identity] = p.bool("selected") }
     val uri = LocalUriHandler.current
+    val router = LocalAWCURLRouter.current ?: remember(uri) {
+        AWCURLRouter { request ->
+            if (!java.net.URI(request.url).isAbsolute) false
+            else runCatching { uri.openUri(request.url); true }.getOrDefault(false)
+        }
+    }
+    val action = LocalAWCAction.current
+    val form = LocalAWCForm.current
+    val slots = LocalAWCSlots.current
     val enabled = p.enabled() && !p.bool("loading")
     val interactions = remember { MutableInteractionSource() }
     val pressed by interactions.collectIsPressedAsState()
@@ -107,16 +116,24 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
         if(!enabled || !p.bool("ripple", true)) waves.clear()
         interactions.interactions.collect { interaction ->
             if(enabled && p.bool("ripple", true)) when(interaction) {
-                is PressInteraction.Press -> { waves.add(NativeWave(interaction, System.nanoTime())); if(waves.size > 4) waves.removeAt(0) }
-                is PressInteraction.Release -> { val index = waves.indexOfFirst { it.press == interaction.press }; if(index >= 0) waves[index] = waves[index].copy(release = System.nanoTime()) }
-                is PressInteraction.Cancel -> { val index = waves.indexOfFirst { it.press == interaction.press }; if(index >= 0) waves[index] = waves[index].copy(release = System.nanoTime()) }
+                is PressInteraction.Press -> { waves.add(NativeWave(interaction)); if(waves.size > 4) waves.removeAt(0) }
+                is PressInteraction.Release -> { val index = waves.indexOfFirst { it.press == interaction.press }; if(index >= 0) waves[index] = waves[index].copy(released = true) }
+                is PressInteraction.Cancel -> { val index = waves.indexOfFirst { it.press == interaction.press }; if(index >= 0) waves[index] = waves[index].copy(released = true) }
             }
         }
     }
     LaunchedEffect(waves.isNotEmpty(), reduceMotion) {
         while(isActive && waves.isNotEmpty()) {
             frameTime = withFrameNanos { it }
-            waves.removeAll { wave -> wave.release?.let { end -> reduceMotion || frameTime > max(wave.start + 450_000_000L, end) + 150_000_000L } ?: false }
+            // Every timestamp uses Compose's frame clock, including virtual test
+            // clocks. Mixing System.nanoTime with it can keep a wave alive forever.
+            waves.indices.forEach { index ->
+                val wave = waves[index]
+                if (wave.start == null || (wave.released && wave.release == null)) {
+                    waves[index] = wave.copy(start = wave.start ?: frameTime, release = if (wave.released) wave.release ?: frameTime else null)
+                }
+            }
+            waves.removeAll { wave -> wave.release?.let { end -> reduceMotion || frameTime > max((wave.start ?: frameTime) + 450_000_000L, end) + 150_000_000L } ?: false }
         }
     }
     val metrics = remember(p.str("size"), p.num("density"), p.str("variant")) { NativeButtonMetrics(p.str("size","sm"), p.num("density"), p.str("variant","filled")) }
@@ -135,15 +152,10 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     val stateColor = roleColor(palette.label)
     val elevation by animateDpAsState((if(enabled && hovered && !pressed && !focused) palette.hoverElevation else palette.elevation).dp, tween(colorDuration, easing=Standard), label="source button elevation")
     val focusColor = MaterialTheme.colorScheme.secondary
-    val click = {
-        if(enabled) {
-            val proposed = if(p.bool("toggle") || group != null) !selected else selected
-            emit("mdClick", eventDetail("value" to p["value"], "toggle" to p.bool("toggle"), "selected" to proposed, "href" to p.str("href"), "target" to p.str("target","_self")))
-            if(group != null || p.bool("toggle")) {
-                localSelected = group?.toggle(identity) ?: proposed
-                if(p.bool("toggle")) emit("mdChange", eventDetail("selected" to localSelected, "value" to p["value"]))
-            }
-            if(p.str("href").startsWith("https://") || p.str("href").startsWith("http://")) uri.openUri(p.str("href"))
+    val click: () -> Unit = {
+        performNativeButtonAction(p, selected, emit, action, form, router, p.bool("toggle") || group != null) { proposed ->
+            localSelected = group?.toggle(identity) ?: proposed
+            localSelected
         }
     }
     val textStyle = TextStyle(fontFamily = ButtonFonts, fontSize = metrics.fontSize.sp, fontWeight = FontWeight(metrics.weight), lineHeight = metrics.lineHeight.sp, letterSpacing = metrics.tracking.sp, platformStyle = PlatformTextStyle(includeFontPadding = false))
@@ -156,11 +168,12 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
                 .drawWithContent {
                     drawRect(stateColor.copy(alpha=opacity))
                     if(p.bool("ripple",true)) waves.forEach { wave ->
-                        val elapsed = max(0f,(frameTime-wave.start)/1_000_000f)
+                        val start = wave.start ?: frameTime
+                        val elapsed = max(0f,(frameTime-start)/1_000_000f)
                         val origin = wave.press.pressPosition.takeIf { it.x.isFinite() && it.y.isFinite() } ?: center
                         val radiusPx = hypot(max(origin.x,size.width-origin.x), max(origin.y,size.height-origin.y))
                         val growth = if(reduceMotion) 1f else Standard.transform((elapsed/450f).coerceIn(0f,1f))
-                        val fadeStart = wave.release?.let { max(450f,(it-wave.start)/1_000_000f) } ?: Float.POSITIVE_INFINITY
+                        val fadeStart = wave.release?.let { max(450f,(it-start)/1_000_000f) } ?: Float.POSITIVE_INFINITY
                         val alpha = if(reduceMotion) { if(wave.release == null) .12f else 0f } else .12f*(1f-Standard.transform(((elapsed-fadeStart)/150f).coerceIn(0f,1f)))
                         drawCircle(stateColor.copy(alpha=alpha), radiusPx*growth, origin)
                     }
@@ -172,10 +185,10 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
                 .sizeIn(minWidth=metrics.minimumWidth.dp,minHeight=metrics.height.dp)
                 .padding(horizontal=metrics.padding.dp), contentAlignment=Alignment.Center) {
                 ButtonSlotRow(metrics.gap.dp, metrics.lineHeight.dp) {
-                    ButtonSlot("leading-icon", slot) { if(p.str("icon").isNotBlank()) ButtonGlyph(p.str("icon"),metrics.icon,p.bool("mirrorIcon"),false) }
-                    ButtonSlot("", slot) { if(p.label().isNotBlank()) Text(p.label(),maxLines=1,overflow=TextOverflow.Clip) }
-                    ButtonSlot("trailing-icon", slot) { if(p.str("trailingIcon").isNotBlank()) ButtonGlyph(p.str("trailingIcon"),metrics.icon,p.bool("mirrorIcon"),p.bool("aria-expanded") && !p.bool("suppressExpandIconFlip")) }
-                    if(p.bool("loading")) ButtonSlot("loader",slot) { NativeButtonLoading(metrics.loading.dp,label,reduceMotion) }
+                    ButtonSlot("leading-icon", slot, slots) { if(p.str("icon").isNotBlank()) ButtonGlyph(p.str("icon"),metrics.icon,p.bool("mirrorIcon"),false) }
+                    ButtonSlot("", slot, slots) { if(p.label().isNotBlank()) Text(p.label(),maxLines=1,overflow=TextOverflow.Clip) }
+                    ButtonSlot("trailing-icon", slot, slots) { if(p.str("trailingIcon").isNotBlank()) ButtonGlyph(p.str("trailingIcon"),metrics.icon,p.bool("mirrorIcon"),p.bool("aria-expanded") && !p.bool("suppressExpandIconFlip")) }
+                    if(p.bool("loading")) ButtonSlot("loader",slot, slots) { NativeButtonLoading(metrics.loading.dp,label,reduceMotion) }
                 }
             }
         }
@@ -192,7 +205,8 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     }
 }
 
-@Composable private fun ButtonSlot(name: String, slot: Slot?, fallback: @Composable () -> Unit) {
+@Composable private fun ButtonSlot(name: String, slot: Slot?, registry: AWCSlotRegistry?, fallback: @Composable () -> Unit) {
+    if (registry?.contains(name) == true) { registry.Render(name); return }
     SubcomposeLayout { constraints ->
         val proposed = subcompose("slot") { slot?.invoke(name) }.map { it.measure(constraints.copy(minWidth=0,minHeight=0)) }
         val content = if(proposed.any { it.width > 0 || it.height > 0 }) proposed else subcompose("fallback",fallback).map { it.measure(constraints.copy(minWidth=0,minHeight=0)) }

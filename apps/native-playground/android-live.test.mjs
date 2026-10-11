@@ -45,6 +45,14 @@ function fixture(t, options = {}) {
   return { renderer, mock, adbCalls, requests, streams };
 }
 
+test('Android receives the explicit behavior example separately from component properties', async t => {
+  const { renderer, requests } = fixture(t);
+  await renderer.create({ ...config, scenario: 'button-behavior' });
+  const configure = requests.find(request => request.body?.command === 'configure').body;
+  assert.equal(configure.scenario, 'button-behavior');
+  assert.deepEqual(configure.properties, config.properties);
+});
+
 test('Android discovery rejects physical, offline and ambiguous devices and accepts an explicit emulator', async t => {
   for (const devices of ['phone-123 device\n', 'emulator-5554 offline\n', 'emulator-5554 device\nemulator-5556 device\n', '']) {
     const { renderer, mock, adbCalls } = fixture(t);

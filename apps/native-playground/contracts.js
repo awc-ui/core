@@ -83,12 +83,35 @@ export function nativeLiveEndpoint(route, platform) {
   return `/api/native-live/${route}?platform=${platform}`;
 }
 
+// Share one coordinator per platform across replacement preview clients. A lease
+// includes creation and cleanup, so a late create cannot occupy the next session.
+export function createNativeSessionCoordinator() {
+  let tail = Promise.resolve();
+  return {
+    reserve() {
+      let release;
+      const finished = new Promise(resolve => { release = resolve; });
+      const ready = tail;
+      tail = ready.then(() => finished);
+      return { ready, release };
+    },
+  };
+}
+
 // Input stays ordered independently of the native frame stream. Legacy clients
 // can still poll; a late create response is closed even after navigation.
-export function createNativeLiveClient({ send, subscribe, onFrame, onEvents = () => {}, onError, pollInterval = 250, interactiveInterval = 1000 / 60, animationTail = 600, now = Date.now, schedule = setTimeout, unschedule = clearTimeout }) {
+export function createNativeLiveClient({ send, subscribe, coordinator, onFrame, onEvents = () => {}, onError, pollInterval = 250, interactiveInterval = 1000 / 60, animationTail = 600, now = Date.now, schedule = setTimeout, unschedule = clearTimeout }) {
   let active = null;
   let visible = true;
-  const close = id => id && Promise.resolve(send(`${id}/close`, {})).catch(() => {});
+  function cleanup(session) {
+    if (session.creating) return; // The eventual create response supplies the id.
+    if (!session.cleanup) session.cleanup = (async () => {
+      try { if (session.id) await send(`${session.id}/close`, {}); }
+      catch { /* The server also expires abandoned sessions. */ }
+      finally { session.lease?.release(); }
+    })();
+    return session.cleanup;
+  }
   function stop() {
     const previous = active;
     active = null;
@@ -97,7 +120,7 @@ export function createNativeLiveClient({ send, subscribe, onFrame, onEvents = ()
     endStream(previous);
     unschedule(previous.timer);
     previous.queue.length = 0;
-    void close(previous.id);
+    return cleanup(previous);
   }
   function accept(session, result) {
     if (active !== session || session.closed) return;
@@ -164,18 +187,24 @@ export function createNativeLiveClient({ send, subscribe, onFrame, onEvents = ()
   }
   async function start(payload) {
     stop();
-    const session = { id: null, closed: false, busy: true, queue: [], revision: -1, eventIDs: new Set(), timer: undefined, pollFailures: 0, pointerHeld: false, animateUntil: 0 };
+    const session = { id: null, closed: false, busy: true, creating: false, lease: coordinator?.reserve(), queue: [], revision: -1, eventIDs: new Set(), timer: undefined, pollFailures: 0, pointerHeld: false, animateUntil: 0 };
     active = session;
     try {
+      if (session.lease) await session.lease.ready;
+      if (active !== session || session.closed) { await cleanup(session); return; }
+      session.creating = true;
       const result = await send('session', payload);
+      session.creating = false;
       session.id = result.sessionId;
-      if (active !== session || session.closed) { void close(session.id); return; }
+      if (active !== session || session.closed) { await cleanup(session); return; }
       if (!session.id) throw new Error('The native host did not return a session.');
       accept(session, result);
       session.busy = false;
       if (visible) { if (subscribe) beginStream(session); else session.timer = schedule(() => pump(session), pollInterval); }
     } catch (error) {
+      session.creating = false;
       if (active === session) { stop(); onError(error); }
+      else await cleanup(session);
     }
   }
   return {

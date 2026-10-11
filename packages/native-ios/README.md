@@ -20,7 +20,9 @@ struct Example: View {
 
 For dynamic composition, use `AWCNativeView(node:)`, with `AWCNode(tag:properties:children:slot:)` and JSON-compatible `AWCValue`. Values use the original camelCase property names. `AWCNode.text` represents text content. Named slots are represented by the child node's `slot` field. Keep node IDs stable when updating a tree. Nested children share radio-name groups and tabs/panels linkage; wrap separate sibling trees in `AWCNativeScope` to share that context. A panel group's `for` property matches its tabs node ID.
 
-The renderer merges source defaults with supplied properties, keeps local interaction state, and resynchronizes when the host changes properties. All emitted events include `name`, source `tag`, stable `nodeID`, and serializable `detail`. Control components declaratively by updating their properties. DOM methods, JavaScript callbacks and CSS are not executed. DOM element event references become node IDs; dates become ISO strings. Cancelable DOM events are observations in this API.
+The renderer merges source defaults with supplied properties, keeps local interaction state, and resynchronizes when the host changes properties. All emitted events include `name`, source `tag`, stable `nodeID`, and serializable `detail`. Control components declaratively by updating their properties. DOM methods, JavaScript callbacks and CSS are not executed. DOM element event references become node IDs; dates become ISO strings. The legacy event callback observes events; `AWCEventScope` can cancel `md-button` actions before their effects.
+
+See [native forms, events and routing](NativeBehavior.md) for `AWCFormState`, form validation and reset, cancellation scopes, URL routing, named-child lookup, and the interactive `AWCButtonBehaviorDemo`.
 
 `AWCTheme.generated(dark:)` reads generated source color tokens. The renderer follows the system appearance automatically; `.awcTheme(...)` supplies a custom theme. Source icon names map to common SF Symbols. Raw SF Symbol names are also accepted.
 

@@ -22,12 +22,13 @@ export function validateRenderRequest(value, tags) {
   if (props === null || typeof props !== 'object' || Array.isArray(props)) throw new RenderError(400,'INVALID_PROPERTIES','Properties must be a JSON object.');
   if (value.dark !== undefined && typeof value.dark !== 'boolean') throw new RenderError(400,'INVALID_THEME','dark must be a boolean.');
   if (value.width !== undefined && (typeof value.width !== 'number' || !Number.isFinite(value.width))) throw new RenderError(400,'INVALID_WIDTH','width must be a finite number.');
+  if (value.scenario !== undefined && (value.scenario !== 'button-behavior' || value.tag !== 'md-button')) throw new RenderError(400,'INVALID_SCENARIO','The form and cancellation example is available for md-button.');
   function depth(v, level=0) {
     if (level>32) throw new RenderError(400,'INVALID_PROPERTIES','Property nesting is too deep.');
     if (v && typeof v==='object') for(const child of Object.values(v))depth(child,level+1);
   }
   depth(props);
-  return {tag:value.tag,properties:canonical(props),dark:value.dark??false,width:Math.round(Math.min(1200,Math.max(320,value.width??640)))};
+  return {tag:value.tag,properties:canonical(props),dark:value.dark??false,width:Math.round(Math.min(1200,Math.max(320,value.width??640))),...(value.scenario ? {scenario:value.scenario} : {})};
 }
 
 export async function readLocalJSONRequest(req) {
@@ -60,6 +61,7 @@ export function createNativeRenderer({repoRoot, executable=process.env.AWC_NATIV
     catch{return {available:false,platform:'macos',renderer:'SwiftUI',message:'Build the renderer: swift build --package-path apps/native-ios-playground --product AWCSnapshots. Then refresh this preview.'};}
   }
   async function render(request){
+    if(request.scenario)throw new RenderError(400,'LIVE_SCENARIO_REQUIRED','Use Live mode for interactive native examples.');
     const availability=await status();if(!availability.available)throw new RenderError(503,'RENDERER_UNAVAILABLE',availability.message);
     const binaryInfo=await stat(binary),signature=`${binaryInfo.size}:${binaryInfo.mtimeMs}`;
     if(fingerprint?.signature!==signature)fingerprint={signature,hash:createHash('sha256').update(await readFile(binary)).digest('hex')};

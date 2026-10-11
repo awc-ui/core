@@ -9,6 +9,16 @@ import { resolveAsset } from './server.mjs';
 
 const tags = new Set(['md-chip']);
 const request = properties => validateRenderRequest({tag:'md-chip',properties,dark:false,width:640},tags);
+test('native behavior examples are explicit and restricted to the button', async () => {
+  const tags = new Set(['md-button', 'md-chip']);
+  const value = {tag:'md-button', scenario:'button-behavior'};
+  assert.equal(validateRenderRequest(value, tags).scenario, 'button-behavior');
+  for (const changes of [{tag:'md-chip'}, {scenario:'unknown'}, {scenario:true}, {scenario:null}]) {
+    assert.throws(() => validateRenderRequest({...value, ...changes}, tags), error => error.code === 'INVALID_SCENARIO');
+  }
+  const renderer = createNativeRenderer({repoRoot:'/tmp'});
+  await assert.rejects(renderer.render(validateRenderRequest(value, tags)), error => error.code === 'LIVE_SCENARIO_REQUIRED');
+});
 function incoming(value, headers={}) {
   const stream = Readable.from([Buffer.from(JSON.stringify(value))]);
   stream.headers = {'content-type':'application/json',host:'127.0.0.1:4177',origin:'http://127.0.0.1:4177',...headers};

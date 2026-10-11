@@ -18,10 +18,33 @@ async function readPolicy(root,platform){
   for(const file of paths){try{return {file,...await json(join(root,file))};}catch(error){if(error.code!=='ENOENT')throw error;}}
   return {components:{}};
 }
+function nativeEquivalents(component,policy,entry){
+  if(!entry||!Object.hasOwn(entry,'nativeEquivalents'))return undefined;
+  const context=`${policy.file??'Native support policy'}: ${component.tag}.nativeEquivalents`;
+  const invalid=(field,message)=>{throw new Error(`${context}${field}: ${message}`);};
+  const record=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+  const nonempty=value=>typeof value==='string'&&value.trim().length>0;
+  const equivalents=entry.nativeEquivalents;
+  if(!record(equivalents))invalid('','expected an object keyed by source diagnostic code');
+  const codes=new Set(component.diagnostics.map(d=>d.code));
+  return Object.fromEntries(Object.entries(equivalents).map(([code,value])=>{
+    if(!codes.has(code))invalid(`.${code}`,'diagnostic code is not present on this component');
+    if(!record(value))invalid(`.${code}`,'expected an object');
+    const fields=['status','api','description','limitations'];
+    if(fields.some(field=>!Object.hasOwn(value,field))||Object.keys(value).some(field=>!fields.includes(field)))
+      invalid(`.${code}`,'expected exactly status, api, description and limitations');
+    if(!['implemented','partial'].includes(value.status))invalid(`.${code}.status`,'expected implemented or partial');
+    for(const field of ['api','description'])if(!nonempty(value[field]))invalid(`.${code}.${field}`,'expected a nonempty string');
+    if(!Array.isArray(value.limitations)||!value.limitations.every(nonempty))invalid(`.${code}.limitations`,'expected an array of nonempty strings');
+    if(value.status==='partial'&&!value.limitations.length)invalid(`.${code}.limitations`,'partial equivalents require at least one limitation');
+    return [code,{status:value.status,api:value.api,description:value.description,limitations:[...value.limitations]}];
+  }));
+}
 function coverage(component,policy){
   const entry=policy.components?.[component.tag];
   const props=entry?.properties??[], events=entry?.events??[], methods=entry?.methods??[], slots=entry?.slots??[];
   const names=values=>values.map(x=>typeof x==='string'?x:x.name);
+  const equivalents=nativeEquivalents(component,policy,entry);
   return {status:entry?'adapter-implemented':'missing-adapter',
     properties:names(props),events:names(events),methods:names(methods),slots:names(slots),
     unsupportedProperties:component.properties.map(p=>p.name).filter(p=>!names(props).includes(p)),
@@ -29,6 +52,7 @@ function coverage(component,policy){
     unsupportedMethods:component.methods.map(p=>p.name).filter(p=>!names(methods).includes(p)),
     unsupportedSlots:component.slots.map(p=>p.name).filter(p=>!names(slots).includes(p)),
     notes:entry?.notes??[], verification:'not-device-verified',
+    ...(equivalents===undefined?{}:{nativeEquivalents:equivalents}),
   };
 }
 

@@ -94,6 +94,10 @@ node packages/native-compiler/src/cli.mjs check --strict
 
 Per-platform policies (`NativeSupport.json` / `support.json`) enumerate implemented source properties, event names, slots, and differences. They are declarations of adapter coverage, not proof of behavioral equivalence. Source imperative DOM methods, HTML forms, cancellation/bubbling semantics, advanced chart modes, web accessibility roles, CSS cascade/layout behavior, and parts of complex component coordination need further work. Native accessibility and dynamic text sizing also require device testing.
 
+Each component policy may also declare `nativeEquivalents`, an object keyed by that component's source diagnostic codes. Every entry requires exactly `status` (`"implemented"` or `"partial"`), `api` (a nonblank string naming the native API), `description` (a nonblank string), and `limitations` (an array of nonblank strings). Partial equivalents require at least one limitation. Unknown diagnostic codes, missing fields, extra fields and invalid values fail compilation with the policy path and component tag. An omitted field remains omitted from generated support metadata.
+
+Validated entries appear unchanged under `support.ios.nativeEquivalents` or `support.android.nativeEquivalents` in both the catalog and component IR. They document explicit adapter replacements; they do not suppress raw source diagnostics, change unsupported API counts, establish device verification or relax `--strict`. Even an `"implemented"` equivalent is a coverage declaration, not verified source parity.
+
 Shared tokens currently drive supported native palette, shape, and typography values. Retaining all CSS token strings does not imply that every CSS shadow, easing expression, font family, density scope, or component override is interpreted on each platform.
 
 To extend coverage: implement a behavior in the native adapter, add a meaningful native interaction test, then update its support policy and regenerate. Do not mark a property supported merely because a generated wrapper accepts it.

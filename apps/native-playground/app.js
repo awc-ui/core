@@ -1,9 +1,10 @@
-import { literalChoices, encodeLiteralChoice, decodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, nativePreviewTarget, nativeLiveEndpoint, createNativeLiveClient, createNativePointerInput, nativeImagePoint, nativeTextChunks } from './contracts.js';
+import { literalChoices, encodeLiteralChoice, decodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, nativePreviewTarget, nativeLiveEndpoint, createNativeSessionCoordinator, createNativeLiveClient, createNativePointerInput, nativeImagePoint, nativeTextChunks } from './contracts.js';
 import { recipeFor, categoryFor, categoryOrder, displayName, icons } from './recipes.js';
 
 const $ = selector => document.querySelector(selector);
 const state = { components: [], selected: null, platform: 'web', inspector: 'contract', filter: 'all', props: {}, events: [], catalog: null, ready: false, target: null, sourcePlatform: 'ios', sourceText: '', sourceCache: new Map(), renderVersion: 0 };
 const nativeRequests = createLatestRequest();
+const nativeSessions = { ios: createNativeSessionCoordinator(), android: createNativeSessionCoordinator() };
 state.nativeMode = 'live';
 let nativeLive = nativeClientFor('ios');
 const isNativePlatform = platform => platform === 'ios' || platform === 'android';
@@ -11,6 +12,7 @@ function nativeClientFor(platform) {
   // Capture the transport target: a late create/close must address its original
   // host even after the user has switched preview tabs.
   return createNativeLiveClient({
+    coordinator: nativeSessions[platform],
     send: (route, payload) => sendNativeLive(route, payload, platform),
     subscribe: (id, onFrame, onError) => subscribeNativeLive(id, onFrame, onError, platform),
     onFrame: frame => { if (state.platform === platform) showNativeLiveFrame(frame, platform); },
@@ -62,6 +64,7 @@ async function init() {
     $('#compiler-status').innerHTML = `<i></i>${state.catalog ? 'Generated catalog connected' : 'Source manifest only'}`;
     text('#pipeline-state', state.catalog ? `${generated.size} contracts · ${state.components.reduce((count, component) => count + portabilityFindings(component).total, 0)} findings` : 'Run native:build to inspect output');
     const hashTag = location.hash.slice(1);
+    state.nativeScenario = new URLSearchParams(location.search).get('example') === 'button-behavior' ? 'button-behavior' : '';
     selectComponent(state.components.some(component => component.tag === hashTag) ? hashTag : 'md-button');
     bindEvents();
     const requestedPlatform = new URLSearchParams(location.search).get('platform');
@@ -163,11 +166,22 @@ function renderNativePreview() {
   const mode = target.snapshot ? state.nativeMode : 'live';
   $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><div class="native-mode-switch" role="group" aria-label="Native preview mode"><button type="button" data-native-mode="live" aria-pressed="${mode === 'live'}">Live</button>${target.snapshot ? `<button type="button" data-native-mode="snapshot" aria-pressed="${mode === 'snapshot'}">Snapshot</button>` : ''}</div><button class="secondary-button" id="native-render-button" type="button">Reconnect</button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div><p class="snapshot-status" id="native-render-status" role="status" aria-live="polite"></p><p class="snapshot-note" id="native-preview-note"></p><details class="snapshot-details"><summary>Fixture & native playground</summary><p>The native example uses this component’s root properties. Its child content and text may differ from the web reference.</p><p>Live pixels preserve native state. Native accessibility remains in the running ${state.platform === 'android' ? 'Android' : 'macOS'} app; this image does not expose its control tree to the browser.</p>${state.platform === 'android' ? '<p>Live rendering requires the Android emulator and native playground. One Android preview can use the emulator at a time. Capture covers the visible Activity surface; separate Popup/Dialog windows and off-screen content are outside this preview.</p>' : ''}<p>${support ? `${support.unsupportedProperties?.length || 0} unsupported properties · ${support.unsupportedEvents?.length || 0} unsupported events. Inspect full coverage in Portability.` : 'Adapter coverage has not been reported.'}</p><code>${escape(target.playground)}</code></details></section>`;
   $('#native-render-button').addEventListener('click', () => scheduleNativeRender(0));
-  document.querySelectorAll('[data-native-mode]').forEach(button => button.addEventListener('click', () => { if (target.snapshot) state.nativeMode = button.dataset.nativeMode; renderPreview(); }));
+  document.querySelectorAll('[data-native-mode]').forEach(button => button.addEventListener('click', () => { if (target.snapshot) state.nativeMode = button.dataset.nativeMode; if (state.nativeMode === 'snapshot') selectNativeScenario(''); renderPreview(); }));
+  if (component.tag === 'md-button') {
+    $('.snapshot-heading').insertAdjacentHTML('afterend', `<label class="native-scenario">Example <select id="native-scenario"><option value="" ${!state.nativeScenario ? 'selected' : ''}>Component</option><option value="button-behavior" ${state.nativeScenario === 'button-behavior' ? 'selected' : ''}>Form & cancellation</option></select></label>`);
+    $('#native-scenario').addEventListener('change', event => { selectNativeScenario(event.target.value); state.nativeMode = 'live'; renderPreview(); });
+  }
   setNativeMode(mode);
   text('#preview-caption', state.platform === 'android' ? 'Real Android emulator · connecting to Jetpack Compose' : 'Real SwiftUI on this Mac · choosing preview mode');
   text('#recipe-status', 'Native fixture + current root properties');
   scheduleNativeRender(0);
+}
+
+function selectNativeScenario(value) {
+  state.nativeScenario = value === 'button-behavior' ? value : '';
+  const url = new URL(location.href);
+  if (state.nativeScenario) url.searchParams.set('example', state.nativeScenario); else url.searchParams.delete('example');
+  history.replaceState(null, '', url);
 }
 
 function nativeRenderState(kind, message) {
@@ -195,6 +209,7 @@ function scheduleNativeRender(delay = 300) {
   disposeNativePointer(); nativeLive.stop(); state.liveFrame = null; state.liveDisplayedRevision = -1; state.liveImageVersion = (state.liveImageVersion || 0) + 1;
   const request = nativeRequests.start();
   const payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark');
+  if (state.selected.tag === 'md-button' && state.nativeScenario === 'button-behavior') payload.scenario = state.nativeScenario;
   // Render at the available logical width instead of shrinking a 640pt image
   // (which also shrinks the native button and font in a narrow browser pane).
   const frame = $('#native-render-frame'), frameStyle = getComputedStyle(frame);
@@ -253,6 +268,10 @@ function setNativeMode(mode, fallbackMessage = '') {
   text('#preview-runtime', mode === 'live' ? 'CONNECTING' : 'NATIVE SNAPSHOT');
   text('.props-hint', mode === 'live' ? 'Initial properties · editing restarts the native session.' : 'Changes rerender the native snapshot.');
   text('#native-preview-note', mode === 'live' ? state.selected.tag === 'md-button' ? `Press and hold to see the native button response; release to activate. Esc cancels and releases keyboard focus. Frames stream directly from ${target.renderer}; hover and pointer position are forwarded.` : 'Click the native view, then type. Esc releases keyboard focus. Clicks and typing are live; dragging, hover and sheets are not validated.' : `${fallbackMessage ? `${fallbackMessage} ` : ''}Static snapshot — interact in the native app. For iOS, open the native playground.`);
+  if (mode === 'live' && state.selected.tag === 'md-button' && state.nativeScenario === 'button-behavior') {
+    text('#native-preview-note', 'Edit the native field, submit or reset it, and enable Cancel actions to veto button side effects. Link actions are recorded locally. Inspect emitted events in Events. This example runs entirely in the native host.');
+    text('.props-hint', 'This example has fixed form actions. Choose Component to edit individual button properties.');
+  }
   text('#preview-caption', mode === 'live' ? state.platform === 'android' ? 'Real Android emulator · Jetpack Compose frames and native events' : 'Persistent macOS SwiftUI app · live frames and native events' : 'Rendered by SwiftUI on this Mac · displayed as a PNG');
   text('#recipe-status', mode === 'live' ? 'Click & type · native state persists' : 'Native fixture + current root properties');
   text('#native-render-button', state.nativeFallback ? 'Retry Live' : mode === 'live' ? 'Reconnect' : 'Render again');
@@ -271,15 +290,17 @@ async function chooseNativePreview(payload, request, platform) {
         void nativeLive.start(payload);
         return;
       }
-      if (!target.snapshot) {
-        text('#preview-runtime', 'EMULATOR OFFLINE');
-        nativeRenderState('error', `${status.message || 'The Android emulator is not ready.'} Start the native Android playground, then reconnect.`);
+      if (!target.snapshot || payload.scenario) {
+        text('#preview-runtime', platform === 'android' ? 'EMULATOR OFFLINE' : 'LIVE HOST OFFLINE');
+        nativeRenderState('error', platform === 'android'
+          ? `${status.message || 'The Android emulator is not ready.'} Start the native Android playground, then reconnect.`
+          : `${status.message || 'The SwiftUI live host is not ready.'} Build AWCLivePreview in apps/native-ios-playground, then reconnect. This example requires Live mode.`);
         return;
       }
       setNativeMode('snapshot', `Live unavailable: ${status.message || 'the native host is not ready.'}`);
     } catch (error) {
       if (!request.isCurrent() || error.name === 'AbortError') return;
-      if (!target.snapshot) { reportNativeLiveError(error); return; }
+      if (!target.snapshot || payload.scenario) { reportNativeLiveError(error); return; }
       setNativeMode('snapshot', `Live unavailable: ${error.message}`);
     }
   } else setNativeMode('snapshot');
@@ -368,7 +389,9 @@ function bindNativeInput(surface, input) {
     const image = surface.querySelector('img'), frame = state.liveFrame;
     return image && frame ? nativeImagePoint(image.getBoundingClientRect(), image.naturalWidth, image.naturalHeight, frame.logicalWidth, frame.logicalHeight, event.clientX, event.clientY) : null;
   };
-  const pressable = state.selected.tag === 'md-button';
+  // Form fixtures contain native text editors and switches whose platform
+  // tracking loops need the host's atomic click path (down + queued release).
+  const pressable = state.selected.tag === 'md-button' && state.nativeScenario !== 'button-behavior';
   if (pressable) {
     surface.classList.add('native-live-pressable');
     surface.setAttribute('aria-label', `Live native ${nativePreviewTarget(state.platform).renderer} button. Press and hold, then release to activate. Escape cancels.`);
@@ -518,6 +541,23 @@ function recordEvent(event) {
 function selectInspector(tab) {
   state.inspector = tab; document.querySelectorAll('[data-inspector]').forEach(button => { const active = button.dataset.inspector === tab; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); }); renderInspector();
 }
+function nativeEquivalentSummary(component, platform) {
+  const equivalents = component.support?.[platform]?.nativeEquivalents || {};
+  const entries = (component.diagnostics || []).map(diagnostic => equivalents[diagnostic.code]);
+  const implemented = entries.filter(entry => entry?.status === 'implemented').length;
+  const partial = entries.filter(entry => entry?.status === 'partial').length;
+  return `${implemented} native replacements · ${partial} partial replacements · ${entries.length - implemented - partial} unmapped source findings`;
+}
+function renderDiagnostic(component, diagnostic) {
+  const platforms = ['ios', 'android'];
+  const mapped = platforms.every(platform => component.support?.[platform]?.nativeEquivalents?.[diagnostic.code]?.status === 'implemented');
+  return `<div class="diagnostic${mapped ? ' mapped' : ''}"><span class="diag-symbol" aria-hidden="true">${mapped ? '✓' : '△'}</span><div class="diagnostic-body"><code>${escape(diagnostic.code || diagnostic.severity || 'PORTABILITY')}${diagnostic.line ? ` · source line ${escape(diagnostic.line)}` : ''}</code><p>${escape(diagnostic.message || diagnostic.description)}</p><div class="native-equivalents">${platforms.map(platform => {
+    const equivalent = component.support?.[platform]?.nativeEquivalents?.[diagnostic.code];
+    const name = platform === 'ios' ? 'SwiftUI' : 'Compose';
+    if (!equivalent) return `<div class="native-equivalent unmapped"><strong>${name} · not mapped</strong><p>No native replacement is declared for this source finding.</p></div>`;
+    return `<div class="native-equivalent ${equivalent.status === 'implemented' ? 'implemented' : 'partial'}"><strong>${name} · ${equivalent.status === 'implemented' ? 'Native replacement' : 'Partial replacement'}</strong><p><code>${escape(equivalent.api)}</code></p><p>${escape(equivalent.description)}</p>${equivalent.limitations?.length ? `<ul>${equivalent.limitations.map(item => `<li>${escape(item)}</li>`).join('')}</ul>` : ''}</div>`;
+  }).join('')}</div></div></div>`;
+}
 function renderInspector() {
   const component = state.selected; const root = $('#inspector-content');
   $('#copy-source').hidden = state.inspector !== 'source';
@@ -527,10 +567,10 @@ function renderInspector() {
   } else if (state.inspector === 'source') { void renderSource(state.renderVersion); }
   else if (state.inspector === 'diagnostics') {
     const diagnostics = component.diagnostics || []; const findings = portabilityFindings(component);
-    root.innerHTML = `<div class="diagnostics"><p class="source-note">${findings.source} static source diagnostics · ${findings.ios} iOS API gaps · ${findings.android} Android API gaps. Counts include unsupported properties, events, methods, slots, and missing adapters.</p><div class="support-summary">${['ios', 'android'].map(platform => {
+    root.innerHTML = `<div class="diagnostics"><p class="source-note">${findings.source} source findings · ${findings.ios} iOS API gaps · ${findings.android} Android API gaps. Source findings remain visible after a native replacement is added. Each mapping below describes the behavior implemented and its remaining limits.</p><div class="support-summary">${['ios', 'android'].map(platform => {
       const support = component.support?.[platform]; const status = support?.status || support?.level || 'No policy reported';
-      return `<div class="support-card"><h4>${platform === 'ios' ? 'iOS · SwiftUI' : 'Android · Compose'}</h4><p><strong>${escape(status)}</strong></p>${support ? `<p class="support-count">${support.properties?.length || 0} supported / ${support.unsupportedProperties?.length || 0} unsupported properties</p><p>${support.events?.length || 0} supported / ${support.unsupportedEvents?.length || 0} unsupported events</p><p>${support.unsupportedMethods?.length || 0} unsupported methods · ${support.unsupportedSlots?.length || 0} unsupported slots</p><details><summary>Inspect coverage details</summary>${Object.entries(support).filter(([key]) => !['status', 'level'].includes(key)).map(([key, value]) => `<p><code>${escape(key)}</code>: ${escape(Array.isArray(value) ? value.map(item => typeof item === 'string' ? item || 'default slot' : JSON.stringify(item)).join(', ') || 'None' : typeof value === 'object' ? JSON.stringify(value) : value)}</p>`).join('')}</details>` : '<p>Generate the native catalog to inspect platform coverage.</p>'}<p>Adapter implemented does not mean source parity. Validate behavior in the native playground.</p></div>`;
-    }).join('')}</div>${!state.catalog ? '<div class="load-error">Compiler diagnostics are unavailable. Run the native generation command and reload this page.</div>' : diagnostics.length ? diagnostics.map(diagnostic => `<div class="diagnostic"><span class="diag-symbol" aria-hidden="true">△</span><div><code>${escape(diagnostic.code || diagnostic.severity || 'PORTABILITY')}${diagnostic.line ? ` · line ${escape(diagnostic.line)}` : ''}</code><p>${escape(diagnostic.message || diagnostic.description)}</p></div></div>`).join('') : '<p class="empty-state">No static portability findings reported.<br />This does not establish runtime behavior or native parity.</p>'}</div>`;
+      return `<div class="support-card"><h4>${platform === 'ios' ? 'iOS · SwiftUI' : 'Android · Compose'}</h4><p><strong>${escape(status)}</strong></p><p class="equivalent-count">${escape(nativeEquivalentSummary(component, platform))}</p>${support ? `<p class="support-count">${support.properties?.length || 0} supported / ${support.unsupportedProperties?.length || 0} unsupported properties</p><p>${support.events?.length || 0} supported / ${support.unsupportedEvents?.length || 0} unsupported events</p><p>${support.unsupportedMethods?.length || 0} unsupported methods · ${support.unsupportedSlots?.length || 0} unsupported slots</p><details><summary>Inspect coverage details</summary>${Object.entries(support).filter(([key]) => !['status', 'level', 'nativeEquivalents'].includes(key)).map(([key, value]) => `<p><code>${escape(key)}</code>: ${escape(Array.isArray(value) ? value.map(item => typeof item === 'string' ? item || 'default slot' : JSON.stringify(item)).join(', ') || 'None' : typeof value === 'object' ? JSON.stringify(value) : value)}</p>`).join('')}</details>` : '<p>Generate the native catalog to inspect platform coverage.</p>'}<p>Native mappings are scoped to this component. Full source parity remains a separate verification.</p></div>`;
+    }).join('')}</div>${!state.catalog ? '<div class="load-error">Compiler diagnostics are unavailable. Run the native generation command and reload this page.</div>' : diagnostics.length ? diagnostics.map(diagnostic => renderDiagnostic(component, diagnostic)).join('') : '<p class="empty-state">No static portability findings reported.<br />This does not establish runtime behavior or native parity.</p>'}</div>`;
   } else {
     root.innerHTML = `<div class="event-toolbar"><span>Component events · latest 100</span><button id="clear-events" class="text-button">Clear</button></div>${state.events.length ? `<div class="event-log">${state.events.map(event => `<div class="event-row"><time>${event.time}</time><div><code>${escape(event.name)}</code><small class="event-origin">${escape(event.origin || 'Web reference')}</small></div><pre>${escape(JSON.stringify(event.detail))}</pre></div>`).join('')}</div>` : '<p class="empty-state">Interact with the web reference or live native preview to see emitted events.<br />Native records come from the running native app.</p>'}`;
     $('#clear-events').addEventListener('click', () => { state.events = []; text('#event-count', '0'); renderInspector(); });

@@ -377,7 +377,7 @@ extension AWCNativeView {
         return AWCNativeButtonControl(style: style, blocked: blocked, action: activateNativeButton, direction: s("dir")) {
             HStack(spacing: metrics.gap) {
                 buttonIcon(slot: "leading-icon", fallback: s("icon"), size: metrics.iconSize)
-                let textChildren = node.children.filter { $0.slot == nil }
+                let textChildren = node.children(inSlot: "")
                 if textChildren.isEmpty { Text(label).frame(minHeight: metrics.lineHeight) }
                 else {
                     HStack(spacing: 0) {
@@ -389,7 +389,7 @@ extension AWCNativeView {
                 }
                 buttonIcon(slot: "trailing-icon", fallback: s("trailingIcon"), size: metrics.iconSize)
                 if b("loading") {
-                    let loaders = node.children.filter { $0.slot == "loader" }
+                    let loaders = node.children(inSlot: "loader")
                     if loaders.isEmpty {
                         AWCNativeButtonLoading(size: metrics.loadingSize)
                     } else {
@@ -403,7 +403,7 @@ extension AWCNativeView {
     }
 
     @ViewBuilder private func buttonIcon(slot: String, fallback: String, size: CGFloat) -> some View {
-        let icons = node.children.filter { $0.slot == slot }
+        let icons = node.children(inSlot: slot)
         let expanded = slot == "trailing-icon" && (b("ariaExpanded") || b("aria-expanded") || s("aria-expanded") == "true")
         if !icons.isEmpty || !fallback.isEmpty {
             AWCNativeButtonIconAppearance(mirrored: b("mirrorIcon"), expanded: expanded, suppressFlip: b("suppressExpandIconFlip")) {
@@ -418,17 +418,9 @@ extension AWCNativeView {
     }
 
     private func activateNativeButton() {
-        guard !disabled && !b("loading") else { return }
-        let toggles = b("toggle")
-        let nextSelected = toggles ? !b("selected") : b("selected")
-        // The click describes the proposed state, then the native state commits.
-        // AWCEvent is a value callback; cancelable DOM events are not modeled here.
-        emit("mdClick", ["value": p("value"), "toggle": .bool(toggles), "selected": .bool(nextSelected),
-                         "href": .string(s("href")), "target": .string(s("target", "_self"))])
-        if toggles {
-            set("selected", .bool(nextSelected))
-            emit("mdChange", ["selected": .bool(nextSelected), "value": p("value")])
-        }
-        activateLink()
+        var current = node; current.properties = local
+        let router = urlRouter ?? AWCURLRouter { request in openURL(request.url); return true }
+        AWCButtonAction.perform(node: current, form: formState, dispatcher: eventDispatcher, router: router,
+                                observe: onEvent, commitSelected: { set("selected", .bool($0)) })
     }
 }

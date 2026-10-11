@@ -153,3 +153,19 @@ validation, caching, process failure/timeout cleanup, bounded native sessions,
 input serialization, mixed literal value round-trips and coverage-only findings.
 Native builds and full interaction tests belong to the separate platform projects;
 a working remote preview does not establish native parity.
+
+### Native behavior equivalents
+
+The Portability inspector retains the original web-source findings and displays
+SwiftUI and Compose replacements next to each one. `Native replacement` is scoped
+to that source use in the selected component; `Partial replacement` lists the
+browser behavior that remains different. API-gap counts and compiler strict checks
+are unchanged by this metadata.
+
+For `md-button`, choose **Example → Form & cancellation** in either native Live
+preview. This runs a real native form with a required field and Submit, Reset,
+Toggle and Link actions. Enable **Cancel actions** to prevent the default side
+effects before they occur. The native router records link actions locally; the
+example never opens an external URL. Observe the native form and component events
+in the Events inspector. Examples require Live mode; Component remains the
+standard visual preview.
