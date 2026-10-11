@@ -6,6 +6,8 @@ SwiftUI and Jetpack Compose output and explicit portability coverage. On macOS,
 the SwiftUI tab connects to a persistent native view through the local
 `AWCLivePreview` executable. The browser displays native frames and forwards clicks
 and text input to that view. `AWCSnapshots` also provides a static preview mode.
+The Android tab connects to a debug playground Activity on a dedicated Android
+emulator. Jetpack Compose renders its window; PixelCopy captures the real frames.
 
 ## Run
 
@@ -30,6 +32,26 @@ package build, or point at an existing AWC build:
 AWC_WEB_DIST=/absolute/path/to/core/dist node apps/native-playground/server.mjs
 ```
 
+For live Android, start a dedicated emulator (API 26+) and install the debug app:
+
+```sh
+export ANDROID_HOME=/absolute/path/to/android-sdk
+export AWC_ANDROID_SERIAL=emulator-5554
+cd apps/native-android-playground
+./gradlew :app:assembleDebug
+"$ANDROID_HOME/platform-tools/adb" -s "$AWC_ANDROID_SERIAL" install -r app/build/outputs/apk/debug/app-debug.apk
+cd ../..
+node apps/native-playground/server.mjs
+```
+
+Open <http://127.0.0.1:4177/?platform=android&preview=live#md-button>.
+`AWC_ANDROID_SERIAL` is optional when exactly one emulator is connected. Physical
+devices are not selected by this transport. `AWC_ANDROID_ADB` can override the
+ADB executable. The server never downloads SDKs, starts emulators, or installs
+APKs automatically. Android offers live preview and source inspection.
+Use hardware graphics for the emulator where available (`-gpu host`); software
+graphics can limit animation frame rate even when idle streaming reaches 60 fps.
+
 The native inspector works without the web build. If generated output is missing,
 the component browser falls back to the core custom elements manifest and clearly
 marks compiler output as unavailable. Refresh after regenerating native sources.
@@ -45,7 +67,8 @@ preserving its example children. Changing these initial properties or the theme
 starts a new session. Focus the preview to send text and supported keys; Escape
 releases browser focus. Navigation closes the previous session, hidden tabs stop
 polling, and idle sessions expire after 60 seconds. At most two native sessions
-can run at once. Retry starts a fresh native view after an error or expiry.
+can run at once on SwiftUI; Android has one session per emulator. Retry starts a
+fresh native view after an error or expiry.
 
 Live previews run on **macOS SwiftUI**, not an iOS simulator. Clicks and typing are
 supported. `md-button` also forwards separate press/release/cancel commands, so
@@ -55,7 +78,10 @@ Button hover and pointer position are forwarded too. General dragging, scrolling
 menus are not validated by this transport. Browser accessibility does not expose
 the native accessibility tree. Use the native app for full platform interaction
 and accessibility testing. Web slot content is not translated into the native
-fixture. The Android tab still provides source inspection and launch directions.
+fixture. Android supports the same view-local clicks, button press/release/hover,
+text and keys on its Compose Activity. Separate Android Popup/Dialog windows
+are not composited into the Activity capture. Long content is limited to the
+visible emulator surface; its reported logical bounds reflect the captured area.
 Existing adapter API gaps remain visible.
 
 Native frames are pushed over one bounded NDJSON connection at a target 60 fps,
@@ -63,7 +89,9 @@ independently of input acknowledgments. The browser presents decoded frames on
 `requestAnimationFrame`; the live status reports the measured presentation rate.
 Hidden tabs close their frame stream. Slow consumers retain only the latest
 picture plus a bounded event batch instead of building up animation latency.
-Retina PNGs stay lossless and are converted to sRGB; SwiftUI draws the animation.
+PNGs stay lossless; each native renderer draws its own animation. SwiftUI Retina
+frames are converted to sRGB. Android fits the requested logical width to the
+emulator display without stretching the component layout.
 Achievable frame rate depends on the host, component size and tab visibility.
 
 The web reference uses the same generated light/dark tokens as the native view.
@@ -87,6 +115,8 @@ requests until the executable changes. `AWC_NATIVE_RENDERER` and
   `/` keyboard shortcut for search.
 - Persistent SwiftUI previews with clicks, text input, native events, explicit
   session lifecycle and static snapshot fallback.
+- Persistent Compose previews with authenticated emulator streaming, native
+  input/events and one bounded live session.
 - Web and native event capture, contract metadata, compiler IR, actual generated source
   excerpts, complete-file links, and native runtime source links.
 - Per-platform supported and unsupported property/event/method/slot coverage.
@@ -104,6 +134,11 @@ inject global OS input. It rejects foreign origins, traversal and symlink escape
 and uses a same-origin content policy. Other routes support GET/HEAD only.
 Snapshot images live in the ignored `.cache/native-playground/renders` directory;
 live frames travel in memory as PNG data URLs.
+
+Android uses only the debug APK's loopback HTTP host, a random token per session,
+and a temporary ADB forward. Every host request requires bearer authentication.
+Session cleanup closes its Activity and removes only its own forward; it does
+not stop the emulator or ADB server. The live host is absent from release builds.
 
 ## Checks
 

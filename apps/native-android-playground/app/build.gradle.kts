@@ -9,6 +9,7 @@ android {
     defaultConfig { applicationId = "dev.awc.playground"; minSdk = 26; targetSdk = 36; versionCode = 1; versionName = "0.1.0"; testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" }
     sourceSets {
         getByName("main") { manifest.srcFile("../src/main/AndroidManifest.xml"); java.srcDir("../src/main/java") }
+        getByName("debug") { manifest.srcFile("../src/debug/AndroidManifest.xml"); java.srcDir("../src/debug/java") }
         getByName("androidTest") { java.srcDir("../src/androidTest/java") }
     }
     buildFeatures { compose = true }

@@ -9,7 +9,7 @@ text='variant label value placeholder type disabled softDisabled readOnly requir
 select='label placeholder options value disabled softDisabled open error errorText supportingText filterable searchPlaceholder noOptionsText noResultsText clearable clearLabel loading maxHeight'
 chart='label subtitle series xAxis heightProp loading loadingLabel labelEmpty summary legend showMarks markSize lineWidth connectNulls'
 props={
-'md-button':actions,'md-icon-button':actions+' selectedIcon','md-fab':actions,'md-fab-menu-item':actions,'md-split-button':actions+' menuLabel trailingChecked','md-segmented-button':actions,
+'md-button':actions.replace(' target','')+' size shape shapeMorph density ripple connectedLeft connectedRight mirrorIcon suppressExpandIconFlip','md-icon-button':actions+' selectedIcon','md-fab':actions,'md-fab-menu-item':actions,'md-split-button':actions+' menuLabel trailingChecked','md-segmented-button':actions,
 'md-checkbox':shared+' checked indeterminate value error errorText supportingText','md-radio':shared+' checked value','md-switch':shared+' selected value',
 'md-slider':'min max value step disabled range valueStart valueEnd sliderAriaLabel labeled valueIndicator valueText',
 'md-rating':shared+' value defaultValue max readonly showValueLabel',
@@ -49,13 +49,14 @@ events={
 'md-navigation-bar':'mdChange','md-navigation-rail':'mdTabChange','md-tabs':'mdTabChange','md-stepper':'mdBeforeChange mdStepChange mdComplete','md-navigation-tab':'mdTabClick','md-navigation-rail-tab':'mdTabClick','md-tab':'mdTabClick','md-step':'mdStepClick mdStepNext mdStepBack','md-breadcrumb-item':'mdSelect','md-table-row':'mdRowClick mdRowSelectionChange mdRowExpandedChange','md-table-sort-label':'mdSortRequest','md-table-pagination':'mdPageChange mdRowsPerPageChange'
 }
 slots={
-'md-button':'|leading-icon|trailing-icon','md-fab':'icon','md-fab-menu-item':'|icon','md-split-button':'','md-segmented-button':'|icon',
+'md-button':'|leading-icon|trailing-icon|loader','md-fab':'icon','md-fab-menu-item':'|icon','md-split-button':'','md-segmented-button':'|icon',
 'md-select':'','md-multi-select':'','md-text-field':'trailing-icon','md-dialog':'|actions','md-bottom-sheet':'|actions','md-side-sheet':'|actions','md-menu':'','md-fab-menu':'','md-tooltip':'|actions','md-snackbar':'',
 'md-list':'','md-menu-item-group':'','md-list-item':'|leading|trailing|expanded-content','md-sub-menu-item':'submenu','md-card':'','md-chip':'','md-toolbar':'|leading|trailing','md-app-bar':'leading|trailing','md-ripple':'',
 'md-accordion':'','md-accordion-item':'','md-navigation-bar':'','md-navigation-rail':'|header|footer','md-tabs':'','md-tab-panel':'','md-tab-panels':'','md-stepper':'','md-step':'','md-navigation-rail-tab':'submenu','md-breadcrumbs':'','md-breadcrumb-item':'','md-button-group':'','md-segmented-button-set':'',
 'md-table':'','md-table-container':'','md-table-head':'','md-table-body':'','md-table-foot':'','md-table-row':'|expanded','md-table-cell':'','md-table-sort-label':'','md-table-toolbar':'actions'
 }
 notes={
+'md-button':'Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Platform elevation shadows, antialiasing, HTML submit/reset, target contexts, cancelable DOM events, role overrides and group keyboard navigation remain different. Soft-disabled controls block activation without web focusability. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated.',
 'md-avatar':'Native asynchronous HTTP(S) bitmap loading with initials/name fallback. CSS loading/crossorigin policies do not map to Android.',
 'md-button-group':'Native single/multi selection and required coordination. DOM originalEvent is omitted from payloads.',
 'md-segmented-button-set':'Native exclusive/multiple selection coordinated by child identity; supports duplicate child values.',

@@ -241,14 +241,22 @@
     },
     "md-button": {
       "properties": [
+        "connectedLeft",
+        "connectedRight",
+        "density",
         "disabled",
         "fullWidth",
         "href",
         "icon",
         "loading",
+        "mirrorIcon",
+        "ripple",
         "selected",
+        "shape",
+        "shapeMorph",
+        "size",
         "softDisabled",
-        "target",
+        "suppressExpandIconFlip",
         "toggle",
         "trailingIcon",
         "value",
@@ -262,10 +270,12 @@
       "slots": [
         "",
         "leading-icon",
+        "loader",
         "trailing-icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Platform elevation shadows, antialiasing, HTML submit/reset, target contexts, cancelable DOM events, role overrides and group keyboard navigation remain different. Soft-disabled controls block activation without web focusability. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated."
       ]
     },
     "md-button-group": {

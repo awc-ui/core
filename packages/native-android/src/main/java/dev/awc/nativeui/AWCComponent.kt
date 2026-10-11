@@ -41,7 +41,8 @@ fun AWCComponent(
     val spacing = (12 + p.int("density") * 2).coerceAtLeast(4).dp
     Box(modifier) {
         when (tag) {
-            "md-button", "md-icon-button", "md-fab", "md-fab-menu-item", "md-split-button", "md-segmented-button" -> Action(tag, p, onEvent, content)
+            "md-button" -> NativeButton(p, onEvent, content)
+            "md-icon-button", "md-fab", "md-fab-menu-item", "md-split-button", "md-segmented-button" -> Action(tag, p, onEvent, content)
             "md-checkbox", "md-radio", "md-switch", "md-slider", "md-rating", "md-text-field", "md-number-field", "md-otp-field", "md-search", "md-select", "md-multi-select", "md-autocomplete", "md-select-option" -> InputComponent(tag, p, onEvent, content)
             "md-date-picker", "md-time-picker", "md-color-picker" -> PickerComponent(tag, p, onEvent)
             "md-dialog", "md-bottom-sheet", "md-side-sheet", "md-menu", "md-fab-menu", "md-tooltip", "md-snackbar" -> OverlayComponent(tag, p, onEvent, content)

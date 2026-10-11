@@ -1,6 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createLatestRequest, nativeRenderRequest } from './contracts.js';
+import { createLatestRequest, nativeRenderRequest, nativePreviewTarget, nativeLiveEndpoint, createNativeLiveClient } from './contracts.js';
+
+test('native preview targets label the actual host and expose snapshots only for SwiftUI', () => {
+  const ios = nativePreviewTarget('ios'), android = nativePreviewTarget('android');
+  assert.deepEqual([ios.platform, ios.renderer, ios.unit, ios.snapshot], ['macos', 'SwiftUI', 'pt', true]);
+  assert.deepEqual([android.platform, android.renderer, android.unit, android.snapshot], ['android', 'Jetpack Compose', 'dp', false]);
+  assert.match(android.title, /Android emulator/);
+  assert.match(android.eventOrigin, /Android/);
+  for (const platform of ['web', 'macos', '', undefined]) {
+    assert.throws(() => nativePreviewTarget(platform), /iOS or Android/);
+    assert.throws(() => nativeLiveEndpoint('status', platform), /iOS or Android/);
+  }
+  for (const platform of ['ios', 'android']) {
+    for (const route of ['status', 'session', 'session-1/input', 'session-1/stream', 'session-1/close']) {
+      assert.equal(nativeLiveEndpoint(route, platform), `/api/native-live/${route}?platform=${platform}`);
+    }
+  }
+});
 
 test('native render payload preserves typed union values and snapshots editable objects', () => {
   const properties = { clearable: false, passwordToggle: true, density: -1, value: 'false', options: [{ value: 0, disabled: false }], unset: undefined };
@@ -41,6 +58,60 @@ test('leaving native preview invalidates a pending image callback without a repl
 
 const turn = () => new Promise(resolve => setImmediate(resolve));
 const frame = (sessionId, revision, events = []) => ({ sessionId, revision, events, platform: 'macos', renderer: 'SwiftUI', imageUrl: 'data:image/png;base64,aA==', logicalWidth: 640, logicalHeight: 260, width: 1280, height: 520 });
+
+test('switching platforms closes a late Android create on Android while SwiftUI keeps streaming', async () => {
+  const calls = [], presented = [], events = [], streams = [];
+  let finishAndroid;
+  const clientFor = platform => createNativeLiveClient({
+    send: async route => {
+      calls.push(nativeLiveEndpoint(route, platform));
+      if (route === 'session') {
+        if (platform === 'android') return new Promise(resolve => { finishAndroid = resolve; });
+        return frame('ios-session', 0);
+      }
+      return { sessionId: 'ios-session', revision: 1, events: [] };
+    },
+    subscribe: (id, onFrame) => { streams.push({ url: nativeLiveEndpoint(`${id}/stream`, platform), onFrame }); return () => {}; },
+    onFrame: result => presented.push([platform, result.revision]),
+    onEvents: records => events.push(...records), onError: error => { throw error; },
+  });
+  const android = clientFor('android');
+  const pending = android.start({ tag: 'md-button' });
+  android.stop();
+  const ios = clientFor('ios');
+  await ios.start({ tag: 'md-button' });
+  finishAndroid({ ...frame('abandoned-android', 0, [{ id: 'old', name: 'mdClick' }]), platform: 'android', renderer: 'Jetpack Compose' });
+  await pending;
+  assert.deepEqual(presented, [['ios', 0]]);
+  assert.deepEqual(events, []);
+  assert.deepEqual(streams.map(stream => stream.url), ['/api/native-live/ios-session/stream?platform=ios']);
+  assert.ok(calls.includes('/api/native-live/abandoned-android/close?platform=android'));
+  ios.input({ command: 'pointer', phase: 'down', x: 30, y: 40 }); await turn();
+  assert.equal(calls.at(-1), '/api/native-live/ios-session/input?platform=ios');
+  streams[0].onFrame(frame('ios-session', 2));
+  assert.deepEqual(presented, [['ios', 0], ['ios', 2]]);
+  ios.stop();
+  assert.equal(calls.at(-1), '/api/native-live/ios-session/close?platform=ios');
+});
+
+test('a stopped Android stream cannot deliver frames, events or errors into a new platform', async () => {
+  const presented = [], events = [], errors = [], calls = [];
+  let oldStream, closed = false;
+  const android = createNativeLiveClient({
+    send: async route => { calls.push(nativeLiveEndpoint(route, 'android')); return { ...frame('android-session', 0), platform: 'android', renderer: 'Jetpack Compose' }; },
+    subscribe: (id, onFrame, onError) => { oldStream = { onFrame, onError }; return () => { closed = true; }; },
+    onFrame: result => presented.push(result.revision), onEvents: records => events.push(...records), onError: error => errors.push(error),
+  });
+  await android.start({ tag: 'md-chip' });
+  android.stop();
+  assert.equal(closed, true);
+  oldStream.onFrame({ ...frame('android-session', 1, [{ id: 'late', name: 'mdSelect' }]), platform: 'android', renderer: 'Jetpack Compose' });
+  oldStream.onError(new Error('Late Android disconnect'));
+  assert.deepEqual(presented, [0]);
+  assert.deepEqual(events, []);
+  assert.deepEqual(errors, []);
+  assert.equal(calls.at(-1), '/api/native-live/android-session/close?platform=android');
+});
 
 test('live session serializes polls and native inputs, keeps one host, and deduplicates native events', async () => {
   const { createNativeLiveClient } = await import('./contracts.js');

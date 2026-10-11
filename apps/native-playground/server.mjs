@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createNativeRenderer, readRenderRequest, readLocalJSONRequest, validateRenderRequest, RenderError } from './native-render.mjs';
 import { createNativeLiveRenderer } from './native-live.mjs';
+import { createAndroidLiveRenderer } from './android-live.mjs';
 
 const appRoot = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appRoot, '../..');
@@ -49,10 +50,14 @@ export async function resolveAsset(rawUrl, options = {}) {
   } catch { return null; }
 }
 
-export async function handleNativeLiveRequest(req, res, { renderer, tags, json }) {
+export async function handleNativeLiveRequest(req, res, { renderer, androidRenderer, tags, json }) {
   const pathname = (req.url || '/').split('?')[0];
   if (!pathname.startsWith('/api/native-live/')) return false;
   try {
+    const platform = new URL(req.url, 'http://localhost').searchParams.get('platform') || 'ios';
+    if (!['ios', 'android'].includes(platform)) throw new RenderError(400, 'INVALID_PLATFORM', 'Choose iOS or Android.');
+    if (platform === 'android') renderer = androidRenderer;
+    if (!renderer) throw new RenderError(503, 'RENDERER_UNAVAILABLE', 'This native preview renderer is unavailable.');
     if (pathname === '/api/native-live/status' && req.method === 'GET') {
       json(res, 200, await renderer.status());
       return true;
@@ -132,13 +137,14 @@ export function streamNativeFrames(res, renderer, sessionId) {
 export function createServer(options = {}) {
   const renderer = options.renderer || createNativeRenderer({repoRoot:options.repoRoot||repoRoot,renderRoot:options.renderRoot,executable:options.nativeExecutable});
   const liveRenderer = options.liveRenderer || createNativeLiveRenderer({repoRoot:options.repoRoot||repoRoot,executable:options.nativeLiveExecutable});
+  const androidRenderer = options.androidRenderer || createAndroidLiveRenderer(options.androidOptions);
   let tagPromise;
   const tags = () => tagPromise ||= readFile(path.join(options.repoRoot||repoRoot,'packages/core/custom-elements.json'),'utf8')
     .then(JSON.parse).then(manifest=>new Set(manifest.modules.flatMap(m=>m.declarations||[]).map(c=>c.tagName).filter(Boolean)));
   const json = (res,status,value) => {res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
   const server = http.createServer(async (req, res) => {
     const pathname=(req.url||'/').split('?')[0];
-    if (await handleNativeLiveRequest(req, res, { renderer: liveRenderer, tags, json })) return;
+    if (await handleNativeLiveRequest(req, res, { renderer: liveRenderer, androidRenderer, tags, json })) return;
     if(pathname==='/api/native-render/status' && req.method==='GET'){
       try{json(res,200,await renderer.status());}catch{json(res,503,{available:false,platform:'macos',renderer:'SwiftUI',message:'Native renderer is unavailable.'});}return;
     }
@@ -162,14 +168,19 @@ export function createServer(options = {}) {
       res.end(req.method === 'HEAD' ? undefined : content);
     } catch { res.writeHead(500); res.end('Unable to read asset'); }
   });
-  server.once('close', () => liveRenderer.dispose());
+  server.disposeNative = () => Promise.allSettled([liveRenderer.dispose(), androidRenderer.dispose()]);
+  server.once('close', () => { void server.disposeNative(); });
   return server;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT || 4177);
   const server = createServer();
-  server.listen(port, '127.0.0.1', () => process.stdout.write(`AWC Native Compiler Lab: http://127.0.0.1:${port}\nWeb reference, live macOS SwiftUI previews and native snapshots.\n`));
+  server.listen(port, '127.0.0.1', () => process.stdout.write(`AWC Native Compiler Lab: http://127.0.0.1:${port}\nWeb reference, live SwiftUI and Android Compose previews.\n`));
   server.on('error', error => { process.stderr.write(`${error.message}\n`); process.exitCode = 1; });
-  for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => server.close(() => process.exit(0)));
+  for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, async () => {
+    await server.disposeNative();
+    server.close(() => process.exit(0));
+    server.closeAllConnections();
+  });
 }

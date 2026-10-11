@@ -48,3 +48,13 @@ Generated files are owned by the compiler. Adapter implementation and support po
 ## Validation
 
 Pure property-contract tests live in `src/test`. Android instrumented tests compose all tags and exercise controlled checkbox state and transfer list movement. They require an emulator or device. A successful APK build alone does not verify screen layout, TalkBack, keyboard navigation or interaction parity.
+
+`md-button` has a dedicated Compose renderer using the source size/density ladder,
+variant/toggle palettes, press/release shape timing, and pointer-origin ripple.
+Its bundled Roboto and Material Symbols TTFs contain the original web font data;
+see `font-licenses/`. The loader interpolates the original 48-vertex polygons.
+Compose interaction state drives the visuals and emits `mdClick` before committing
+selection, followed by `mdChange` for toggles. Native elevation shadows and font
+rasterization remain platform-specific; this does not promise complete CSS or DOM
+parity. Metric, palette, shape, and loader regressions are in
+`NativeButtonContractTest`; device interaction checks live in the playground.

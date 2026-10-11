@@ -70,6 +70,19 @@ export function nativeRenderRequest(tag, properties, dark) {
   return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640 };
 }
 
+const NATIVE_PREVIEW_TARGETS = Object.freeze({
+  ios: Object.freeze({ platform: 'macos', renderer: 'SwiftUI', title: 'SwiftUI · macOS native render', host: 'macOS', unit: 'pt', eventOrigin: 'SwiftUI · macOS', badge: 'LIVE SWIFTUI', snapshot: true, playground: 'open apps/native-ios-playground/AWCPlayground.xcodeproj' }),
+  android: Object.freeze({ platform: 'android', renderer: 'Jetpack Compose', title: 'Jetpack Compose · Android emulator', host: 'Android emulator', unit: 'dp', eventOrigin: 'Jetpack Compose · Android', badge: 'LIVE COMPOSE', snapshot: false, playground: 'Open apps/native-android-playground in Android Studio, start an emulator, and run the native playground.' }),
+});
+export function nativePreviewTarget(platform) {
+  if (!Object.hasOwn(NATIVE_PREVIEW_TARGETS, platform)) throw new Error('Choose the iOS or Android native preview.');
+  return NATIVE_PREVIEW_TARGETS[platform];
+}
+export function nativeLiveEndpoint(route, platform) {
+  nativePreviewTarget(platform);
+  return `/api/native-live/${route}?platform=${platform}`;
+}
+
 // Input stays ordered independently of the native frame stream. Legacy clients
 // can still poll; a late create response is closed even after navigation.
 export function createNativeLiveClient({ send, subscribe, onFrame, onEvents = () => {}, onError, pollInterval = 250, interactiveInterval = 1000 / 60, animationTail = 600, now = Date.now, schedule = setTimeout, unschedule = clearTimeout }) {

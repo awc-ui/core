@@ -119,7 +119,7 @@ class MainActivity : ComponentActivity() {
 private val overlays = setOf("md-dialog", "md-bottom-sheet", "md-side-sheet", "md-menu", "md-fab-menu", "md-snackbar", "md-tooltip", "md-date-picker", "md-time-picker", "md-color-picker")
 private val choices = listOf(mapOf("value" to "design", "label" to "Design"), mapOf("value" to "engineering", "label" to "Engineering"), mapOf("value" to "research", "label" to "Research"), mapOf("value" to "archived", "label" to "Archived", "disabled" to true))
 internal fun fixture(tag: String): Map<String, AWCValue> = when(tag) {
-    "md-button" -> mapOf("icon" to "add", "toggle" to true)
+    "md-button" -> mapOf("label" to "Continue", "size" to "md", "variant" to "filled", "icon" to "", "toggle" to false)
     "md-icon-button" -> mapOf("icon" to "favorite", "toggle" to true)
     "md-fab" -> mapOf("icon" to "add", "label" to "Create", "extended" to true)
     "md-fab-menu-item" -> mapOf("icon" to "edit", "label" to "New document")
@@ -203,7 +203,7 @@ internal fun fixture(tag: String): Map<String, AWCValue> = when(tag) {
         "md-ripple" -> Text("Tap to see native ripple", Modifier.padding(24.dp))
         "md-tooltip" -> Text("Tap for details", Modifier.padding(12.dp))
         "md-tab-panels", "md-tab-panel" -> Text("This is native tab panel content.")
-        "md-button" -> Text("Create project")
+        "md-button" -> Text("Continue")
         "md-accordion-item" -> Text("The source contract is compiled into typed platform wrappers. Native adapters provide Compose behavior.")
         "md-dialog", "md-bottom-sheet", "md-side-sheet", "md-step" -> Text("This content is composed with native Android views. Change props and inspect events below.")
         else -> Unit

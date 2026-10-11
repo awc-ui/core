@@ -1,11 +1,23 @@
-import { literalChoices, encodeLiteralChoice, decodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, createNativeLiveClient, createNativePointerInput, nativeImagePoint, nativeTextChunks } from './contracts.js';
+import { literalChoices, encodeLiteralChoice, decodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, nativePreviewTarget, nativeLiveEndpoint, createNativeLiveClient, createNativePointerInput, nativeImagePoint, nativeTextChunks } from './contracts.js';
 import { recipeFor, categoryFor, categoryOrder, displayName, icons } from './recipes.js';
 
 const $ = selector => document.querySelector(selector);
 const state = { components: [], selected: null, platform: 'web', inspector: 'contract', filter: 'all', props: {}, events: [], catalog: null, ready: false, target: null, sourcePlatform: 'ios', sourceText: '', sourceCache: new Map(), renderVersion: 0 };
 const nativeRequests = createLatestRequest();
 state.nativeMode = 'live';
-const nativeLive = createNativeLiveClient({ send: sendNativeLive, subscribe: subscribeNativeLive, onFrame: showNativeLiveFrame, onEvents: recordNativeEvents, onError: reportNativeLiveError });
+let nativeLive = nativeClientFor('ios');
+const isNativePlatform = platform => platform === 'ios' || platform === 'android';
+function nativeClientFor(platform) {
+  // Capture the transport target: a late create/close must address its original
+  // host even after the user has switched preview tabs.
+  return createNativeLiveClient({
+    send: (route, payload) => sendNativeLive(route, payload, platform),
+    subscribe: (id, onFrame, onError) => subscribeNativeLive(id, onFrame, onError, platform),
+    onFrame: frame => { if (state.platform === platform) showNativeLiveFrame(frame, platform); },
+    onEvents: events => { if (state.platform === platform) recordNativeEvents(events, platform); },
+    onError: error => { if (state.platform === platform) reportNativeLiveError(error); },
+  });
+}
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const text = (selector, value) => { $(selector).textContent = String(value ?? ''); };
 const sourceURL = value => value && !value.startsWith('/') && !value.split('/').includes('..') ? `/repo/${value}` : null;
@@ -68,7 +80,7 @@ function bindEvents() {
   $('#component-list').addEventListener('click', event => { const button = event.target.closest('[data-tag]'); if (button) { location.hash = button.dataset.tag; if (state.selected?.tag === button.dataset.tag) selectComponent(button.dataset.tag); } });
   window.addEventListener('hashchange', () => { const tag = location.hash.slice(1); if (state.components.some(component => component.tag === tag)) selectComponent(tag); });
   window.addEventListener('pagehide', () => { disposeNativePointer(); nativeRequests.cancel(); clearTimeout(state.nativeRenderTimer); nativeLive.stop(); });
-  window.addEventListener('pageshow', event => { if (event.persisted && state.platform === 'ios') renderPreview(); });
+  window.addEventListener('pageshow', event => { if (event.persisted && isNativePlatform(state.platform)) renderPreview(); });
   document.addEventListener('visibilitychange', () => nativeLive.setVisible(!document.hidden));
   $('#theme-toggle').addEventListener('click', () => { const dark = document.documentElement.dataset.theme !== 'dark'; document.documentElement.dataset.theme = dark ? 'dark' : 'light'; try { localStorage.setItem('awc-native-theme', dark ? 'dark' : 'light'); } catch { /* Optional storage. */ } updateThemeLabel(); applyPreviewTheme(); scheduleNativeRender(); });
   $('#reset').addEventListener('click', () => { selectComponent(state.selected.tag); toast('Component properties reset'); });
@@ -117,17 +129,10 @@ function renderPreview() {
   const root = $('#preview-content'); root.replaceChildren(); state.target = null;
   const isWeb = state.platform === 'web'; $('#preview-stage').classList.toggle('native-mode', !isWeb);
   root.classList.toggle('button-reference', isWeb && state.selected.tag === 'md-button');
-  $('#preview-stage').classList.toggle('snapshot-mode', state.platform === 'ios');
-  text('#preview-runtime', isWeb ? 'LIVE WEB' : state.platform === 'ios' ? 'NATIVE PREVIEW' : 'NATIVE TARGET');
-  text('.props-hint', state.platform === 'ios' ? 'Changes rerender the native snapshot.' : 'Changes apply to the web reference.');
-  if (state.platform === 'ios') { renderNativePreview(); return; }
-  if (!isWeb) {
-    const ios = state.platform === 'ios'; const path = ios ? state.selected.swiftPath : state.selected.kotlinPath;
-    const support = state.selected.support?.[state.platform];
-    const status = support?.status || support?.level || (path ? 'Source generated' : 'Not generated');
-    root.innerHTML = `<div class="native-card"><div class="native-symbol" aria-hidden="true">${ios ? '◇' : '⌘'}</div><h3>${ios ? 'SwiftUI' : 'Jetpack Compose'} target</h3><span class="native-status">${escape(status)} · native execution required</span><p>${support ? `${support.unsupportedProperties?.length || 0} unsupported properties · ${support.unsupportedEvents?.length || 0} unsupported events` : 'Adapter coverage has not been reported.'}</p><p>Inspect the real generated source below. Open the native playground to run this component with platform controls.</p><div class="native-command"><code>${ios ? 'open apps/native-ios-playground/AWCPlayground.xcodeproj' : 'Open apps/native-android-playground in Android Studio'}</code></div></div>`;
-    text('#preview-caption', 'Source inspection · this browser does not render native views'); text('#recipe-status', 'Device/simulator validation separate'); return;
-  }
+  $('#preview-stage').classList.toggle('snapshot-mode', !isWeb);
+  text('#preview-runtime', isWeb ? 'LIVE WEB' : 'NATIVE PREVIEW');
+  text('.props-hint', isWeb ? 'Changes apply to the web reference.' : 'Initial properties · editing restarts the native session.');
+  if (!isWeb) { nativeLive = nativeClientFor(state.platform); renderNativePreview(); return; }
   if (!state.ready) { root.innerHTML = '<div class="load-error">Web runtime unavailable. Build <code>@awc-ui/core</code>, or start this server with <code>AWC_WEB_DIST=/absolute/path/to/core/dist</code>.</div>'; text('#preview-caption', 'Web reference unavailable'); text('#recipe-status', 'Build core to enable'); return; }
   const recipe = recipeFor(state.selected.tag);
   root.innerHTML = `<div class="demo ${recipe.mode}">${recipe.html}</div>`;
@@ -153,11 +158,14 @@ function renderPreview() {
 
 function renderNativePreview() {
   const component = state.selected;
-  const support = component.support?.ios;
-  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="SwiftUI native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> SwiftUI · macOS native render</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><div class="native-mode-switch" role="group" aria-label="Native preview mode"><button type="button" data-native-mode="live" aria-pressed="${state.nativeMode === 'live'}">Live</button><button type="button" data-native-mode="snapshot" aria-pressed="${state.nativeMode === 'snapshot'}">Snapshot</button></div><button class="secondary-button" id="native-render-button" type="button">Reconnect</button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div><p class="snapshot-status" id="native-render-status" role="status" aria-live="polite"></p><p class="snapshot-note" id="native-preview-note"></p><details class="snapshot-details"><summary>Fixture & native playground</summary><p>The native example uses this component’s root properties. Its child content and text may differ from the web reference.</p><p>Live pixels preserve native state. Native accessibility remains in the macOS app; this image does not expose its control tree to the browser.</p><p>${support ? `${support.unsupportedProperties?.length || 0} unsupported properties · ${support.unsupportedEvents?.length || 0} unsupported events. Inspect full coverage in Portability.` : 'Adapter coverage has not been reported.'}</p><code>open apps/native-ios-playground/AWCPlayground.xcodeproj</code></details></section>`;
+  const target = nativePreviewTarget(state.platform);
+  const support = component.support?.[state.platform];
+  const mode = target.snapshot ? state.nativeMode : 'live';
+  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><div class="native-mode-switch" role="group" aria-label="Native preview mode"><button type="button" data-native-mode="live" aria-pressed="${mode === 'live'}">Live</button>${target.snapshot ? `<button type="button" data-native-mode="snapshot" aria-pressed="${mode === 'snapshot'}">Snapshot</button>` : ''}</div><button class="secondary-button" id="native-render-button" type="button">Reconnect</button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div><p class="snapshot-status" id="native-render-status" role="status" aria-live="polite"></p><p class="snapshot-note" id="native-preview-note"></p><details class="snapshot-details"><summary>Fixture & native playground</summary><p>The native example uses this component’s root properties. Its child content and text may differ from the web reference.</p><p>Live pixels preserve native state. Native accessibility remains in the running ${state.platform === 'android' ? 'Android' : 'macOS'} app; this image does not expose its control tree to the browser.</p>${state.platform === 'android' ? '<p>Live rendering requires the Android emulator and native playground. One Android preview can use the emulator at a time. Capture covers the visible Activity surface; separate Popup/Dialog windows and off-screen content are outside this preview.</p>' : ''}<p>${support ? `${support.unsupportedProperties?.length || 0} unsupported properties · ${support.unsupportedEvents?.length || 0} unsupported events. Inspect full coverage in Portability.` : 'Adapter coverage has not been reported.'}</p><code>${escape(target.playground)}</code></details></section>`;
   $('#native-render-button').addEventListener('click', () => scheduleNativeRender(0));
-  document.querySelectorAll('[data-native-mode]').forEach(button => button.addEventListener('click', () => { state.nativeMode = button.dataset.nativeMode; renderPreview(); }));
-  text('#preview-caption', 'Real SwiftUI on this Mac · choosing preview mode');
+  document.querySelectorAll('[data-native-mode]').forEach(button => button.addEventListener('click', () => { if (target.snapshot) state.nativeMode = button.dataset.nativeMode; renderPreview(); }));
+  setNativeMode(mode);
+  text('#preview-caption', state.platform === 'android' ? 'Real Android emulator · connecting to Jetpack Compose' : 'Real SwiftUI on this Mac · choosing preview mode');
   text('#recipe-status', 'Native fixture + current root properties');
   scheduleNativeRender(0);
 }
@@ -182,13 +190,18 @@ function nativeRenderState(kind, message) {
 }
 
 function scheduleNativeRender(delay = 300) {
-  if (state.platform !== 'ios' || !$('#native-render-frame')) return;
+  if (!isNativePlatform(state.platform) || !$('#native-render-frame')) return;
   clearTimeout(state.nativeRenderTimer);
   disposeNativePointer(); nativeLive.stop(); state.liveFrame = null; state.liveDisplayedRevision = -1; state.liveImageVersion = (state.liveImageVersion || 0) + 1;
   const request = nativeRequests.start();
   const payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark');
+  // Render at the available logical width instead of shrinking a 640pt image
+  // (which also shrinks the native button and font in a narrow browser pane).
+  const frame = $('#native-render-frame'), frameStyle = getComputedStyle(frame);
+  payload.width = Math.max(320, Math.min(640, Math.floor(frame.clientWidth - parseFloat(frameStyle.paddingLeft) - parseFloat(frameStyle.paddingRight))));
   nativeRenderState('loading', delay ? 'Waiting for property changes…' : 'Checking the native renderer…');
-  state.nativeRenderTimer = setTimeout(() => chooseNativePreview(payload, request), delay);
+  const platform = state.platform;
+  state.nativeRenderTimer = setTimeout(() => chooseNativePreview(payload, request, platform), delay);
 }
 
 async function readNativeResponse(response) {
@@ -198,17 +211,17 @@ async function readNativeResponse(response) {
   return result;
 }
 
-async function sendNativeLive(route, payload) {
+async function sendNativeLive(route, payload, platform) {
   let response;
-  try { response = await fetch(`/api/native-live/${route}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), keepalive: route.endsWith('/close') }); }
+  try { response = await fetch(nativeLiveEndpoint(route, platform), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), keepalive: route.endsWith('/close') }); }
   catch (error) { if (error.name === 'TypeError') throw new TypeError(`Native ${route.split('/').at(-1)} request could not reach the local server (${error.message}).`); throw error; }
   return readNativeResponse(response);
 }
 
-function subscribeNativeLive(id, onFrame, onError) {
+function subscribeNativeLive(id, onFrame, onError, platform) {
   const controller = new AbortController();
   void (async () => {
-    const response = await fetch(`/api/native-live/${id}/stream`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', signal: controller.signal });
+    const response = await fetch(nativeLiveEndpoint(`${id}/stream`, platform), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', signal: controller.signal });
     if (!response.ok) { await readNativeResponse(response); return; }
     const reader = response.body.getReader(), decoder = new TextDecoder();
     let pending = '';
@@ -233,75 +246,85 @@ function subscribeNativeLive(id, onFrame, onError) {
 }
 
 function setNativeMode(mode, fallbackMessage = '') {
+  const target = nativePreviewTarget(state.platform);
   state.activeNativeMode = mode;
   state.nativeFallback = Boolean(fallbackMessage);
   document.querySelectorAll('[data-native-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.nativeMode === mode)));
   text('#preview-runtime', mode === 'live' ? 'CONNECTING' : 'NATIVE SNAPSHOT');
   text('.props-hint', mode === 'live' ? 'Initial properties · editing restarts the native session.' : 'Changes rerender the native snapshot.');
-  text('#native-preview-note', mode === 'live' ? state.selected.tag === 'md-button' ? 'Press and hold to see the native button response; release to activate. Esc cancels and releases keyboard focus. Frames stream directly from SwiftUI; hover and pointer position are forwarded.' : 'Click the native view, then type. Esc releases keyboard focus. Clicks and typing are live; dragging, hover and sheets are not validated.' : `${fallbackMessage ? `${fallbackMessage} ` : ''}Static snapshot — interact in the native app. For iOS, open the native playground.`);
-  text('#preview-caption', mode === 'live' ? 'Persistent macOS SwiftUI app · live frames and native events' : 'Rendered by SwiftUI on this Mac · displayed as a PNG');
+  text('#native-preview-note', mode === 'live' ? state.selected.tag === 'md-button' ? `Press and hold to see the native button response; release to activate. Esc cancels and releases keyboard focus. Frames stream directly from ${target.renderer}; hover and pointer position are forwarded.` : 'Click the native view, then type. Esc releases keyboard focus. Clicks and typing are live; dragging, hover and sheets are not validated.' : `${fallbackMessage ? `${fallbackMessage} ` : ''}Static snapshot — interact in the native app. For iOS, open the native playground.`);
+  text('#preview-caption', mode === 'live' ? state.platform === 'android' ? 'Real Android emulator · Jetpack Compose frames and native events' : 'Persistent macOS SwiftUI app · live frames and native events' : 'Rendered by SwiftUI on this Mac · displayed as a PNG');
   text('#recipe-status', mode === 'live' ? 'Click & type · native state persists' : 'Native fixture + current root properties');
   text('#native-render-button', state.nativeFallback ? 'Retry Live' : mode === 'live' ? 'Reconnect' : 'Render again');
 }
 
-async function chooseNativePreview(payload, request) {
+async function chooseNativePreview(payload, request, platform) {
   if (!request.isCurrent()) return;
-  if (state.nativeMode === 'live') {
+  const target = nativePreviewTarget(platform);
+  if (!target.snapshot || state.nativeMode === 'live') {
     try {
-      const status = await readNativeResponse(await fetch('/api/native-live/status', { signal: request.signal }));
+      const status = await readNativeResponse(await fetch(nativeLiveEndpoint('status', platform), { signal: request.signal }));
       if (!request.isCurrent()) return;
       if (status.available) {
-        setNativeMode('live'); text('#native-render-status', 'Starting a persistent SwiftUI session…');
+        setNativeMode('live'); text('#native-render-status', `Starting a persistent ${target.renderer} session…`);
         nativeLive.setVisible(!document.hidden);
         void nativeLive.start(payload);
+        return;
+      }
+      if (!target.snapshot) {
+        text('#preview-runtime', 'EMULATOR OFFLINE');
+        nativeRenderState('error', `${status.message || 'The Android emulator is not ready.'} Start the native Android playground, then reconnect.`);
         return;
       }
       setNativeMode('snapshot', `Live unavailable: ${status.message || 'the native host is not ready.'}`);
     } catch (error) {
       if (!request.isCurrent() || error.name === 'AbortError') return;
+      if (!target.snapshot) { reportNativeLiveError(error); return; }
       setNativeMode('snapshot', `Live unavailable: ${error.message}`);
     }
   } else setNativeMode('snapshot');
   void fetchNativeRender(payload, request);
 }
 
-function showNativeLiveFrame(result) {
-  if (state.platform !== 'ios' || state.activeNativeMode !== 'live') return;
-  if (result.platform !== 'macos' || result.renderer !== 'SwiftUI' || !/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(result.imageUrl || '') || ![result.logicalWidth, result.logicalHeight].every(size => Number.isFinite(size) && size > 0)) throw new Error('The live host returned an invalid native frame.');
+function showNativeLiveFrame(result, platform) {
+  if (state.platform !== platform || state.activeNativeMode !== 'live') return;
+  const target = nativePreviewTarget(platform);
+  if (result.platform !== target.platform || result.renderer !== target.renderer || !/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(result.imageUrl || '') || ![result.logicalWidth, result.logicalHeight].every(size => Number.isFinite(size) && size > 0)) throw new Error('The live host returned an invalid native frame.');
   const now = performance.now();
   if (state.nativePerf?.sessionId !== result.sessionId) state.nativePerf = { sessionId: result.sessionId, since: now, received: 0, presented: 0, windowFrames: 0, fps: 0, decodeMs: 0 };
   state.nativePerf.received++;
   const imageVersion = state.liveImageVersion;
   const queue = image => {
-    if (imageVersion !== state.liveImageVersion || result.revision < state.liveDisplayedRevision) return;
-    if (!state.nextNativeFrame || state.nextNativeFrame.imageVersion !== imageVersion || result.revision > state.nextNativeFrame.result.revision) state.nextNativeFrame = { image, result, imageVersion };
+    if (imageVersion !== state.liveImageVersion || state.platform !== platform || result.revision < state.liveDisplayedRevision) return;
+    if (!state.nextNativeFrame || state.nextNativeFrame.imageVersion !== imageVersion || result.revision > state.nextNativeFrame.result.revision) state.nextNativeFrame = { image, result, imageVersion, platform };
     if (state.nativePresentation) return;
     state.nativePresentation = requestAnimationFrame(() => {
       state.nativePresentation = null;
       const next = state.nextNativeFrame; state.nextNativeFrame = null;
-      if (!next || next.imageVersion !== state.liveImageVersion || state.platform !== 'ios' || state.activeNativeMode !== 'live' || next.result.revision < state.liveDisplayedRevision) return;
-      presentNativeLiveFrame(next.image, next.result);
+      if (!next || next.imageVersion !== state.liveImageVersion || state.platform !== next.platform || state.activeNativeMode !== 'live' || next.result.revision < state.liveDisplayedRevision) return;
+      presentNativeLiveFrame(next.image, next.result, next.platform);
     });
   };
   if ($('#native-live-surface') && state.liveFrame?.sessionId === result.sessionId && state.liveFrame.imageUrl === result.imageUrl && state.liveFrame.logicalWidth === result.logicalWidth && state.liveFrame.logicalHeight === result.logicalHeight) { queue(null); return; }
   const image = new Image(); image.className = 'snapshot-image native-live-image'; image.style.width = `${result.logicalWidth}px`; image.draggable = false;
-  image.alt = `${displayName(state.selected.tag)} live SwiftUI view on macOS`;
+  image.alt = `${displayName(state.selected.tag)} live ${target.renderer} view on ${target.host}`;
   image.addEventListener('load', () => {
     if (imageVersion !== state.liveImageVersion) return;
     state.nativePerf.decodeMs = performance.now() - now;
     queue(image);
   }, { once: true });
-  image.addEventListener('error', () => { if (imageVersion === state.liveImageVersion && result.revision >= state.liveDisplayedRevision && state.platform === 'ios' && state.activeNativeMode === 'live') { nativeLive.stop(); reportNativeLiveError(new Error('The live native frame could not be decoded.')); } }, { once: true });
+  image.addEventListener('error', () => { if (imageVersion === state.liveImageVersion && result.revision >= state.liveDisplayedRevision && state.platform === platform && state.activeNativeMode === 'live') { nativeLive.stop(); reportNativeLiveError(new Error('The live native frame could not be decoded.')); } }, { once: true });
   image.src = result.imageUrl;
 }
 
-function presentNativeLiveFrame(image, result) {
+function presentNativeLiveFrame(image, result, platform) {
+  const target = nativePreviewTarget(platform);
   let surface = $('#native-live-surface');
   if (!surface) {
     if (!image) return;
     nativeRenderState('ready', 'Native session connected.');
-    surface = document.createElement('div'); surface.id = 'native-live-surface'; surface.className = 'native-live-surface'; surface.tabIndex = 0; surface.setAttribute('role', 'group'); surface.setAttribute('aria-label', 'Live native SwiftUI view. Click or focus, then type. Escape releases keyboard.');
-    const input = document.createElement('textarea'); input.className = 'native-keyboard-input'; input.setAttribute('aria-label', 'Keyboard input for the native SwiftUI view'); input.tabIndex = -1; input.autocomplete = 'off'; input.autocapitalize = 'off'; input.spellcheck = false;
+    surface = document.createElement('div'); surface.id = 'native-live-surface'; surface.className = 'native-live-surface'; surface.tabIndex = 0; surface.setAttribute('role', 'group'); surface.setAttribute('aria-label', `Live native ${target.renderer} view. Click or focus, then type. Escape releases keyboard.`);
+    const input = document.createElement('textarea'); input.className = 'native-keyboard-input'; input.setAttribute('aria-label', `Keyboard input for the native ${target.renderer} view`); input.tabIndex = -1; input.autocomplete = 'off'; input.autocapitalize = 'off'; input.spellcheck = false;
     surface.append(image, input); bindNativeInput(surface, input);
     $('#native-render-frame').append(surface);
   } else if (image) surface.querySelector('img').replaceWith(image);
@@ -314,14 +337,14 @@ function presentNativeLiveFrame(image, result) {
     // Read-only QA measurements also distinguish arrival rate from actual paints.
     surface.dataset.frameMetrics = JSON.stringify({ received: perf.received, presented: perf.presented, fps: perf.fps, decodeMs: +perf.decodeMs.toFixed(2) });
   }
-  updateNativeLiveFrameMetadata(result);
+  updateNativeLiveFrameMetadata(result, target);
 }
 
-function updateNativeLiveFrameMetadata(result) {
+function updateNativeLiveFrameMetadata(result, target) {
   state.liveDisplayedRevision = result.revision; state.liveFrame = result;
-  if ($('#preview-runtime').textContent !== 'LIVE SWIFTUI') text('#preview-runtime', 'LIVE SWIFTUI');
+  if ($('#preview-runtime').textContent !== target.badge) text('#preview-runtime', target.badge);
   // Do not announce every poll to screen readers or replace an unchanged image.
-  const status = `Live stream${state.nativePerf?.fps ? ` · ${state.nativePerf.fps} fps` : ''} · ${result.logicalWidth} × ${result.logicalHeight} pt · ${state.selected.tag}`;
+  const status = `Live stream${state.nativePerf?.fps ? ` · ${state.nativePerf.fps} fps` : ''} · ${Math.round(result.logicalWidth * 100) / 100} × ${Math.round(result.logicalHeight * 100) / 100} ${target.unit} · ${state.selected.tag}`;
   if ($('#native-render-status').textContent !== status) text('#native-render-status', status);
 }
 
@@ -348,7 +371,7 @@ function bindNativeInput(surface, input) {
   const pressable = state.selected.tag === 'md-button';
   if (pressable) {
     surface.classList.add('native-live-pressable');
-    surface.setAttribute('aria-label', 'Live native SwiftUI button. Press and hold, then release to activate. Escape cancels.');
+    surface.setAttribute('aria-label', `Live native ${nativePreviewTarget(state.platform).renderer} button. Press and hold, then release to activate. Escape cancels.`);
     const pointer = createNativePointerInput(queueNativeInput);
     const releaseCapture = id => { if (id !== null && surface.hasPointerCapture(id)) surface.releasePointerCapture(id); };
     let motionFrame, motion;
@@ -406,8 +429,9 @@ function bindNativeInput(surface, input) {
   });
 }
 
-function recordNativeEvents(events) {
-  for (const event of events) state.events.unshift({ name: event.name, time: new Date().toLocaleTimeString('en-GB'), detail: event.detail ?? null, origin: 'SwiftUI · macOS', nodeID: event.nodeID });
+function recordNativeEvents(events, platform) {
+  const { eventOrigin } = nativePreviewTarget(platform);
+  for (const event of events) state.events.unshift({ name: event.name, time: new Date().toLocaleTimeString('en-GB'), detail: event.detail ?? null, origin: eventOrigin, nodeID: event.nodeID });
   state.events = state.events.slice(0, 100); text('#event-count', state.events.length);
   if (state.inspector === 'events') renderInspector();
 }
@@ -508,7 +532,7 @@ function renderInspector() {
       return `<div class="support-card"><h4>${platform === 'ios' ? 'iOS · SwiftUI' : 'Android · Compose'}</h4><p><strong>${escape(status)}</strong></p>${support ? `<p class="support-count">${support.properties?.length || 0} supported / ${support.unsupportedProperties?.length || 0} unsupported properties</p><p>${support.events?.length || 0} supported / ${support.unsupportedEvents?.length || 0} unsupported events</p><p>${support.unsupportedMethods?.length || 0} unsupported methods · ${support.unsupportedSlots?.length || 0} unsupported slots</p><details><summary>Inspect coverage details</summary>${Object.entries(support).filter(([key]) => !['status', 'level'].includes(key)).map(([key, value]) => `<p><code>${escape(key)}</code>: ${escape(Array.isArray(value) ? value.map(item => typeof item === 'string' ? item || 'default slot' : JSON.stringify(item)).join(', ') || 'None' : typeof value === 'object' ? JSON.stringify(value) : value)}</p>`).join('')}</details>` : '<p>Generate the native catalog to inspect platform coverage.</p>'}<p>Adapter implemented does not mean source parity. Validate behavior in the native playground.</p></div>`;
     }).join('')}</div>${!state.catalog ? '<div class="load-error">Compiler diagnostics are unavailable. Run the native generation command and reload this page.</div>' : diagnostics.length ? diagnostics.map(diagnostic => `<div class="diagnostic"><span class="diag-symbol" aria-hidden="true">△</span><div><code>${escape(diagnostic.code || diagnostic.severity || 'PORTABILITY')}${diagnostic.line ? ` · line ${escape(diagnostic.line)}` : ''}</code><p>${escape(diagnostic.message || diagnostic.description)}</p></div></div>`).join('') : '<p class="empty-state">No static portability findings reported.<br />This does not establish runtime behavior or native parity.</p>'}</div>`;
   } else {
-    root.innerHTML = `<div class="event-toolbar"><span>Component events · latest 100</span><button id="clear-events" class="text-button">Clear</button></div>${state.events.length ? `<div class="event-log">${state.events.map(event => `<div class="event-row"><time>${event.time}</time><div><code>${escape(event.name)}</code><small class="event-origin">${escape(event.origin || 'Web reference')}</small></div><pre>${escape(JSON.stringify(event.detail))}</pre></div>`).join('')}</div>` : '<p class="empty-state">Interact with the web reference or live SwiftUI preview to see emitted events.<br />Native records come from the running SwiftUI app.</p>'}`;
+    root.innerHTML = `<div class="event-toolbar"><span>Component events · latest 100</span><button id="clear-events" class="text-button">Clear</button></div>${state.events.length ? `<div class="event-log">${state.events.map(event => `<div class="event-row"><time>${event.time}</time><div><code>${escape(event.name)}</code><small class="event-origin">${escape(event.origin || 'Web reference')}</small></div><pre>${escape(JSON.stringify(event.detail))}</pre></div>`).join('')}</div>` : '<p class="empty-state">Interact with the web reference or live native preview to see emitted events.<br />Native records come from the running native app.</p>'}`;
     $('#clear-events').addEventListener('click', () => { state.events = []; text('#event-count', '0'); renderInspector(); });
   }
 }
