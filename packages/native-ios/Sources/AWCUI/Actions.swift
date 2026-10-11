@@ -71,6 +71,7 @@ extension AWCNativeView {
         return Set(node.children.enumerated().filter { $0.element.properties["selected"]?.bool == true }.map(\.offset))
     }
     var radioChecked: Bool {
+        if let form = resolvedForm, let value = form.value(for: formRegistrationID) { return value.bool ?? false }
         guard node.tag == "md-radio", !s("name").isEmpty, let value = interactionStore.radioValues[s("name")] else { return b("checked") }; return value == s("value")
     }
     var checkControl: some View {

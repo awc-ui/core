@@ -102,7 +102,7 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
         }
     }
     val action = LocalAWCAction.current
-    val form = LocalAWCForm.current
+    val form = currentAWCForm()
     val slots = LocalAWCSlots.current
     val enabled = p.enabled() && !p.bool("loading")
     val interactions = remember { MutableInteractionSource() }
@@ -157,6 +157,12 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
             localSelected = group?.toggle(identity) ?: proposed
             localSelected
         }
+    }
+    val latestClick = rememberUpdatedState(click)
+    val isSubmitControl = p.str("type") == "submit" && p.str("href").isEmpty()
+    DisposableEffect(form, identity, isSubmitControl) {
+        if (isSubmitControl) form?.registerSubmitButton(identity) { latestClick.value() }
+        onDispose { form?.unregisterSubmitButton(identity) }
     }
     val textStyle = TextStyle(fontFamily = ButtonFonts, fontSize = metrics.fontSize.sp, fontWeight = FontWeight(metrics.weight), lineHeight = metrics.lineHeight.sp, letterSpacing = metrics.tracking.sp, platformStyle = PlatformTextStyle(includeFontPadding = false))
     CompositionLocalProvider(LocalContentColor provides label) {

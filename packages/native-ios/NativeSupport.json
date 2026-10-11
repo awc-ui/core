@@ -66,17 +66,18 @@
         "Loading draws the source 48-vertex morphing polygons with the original 4.55s keyframes and easing; Reduce Motion uses the source opacity pulse. Native button groups do not automatically inject connected corner props. RTL icon mirroring uses native layout direction; expanded trailing-icon rotation requires an explicit aria-expanded property on the native node.",
         "mdClick describes the proposed state before commit and includes value, toggle, selected, href and target; mdChange follows commit and includes selected and value. originalEvent is omitted.",
         "AWCButtonAction synchronously dispatches cancelable mdClick through AWCEventScope before any toggle, routing or form action. Legacy onEvent observes the result through AWCEvent.defaultPrevented; mdChange follows a committed toggle. Native form state and URL routing are explicit equivalents, not HTML/DOM emulation. Soft-disabled controls suppress activation without preserving web keyboard focusability.",
-        "type submit/reset uses the nearest AWCFormScope. Named text/number/OTP/select/multi-select/autocomplete, checkbox and switch controls register by stable per-view identity; other values can register explicitly. Reset restores first-registered values and native bindings. target is carried to an injectable AWCURLRouter; the default SwiftUI openURL fallback does not reproduce browser target contexts. Any raw nonempty href, including an unsafe one, suppresses form actions."
+        "type submit/reset uses the nearest AWCFormScope or an explicit owner registry. All 13 source form-control families auto-register with stable per-view identity, ordered successful values and validation. Cancelable mdSubmit/mdReset precede form effects; reset restores initial native bindings (OTP clears). Single-line Enter activates the first registered default submit button. AWCFormEncoding generates local UTF-8 URL-encoded data without network submission. target is passed to AWCURLRouter; raw nonempty href suppresses form actions."
       ],
       "nativeEquivalents": {
         "HTML_FORM": {
-          "status": "partial",
-          "api": "AWCFormState / AWCFormScope / AWCButtonAction.perform",
-          "description": "Explicit native field registration, values, validation, submit and reset-to-initial state. The actual md-button type submit/reset uses the nearest native scope.",
+          "status": "implemented",
+          "api": "AWCFormState / AWCFormScope / AWCFormRegistryScope / AWCFormControl / AWCFormEncoding",
+          "description": "Actual native md-button submit/reset and text-field Enter use explicit form owners, all 13 source form-control families, source successful-value rules, ordered entries, validation, cancelable form events and reset bindings. Encoding is local and deterministic.",
           "limitations": [
-            "Native required, length, numeric range, ICU-pattern and custom validation differ from HTML constraint validation and browser validation UI.",
-            "Only documented control families auto-register; other values require explicit registration. Checkbox/switch values use native booleans rather than HTML successful-control serialization.",
-            "No ElementInternals, implicit Enter submission, HTML form owner lookup, HTTP form encoding or browser submit/reset event semantics."
+            "This implements the native form contract, not DOM ElementInternals, HTML form attributes, browser validation bubbles, autofill, CSS pseudo-classes or HTTP navigation. Explicit owner IDs resolve through an injected AWCFormRegistry.",
+            "ICU patterns and Foundation URL parsing differ from browser JavaScript v-mode regex and URL parsing. UTF-16 length, common email/URL/number constraints, time bounds and native custom validators are supported; HTML dirty-value validity timing and every ValidityState flag are not reproduced.",
+            "Implicit submission uses native single-line onSubmit and the first registered default submit button. Source number-field commits then submits directly. Browser composition/deferred autocomplete selection and DOM tree-order algorithms are not emulated.",
+            "Source md-button requestSubmit does not contribute a submitter name/value. Native submit(submitter:) can carry explicit host metadata, without adding a source button entry. Native form events are mdSubmit/mdReset/mdInvalid, not browser SubmitEvent/ResetEvent objects."
           ]
         },
         "CANCELABLE_EVENT": {
@@ -85,7 +86,7 @@
           "description": "Synchronous inner-to-outer native scopes can prevent md-button default actions or stop propagation. Cancellation precedes toggle, URL and form effects; legacy onEvent remains an observer.",
           "limitations": [
             "No DOM capture phase, composed/shadow retargeting, originalEvent or underlying browser click event.",
-            "Propagation follows explicitly installed native scopes; only the md-button activation is cancelable in this adapter."
+            "Propagation follows explicit native scopes. md-button activation and native form submit/reset are cancelable; DOM event capture and browser form-event object semantics are not provided."
           ]
         },
         "DOM_GLOBAL": {
@@ -346,7 +347,8 @@
         "supportingText",
         "valueMissingLabel",
         "disabled",
-        "softDisabled"
+        "softDisabled",
+        "name"
       ],
       "events": [
         "mdChange",
@@ -355,7 +357,6 @@
       "methods": [],
       "slots": [],
       "unsupportedProperties": [
-        "name",
         "density"
       ],
       "unsupportedEvents": [],
@@ -366,7 +367,9 @@
         "setCustomValidity"
       ],
       "unsupportedSlots": [],
-      "notes": []
+      "notes": [
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+      ]
     },
     "md-radio": {
       "status": "native-adapter",
@@ -404,7 +407,8 @@
       ],
       "unsupportedSlots": [],
       "notes": [
-        "Native name groups share selected values within a nested tree or an explicit AWCNativeScope. The host can also update checked declaratively."
+        "Native name groups share selected values within a nested tree or an explicit AWCNativeScope. The host can also update checked declaratively.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ]
     },
     "md-switch": {
@@ -414,7 +418,9 @@
         "required",
         "valueMissingLabel",
         "disabled",
-        "softDisabled"
+        "softDisabled",
+        "name",
+        "value"
       ],
       "events": [
         "mdInput",
@@ -427,8 +433,6 @@
         "unselected-icon"
       ],
       "unsupportedProperties": [
-        "name",
-        "value",
         "icons",
         "showOnlySelectedIcon",
         "selectedIcon",
@@ -444,7 +448,9 @@
         "setCustomValidity"
       ],
       "unsupportedSlots": [],
-      "notes": []
+      "notes": [
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+      ]
     },
     "md-chip": {
       "status": "native-adapter",
@@ -503,7 +509,13 @@
         "hidePasswordLabel",
         "multiline",
         "rows",
-        "disabled"
+        "disabled",
+        "max",
+        "min",
+        "minLength",
+        "name",
+        "pattern",
+        "step"
       ],
       "events": [
         "mdInput",
@@ -521,12 +533,6 @@
       "unsupportedProperties": [
         "reserveSupportingSpace",
         "variant",
-        "name",
-        "pattern",
-        "minLength",
-        "min",
-        "max",
-        "step",
         "autocomplete",
         "inputMode",
         "enterKeyHint",
@@ -569,7 +575,8 @@
       ],
       "notes": [
         "Native keyboard input and secure entry. Change commits on submit; HTML validity flags beyond required, JS formatter/parser/restrict and speech recognition remain unsupported.",
-        "clearable/passwordToggle external modes emit intent without mutating native state; internal and boolean true modes perform the change."
+        "clearable/passwordToggle external modes emit intent without mutating native state; internal and boolean true modes perform the change.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ]
     },
     "md-number-field": {
@@ -589,7 +596,8 @@
         "steppers",
         "incrementLabel",
         "decrementLabel",
-        "disabled"
+        "disabled",
+        "name"
       ],
       "events": [
         "mdInput",
@@ -599,7 +607,6 @@
       "slots": [],
       "unsupportedProperties": [
         "variant",
-        "name",
         "density",
         "locale",
         "formatOptions",
@@ -626,7 +633,8 @@
       ],
       "unsupportedSlots": [],
       "notes": [
-        "Native text entry uses decimal dot. Bounds constrain steppers; locale formatting and arbitrary typed out-of-range normalization are not implemented."
+        "Native text entry uses decimal dot. Bounds constrain steppers; locale formatting and arbitrary typed out-of-range normalization are not implemented.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ]
     },
     "md-otp-field": {
@@ -643,7 +651,9 @@
         "errorText",
         "supportingText",
         "label",
-        "disabled"
+        "disabled",
+        "incompleteLabel",
+        "name"
       ],
       "events": [
         "mdInput",
@@ -658,10 +668,8 @@
         "autoSubmit",
         "groupSize",
         "inputMode",
-        "name",
         "cellLabelTemplate",
         "valueMissingLabel",
-        "incompleteLabel",
         "density",
         "reserveSupportingSpace"
       ],
@@ -678,7 +686,8 @@
         "separator"
       ],
       "notes": [
-        "Single native one-time-code input with visual cells, sanitation, paste handling and completion. Per-cell focus and autoSubmit differ from web."
+        "Single native one-time-code input with visual cells, sanitation, paste handling and completion. Per-cell focus and autoSubmit differ from web.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ]
     },
     "md-slider": {
@@ -697,7 +706,10 @@
         "sliderAriaLabel",
         "ariaLabelStart",
         "ariaLabelEnd",
-        "disabled"
+        "disabled",
+        "name",
+        "nameEnd",
+        "nameStart"
       ],
       "events": [
         "mdInput",
@@ -708,9 +720,6 @@
       "methods": [],
       "slots": [],
       "unsupportedProperties": [
-        "name",
-        "nameStart",
-        "nameEnd",
         "variant",
         "stops",
         "size",
@@ -733,7 +742,8 @@
       ],
       "notes": [
         "Range uses two accessible native sliders. Vertical layout, centered track, tick marks and DOM thumb metadata are not implemented.",
-        "Range value events retain source value plus valueStart/valueEnd. Drag events include value fields and thumb single/start/end."
+        "Range value events retain source value plus valueStart/valueEnd. Drag events include value fields and thumb single/start/end.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ]
     },
     "md-rating": {
@@ -750,7 +760,8 @@
         "showValueLabel",
         "ratingLabel",
         "disabled",
-        "softDisabled"
+        "softDisabled",
+        "name"
       ],
       "events": [
         "mdChange"
@@ -760,7 +771,6 @@
       "unsupportedProperties": [
         "outlineEmpty",
         "getLabel",
-        "name",
         "hover",
         "density"
       ],
@@ -772,7 +782,8 @@
       ],
       "unsupportedSlots": [],
       "notes": [
-        "Tap an already full star to choose its half value when precision is 0.5. Native hover preview is not implemented."
+        "Tap an already full star to choose its half value when precision is 0.5. Native hover preview is not implemented.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ]
     },
     "md-select": {
@@ -797,7 +808,8 @@
         "open",
         "dropdownIcon",
         "valueMissingLabel",
-        "disabled"
+        "disabled",
+        "name"
       ],
       "events": [
         "mdChange",
@@ -817,7 +829,6 @@
         "virtualize",
         "filterMode",
         "rowHeight",
-        "name",
         "filterLabel",
         "searchingLabel",
         "clearIcon",
@@ -843,7 +854,8 @@
         "dropdown-icon"
       ],
       "notes": [
-        "Native searchable sheet replaces anchored web listbox. Default-slot select-option children are parsed as option data."
+        "Native searchable sheet replaces anchored web listbox. Default-slot select-option children are parsed as option data.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ]
     },
     "md-multi-select": {
@@ -872,7 +884,8 @@
         "open",
         "valueMissingLabel",
         "disabled",
-        "softDisabled"
+        "softDisabled",
+        "name"
       ],
       "events": [
         "mdChange",
@@ -903,8 +916,7 @@
         "countFormatter",
         "filterLabel",
         "searchingLabel",
-        "clearIcon",
-        "name"
+        "clearIcon"
       ],
       "unsupportedEvents": [],
       "unsupportedMethods": [
@@ -931,7 +943,8 @@
         "menu-loader"
       ],
       "notes": [
-        "Selection supports chips, remove, clear, disabled options and maximum count; count/text layout and anchor placement differ."
+        "Selection supports chips, remove, clear, disabled options and maximum count; count/text layout and anchor placement differ.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ]
     },
     "md-autocomplete": {
@@ -960,7 +973,8 @@
         "open",
         "valueMissingLabel",
         "disabled",
-        "softDisabled"
+        "softDisabled",
+        "name"
       ],
       "events": [
         "mdChange",
@@ -986,8 +1000,7 @@
         "rowHeight",
         "placement",
         "matchTriggerWidth",
-        "maxHeight",
-        "name"
+        "maxHeight"
       ],
       "unsupportedEvents": [],
       "unsupportedMethods": [
@@ -1006,7 +1019,8 @@
         "dropdown-icon"
       ],
       "notes": [
-        "Native searchable sheet, free-form submit and multiple selection. Custom JS filtering and virtualization not executed."
+        "Native searchable sheet, free-form submit and multiple selection. Custom JS filtering and virtualization not executed.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ]
     },
     "md-select-option": {
@@ -1053,7 +1067,8 @@
         "okLabel",
         "commitOnSelect",
         "valueMissingLabel",
-        "disabled"
+        "disabled",
+        "name"
       ],
       "events": [
         "mdInput",
@@ -1093,7 +1108,6 @@
         "yearGridLabel",
         "scrimDismissible",
         "outsideClickDismissible",
-        "name",
         "isDateDisabled",
         "density"
       ],
@@ -1120,7 +1134,8 @@
         "actions"
       ],
       "notes": [
-        "System DatePicker replaces Material calendar and its month/year menus. Date objects serialize to ISO strings. Bounds are supported; predicate callbacks are not."
+        "System DatePicker replaces Material calendar and its month/year menus. Date objects serialize to ISO strings. Bounds are supported; predicate callbacks are not.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ]
     },
     "md-time-picker": {
@@ -1140,7 +1155,8 @@
         "okLabel",
         "hideTrigger",
         "valueMissingLabel",
-        "disabled"
+        "disabled",
+        "name"
       ],
       "events": [
         "mdInput",
@@ -1155,7 +1171,6 @@
       "unsupportedProperties": [
         "variant",
         "format",
-        "name",
         "reserveSupportingSpace",
         "headlineInputLabel",
         "headlineDialLabel",
@@ -1187,7 +1202,8 @@
       ],
       "unsupportedSlots": [],
       "notes": [
-        "System DatePicker replaces dial/input variants. Event dates serialize to ISO strings. MinuteStep/12-hour labels and overnight bounds are not supported."
+        "System DatePicker replaces dial/input variants. Event dates serialize to ISO strings. MinuteStep/12-hour labels and overnight bounds are not supported.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ]
     },
     "md-color-picker": {

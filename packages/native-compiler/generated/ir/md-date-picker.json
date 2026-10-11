@@ -5068,7 +5068,8 @@
         "okLabel",
         "commitOnSelect",
         "valueMissingLabel",
-        "disabled"
+        "disabled",
+        "name"
       ],
       "events": [
         "mdInput",
@@ -5108,7 +5109,6 @@
         "yearGridLabel",
         "scrimDismissible",
         "outsideClickDismissible",
-        "name",
         "isDateDisabled",
         "density"
       ],
@@ -5135,7 +5135,8 @@
         "actions"
       ],
       "notes": [
-        "System DatePicker replaces Material calendar and its month/year menus. Date objects serialize to ISO strings. Bounds are supported; predicate callbacks are not."
+        "System DatePicker replaces Material calendar and its month/year menus. Date objects serialize to ISO strings. Bounds are supported; predicate callbacks are not.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ],
       "verification": "not-device-verified"
     },
@@ -5149,8 +5150,10 @@
         "label",
         "max",
         "min",
+        "name",
         "okLabel",
         "open",
+        "required",
         "scrimDismissible",
         "supportingText",
         "value"
@@ -5169,7 +5172,6 @@
         "reserveSupportingSpace",
         "variant",
         "placeholder",
-        "required",
         "clearable",
         "clearLabel",
         "locale",
@@ -5196,7 +5198,6 @@
         "yearGridLabel",
         "outsideClickDismissible",
         "commitOnSelect",
-        "name",
         "isDateDisabled",
         "density"
       ],
@@ -5225,7 +5226,8 @@
         "actions"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
         "Uses Material DatePicker; ISO date strings replace JavaScript Date objects in event details."
       ],
       "verification": "not-device-verified"

@@ -1638,7 +1638,9 @@
         "required",
         "valueMissingLabel",
         "disabled",
-        "softDisabled"
+        "softDisabled",
+        "name",
+        "value"
       ],
       "events": [
         "mdInput",
@@ -1651,8 +1653,6 @@
         "unselected-icon"
       ],
       "unsupportedProperties": [
-        "name",
-        "value",
         "icons",
         "showOnlySelectedIcon",
         "selectedIcon",
@@ -1668,13 +1668,17 @@
         "setCustomValidity"
       ],
       "unsupportedSlots": [],
-      "notes": [],
+      "notes": [
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+      ],
       "verification": "not-device-verified"
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
         "disabled",
+        "name",
+        "required",
         "selected",
         "softDisabled",
         "value"
@@ -1687,8 +1691,6 @@
       "slots": [],
       "unsupportedProperties": [
         "valueMissingLabel",
-        "required",
-        "name",
         "icons",
         "showOnlySelectedIcon",
         "selectedIcon",
@@ -1710,7 +1712,8 @@
         "unselected-icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
       ],
       "verification": "not-device-verified"
     }

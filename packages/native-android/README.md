@@ -61,34 +61,63 @@ parity. Metric, palette, shape, and loader regressions are in
 
 ## Button forms, actions and navigation
 
-`AWCFormScope` supplies the nearest explicit form to `md-button` with `type`
-`submit` or `reset`. Register fields with `rememberAWCFormField`, bind their
-observable values to native controls, and provide validation rules:
+`AWCFormScope` automatically registers the 13 source form field families rendered
+through `AWCComponent`. Fields need no manual value binding or validation callback:
 
 ```kotlin
 val form = rememberAWCFormState(
-    onSubmit = { submission -> save(submission.values) },
+    onSubmit = { submission -> save(submission.entries, submission.encoded) },
     onInvalid = { errors -> showErrors(errors) },
+    onSubmitEvent = { event -> if (!canSubmit) event.preventDefault() },
+    onResetEvent = { event -> if (!canReset) event.preventDefault() },
 )
 AWCFormScope(form) {
-    val name = rememberAWCFormField("name", "Ada") {
-        if (it.toString().isBlank()) "Name is required" else null
-    }
-    AWCComponent("md-text-field", mapOf("value" to name.value), onEvent = { event, value ->
-        if (event == "mdInput") name.value = value
-    })
+    AWCComponent("md-text-field", mapOf(
+        "name" to "name", "value" to "Ada", "required" to true,
+        "minLength" to 2, "maxLength" to 40,
+    ))
     AWCComponent("md-button", mapOf("label" to "Save", "type" to "submit"))
     AWCComponent("md-button", mapOf("label" to "Reset", "type" to "reset"))
 }
 ```
 
-Validation stores errors on each field; failed validation calls `onInvalid`
-without submitting. Reset restores registered initial values and clears errors
-before `onReset`. Nested forms isolate membership. The composable registration
-unregisters on disposal; non-Compose callers can retain `form.register(...)`
-and later call `form.unregister(field)`. Field initial values are captured when
-registered; changing the initial-value argument does not redefine reset state.
-These APIs do not discover controls or reproduce HTML constraint validation.
+Membership covers text fields, checkboxes, radios, switches, select/multi-select,
+autocomplete, sliders, number fields, date/time pickers, rating and OTP fields.
+The scope tracks their native edits and changed external values. It validates
+unnamed controls too, excludes disabled controls from validation/data, and keeps
+soft-disabled values. Radio selection coordinates siblings with the same name.
+`AWCFormRules` provides required, UTF-16 min/max length, whole-value pattern,
+email/absolute-URL and numeric min/max/step validation. Rules are applied to each
+source family: number fields clamp on commit; date pickers constrain choices;
+time ranges may span midnight. Native patterns use Kotlin/Java regex syntax,
+not HTML's JavaScript `v` grammar. Browser-only input types and validation popups
+are not emulated. Revealed errors clear as valid values are entered.
+
+`AWCFormSubmission.entries` is authoritative ordered data, including repeated
+names and multi-values. Disabled, scalar unnamed and unchecked checkbox/radio
+controls are omitted. Composite source controls preserve explicit empty keys
+(multi-select/multiple autocomplete and a partially named range slider).
+`values` is a convenience grouped map. `encodeAWCForm(entries)` generates UTF-8
+URL-encoded data with CRLF line endings and performs no network request.
+Source `md-button` has no form name, so its click value is **not** inserted into
+form data. Native callers may explicitly pass `submitterEntry` to `form.submit`.
+
+Submit validates before its cancelable `onSubmitEvent`, then calls `onSubmit`.
+Reset calls `onResetEvent` before restoring initial values and clearing errors;
+it fabricates no input/change events. OTP reset clears its code, matching the
+source. Native IME/hardware Enter in eligible single-line fields activates the
+first associated submit button through its cancelable action; a blocked first
+button is not skipped. With no button it submits the scope directly. Number
+fields commit and submit directly, matching their source-specific behavior.
+Modifier/repeated Enter and multiline fields do not implicitly submit.
+
+Nested form scopes isolate membership. For external controls, put both branches
+under `AWCFormRegistryScope`, declare `AWCFormScope(form, id = "account")`, and
+wrap the external controls in `AWCFormOwnerScope("account")`. This is an explicit
+native owner registry, not DOM lookup. Data order follows registration order;
+re-register reordered retained keyed controls when order matters. Custom controls
+can still use `rememberAWCFormField` or `form.register`/`unregister`; their initial
+values are retained until unregistration, and manual validation remains optional.
 
 Wrap buttons in `AWCActionScope(onAction = { event -> ... })` to call
 `event.preventDefault()` synchronously before selection, navigation or form
@@ -114,6 +143,6 @@ DOM element lists are not exposed.
 
 `AWCButtonBehaviorDemo` combines these public APIs in the live playground's
 **Form & cancellation** scenario. It uses a real native text field, submit/reset
-buttons, a toggle, cancellation switch and an intercepted example.com link.
+buttons, a toggle, separate action/form cancellation switches, an Enter hint, encoded submitted data and an intercepted example.com link.
 `NativeButtonBehaviorTest` covers pure contracts and device-level composition,
 including cancellation ordering, validation/reset, nested scopes and slots.

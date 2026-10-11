@@ -3314,7 +3314,10 @@
         "sliderAriaLabel",
         "ariaLabelStart",
         "ariaLabelEnd",
-        "disabled"
+        "disabled",
+        "name",
+        "nameEnd",
+        "nameStart"
       ],
       "events": [
         "mdInput",
@@ -3325,9 +3328,6 @@
       "methods": [],
       "slots": [],
       "unsupportedProperties": [
-        "name",
-        "nameStart",
-        "nameEnd",
         "variant",
         "stops",
         "size",
@@ -3350,7 +3350,8 @@
       ],
       "notes": [
         "Range uses two accessible native sliders. Vertical layout, centered track, tick marks and DOM thumb metadata are not implemented.",
-        "Range value events retain source value plus valueStart/valueEnd. Drag events include value fields and thumb single/start/end."
+        "Range value events retain source value plus valueStart/valueEnd. Drag events include value fields and thumb single/start/end.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ],
       "verification": "not-device-verified"
     },
@@ -3361,6 +3362,9 @@
         "labeled",
         "max",
         "min",
+        "name",
+        "nameEnd",
+        "nameStart",
         "range",
         "sliderAriaLabel",
         "step",
@@ -3377,9 +3381,6 @@
       "methods": [],
       "slots": [],
       "unsupportedProperties": [
-        "name",
-        "nameStart",
-        "nameEnd",
         "variant",
         "stops",
         "size",
@@ -3405,7 +3406,8 @@
         "inset-icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
         "Horizontal Compose slider/range slider; vertical, custom icons and drag event parity remain unsupported."
       ],
       "verification": "not-device-verified"

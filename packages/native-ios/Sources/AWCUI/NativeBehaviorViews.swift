@@ -1,9 +1,16 @@
 import SwiftUI
+#if canImport(AppKit)
+import AppKit
+#endif
 
+private struct AWCFormRegistryKey: EnvironmentKey { static let defaultValue: AWCFormRegistry? = nil }
+private struct AWCFormOwnerKey: EnvironmentKey { static let defaultValue: String? = nil }
 private struct AWCFormStateKey: EnvironmentKey { static let defaultValue: AWCFormState? = nil }
 private struct AWCEventDispatcherKey: EnvironmentKey { static let defaultValue: AWCEventDispatcher? = nil }
 private struct AWCURLRouterKey: EnvironmentKey { static let defaultValue: AWCURLRouter? = nil }
 public extension EnvironmentValues {
+    var awcFormRegistry: AWCFormRegistry? { get { self[AWCFormRegistryKey.self] } set { self[AWCFormRegistryKey.self] = newValue } }
+    var awcFormOwnerID: String? { get { self[AWCFormOwnerKey.self] } set { self[AWCFormOwnerKey.self] = newValue } }
     var awcFormState: AWCFormState? { get { self[AWCFormStateKey.self] } set { self[AWCFormStateKey.self] = newValue } }
     var awcEventDispatcher: AWCEventDispatcher? { get { self[AWCEventDispatcherKey.self] } set { self[AWCEventDispatcherKey.self] = newValue } }
     var awcURLRouter: AWCURLRouter? { get { self[AWCURLRouterKey.self] } set { self[AWCURLRouterKey.self] = newValue } }
@@ -14,7 +21,14 @@ public struct AWCFormScope<Content: View>: View {
     public let form: AWCFormState
     private let content: () -> Content
     public init(form: AWCFormState, @ViewBuilder content: @escaping () -> Content) { self.form = form; self.content = content }
-    public var body: some View { content().environment(\.awcFormState, form) }
+    public var body: some View { content().environment(\.awcFormState, form).environment(\.awcFormOwnerID, nil) }
+}
+
+public struct AWCFormRegistryScope<Content: View>: View {
+    public let registry: AWCFormRegistry
+    private let content: () -> Content
+    public init(registry: AWCFormRegistry, @ViewBuilder content: @escaping () -> Content) { self.registry = registry; self.content = content }
+    public var body: some View { content().environment(\.awcFormRegistry, registry) }
 }
 
 public struct AWCEventScope<Content: View>: View {
@@ -29,31 +43,56 @@ public struct AWCEventScope<Content: View>: View {
 }
 
 public extension View {
+    func awcFormOwner(_ id: String) -> some View { environment(\.awcFormOwnerID, id) }
     func awcURLRouter(_ router: AWCURLRouter) -> some View { environment(\.awcURLRouter, router) }
 }
 
 extension AWCNativeView {
-    /// Deliberately limited native field integration. Other controls can register
-    /// their host-owned values directly with AWCFormState.
-    var nativeFormValueKey: String? {
-        guard !s("name").isEmpty else { return nil }
-        switch node.tag {
-        case "md-text-field", "md-number-field", "md-otp-field", "md-select", "md-multi-select", "md-autocomplete": return "value"
-        case "md-checkbox": return "checked"
-        case "md-switch": return "selected"
-        default: return nil
-        }
+    var resolvedForm: AWCFormState? {
+        if let formOwnerID { return formRegistry?.form(id: formOwnerID) }
+        return formState
+    }
+    var nativeFormValueKey: String? { AWCFormControl.tags.contains(node.tag) ? AWCFormControl(tag: node.tag).valueKey : nil }
+    var nativeFormControl: AWCFormControl { AWCFormControl(tag: node.tag, properties: local) }
+    func applyFormValue(_ value: AWCValue) {
+        if node.tag == "md-slider", b("range") {
+            local["valueStart"] = value["valueStart"]; local["valueEnd"] = value["valueEnd"]
+        } else if let key = nativeFormValueKey { local[key] = value }
     }
     func synchronizeFormRegistration() {
-        if registeredForm !== formState { registeredForm?.unregister(id: formRegistrationID); registeredForm = formState }
-        guard let formState, let key = nativeFormValueKey else { registeredForm?.unregister(id: formRegistrationID); return }
-        let rules = AWCFormRules(required: b("required"), minimumLength: AWCFormRules.lengthConstraint(local["minLength"]),
-                                 maximumLength: AWCFormRules.lengthConstraint(local["maxLength"]),
-                                 minimum: node.tag == "md-number-field" ? local["min"]?.number.flatMap { $0.isFinite ? $0 : nil } : nil,
-                                 maximum: node.tag == "md-number-field" ? local["max"]?.number.flatMap { $0.isFinite ? $0 : nil } : nil,
-                                 pattern: s("pattern").isEmpty ? nil : s("pattern"))
-        formState.register(id: formRegistrationID, name: s("name"), value: p(key), rules: rules, disabled: disabled,
-                           onReset: { value in set(key, value) })
+        let form = resolvedForm
+        if registeredForm !== form { registeredForm?.unregister(id: formRegistrationID); registeredForm = form }
+        guard let form else { return }
+        if node.tag == "md-button" {
+            if s("type") == "submit", s("href").isEmpty { form.registerSubmitter(id: formRegistrationID) { activateNativeButton() } }
+            else { form.unregisterSubmitter(id: formRegistrationID) }
+            return
+        }
+        guard nativeFormValueKey != nil else { return }
+        if initialFormProperties == nil { initialFormProperties = local }
+        let control = nativeFormControl
+        var rules = control.rules
+        if node.tag == "md-text-field", s("type") == "number" {
+            rules.stepBase = control.number("min") ?? node.properties["value"]?.number.flatMap { $0.isFinite ? $0 : nil } ?? 0
+        }
+        form.register(id: formRegistrationID, name: s("name"), value: control.value, rules: rules, disabled: b("disabled"),
+                      onReset: { value in
+                          applyFormValue(value)
+                          if node.tag == "md-checkbox" { local["indeterminate"] = initialFormProperties?["indeterminate"] ?? .bool(false) }
+                      }, control: control, initialValue: node.tag == "md-otp-field" ? .string("") : nil,
+                      onChange: { value in applyFormValue(value) })
+    }
+    var permitsNativeEnter: Bool {
+        guard !disabled, !b("multiline") else { return false }
+        #if canImport(AppKit)
+        if let event = NSApp.currentEvent, event.type == .keyDown,
+           (!event.modifierFlags.intersection([.shift, .control, .option, .command]).isEmpty || event.isARepeat) { return false }
+        #endif
+        return true
+    }
+    func submitFromNativeText() {
+        guard permitsNativeEnter else { return }
+        _ = resolvedForm?.requestImplicitSubmit(dispatcher: eventDispatcher, observe: onEvent)
     }
 }
 
@@ -64,6 +103,8 @@ public struct AWCButtonBehaviorDemo: View {
     public var onEvent: (AWCEvent) -> Void
     @State private var form = AWCFormState()
     @State private var cancelActions = false
+    @State private var cancelFormEvents = false
+    @State private var encoded = "No submitted data yet"
     @State private var status = "Ready"
     @State private var selected = false
     public init(properties: [String: AWCValue] = [:], onEvent: @escaping (AWCEvent) -> Void = { _ in }) {
@@ -74,7 +115,7 @@ public struct AWCButtonBehaviorDemo: View {
     }
     private func record(_ event: AWCEvent) {
         onEvent(event)
-        if event.name == "mdChange", event.nodeID == "demo-toggle" { selected = event.detail["selected"].bool ?? false; form.setValue(.bool(selected), for: "demo-toggle-value") }
+        if event.name == "mdChange", event.nodeID == "demo-toggle" { selected = event.detail["selected"].bool ?? false }
     }
     private func action(_ id: String, _ title: String, _ overrides: [String: AWCValue], children: [AWCNode] = []) -> AWCNode {
         var values: [String: AWCValue] = ["variant": "filled", "size": "sm", "type": "button", "toggle": false, "href": ""]
@@ -95,8 +136,10 @@ public struct AWCButtonBehaviorDemo: View {
             }) {
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Native form & cancellation").font(.headline)
-                    AWCNativeView(node: AWCNode(id: "demo-name", tag: "md-text-field", properties: ["name": "name", "label": "Name", "value": "Ada", "required": true]), onEvent: record)
+                    AWCNativeView(node: AWCNode(id: "demo-name", tag: "md-text-field", properties: ["name": "name", "label": "Name", "value": "Ada", "required": true, "minLength": 2, "maxLength": 40]), onEvent: record)
                     Toggle("Cancel actions", isOn: $cancelActions)
+                    Toggle("Cancel submit / reset events", isOn: $cancelFormEvents)
+                    Text("Enter in Name submits this native form.").font(.caption).foregroundStyle(.secondary)
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: minimumActionWidth), spacing: 8, alignment: .leading)], alignment: .leading, spacing: 8) {
                         AWCNativeView(node: action("demo-submit", "Submit", ["type": "submit", "toggle": false, "href": ""]), onEvent: record)
                         AWCNativeView(node: action("demo-reset", "Reset", ["type": "reset", "toggle": false, "href": "", "variant": "outlined"]), onEvent: record)
@@ -104,6 +147,7 @@ public struct AWCButtonBehaviorDemo: View {
                         AWCNativeView(node: action("demo-link", "Link", ["type": "button", "toggle": false, "href": "https://example.com", "target": "_blank", "variant": "text"]), onEvent: record)
                     }
                     Text("Value: \(form.values["name"]?.string ?? "") · Toggle: \(selected ? "on" : "off")").font(.caption)
+                    Text("Encoded locally: " + encoded).font(.caption.monospaced()).textSelection(.enabled)
                     Text(status).font(.caption).accessibilityIdentifier("native-form-status")
                     ForEach(form.validationMessages.keys.sorted(), id: \.self) { id in Text(form.validationMessages[id] ?? "").font(.caption).foregroundStyle(.red) }
                 }
@@ -115,11 +159,13 @@ public struct AWCButtonBehaviorDemo: View {
             return true
         })
         .onAppear {
-            form.register(id: "demo-toggle-value", name: "selected", value: .bool(selected), onReset: { value in selected = value.bool ?? false })
-            form.onSubmit = { submission in status = "Submitted"; notice("mdSubmit", ["values": .object(submission.values), "submitter": .string(submission.submitter?.id ?? "")]) }
-            form.onInvalid = { errors in status = "Validation blocked submission"; notice("mdInvalid", .object(errors.mapValues(AWCValue.string))) }
-            form.onReset = { values in status = "Reset to initial values"; notice("mdReset", .object(values)) }
+            form.onSubmit = { submission in status = "Submitted"; encoded = submission.formURLEncoded() }
+            form.onEvent = { context in
+                if cancelFormEvents && ["mdSubmit", "mdReset"].contains(context.event.name) { context.preventDefault(); status = "Canceled " + context.event.name + " before form effects" }
+            }
+            form.onInvalid = { _ in status = "Validation blocked submission" }
+            form.onReset = { _ in selected = false; status = "Reset to initial values"; encoded = "No submitted data yet" }
         }
-        .onDisappear { form.unregister(id: "demo-toggle-value"); form.onSubmit = { _ in }; form.onInvalid = { _ in }; form.onReset = { _ in } }
+        .onDisappear { form.onSubmit = { _ in }; form.onInvalid = { _ in }; form.onReset = { _ in }; form.onEvent = { _ in } }
     }
 }

@@ -10,18 +10,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-@Composable internal fun InputComponent(tag: String, p: Props, emit: EventSink, slot: Slot?) {
+@Composable internal fun InputComponent(tag: String, p: Props, emit: EventSink, slot: Slot?, form: AWCFormState? = null) {
     val enabled = p.enabled()
     when(tag) {
         "md-checkbox", "md-radio", "md-switch" -> {
             val key = if(tag == "md-switch") "selected" else "checked"
             var checked by awcState(p[key]) { p.bool(key) }
-            var indeterminate by awcState(p["indeterminate"]) { p.bool("indeterminate") }
+            var indeterminate by awcState(listOf(p["indeterminate"], p["_awcFormReset"])) { p.bool("indeterminate") }
             val change: (Boolean) -> Unit = { value ->
                 checked = value; indeterminate = false
                 val detail = when(tag) {
@@ -69,11 +70,11 @@ import kotlin.math.roundToInt
         }
         "md-select", "md-multi-select", "md-autocomplete" -> SelectInput(tag, p, emit, slot)
         "md-select-option" -> ListItem(headlineContent = { Text(p.label(p.str("value"))) }, supportingContent = { if(p.str("supportingText").isNotBlank()) Text(p.str("supportingText")) }, trailingContent = { if(p.bool("selected")) Glyph("check") }, modifier = Modifier.clickable(enabled = enabled) { emit("mdSelectOptionChange", mapOf("value" to p["value"], "selected" to true)) })
-        else -> TextInput(tag, p, emit, slot)
+        else -> TextInput(tag, p, emit, slot, form)
     }
 }
 
-@Composable private fun TextInput(tag: String, p: Props, emit: EventSink, slot: Slot?) {
+@Composable private fun TextInput(tag: String, p: Props, emit: EventSink, slot: Slot?, form: AWCFormState?) {
     var value by awcState(p["value"]) { p.str("value") }
     var visible by remember { mutableStateOf(false) }
     var focused by remember { mutableStateOf(false) }
@@ -88,7 +89,7 @@ import kotlin.math.roundToInt
             val minimum = p.num("min", -Float.MAX_VALUE).toDouble()
             val maximum = p.num("max", Float.MAX_VALUE).toDouble().coerceAtLeast(minimum)
             val result = if(p.bool("allowOutOfRange")) raw else raw?.coerceIn(minimum, maximum)
-            if(result != null) value = if(result % 1.0 == 0.0) result.toLong().toString() else result.toString()
+            value = if (result != null) formNumberString(result) else ""
             emit("mdChange", mapOf("value" to result, "formattedValue" to value, "reason" to reason))
         } else emit("mdChange", if(search) mapOf("value" to value) else value)
     }
@@ -119,9 +120,16 @@ import kotlin.math.roundToInt
             }
         }
         val support: @Composable () -> Unit = { if(p.bool("error")) Text(p.str("errorText")) else if(p.str("supportingText").isNotBlank()) Text(p.str("supportingText")) }
-        val modifier = Modifier.fillMaxWidth().onFocusChanged { next -> if(focused && !next.isFocused) commit("blur"); focused = next.isFocused }.semantics { if(otp) contentDescription = p.label("Verification code") }
+        val multiline = p["multiline"] != null && p["multiline"] != false && p["multiline"] != "false"
+        fun submitFromKeyboard() { commit("enter"); if (enabled && !multiline) { if (number) form?.submit() else form?.requestSubmit() } }
+        val modifier = Modifier.fillMaxWidth().onPreviewKeyEvent { event ->
+            if (form != null && enabled && !multiline && event.type == KeyEventType.KeyDown &&
+                (event.key == Key.Enter || event.key == Key.NumPadEnter) && !event.isCtrlPressed && !event.isAltPressed && !event.isMetaPressed && !event.isShiftPressed && event.nativeKeyEvent.repeatCount == 0) {
+                submitFromKeyboard(); true
+            } else false
+        }.onFocusChanged { next -> if(focused && !next.isFocused) commit("blur"); focused = next.isFocused }.semantics { if(otp) contentDescription = p.label("Verification code") }
         val keyboard = KeyboardOptions(keyboardType = if(number) KeyboardType.Decimal else if(otp) KeyboardType.NumberPassword else if(password) KeyboardType.Password else if(p.str("type") == "email") KeyboardType.Email else KeyboardType.Text, imeAction = if(search) ImeAction.Search else ImeAction.Done)
-        val action = KeyboardActions(onDone = { commit("enter") }, onSearch = { emit("mdSearch", if(search) mapOf("value" to value) else value); if(search) emit("mdSubmit", mapOf("value" to value)); commit() })
+        val action = KeyboardActions(onDone = { submitFromKeyboard() }, onSearch = { emit("mdSearch", if(search) mapOf("value" to value) else value); if(search) emit("mdSubmit", mapOf("value" to value)); commit() })
         val label: @Composable () -> Unit = { Text(p.label(if(search) "Search" else "" ) + if(p.bool("required")) " *" else "") }
         val placeholder: @Composable () -> Unit = { Text(p.str("placeholder")) }
         val visual = if(password && !visible) PasswordVisualTransformation() else VisualTransformation.None

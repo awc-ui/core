@@ -269,7 +269,7 @@ function setNativeMode(mode, fallbackMessage = '') {
   text('.props-hint', mode === 'live' ? 'Initial properties · editing restarts the native session.' : 'Changes rerender the native snapshot.');
   text('#native-preview-note', mode === 'live' ? state.selected.tag === 'md-button' ? `Press and hold to see the native button response; release to activate. Esc cancels and releases keyboard focus. Frames stream directly from ${target.renderer}; hover and pointer position are forwarded.` : 'Click the native view, then type. Esc releases keyboard focus. Clicks and typing are live; dragging, hover and sheets are not validated.' : `${fallbackMessage ? `${fallbackMessage} ` : ''}Static snapshot — interact in the native app. For iOS, open the native playground.`);
   if (mode === 'live' && state.selected.tag === 'md-button' && state.nativeScenario === 'button-behavior') {
-    text('#native-preview-note', 'Edit the native field, submit or reset it, and enable Cancel actions to veto button side effects. Link actions are recorded locally. Inspect emitted events in Events. This example runs entirely in the native host.');
+    text('#native-preview-note', 'Edit the native field and press Enter or Submit. Try validation, reset and cancellation, then inspect the submitted data and Events. Form data and link actions stay local. This example runs entirely in the native host.');
     text('.props-hint', 'This example has fixed form actions. Choose Component to edit individual button properties.');
   }
   text('#preview-caption', mode === 'live' ? state.platform === 'android' ? 'Real Android emulator · Jetpack Compose frames and native events' : 'Persistent macOS SwiftUI app · live frames and native events' : 'Rendered by SwiftUI on this Mac · displayed as a PNG');
@@ -555,7 +555,9 @@ function renderDiagnostic(component, diagnostic) {
     const equivalent = component.support?.[platform]?.nativeEquivalents?.[diagnostic.code];
     const name = platform === 'ios' ? 'SwiftUI' : 'Compose';
     if (!equivalent) return `<div class="native-equivalent unmapped"><strong>${name} · not mapped</strong><p>No native replacement is declared for this source finding.</p></div>`;
-    return `<div class="native-equivalent ${equivalent.status === 'implemented' ? 'implemented' : 'partial'}"><strong>${name} · ${equivalent.status === 'implemented' ? 'Native replacement' : 'Partial replacement'}</strong><p><code>${escape(equivalent.api)}</code></p><p>${escape(equivalent.description)}</p>${equivalent.limitations?.length ? `<ul>${equivalent.limitations.map(item => `<li>${escape(item)}</li>`).join('')}</ul>` : ''}</div>`;
+    const demo = component.tag === 'md-button' && diagnostic.code === 'HTML_FORM'
+      ? `<p><a href="?platform=${platform}&amp;example=button-behavior#md-button">Try the ${name} form →</a></p>` : '';
+    return `<div class="native-equivalent ${equivalent.status === 'implemented' ? 'implemented' : 'partial'}"><strong>${name} · ${equivalent.status === 'implemented' ? 'Native replacement' : 'Partial replacement'}</strong><p><code>${escape(equivalent.api)}</code></p><p>${escape(equivalent.description)}</p>${equivalent.limitations?.length ? `<ul>${equivalent.limitations.map(item => `<li>${escape(item)}</li>`).join('')}</ul>` : ''}${demo}</div>`;
   }).join('')}</div></div></div>`;
 }
 function renderInspector() {

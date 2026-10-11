@@ -398,6 +398,12 @@ private final class NativeSession {
         if let editor = window?.firstResponder as? NSTextView, !editor.isEditable {
             inputNotice = "The focused native text input is not editable."; return
         }
+        // doCommand does not carry keyboard modifiers. Preserve the source
+        // form rule: modified Enter must not become an unmodified submission.
+        if key == "Enter", !modifiers.isEmpty,
+           let editor = window?.firstResponder as? NSTextView, editor.isFieldEditor {
+            inputNotice = "Modified Enter does not submit a native single-line field."; return
+        }
         if key == "Space" {
             guard modifiers.isEmpty || modifiers == ["shift"] else { inputNotice = "Space supports only the shift modifier."; return }
             client.insertText(" ", replacementRange: NSRange(location: NSNotFound, length: 0)); return

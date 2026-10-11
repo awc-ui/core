@@ -21,7 +21,7 @@ extension AWCNativeView {
                     } else { TextField(s("placeholder"), text: fieldBinding).onSubmit { commitText() } }
                     if !s("suffixText").isEmpty { Text(s("suffixText")).foregroundStyle(.secondary) }
                     if p("clearable") != .bool(false) && local["clearable"] != nil && !s("value").isEmpty {
-                        Button { if s("clearable") == "internal" || p("clearable") == .bool(true) { set("value", ""); emit("mdInput", ""); emit("mdChange", "") }; emit("mdClear") } label: { Image(systemName: "xmark.circle.fill") }.buttonStyle(.plain).accessibilityLabel("Clear")
+                        Button { if s("clearable") == "internal" || p("clearable") == .bool(true) { set("value", ""); emit("mdInput", ""); emit("mdChange", "") }; emit("mdClear") } label: { Image(systemName: "xmark.circle.fill") }.buttonStyle(.plain).accessibilityLabel("Clear").disabled(readOnly)
                     }
                     if ["password", "text"].contains(s("type")) && p("passwordToggle") != .bool(false) && local["passwordToggle"] != nil {
                         Button { if s("passwordToggle") == "internal" || p("passwordToggle") == .bool(true) { passwordVisible.toggle(); emit("mdPasswordToggle", ["visible": .bool(passwordVisible)]) } else { emit("mdPasswordToggle", ["visible": .bool(s("type") == "password")]) } } label: { Image(systemName: passwordVisible ? "eye.slash" : "eye") }.buttonStyle(.plain).accessibilityLabel(passwordVisible ? s("hidePasswordLabel", "Hide password") : s("showPasswordLabel", "Show password"))
@@ -29,20 +29,21 @@ extension AWCNativeView {
                     content("trailing-icon")
                 }.padding(14).background(surface, in: RoundedRectangle(cornerRadius: 8))
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(b("error") ? theme.error : theme.primary.opacity(0.4)))
-                .disabled(readOnly)
             }
             support
         }
     }
     var fieldBinding: Binding<String> {
         Binding(get: { s("value") }, set: { text in
-            let value = String(text.prefix(AWCFormRules.lengthConstraint(local["maxLength"]) ?? 1000000))
+            guard !readOnly else { return }
+            let value = AWCFormRules.utf16Prefix(text, maximum: AWCFormRules.lengthConstraint(local["maxLength"]))
+            guard value != s("value") else { return }
             set("value", .string(value)); emit("mdInput", .string(value))
         })
     }
     func commitText() {
         emit("mdChange", p("value")); if s("type") == "search" { emit("mdSearch", p("value")) }
-        if b("required") { validate(!s("value").isEmpty) }
+        if b("required") { validate(!s("value").isEmpty) }; submitFromNativeText()
     }
     var numberField: some View {
         HStack {
@@ -50,7 +51,10 @@ extension AWCNativeView {
             TextField(s("placeholder", "0"), text: Binding(get: { s("value") }, set: { text in
                 let value = Double(text); set("value", value.map(AWCValue.number) ?? .null)
                 emit("mdInput", ["value": p("value"), "formattedValue": .string(text), "reason": "input-change"])
-            })).multilineTextAlignment(.center).onSubmit { emit("mdChange", ["value": p("value"), "formattedValue": .string(s("value")), "reason": "input-change"]) }
+            })).multilineTextAlignment(.center).onSubmit {
+                guard permitsNativeEnter else { return }
+                if let current = p("value").number, current.isFinite { set("value", .number(min(n("max", .greatestFiniteMagnitude), max(n("min", -.greatestFiniteMagnitude), current)))) }
+                emit("mdChange", ["value": p("value"), "formattedValue": .string(s("value")), "reason": "input-change"]); _ = resolvedForm?.submit(dispatcher: eventDispatcher, observe: onEvent) }
             if s("steppers", "inline") != "none" { Button { changeNumber(n("step", 1)) } label: { Image(systemName: "plus") }.accessibilityLabel(s("incrementLabel", "Increase")) }
         }.padding(12).background(surface, in: RoundedRectangle(cornerRadius: 10)).disabled(readOnly)
     }

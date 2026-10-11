@@ -4421,7 +4421,13 @@
         "hidePasswordLabel",
         "multiline",
         "rows",
-        "disabled"
+        "disabled",
+        "max",
+        "min",
+        "minLength",
+        "name",
+        "pattern",
+        "step"
       ],
       "events": [
         "mdInput",
@@ -4439,12 +4445,6 @@
       "unsupportedProperties": [
         "reserveSupportingSpace",
         "variant",
-        "name",
-        "pattern",
-        "minLength",
-        "min",
-        "max",
-        "step",
         "autocomplete",
         "inputMode",
         "enterKeyHint",
@@ -4487,7 +4487,8 @@
       ],
       "notes": [
         "Native keyboard input and secure entry. Change commits on submit; HTML validity flags beyond required, JS formatter/parser/restrict and speech recognition remain unsupported.",
-        "clearable/passwordToggle external modes emit intent without mutating native state; internal and boolean true modes perform the change."
+        "clearable/passwordToggle external modes emit intent without mutating native state; internal and boolean true modes perform the change.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ],
       "verification": "not-device-verified"
     },
@@ -4500,15 +4501,21 @@
         "errorText",
         "hidePasswordLabel",
         "label",
+        "max",
         "maxLength",
+        "min",
+        "minLength",
         "multiline",
+        "name",
         "passwordToggle",
+        "pattern",
         "placeholder",
         "prefixText",
         "readOnly",
         "required",
         "rows",
         "showPasswordLabel",
+        "step",
         "suffixText",
         "supportingText",
         "type",
@@ -4528,12 +4535,6 @@
       ],
       "unsupportedProperties": [
         "reserveSupportingSpace",
-        "name",
-        "pattern",
-        "minLength",
-        "min",
-        "max",
-        "step",
         "autocomplete",
         "inputMode",
         "enterKeyHint",
@@ -4577,7 +4578,8 @@
         "error-icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
       ],
       "verification": "not-device-verified"
     }

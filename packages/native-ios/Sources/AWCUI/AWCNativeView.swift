@@ -17,9 +17,12 @@ public struct AWCNativeView: View {
     @Environment(\.openURL) var openURL
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.awcFormState) var formState
+    @Environment(\.awcFormRegistry) var formRegistry
+    @Environment(\.awcFormOwnerID) var formOwnerID
     @Environment(\.awcEventDispatcher) var eventDispatcher
     @Environment(\.awcURLRouter) var urlRouter
     @State var registeredForm: AWCFormState?
+    @State var initialFormProperties: [String: AWCValue]?
     @State var formRegistrationID = UUID().uuidString
 
     public init(node: AWCNode, onEvent: @escaping (AWCEvent) -> Void = { _ in }) {
@@ -38,7 +41,7 @@ public struct AWCNativeView: View {
             .environment(\.awcInteractionStore, interactionStore)
             .onAppear { synchronizeLinkedState(); synchronizeFormRegistration() }
             .onDisappear { registeredForm?.unregister(id: formRegistrationID) }
-            .onChange(of: formState?.id) { _, _ in synchronizeFormRegistration() }
+            .onChange(of: resolvedForm?.id) { _, _ in synchronizeFormRegistration() }
             .onChange(of: node.properties) { _, value in local = (AWCComponentCatalog.defaults[node.tag] ?? [:]).merging(value) { _, new in new }; synchronizeLinkedState(); synchronizeFormRegistration() }
     }
     func synchronizeLinkedState() {
@@ -52,7 +55,7 @@ public struct AWCNativeView: View {
     func n(_ key: String, _ fallback: Double = 0) -> Double { local[key]?.number ?? fallback }
     func b(_ key: String, _ fallback: Bool = false) -> Bool { local[key]?.bool ?? fallback }
     func a(_ key: String) -> [AWCValue] { p(key).array }
-    func set(_ key: String, _ value: AWCValue) { local[key] = value; if key == nativeFormValueKey { formState?.setValue(value, for: formRegistrationID) } }
+    func set(_ key: String, _ value: AWCValue) { local[key] = value; if nativeFormValueKey != nil { registeredForm?.setValue(nativeFormControl.value, for: formRegistrationID) } }
     func emit(_ name: String, _ detail: AWCValue = .null) {
         let event = AWCEvent(name: name, tag: node.tag, nodeID: node.id, detail: detail)
         onEvent(eventDispatcher?.dispatch(event).observedEvent ?? event)

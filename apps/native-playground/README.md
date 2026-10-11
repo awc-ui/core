@@ -163,9 +163,12 @@ browser behavior that remains different. API-gap counts and compiler strict chec
 are unchanged by this metadata.
 
 For `md-button`, choose **Example → Form & cancellation** in either native Live
-preview. This runs a real native form with a required field and Submit, Reset,
-Toggle and Link actions. Enable **Cancel actions** to prevent the default side
-effects before they occur. The native router records link actions locally; the
-example never opens an external URL. Observe the native form and component events
-in the Events inspector. Examples require Live mode; Component remains the
-standard visual preview.
+preview. The native Name field registers automatically and supports required and
+length validation. Press Enter or Submit to see the encoded form data, or Reset
+to restore initial values. **Cancel actions** vetoes button activation; the
+separate form-event switch vetoes submit/reset after activation but before form
+effects. Toggle and Link actions remain available. Form data is encoded locally
+without making a network request, and the router records links without opening
+an external URL. Observe native form and component events in the Events inspector.
+The HTML_FORM coverage cards link directly to each platform's demo. Examples
+require Live mode; Component remains the standard visual preview.

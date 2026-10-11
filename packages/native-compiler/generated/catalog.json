@@ -445,7 +445,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native exclusive and keep-one-expanded coordination with comma-separated defaultExpanded indices. Reorder and floating drag remain unsupported."
           ],
           "verification": "not-device-verified"
@@ -910,7 +910,7 @@
             "trailing-icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -1445,7 +1445,7 @@
             "search-trailing"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -2401,7 +2401,7 @@
             "footer"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
           ],
           "verification": "not-device-verified"
@@ -3195,7 +3195,8 @@
             "open",
             "valueMissingLabel",
             "disabled",
-            "softDisabled"
+            "softDisabled",
+            "name"
           ],
           "events": [
             "mdChange",
@@ -3221,8 +3222,7 @@
             "rowHeight",
             "placement",
             "matchTriggerWidth",
-            "maxHeight",
-            "name"
+            "maxHeight"
           ],
           "unsupportedEvents": [],
           "unsupportedMethods": [
@@ -3241,7 +3241,8 @@
             "dropdown-icon"
           ],
           "notes": [
-            "Native searchable sheet, free-form submit and multiple selection. Custom JS filtering and virtualization not executed."
+            "Native searchable sheet, free-form submit and multiple selection. Custom JS filtering and virtualization not executed.",
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
           ],
           "verification": "not-device-verified"
         },
@@ -3260,11 +3261,13 @@
             "maxHeight",
             "maxSelected",
             "multiple",
+            "name",
             "noOptionsText",
             "noResultsText",
             "open",
             "options",
             "placeholder",
+            "required",
             "softDisabled",
             "supportingText",
             "value"
@@ -3282,7 +3285,6 @@
             "valueMissingLabel",
             "reserveSupportingSpace",
             "variant",
-            "required",
             "density",
             "chipPosition",
             "loadingText",
@@ -3296,8 +3298,7 @@
             "filterMode",
             "rowHeight",
             "placement",
-            "matchTriggerWidth",
-            "name"
+            "matchTriggerWidth"
           ],
           "unsupportedEvents": [
             "mdValidityChange"
@@ -3318,7 +3319,8 @@
             "dropdown-icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
           ],
           "verification": "not-device-verified"
         }
@@ -3648,7 +3650,7 @@
             ""
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native asynchronous HTTP(S) bitmap loading with initials/name fallback. CSS loading/crossorigin policies do not map to Android."
           ],
           "verification": "not-device-verified"
@@ -3859,7 +3861,7 @@
             "icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -4775,7 +4777,7 @@
             "footer"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
           ],
           "verification": "not-device-verified"
@@ -5272,7 +5274,7 @@
             "close"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -5597,7 +5599,7 @@
             "icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -5854,7 +5856,7 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Composition row. Automatic collapse/maxItems and generated separators are not yet implemented."
           ],
           "verification": "not-device-verified"
@@ -6404,18 +6406,19 @@
             "Loading draws the source 48-vertex morphing polygons with the original 4.55s keyframes and easing; Reduce Motion uses the source opacity pulse. Native button groups do not automatically inject connected corner props. RTL icon mirroring uses native layout direction; expanded trailing-icon rotation requires an explicit aria-expanded property on the native node.",
             "mdClick describes the proposed state before commit and includes value, toggle, selected, href and target; mdChange follows commit and includes selected and value. originalEvent is omitted.",
             "AWCButtonAction synchronously dispatches cancelable mdClick through AWCEventScope before any toggle, routing or form action. Legacy onEvent observes the result through AWCEvent.defaultPrevented; mdChange follows a committed toggle. Native form state and URL routing are explicit equivalents, not HTML/DOM emulation. Soft-disabled controls suppress activation without preserving web keyboard focusability.",
-            "type submit/reset uses the nearest AWCFormScope. Named text/number/OTP/select/multi-select/autocomplete, checkbox and switch controls register by stable per-view identity; other values can register explicitly. Reset restores first-registered values and native bindings. target is carried to an injectable AWCURLRouter; the default SwiftUI openURL fallback does not reproduce browser target contexts. Any raw nonempty href, including an unsafe one, suppresses form actions."
+            "type submit/reset uses the nearest AWCFormScope or an explicit owner registry. All 13 source form-control families auto-register with stable per-view identity, ordered successful values and validation. Cancelable mdSubmit/mdReset precede form effects; reset restores initial native bindings (OTP clears). Single-line Enter activates the first registered default submit button. AWCFormEncoding generates local UTF-8 URL-encoded data without network submission. target is passed to AWCURLRouter; raw nonempty href suppresses form actions."
           ],
           "verification": "not-device-verified",
           "nativeEquivalents": {
             "HTML_FORM": {
-              "status": "partial",
-              "api": "AWCFormState / AWCFormScope / AWCButtonAction.perform",
-              "description": "Explicit native field registration, values, validation, submit and reset-to-initial state. The actual md-button type submit/reset uses the nearest native scope.",
+              "status": "implemented",
+              "api": "AWCFormState / AWCFormScope / AWCFormRegistryScope / AWCFormControl / AWCFormEncoding",
+              "description": "Actual native md-button submit/reset and text-field Enter use explicit form owners, all 13 source form-control families, source successful-value rules, ordered entries, validation, cancelable form events and reset bindings. Encoding is local and deterministic.",
               "limitations": [
-                "Native required, length, numeric range, ICU-pattern and custom validation differ from HTML constraint validation and browser validation UI.",
-                "Only documented control families auto-register; other values require explicit registration. Checkbox/switch values use native booleans rather than HTML successful-control serialization.",
-                "No ElementInternals, implicit Enter submission, HTML form owner lookup, HTTP form encoding or browser submit/reset event semantics."
+                "This implements the native form contract, not DOM ElementInternals, HTML form attributes, browser validation bubbles, autofill, CSS pseudo-classes or HTTP navigation. Explicit owner IDs resolve through an injected AWCFormRegistry.",
+                "ICU patterns and Foundation URL parsing differ from browser JavaScript v-mode regex and URL parsing. UTF-16 length, common email/URL/number constraints, time bounds and native custom validators are supported; HTML dirty-value validity timing and every ValidityState flag are not reproduced.",
+                "Implicit submission uses native single-line onSubmit and the first registered default submit button. Source number-field commits then submits directly. Browser composition/deferred autocomplete selection and DOM tree-order algorithms are not emulated.",
+                "Source md-button requestSubmit does not contribute a submitter name/value. Native submit(submitter:) can carry explicit host metadata, without adding a source button entry. Native form events are mdSubmit/mdReset/mdInvalid, not browser SubmitEvent/ResetEvent objects."
               ]
             },
             "CANCELABLE_EVENT": {
@@ -6424,7 +6427,7 @@
               "description": "Synchronous inner-to-outer native scopes can prevent md-button default actions or stop propagation. Cancellation precedes toggle, URL and form effects; legacy onEvent remains an observer.",
               "limitations": [
                 "No DOM capture phase, composed/shadow retargeting, originalEvent or underlying browser click event.",
-                "Propagation follows explicitly installed native scopes; only the md-button activation is cancelable in this adapter."
+                "Propagation follows explicit native scopes. md-button activation and native form submit/reset are cancelable; DOM event capture and browser form-event object semantics are not provided."
               ]
             },
             "DOM_GLOBAL": {
@@ -6508,17 +6511,18 @@
           "unsupportedSlots": [],
           "notes": [
             "Native Compose button with explicit forms, cancelable action scopes, safe routing and named content; browser-specific gaps are described in nativeEquivalents.",
-            "Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Explicit native form scopes implement validation, submit and reset; native action scopes can synchronously cancel defaults or stop scoped propagation; safe application routing carries target metadata. Browser form association, browsing contexts, DOM propagation, platform elevation shadows, antialiasing, role overrides and group keyboard navigation remain different. Soft-disabled controls block activation without web focusability. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated."
+            "Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Native form scopes automatically register source field adapters, collect ordered successful entries, apply declarative rules and support vetoable submit/reset and Enter; native action scopes can synchronously cancel defaults or stop scoped propagation; safe application routing carries target metadata. Browser form association, browsing contexts, DOM propagation, platform elevation shadows, antialiasing, role overrides and group keyboard navigation remain different. Soft-disabled controls block activation without web focusability. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated."
           ],
           "verification": "not-device-verified",
           "nativeEquivalents": {
             "HTML_FORM": {
-              "status": "partial",
-              "api": "AWCFormState / AWCFormScope / rememberAWCFormField",
-              "description": "Explicitly registered native fields provide observable values, validation errors, submit callbacks and reset to initial values. Button type submit/reset uses the nearest form scope.",
+              "status": "implemented",
+              "api": "AWCFormScope / AWCFormRules / AWCFormRegistryScope / AWCFormSubmission.entries / encodeAWCForm",
+              "description": "AWC source field adapters register automatically with native form scopes. Shared declarative rules, ordered successful-control entries, duplicate names, multi-values, native Enter/default submission, vetoable submit/reset, initial-state restoration and explicit owner IDs replace the button form contract.",
               "limitations": [
-                "No ElementInternals, implicit HTML form association, browser constraint parser or automatic discovery of unregistered controls.",
-                "Applications bind each field to native controls and provide validation rules."
+                "Native scope ownership replaces ElementInternals; no DOM nodes, browser validation popup or browser network submission is created.",
+                "Pattern validation uses Kotlin/Java full-match regular expressions, not the HTML JavaScript v-flag grammar. Native declarative text types cover text, email, URL and number.",
+                "Entry order follows native registration order. Applications that reorder retained keyed controls must re-register them when a new data order is required."
               ]
             },
             "SHADOW_DOM": {
@@ -6827,7 +6831,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native single/multi selection and required coordination. DOM originalEvent is omitted from payloads."
           ],
           "verification": "not-device-verified"
@@ -7172,7 +7176,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -7501,7 +7505,8 @@
             "supportingText",
             "valueMissingLabel",
             "disabled",
-            "softDisabled"
+            "softDisabled",
+            "name"
           ],
           "events": [
             "mdChange",
@@ -7510,7 +7515,6 @@
           "methods": [],
           "slots": [],
           "unsupportedProperties": [
-            "name",
             "density"
           ],
           "unsupportedEvents": [],
@@ -7521,7 +7525,9 @@
             "setCustomValidity"
           ],
           "unsupportedSlots": [],
-          "notes": [],
+          "notes": [
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+          ],
           "verification": "not-device-verified"
         },
         "android": {
@@ -7532,6 +7538,8 @@
             "error",
             "errorText",
             "indeterminate",
+            "name",
+            "required",
             "softDisabled",
             "supportingText",
             "value"
@@ -7543,8 +7551,6 @@
           "slots": [],
           "unsupportedProperties": [
             "valueMissingLabel",
-            "required",
-            "name",
             "density"
           ],
           "unsupportedEvents": [
@@ -7558,7 +7564,8 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
           ],
           "verification": "not-device-verified"
         }
@@ -7995,7 +8002,7 @@
             "trailing-icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -8457,7 +8464,7 @@
             "trigger"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native RGB sliders, alpha and presets; HEX/RGB output implemented. HSL output and complete source color parsing remain unsupported."
           ],
           "verification": "not-device-verified"
@@ -9585,7 +9592,8 @@
             "okLabel",
             "commitOnSelect",
             "valueMissingLabel",
-            "disabled"
+            "disabled",
+            "name"
           ],
           "events": [
             "mdInput",
@@ -9625,7 +9633,6 @@
             "yearGridLabel",
             "scrimDismissible",
             "outsideClickDismissible",
-            "name",
             "isDateDisabled",
             "density"
           ],
@@ -9652,7 +9659,8 @@
             "actions"
           ],
           "notes": [
-            "System DatePicker replaces Material calendar and its month/year menus. Date objects serialize to ISO strings. Bounds are supported; predicate callbacks are not."
+            "System DatePicker replaces Material calendar and its month/year menus. Date objects serialize to ISO strings. Bounds are supported; predicate callbacks are not.",
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
           ],
           "verification": "not-device-verified"
         },
@@ -9666,8 +9674,10 @@
             "label",
             "max",
             "min",
+            "name",
             "okLabel",
             "open",
+            "required",
             "scrimDismissible",
             "supportingText",
             "value"
@@ -9686,7 +9696,6 @@
             "reserveSupportingSpace",
             "variant",
             "placeholder",
-            "required",
             "clearable",
             "clearLabel",
             "locale",
@@ -9713,7 +9722,6 @@
             "yearGridLabel",
             "outsideClickDismissible",
             "commitOnSelect",
-            "name",
             "isDateDisabled",
             "density"
           ],
@@ -9742,7 +9750,8 @@
             "actions"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
             "Uses Material DatePicker; ISO date strings replace JavaScript Date objects in event details."
           ],
           "verification": "not-device-verified"
@@ -10197,7 +10206,7 @@
             "headline"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -10347,7 +10356,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -10679,7 +10688,7 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -10968,7 +10977,7 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -11212,7 +11221,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -11679,7 +11688,7 @@
             "selected"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -12659,7 +12668,7 @@
             "footer"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
           ],
           "verification": "not-device-verified"
@@ -13005,7 +13014,7 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native single/multi selection; native events omit DOM item references. Reordering remains unsupported."
           ],
           "verification": "not-device-verified"
@@ -14063,7 +14072,7 @@
             "trailing-supporting-text"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -14208,7 +14217,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -14715,7 +14724,7 @@
             "header"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -15096,7 +15105,7 @@
             "trailing-icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -15206,7 +15215,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -15528,7 +15537,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -16564,7 +16573,8 @@
             "open",
             "valueMissingLabel",
             "disabled",
-            "softDisabled"
+            "softDisabled",
+            "name"
           ],
           "events": [
             "mdChange",
@@ -16595,8 +16605,7 @@
             "countFormatter",
             "filterLabel",
             "searchingLabel",
-            "clearIcon",
-            "name"
+            "clearIcon"
           ],
           "unsupportedEvents": [],
           "unsupportedMethods": [
@@ -16623,7 +16632,8 @@
             "menu-loader"
           ],
           "notes": [
-            "Selection supports chips, remove, clear, disabled options and maximum count; count/text layout and anchor placement differ."
+            "Selection supports chips, remove, clear, disabled options and maximum count; count/text layout and anchor placement differ.",
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
           ],
           "verification": "not-device-verified"
         },
@@ -16640,11 +16650,13 @@
             "loading",
             "maxHeight",
             "maxSelected",
+            "name",
             "noOptionsText",
             "noResultsText",
             "open",
             "options",
             "placeholder",
+            "required",
             "searchPlaceholder",
             "selectAllLabel",
             "showSelectAll",
@@ -16667,7 +16679,6 @@
             "valueMissingLabel",
             "reserveSupportingSpace",
             "variant",
-            "required",
             "density",
             "virtualize",
             "filterMode",
@@ -16685,8 +16696,7 @@
             "searchingLabel",
             "loadingText",
             "clearIcon",
-            "dropdownIcon",
-            "name"
+            "dropdownIcon"
           ],
           "unsupportedEvents": [
             "mdValidityChange"
@@ -16714,7 +16724,8 @@
             "menu-loader"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
           ],
           "verification": "not-device-verified"
         }
@@ -16967,7 +16978,7 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -17526,7 +17537,7 @@
             "footer-content"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -17960,7 +17971,7 @@
             "icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -18337,7 +18348,7 @@
             "icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -18857,7 +18868,8 @@
             "steppers",
             "incrementLabel",
             "decrementLabel",
-            "disabled"
+            "disabled",
+            "name"
           ],
           "events": [
             "mdInput",
@@ -18867,7 +18879,6 @@
           "slots": [],
           "unsupportedProperties": [
             "variant",
-            "name",
             "density",
             "locale",
             "formatOptions",
@@ -18894,7 +18905,8 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native text entry uses decimal dot. Bounds constrain steppers; locale formatting and arbitrary typed out-of-range normalization are not implemented."
+            "Native text entry uses decimal dot. Bounds constrain steppers; locale formatting and arbitrary typed out-of-range normalization are not implemented.",
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
           ],
           "verification": "not-device-verified"
         },
@@ -18910,6 +18922,7 @@
             "label",
             "max",
             "min",
+            "name",
             "placeholder",
             "readOnly",
             "required",
@@ -18926,7 +18939,6 @@
           "methods": [],
           "slots": [],
           "unsupportedProperties": [
-            "name",
             "density",
             "locale",
             "formatOptions",
@@ -18952,7 +18964,8 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
           ],
           "verification": "not-device-verified"
         }
@@ -19281,7 +19294,7 @@
             "empty"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native indented tree with accessible cards; horizontal connector layout is not yet ported.",
             "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
           ],
@@ -19739,7 +19752,9 @@
             "errorText",
             "supportingText",
             "label",
-            "disabled"
+            "disabled",
+            "incompleteLabel",
+            "name"
           ],
           "events": [
             "mdInput",
@@ -19754,10 +19769,8 @@
             "autoSubmit",
             "groupSize",
             "inputMode",
-            "name",
             "cellLabelTemplate",
             "valueMissingLabel",
-            "incompleteLabel",
             "density",
             "reserveSupportingSpace"
           ],
@@ -19774,7 +19787,8 @@
             "separator"
           ],
           "notes": [
-            "Single native one-time-code input with visual cells, sanitation, paste handling and completion. Per-cell focus and autoSubmit differ from web."
+            "Single native one-time-code input with visual cells, sanitation, paste handling and completion. Per-cell focus and autoSubmit differ from web.",
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
           ],
           "verification": "not-device-verified"
         },
@@ -19787,6 +19801,7 @@
             "label",
             "length",
             "mask",
+            "name",
             "readOnly",
             "required",
             "supportingText",
@@ -19806,7 +19821,6 @@
             "autoSubmit",
             "groupSize",
             "inputMode",
-            "name",
             "cellLabelTemplate",
             "valueMissingLabel",
             "incompleteLabel",
@@ -19828,7 +19842,8 @@
             "separator"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
             "Uses a native constrained text entry; separated cells, grouping and automatic form submission are not yet ported."
           ],
           "verification": "not-device-verified"
@@ -20594,7 +20609,7 @@
             "footer"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
           ],
           "verification": "not-device-verified"
@@ -20981,7 +20996,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -21298,7 +21313,8 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native name groups share selected values within a nested tree or an explicit AWCNativeScope. The host can also update checked declaratively."
+            "Native name groups share selected values within a nested tree or an explicit AWCNativeScope. The host can also update checked declaratively.",
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
           ],
           "verification": "not-device-verified"
         },
@@ -21307,6 +21323,8 @@
           "properties": [
             "checked",
             "disabled",
+            "name",
+            "required",
             "softDisabled",
             "value"
           ],
@@ -21317,8 +21335,6 @@
           "slots": [],
           "unsupportedProperties": [
             "valueMissingLabel",
-            "required",
-            "name",
             "density"
           ],
           "unsupportedEvents": [
@@ -21338,7 +21354,8 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
           ],
           "verification": "not-device-verified"
         }
@@ -21757,7 +21774,8 @@
             "showValueLabel",
             "ratingLabel",
             "disabled",
-            "softDisabled"
+            "softDisabled",
+            "name"
           ],
           "events": [
             "mdChange"
@@ -21767,7 +21785,6 @@
           "unsupportedProperties": [
             "outlineEmpty",
             "getLabel",
-            "name",
             "hover",
             "density"
           ],
@@ -21779,7 +21796,8 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Tap an already full star to choose its half value when precision is 0.5. Native hover preview is not implemented."
+            "Tap an already full star to choose its half value when precision is 0.5. Native hover preview is not implemented.",
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
           ],
           "verification": "not-device-verified"
         },
@@ -21789,6 +21807,7 @@
             "defaultValue",
             "disabled",
             "max",
+            "name",
             "readonly",
             "showValueLabel",
             "softDisabled",
@@ -21807,7 +21826,6 @@
             "outlineEmpty",
             "getLabel",
             "ratingLabel",
-            "name",
             "hover",
             "density"
           ],
@@ -21819,7 +21837,8 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
             "Native whole-star rating; fractional precision, hover and custom icon rendering remain unsupported."
           ],
           "verification": "not-device-verified"
@@ -21987,7 +22006,7 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Uses the Compose ripple on a tappable native surface; standalone DOM ripple attachment has no native counterpart."
           ],
           "verification": "not-device-verified"
@@ -23012,7 +23031,7 @@
             "results"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -23351,7 +23370,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -23488,7 +23507,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native exclusive/multiple selection coordinated by child identity; supports duplicate child values."
           ],
           "verification": "not-device-verified"
@@ -24193,7 +24212,8 @@
             "open",
             "dropdownIcon",
             "valueMissingLabel",
-            "disabled"
+            "disabled",
+            "name"
           ],
           "events": [
             "mdChange",
@@ -24213,7 +24233,6 @@
             "virtualize",
             "filterMode",
             "rowHeight",
-            "name",
             "filterLabel",
             "searchingLabel",
             "clearIcon",
@@ -24239,7 +24258,8 @@
             "dropdown-icon"
           ],
           "notes": [
-            "Native searchable sheet replaces anchored web listbox. Default-slot select-option children are parsed as option data."
+            "Native searchable sheet replaces anchored web listbox. Default-slot select-option children are parsed as option data.",
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
           ],
           "verification": "not-device-verified"
         },
@@ -24255,11 +24275,13 @@
             "label",
             "loading",
             "maxHeight",
+            "name",
             "noOptionsText",
             "noResultsText",
             "open",
             "options",
             "placeholder",
+            "required",
             "searchPlaceholder",
             "supportingText",
             "value"
@@ -24277,14 +24299,12 @@
             "valueMissingLabel",
             "reserveSupportingSpace",
             "variant",
-            "required",
             "density",
             "matchTriggerWidth",
             "placement",
             "virtualize",
             "filterMode",
             "rowHeight",
-            "name",
             "filterLabel",
             "searchingLabel",
             "loadingText",
@@ -24313,7 +24333,8 @@
             "dropdown-icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
           ],
           "verification": "not-device-verified"
         }
@@ -24512,7 +24533,7 @@
             ""
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -24970,7 +24991,7 @@
             "close"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -25252,7 +25273,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Static native skeleton blocks; shimmer/pulse motion remains unsupported."
           ],
           "verification": "not-device-verified"
@@ -25873,7 +25894,10 @@
             "sliderAriaLabel",
             "ariaLabelStart",
             "ariaLabelEnd",
-            "disabled"
+            "disabled",
+            "name",
+            "nameEnd",
+            "nameStart"
           ],
           "events": [
             "mdInput",
@@ -25884,9 +25908,6 @@
           "methods": [],
           "slots": [],
           "unsupportedProperties": [
-            "name",
-            "nameStart",
-            "nameEnd",
             "variant",
             "stops",
             "size",
@@ -25909,7 +25930,8 @@
           ],
           "notes": [
             "Range uses two accessible native sliders. Vertical layout, centered track, tick marks and DOM thumb metadata are not implemented.",
-            "Range value events retain source value plus valueStart/valueEnd. Drag events include value fields and thumb single/start/end."
+            "Range value events retain source value plus valueStart/valueEnd. Drag events include value fields and thumb single/start/end.",
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
           ],
           "verification": "not-device-verified"
         },
@@ -25920,6 +25942,9 @@
             "labeled",
             "max",
             "min",
+            "name",
+            "nameEnd",
+            "nameStart",
             "range",
             "sliderAriaLabel",
             "step",
@@ -25936,9 +25961,6 @@
           "methods": [],
           "slots": [],
           "unsupportedProperties": [
-            "name",
-            "nameStart",
-            "nameEnd",
             "variant",
             "stops",
             "size",
@@ -25964,7 +25986,8 @@
             "inset-icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
             "Horizontal Compose slider/range slider; vertical, custom icons and drag event parity remain unsupported."
           ],
           "verification": "not-device-verified"
@@ -26361,7 +26384,7 @@
             "close"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -26757,7 +26780,7 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
           ],
           "verification": "not-device-verified"
@@ -27143,7 +27166,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -27353,7 +27376,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -27819,7 +27842,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -28346,7 +28369,7 @@
             "content"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -28650,7 +28673,7 @@
             "leading-icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -28986,7 +29009,9 @@
             "required",
             "valueMissingLabel",
             "disabled",
-            "softDisabled"
+            "softDisabled",
+            "name",
+            "value"
           ],
           "events": [
             "mdInput",
@@ -28999,8 +29024,6 @@
             "unselected-icon"
           ],
           "unsupportedProperties": [
-            "name",
-            "value",
             "icons",
             "showOnlySelectedIcon",
             "selectedIcon",
@@ -29016,13 +29039,17 @@
             "setCustomValidity"
           ],
           "unsupportedSlots": [],
-          "notes": [],
+          "notes": [
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+          ],
           "verification": "not-device-verified"
         },
         "android": {
           "status": "adapter-implemented",
           "properties": [
             "disabled",
+            "name",
+            "required",
             "selected",
             "softDisabled",
             "value"
@@ -29035,8 +29062,6 @@
           "slots": [],
           "unsupportedProperties": [
             "valueMissingLabel",
-            "required",
-            "name",
             "icons",
             "showOnlySelectedIcon",
             "selectedIcon",
@@ -29058,7 +29083,8 @@
             "unselected-icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
           ],
           "verification": "not-device-verified"
         }
@@ -29379,7 +29405,7 @@
             "badge"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -29473,7 +29499,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -29612,7 +29638,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Composition container. Pass active on child panels; HTML for/id linkage is not available."
           ],
           "verification": "not-device-verified"
@@ -30399,7 +30425,7 @@
             "loading"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -30493,7 +30519,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -30824,7 +30850,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -31061,7 +31087,7 @@
             "bottom"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -31169,7 +31195,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Standalone visual toggle; nested table row has its own bound expansion control."
           ],
           "verification": "not-device-verified"
@@ -31264,7 +31290,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -31341,7 +31367,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -31746,7 +31772,7 @@
             "actions"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -32036,7 +32062,7 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -32333,7 +32359,7 @@
           "unsupportedMethods": [],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -32611,7 +32637,7 @@
             "selection-actions"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -32887,7 +32913,7 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -33778,7 +33804,13 @@
             "hidePasswordLabel",
             "multiline",
             "rows",
-            "disabled"
+            "disabled",
+            "max",
+            "min",
+            "minLength",
+            "name",
+            "pattern",
+            "step"
           ],
           "events": [
             "mdInput",
@@ -33796,12 +33828,6 @@
           "unsupportedProperties": [
             "reserveSupportingSpace",
             "variant",
-            "name",
-            "pattern",
-            "minLength",
-            "min",
-            "max",
-            "step",
             "autocomplete",
             "inputMode",
             "enterKeyHint",
@@ -33844,7 +33870,8 @@
           ],
           "notes": [
             "Native keyboard input and secure entry. Change commits on submit; HTML validity flags beyond required, JS formatter/parser/restrict and speech recognition remain unsupported.",
-            "clearable/passwordToggle external modes emit intent without mutating native state; internal and boolean true modes perform the change."
+            "clearable/passwordToggle external modes emit intent without mutating native state; internal and boolean true modes perform the change.",
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
           ],
           "verification": "not-device-verified"
         },
@@ -33857,15 +33884,21 @@
             "errorText",
             "hidePasswordLabel",
             "label",
+            "max",
             "maxLength",
+            "min",
+            "minLength",
             "multiline",
+            "name",
             "passwordToggle",
+            "pattern",
             "placeholder",
             "prefixText",
             "readOnly",
             "required",
             "rows",
             "showPasswordLabel",
+            "step",
             "suffixText",
             "supportingText",
             "type",
@@ -33885,12 +33918,6 @@
           ],
           "unsupportedProperties": [
             "reserveSupportingSpace",
-            "name",
-            "pattern",
-            "minLength",
-            "min",
-            "max",
-            "step",
             "autocomplete",
             "inputMode",
             "enterKeyHint",
@@ -33934,7 +33961,8 @@
             "error-icon"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
           ],
           "verification": "not-device-verified"
         }
@@ -34967,7 +34995,8 @@
             "okLabel",
             "hideTrigger",
             "valueMissingLabel",
-            "disabled"
+            "disabled",
+            "name"
           ],
           "events": [
             "mdInput",
@@ -34982,7 +35011,6 @@
           "unsupportedProperties": [
             "variant",
             "format",
-            "name",
             "reserveSupportingSpace",
             "headlineInputLabel",
             "headlineDialLabel",
@@ -35014,7 +35042,8 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "System DatePicker replaces dial/input variants. Event dates serialize to ISO strings. MinuteStep/12-hour labels and overnight bounds are not supported."
+            "System DatePicker replaces dial/input variants. Event dates serialize to ISO strings. MinuteStep/12-hour labels and overnight bounds are not supported.",
+            "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
           ],
           "verification": "not-device-verified"
         },
@@ -35032,8 +35061,10 @@
             "max",
             "min",
             "minuteStep",
+            "name",
             "okLabel",
             "open",
+            "required",
             "supportingText",
             "value"
           ],
@@ -35048,8 +35079,6 @@
           "slots": [],
           "unsupportedProperties": [
             "variant",
-            "name",
-            "required",
             "reserveSupportingSpace",
             "headlineInputLabel",
             "headlineDialLabel",
@@ -35082,7 +35111,8 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
             "Uses Material TimePicker; dialog native layout replaces docked web variants."
           ],
           "verification": "not-device-verified"
@@ -35413,7 +35443,7 @@
             "fab"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }
@@ -35846,7 +35876,7 @@
             "content"
           ],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
             "Native visible tooltip surface toggles on tap; platform hover/delay/anchor positioning is not ported."
           ],
           "verification": "not-device-verified"
@@ -36406,7 +36436,7 @@
           ],
           "unsupportedSlots": [],
           "notes": [
-            "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+            "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
           ],
           "verification": "not-device-verified"
         }

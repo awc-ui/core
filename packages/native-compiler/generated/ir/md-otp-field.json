@@ -1218,7 +1218,9 @@
         "errorText",
         "supportingText",
         "label",
-        "disabled"
+        "disabled",
+        "incompleteLabel",
+        "name"
       ],
       "events": [
         "mdInput",
@@ -1233,10 +1235,8 @@
         "autoSubmit",
         "groupSize",
         "inputMode",
-        "name",
         "cellLabelTemplate",
         "valueMissingLabel",
-        "incompleteLabel",
         "density",
         "reserveSupportingSpace"
       ],
@@ -1253,7 +1253,8 @@
         "separator"
       ],
       "notes": [
-        "Single native one-time-code input with visual cells, sanitation, paste handling and completion. Per-cell focus and autoSubmit differ from web."
+        "Single native one-time-code input with visual cells, sanitation, paste handling and completion. Per-cell focus and autoSubmit differ from web.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ],
       "verification": "not-device-verified"
     },
@@ -1266,6 +1267,7 @@
         "label",
         "length",
         "mask",
+        "name",
         "readOnly",
         "required",
         "supportingText",
@@ -1285,7 +1287,6 @@
         "autoSubmit",
         "groupSize",
         "inputMode",
-        "name",
         "cellLabelTemplate",
         "valueMissingLabel",
         "incompleteLabel",
@@ -1307,7 +1308,8 @@
         "separator"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
         "Uses a native constrained text entry; separated cells, grouping and automatic form submission are not yet ported."
       ],
       "verification": "not-device-verified"

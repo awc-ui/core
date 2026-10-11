@@ -1540,7 +1540,8 @@
       ],
       "unsupportedSlots": [],
       "notes": [
-        "Native name groups share selected values within a nested tree or an explicit AWCNativeScope. The host can also update checked declaratively."
+        "Native name groups share selected values within a nested tree or an explicit AWCNativeScope. The host can also update checked declaratively.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ],
       "verification": "not-device-verified"
     },
@@ -1549,6 +1550,8 @@
       "properties": [
         "checked",
         "disabled",
+        "name",
+        "required",
         "softDisabled",
         "value"
       ],
@@ -1559,8 +1562,6 @@
       "slots": [],
       "unsupportedProperties": [
         "valueMissingLabel",
-        "required",
-        "name",
         "density"
       ],
       "unsupportedEvents": [
@@ -1580,7 +1581,8 @@
       ],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
       ],
       "verification": "not-device-verified"
     }

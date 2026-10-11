@@ -1376,7 +1376,8 @@
         "showValueLabel",
         "ratingLabel",
         "disabled",
-        "softDisabled"
+        "softDisabled",
+        "name"
       ],
       "events": [
         "mdChange"
@@ -1386,7 +1387,6 @@
       "unsupportedProperties": [
         "outlineEmpty",
         "getLabel",
-        "name",
         "hover",
         "density"
       ],
@@ -1398,7 +1398,8 @@
       ],
       "unsupportedSlots": [],
       "notes": [
-        "Tap an already full star to choose its half value when precision is 0.5. Native hover preview is not implemented."
+        "Tap an already full star to choose its half value when precision is 0.5. Native hover preview is not implemented.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ],
       "verification": "not-device-verified"
     },
@@ -1408,6 +1409,7 @@
         "defaultValue",
         "disabled",
         "max",
+        "name",
         "readonly",
         "showValueLabel",
         "softDisabled",
@@ -1426,7 +1428,6 @@
         "outlineEmpty",
         "getLabel",
         "ratingLabel",
-        "name",
         "hover",
         "density"
       ],
@@ -1438,7 +1439,8 @@
       ],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
         "Native whole-star rating; fractional precision, hover and custom icon rendering remain unsupported."
       ],
       "verification": "not-device-verified"

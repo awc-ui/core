@@ -74,124 +74,6 @@ public struct AWCURLRouter {
     }
 }
 
-public struct AWCFormRules: Equatable, Sendable {
-    public var required: Bool
-    public var minimumLength: Int?
-    public var maximumLength: Int?
-    public var minimum: Double?
-    public var maximum: Double?
-    public var pattern: String?
-    public init(required: Bool = false, minimumLength: Int? = nil, maximumLength: Int? = nil,
-                minimum: Double? = nil, maximum: Double? = nil, pattern: String? = nil) {
-        self.required = required; self.minimumLength = minimumLength; self.maximumLength = maximumLength
-        self.minimum = minimum; self.maximum = maximum; self.pattern = pattern
-    }
-    static func lengthConstraint(_ value: AWCValue?) -> Int? {
-        guard let number = value?.number, number.isFinite, number >= 0 else { return nil }
-        return Int(exactly: number)
-    }
-    public func validationMessage(for value: AWCValue) -> String? {
-        let missing: Bool
-        switch value { case .null: missing = true; case .string(let v): missing = v.isEmpty
-        case .array(let v): missing = v.isEmpty; case .bool(let v): missing = !v; default: missing = false }
-        if required && missing { return "This field is required." }
-        if missing { return nil }
-        if case .string(let text) = value {
-            if let minimumLength, text.count < minimumLength { return "Enter at least \(minimumLength) characters." }
-            if let maximumLength, text.count > maximumLength { return "Enter at most \(maximumLength) characters." }
-            if let pattern, !pattern.isEmpty {
-                guard let expression = try? NSRegularExpression(pattern: "^(?:" + pattern + ")$") else { return "The native validation pattern is invalid." }
-                let range = NSRange(text.startIndex..<text.endIndex, in: text)
-                if expression.firstMatch(in: text, range: range)?.range != range { return "The value does not match the required format." }
-            }
-        }
-        if minimum != nil || maximum != nil {
-            guard let number = value.number, number.isFinite else { return "Enter a valid number." }
-            if let minimum, number < minimum { return "Enter a value of at least \(minimum)." }
-            if let maximum, number > maximum { return "Enter a value of at most \(maximum)." }
-        }
-        return nil
-    }
-}
-
-public struct AWCFormEntry: Equatable, Sendable {
-    public let id: String
-    public let name: String
-    public let value: AWCValue
-}
-public struct AWCFormSubmission: Sendable {
-    public let entries: [AWCFormEntry]
-    public let submitter: AWCNode?
-    /// Duplicate names retain registration order as an array instead of losing values.
-    public var values: [String: AWCValue] { awcFormValues(entries) }
-}
-private func awcFormValues(_ entries: [AWCFormEntry]) -> [String: AWCValue] {
-    let groups = Dictionary(grouping: entries, by: \.name)
-    return groups.mapValues { rows in rows.count == 1 ? rows[0].value : .array(rows.map(\.value)) }
-}
-
-/// Native form state is owned explicitly by the host. Use from the UI thread.
-/// Rules are native validations, not an implementation of HTML constraint validation.
-@Observable public final class AWCFormState: Identifiable {
-    public let id = UUID()
-    public private(set) var validationMessages: [String: String] = [:]
-    public private(set) var revision = 0
-    public var onSubmit: (AWCFormSubmission) -> Void
-    public var onInvalid: ([String: String]) -> Void
-    public var onReset: ([String: AWCValue]) -> Void
-    private struct Field {
-        var name: String; var value: AWCValue; let initialValue: AWCValue
-        var disabled: Bool; var rules: AWCFormRules
-        var validator: ((AWCValue) -> String?)?; var reset: ((AWCValue) -> Void)?
-    }
-    private var fields: [String: Field] = [:]
-    private var order: [String] = []
-    public init(onSubmit: @escaping (AWCFormSubmission) -> Void = { _ in },
-                onInvalid: @escaping ([String: String]) -> Void = { _ in },
-                onReset: @escaping ([String: AWCValue]) -> Void = { _ in }) {
-        self.onSubmit = onSubmit; self.onInvalid = onInvalid; self.onReset = onReset
-    }
-    public var entries: [AWCFormEntry] {
-        order.compactMap { id in guard let field = fields[id], !field.disabled, !field.name.isEmpty else { return nil }
-            return AWCFormEntry(id: id, name: field.name, value: field.value) }
-    }
-    public var values: [String: AWCValue] { awcFormValues(entries) }
-    public func value(for id: String) -> AWCValue? { fields[id]?.value }
-    public func initialValue(for id: String) -> AWCValue? { fields[id]?.initialValue }
-    public func register(id: String, name: String, value: AWCValue, rules: AWCFormRules = .init(), disabled: Bool = false,
-                         validator: ((AWCValue) -> String?)? = nil, onReset: ((AWCValue) -> Void)? = nil) {
-        let initial = fields[id]?.initialValue ?? value
-        if fields[id] == nil { order.append(id) }
-        fields[id] = Field(name: name, value: value, initialValue: initial, disabled: disabled, rules: rules, validator: validator, reset: onReset)
-        if disabled { validationMessages[id] = nil }; revision &+= 1
-    }
-    public func unregister(id: String) { fields[id] = nil; order.removeAll { $0 == id }; validationMessages[id] = nil; revision &+= 1 }
-    public func setValue(_ value: AWCValue, for id: String) {
-        guard var field = fields[id], field.value != value else { return }
-        field.value = value; fields[id] = field; validationMessages[id] = nil; revision &+= 1
-    }
-    @discardableResult public func validate() -> Bool {
-        var errors: [String: String] = [:]
-        for id in order { guard let field = fields[id], !field.disabled else { continue }
-            if let error = field.rules.validationMessage(for: field.value) ?? field.validator?(field.value) { errors[id] = error }
-        }
-        validationMessages = errors; return errors.isEmpty
-    }
-    @discardableResult public func submit(submitter: AWCNode? = nil) -> Bool {
-        guard validate() else { onInvalid(validationMessages); return false }
-        onSubmit(AWCFormSubmission(entries: entries, submitter: submitter)); return true
-    }
-    public func reset() {
-        let resets = order.compactMap { id -> (String, AWCValue, ((AWCValue) -> Void)?)? in
-            guard let field = fields[id] else { return nil }; return (id, field.initialValue, field.reset)
-        }
-        for (id, value, _) in resets { fields[id]?.value = value }
-        validationMessages = [:]; revision &+= 1
-        for (_, value, callback) in resets { callback?(value) }
-        onReset(values)
-    }
-}
-
 public enum AWCButtonActionResult: String, Sendable {
     case blocked, canceled, activated, navigated, navigationRejected, submitted, invalidForm, reset, noForm
 }
@@ -220,8 +102,8 @@ public enum AWCButtonAction {
         // fall through into form submission/reset, matching the source guard.
         if !href.isEmpty { return router.route(href: href, target: target, nodeID: node.id) ? .navigated : .navigationRejected }
         switch properties["type"]?.string ?? "button" {
-        case "submit": guard let form else { return .noForm }; return form.submit(submitter: node) ? .submitted : .invalidForm
-        case "reset": guard let form else { return .noForm }; form.reset(); return .reset
+        case "submit": guard let form else { return .noForm }; return form.submit(dispatcher: dispatcher, observe: observe) ? .submitted : form.lastActionCanceled ? .canceled : .invalidForm
+        case "reset": guard let form else { return .noForm }; return form.reset(dispatcher: dispatcher, observe: observe) ? .reset : .canceled
         default: return .activated
         }
     }

@@ -965,7 +965,8 @@
         "steppers",
         "incrementLabel",
         "decrementLabel",
-        "disabled"
+        "disabled",
+        "name"
       ],
       "events": [
         "mdInput",
@@ -975,7 +976,6 @@
       "slots": [],
       "unsupportedProperties": [
         "variant",
-        "name",
         "density",
         "locale",
         "formatOptions",
@@ -1002,7 +1002,8 @@
       ],
       "unsupportedSlots": [],
       "notes": [
-        "Native text entry uses decimal dot. Bounds constrain steppers; locale formatting and arbitrary typed out-of-range normalization are not implemented."
+        "Native text entry uses decimal dot. Bounds constrain steppers; locale formatting and arbitrary typed out-of-range normalization are not implemented.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ],
       "verification": "not-device-verified"
     },
@@ -1018,6 +1019,7 @@
         "label",
         "max",
         "min",
+        "name",
         "placeholder",
         "readOnly",
         "required",
@@ -1034,7 +1036,6 @@
       "methods": [],
       "slots": [],
       "unsupportedProperties": [
-        "name",
         "density",
         "locale",
         "formatOptions",
@@ -1060,7 +1061,8 @@
       ],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
       ],
       "verification": "not-device-verified"
     }

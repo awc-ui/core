@@ -374,7 +374,7 @@ extension AWCNativeView {
                                          shape: s("shape", "round"), shapeMorph: b("shapeMorph", true), selected: b("selected"), ripple: b("ripple", true),
                                          blocked: blocked, loading: b("loading"), fullWidth: b("fullWidth"), focused: false,
                                          connectedLeft: b("connectedLeft"), connectedRight: b("connectedRight"))
-        return AWCNativeButtonControl(style: style, blocked: blocked, action: activateNativeButton, direction: s("dir")) {
+        return AWCNativeButtonControl(style: style, blocked: blocked, action: { _ = activateNativeButton() }, direction: s("dir")) {
             HStack(spacing: metrics.gap) {
                 buttonIcon(slot: "leading-icon", fallback: s("icon"), size: metrics.iconSize)
                 let textChildren = node.children(inSlot: "")
@@ -417,10 +417,10 @@ extension AWCNativeView {
         }
     }
 
-    private func activateNativeButton() {
+    @discardableResult func activateNativeButton() -> AWCButtonActionResult {
         var current = node; current.properties = local
         let router = urlRouter ?? AWCURLRouter { request in openURL(request.url); return true }
-        AWCButtonAction.perform(node: current, form: formState, dispatcher: eventDispatcher, router: router,
+        return AWCButtonAction.perform(node: current, form: resolvedForm, dispatcher: eventDispatcher, router: router,
                                 observe: onEvent, commitSelected: { set("selected", .bool($0)) })
     }
 }

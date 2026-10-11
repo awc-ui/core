@@ -31,11 +31,11 @@ class NativeButtonBehaviorTest {
         compose.onNode(hasSetTextAction()).performTextReplacement("")
         compose.onNodeWithText("Submit").performClick()
         compose.onNodeWithText("Status: Invalid").assertExists()
-        compose.onNodeWithText("Name is required").assertExists()
+        compose.onNodeWithText("This field is required").assertExists()
         compose.runOnIdle { assertTrue(events.any { it.first == "mdInvalid" }); assertFalse(events.any { it.first == "mdSubmit" }) }
         compose.onNodeWithText("Reset").performClick()
         compose.onNode(hasSetTextAction()).assertTextContains("Ada")
-        compose.onNodeWithText("Name is required").assertDoesNotExist()
+        compose.onNodeWithText("This field is required").assertDoesNotExist()
         compose.onNodeWithText("Submit").performClick()
         compose.runOnIdle {
             val submission = events.last { it.first == "mdSubmit" }.second as Map<*, *>

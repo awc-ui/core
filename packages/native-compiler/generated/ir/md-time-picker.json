@@ -3740,7 +3740,8 @@
         "okLabel",
         "hideTrigger",
         "valueMissingLabel",
-        "disabled"
+        "disabled",
+        "name"
       ],
       "events": [
         "mdInput",
@@ -3755,7 +3756,6 @@
       "unsupportedProperties": [
         "variant",
         "format",
-        "name",
         "reserveSupportingSpace",
         "headlineInputLabel",
         "headlineDialLabel",
@@ -3787,7 +3787,8 @@
       ],
       "unsupportedSlots": [],
       "notes": [
-        "System DatePicker replaces dial/input variants. Event dates serialize to ISO strings. MinuteStep/12-hour labels and overnight bounds are not supported."
+        "System DatePicker replaces dial/input variants. Event dates serialize to ISO strings. MinuteStep/12-hour labels and overnight bounds are not supported.",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
       ],
       "verification": "not-device-verified"
     },
@@ -3805,8 +3806,10 @@
         "max",
         "min",
         "minuteStep",
+        "name",
         "okLabel",
         "open",
+        "required",
         "supportingText",
         "value"
       ],
@@ -3821,8 +3824,6 @@
       "slots": [],
       "unsupportedProperties": [
         "variant",
-        "name",
-        "required",
         "reserveSupportingSpace",
         "headlineInputLabel",
         "headlineDialLabel",
@@ -3855,7 +3856,8 @@
       ],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, form association, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
         "Uses Material TimePicker; dialog native layout replaces docked web variants."
       ],
       "verification": "not-device-verified"

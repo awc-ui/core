@@ -37,14 +37,17 @@ fun AWCComponent(
     onEvent: (String, AWCValue) -> Unit = { _, _ -> },
     content: (@Composable (String) -> Unit)? = null,
 ) {
-    val p = awcProperties(tag, properties)
+    val source = awcProperties(tag, properties)
+    val formControl = rememberAutomaticFormControl(tag, source, onEvent)
+    val p = formControl?.properties ?: source
+    val controlEvent = formControl?.emit ?: onEvent
     val spacing = (12 + p.int("density") * 2).coerceAtLeast(4).dp
     Box(modifier) {
         when (tag) {
             "md-button" -> NativeButton(p, onEvent, content)
             "md-icon-button", "md-fab", "md-fab-menu-item", "md-split-button", "md-segmented-button" -> Action(tag, p, onEvent, content)
-            "md-checkbox", "md-radio", "md-switch", "md-slider", "md-rating", "md-text-field", "md-number-field", "md-otp-field", "md-search", "md-select", "md-multi-select", "md-autocomplete", "md-select-option" -> InputComponent(tag, p, onEvent, content)
-            "md-date-picker", "md-time-picker", "md-color-picker" -> PickerComponent(tag, p, onEvent)
+            "md-checkbox", "md-radio", "md-switch", "md-slider", "md-rating", "md-text-field", "md-number-field", "md-otp-field", "md-search", "md-select", "md-multi-select", "md-autocomplete", "md-select-option" -> InputComponent(tag, p, controlEvent, content, formControl?.form)
+            "md-date-picker", "md-time-picker", "md-color-picker" -> PickerComponent(tag, p, controlEvent)
             "md-dialog", "md-bottom-sheet", "md-side-sheet", "md-menu", "md-fab-menu", "md-tooltip", "md-snackbar" -> OverlayComponent(tag, p, onEvent, content)
             "md-bar-chart", "md-line-chart", "md-area-chart", "md-pie-chart", "md-sparkline" -> ChartComponent(tag, p, onEvent)
             "md-transfer-list" -> TransferList(p, onEvent)
