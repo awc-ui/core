@@ -192,5 +192,6 @@ enum NativeBehaviorContractCases {
         check(radioReset.values["radios"] == "second" && radioReset.entries.count == 1, "Reset normalizes multiple authored checked radios to one successful control")
         check(firstReset == false && secondReset == true, "Reset callbacks receive normalized radio values for actual view bindings")
 
+        NativeNavigationEventCases.run(check)
     }
 }

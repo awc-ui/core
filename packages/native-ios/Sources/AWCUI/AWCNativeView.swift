@@ -20,6 +20,7 @@ public struct AWCNativeView: View {
     @Environment(\.awcFormRegistry) var formRegistry
     @Environment(\.awcFormOwnerID) var formOwnerID
     @Environment(\.awcEventDispatcher) var eventDispatcher
+    @Environment(\.awcEventTargetListeners) var eventTargetListeners
     @Environment(\.awcURLRouter) var urlRouter
     @State var registeredForm: AWCFormState?
     @State var initialFormProperties: [String: AWCValue]?
@@ -58,7 +59,7 @@ public struct AWCNativeView: View {
     func set(_ key: String, _ value: AWCValue) { local[key] = value; if nativeFormValueKey != nil { registeredForm?.setValue(nativeFormControl.value, for: formRegistrationID) } }
     func emit(_ name: String, _ detail: AWCValue = .null) {
         let event = AWCEvent(name: name, tag: node.tag, nodeID: node.id, detail: detail)
-        onEvent(eventDispatcher?.dispatch(event).observedEvent ?? event)
+        onEvent(AWCEventDispatcher.dispatch(event, through: eventDispatcher, targetListeners: eventTargetListeners).observedEvent)
     }
     var label: String { [s("label"), s("headline"), s("text"), node.children.filter { $0.tag == "#text" && $0.slot == nil }.compactMap { $0.properties["text"]?.string }.joined(separator: " ")].first { !$0.isEmpty } ?? "" }
     var spacing: CGFloat { max(4, 12 + CGFloat(n("density")) * 2) }

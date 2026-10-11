@@ -45,11 +45,11 @@ function fixture(t, options = {}) {
   return { renderer, mock, adbCalls, requests, streams };
 }
 
-test('Android receives the explicit behavior example separately from component properties', async t => {
+for (const scenario of ['button-behavior', 'navigation-events']) test(`Android receives ${scenario} separately from component properties`, async t => {
   const { renderer, requests } = fixture(t);
-  await renderer.create({ ...config, scenario: 'button-behavior' });
+  await renderer.create({ ...config, scenario });
   const configure = requests.find(request => request.body?.command === 'configure').body;
-  assert.equal(configure.scenario, 'button-behavior');
+  assert.equal(configure.scenario, scenario);
   assert.deepEqual(configure.properties, config.properties);
 });
 

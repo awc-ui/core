@@ -1,46 +1,6 @@
 import Foundation
 import Observation
 
-/// A synchronous native event. Cancellation controls the component's default
-/// action; propagation controls only the enclosing native event scopes.
-public final class AWCEventContext {
-    public let event: AWCEvent
-    public let cancelable: Bool
-    public private(set) var defaultPrevented = false
-    public private(set) var propagationStopped = false
-    public private(set) var currentScopeID: String?
-    public private(set) var path: [String] = []
-    public init(event: AWCEvent, cancelable: Bool = false) { self.event = event; self.cancelable = cancelable }
-    public func preventDefault() { if cancelable { defaultPrevented = true } }
-    public func stopPropagation() { propagationStopped = true }
-    public var observedEvent: AWCEvent { var result = event; result.defaultPrevented = defaultPrevented; return result }
-    fileprivate func enter(_ id: String) { currentScopeID = id }
-    fileprivate func finish() { currentScopeID = nil }
-    fileprivate func setPath(_ value: [String]) { path = value }
-}
-
-/// Explicit inner-to-outer native propagation. There is no implicit DOM capture
-/// phase, browser retargeting, composed path, or system input event attached.
-public final class AWCEventDispatcher {
-    public let id: String
-    public let parent: AWCEventDispatcher?
-    private let handler: (AWCEventContext) -> Void
-    public init(id: String, parent: AWCEventDispatcher? = nil, handler: @escaping (AWCEventContext) -> Void) {
-        self.id = id; self.parent = parent; self.handler = handler
-    }
-    @discardableResult public func dispatch(_ event: AWCEvent, cancelable: Bool = false) -> AWCEventContext {
-        let context = AWCEventContext(event: event, cancelable: cancelable)
-        var scopes: [AWCEventDispatcher] = []; var current: AWCEventDispatcher? = self
-        while let scope = current { scopes.append(scope); current = scope.parent }
-        context.setPath([event.nodeID] + scopes.map(\.id))
-        for scope in scopes {
-            context.enter(scope.id); scope.handler(context)
-            if context.propagationStopped { break }
-        }
-        context.finish(); return context
-    }
-}
-
 public struct AWCURLRequest: Sendable {
     public let url: URL
     public let rawHref: String
@@ -54,18 +14,19 @@ public struct AWCURLRouter {
     public let allowedSchemes: Set<String>
     public let baseURL: URL?
     private let handler: (AWCURLRequest) -> Bool
-    public init(allowedSchemes: Set<String> = ["https", "http", "mailto", "tel"], baseURL: URL? = nil,
+    private let baseURLProvider: (() -> URL?)?
+    public init(allowedSchemes: Set<String> = ["https", "http", "mailto", "tel", "sms", "ftp"], baseURL: URL? = nil, baseURLProvider: (() -> URL?)? = nil,
                 handler: @escaping (AWCURLRequest) -> Bool) {
-        self.allowedSchemes = Set(allowedSchemes.map { $0.lowercased() }); self.baseURL = baseURL; self.handler = handler
+        self.allowedSchemes = Set(allowedSchemes.map { $0.lowercased() }); self.baseURL = baseURL; self.baseURLProvider = baseURLProvider; self.handler = handler
     }
     public func request(href: String, target: String = "_self", nodeID: String) -> AWCURLRequest? {
         guard !href.isEmpty, !href.unicodeScalars.contains(where: { $0.value < 32 || $0.value == 127 }) else { return nil }
         let trimmed = href.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, let url = URL(string: trimmed, relativeTo: baseURL)?.absoluteURL,
+        guard !trimmed.isEmpty, let url = URL(string: trimmed, relativeTo: baseURLProvider?() ?? baseURL)?.absoluteURL,
               let scheme = url.scheme?.lowercased(), allowedSchemes.contains(scheme),
               !["javascript", "vbscript", "data", "file"].contains(scheme) else { return nil }
-        if ["https", "http"].contains(scheme) && (url.host?.isEmpty != false) { return nil }
-        if ["mailto", "tel"].contains(scheme) && url.absoluteString.dropFirst(scheme.count + 1).isEmpty { return nil }
+        if ["https", "http", "ftp"].contains(scheme) && (url.host?.isEmpty != false) { return nil }
+        if ["mailto", "tel", "sms"].contains(scheme) && url.absoluteString.dropFirst(scheme.count + 1).isEmpty { return nil }
         return AWCURLRequest(url: url, rawHref: href, target: target, nodeID: nodeID)
     }
     @discardableResult public func route(href: String, target: String = "_self", nodeID: String) -> Bool {
@@ -82,21 +43,24 @@ public enum AWCButtonActionResult: String, Sendable {
 public enum AWCButtonAction {
     @discardableResult public static func perform(node: AWCNode, form: AWCFormState? = nil,
         dispatcher: AWCEventDispatcher? = nil, router: AWCURLRouter,
+        targetListeners: [AWCEventListener] = [], activation: AWCActivationMetadata = .init(kind: .programmatic),
         observe: (AWCEvent) -> Void = { _ in }, commitSelected: (Bool) -> Void) -> AWCButtonActionResult {
         let properties = node.properties
         func flag(_ key: String) -> Bool { properties[key]?.bool == true }
         guard !flag("disabled"), !flag("softDisabled"), !flag("loading") else { return .blocked }
         let toggles = flag("toggle"), next = toggles ? !flag("selected") : flag("selected")
         let href = properties["href"]?.string ?? "", target = properties["target"]?.string ?? "_self"
-        let click = AWCEvent(name: "mdClick", tag: node.tag, nodeID: node.id,
+        var click = AWCEvent(name: "mdClick", tag: node.tag, nodeID: node.id,
                              detail: ["value": properties["value"] ?? .null, "toggle": .bool(toggles), "selected": .bool(next), "href": .string(href), "target": .string(target)])
-        let context = dispatcher?.dispatch(click, cancelable: true) ?? AWCEventContext(event: click, cancelable: true)
+        click.activation = activation
+        let context = AWCEventDispatcher.dispatch(click, through: dispatcher, cancelable: true, targetListeners: targetListeners)
         observe(context.observedEvent)
         guard !context.defaultPrevented else { return .canceled }
         if toggles {
             commitSelected(next)
-            let change = AWCEvent(name: "mdChange", tag: node.tag, nodeID: node.id, detail: ["selected": .bool(next), "value": properties["value"] ?? .null])
-            observe(dispatcher?.dispatch(change).observedEvent ?? change)
+            var change = AWCEvent(name: "mdChange", tag: node.tag, nodeID: node.id, detail: ["selected": .bool(next), "value": properties["value"] ?? .null])
+            change.activation = activation
+            observe(AWCEventDispatcher.dispatch(change, through: dispatcher, targetListeners: targetListeners).observedEvent)
         }
         // Raw href presence makes this a link. Rejected/unsafe href must never
         // fall through into form submission/reset, matching the source guard.

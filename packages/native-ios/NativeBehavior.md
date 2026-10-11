@@ -104,18 +104,90 @@ back to another form. The registry does not search windows, applications or DOM.
 `AWCFormEncoding.urlEncoded(entries)` preserves order, encodes UTF-8 bytes,
 normalizes line breaks to CRLF and uses `+` for spaces. It never sends a request.
 
-`AWCEventScope` propagates synchronously from the closest scope outward.
-Cancelable mdClick precedes toggle, URL routing and form actions.
-`stopPropagation()` does not cancel default actions. Legacy `onEvent` observes
-final cancellation; mdChange follows accepted toggles. Loading/disabled buttons
-dispatch no activation. Browser capture, original events, composed paths and
-shadow retargeting are not implemented.
+`AWCEventScope` supplies native ancestor capture and bubble listeners.
+`AWCEventTargetScope` supplies handlers at the actual component target. Dispatch
+snapshots the target-first path, captures outer-to-inner, visits the target, and
+bubbles inner-to-outer. Existing `onEvent` scope handlers remain bubble handlers.
 
-`AWCURLRouter` permits HTTP(S), mailto and tel by default. Relative URLs require
-an explicit base. Executable/file/data URLs and control characters are rejected.
+```swift
+AWCEventScope(id: "outer", onCapture: { context in
+    print(context.phase, context.targetID, context.currentScopeID, context.path)
+    if shouldCancel { context.preventDefault() }
+}, onEvent: { context in
+    print("bubble", context.event.name)
+}) {
+    AWCEventTargetScope(onEvent: { context in
+        // stopPropagation retains other listeners at this target.
+        // stopImmediatePropagation also suppresses remaining target listeners.
+    }) {
+        AWCNativeView(tag: "md-button", properties: ["toggle": true],
+                      children: [.text("Toggle")], onEvent: observe)
+    }
+}
+```
+
+`AWCEventListener` arrays preserve same-phase listener order. `preventDefault`
+vetoes cancelable mdClick before toggle, navigation and form effects; it does not
+stop propagation. `stopPropagation` prevents travel to later nodes while allowing
+remaining listeners at the current node. `stopImmediatePropagation` also stops
+those listeners. Noncancelable mdChange follows committed toggle state.
+`bubbles: false` still permits ancestor capture and target listeners.
+An explicit `isBoundary` scope limits the path when `crossesBoundaries: false`.
+Native target identity remains stable; there is no DOM shadow retargeting.
+
+The legacy observation callback still runs after dispatch, even when propagation
+stops. `AWCEvent.defaultPrevented`, `propagationPath` and optional `activation`
+provide its final native metadata. Activation distinguishes nativeControl,
+implicitSubmit and programmatic entry, with an action UUID shared by mdClick and
+mdChange. It is not a raw OS event, DOM MouseEvent or browser isTrusted assertion.
+Finished contexts retain target/path but clear phase/current scope and reject
+late cancellation. Nested dispatch owns a separate transaction.
+
+`AWCURLRouter` permits HTTP(S), mailto, tel, sms and ftp by default. Relative URLs
+require an explicit base; a base provider can resolve against current native
+state on every call. Executable/file/data URLs and control characters are rejected.
 Any raw href makes the button a link, so rejected links never submit/reset.
-Injected routing receives target; default SwiftUI openURL does not create browser
-browsing contexts.
+Injected routing receives target; default SwiftUI openURL delegates to the host.
+
+`AWCNavigationCoordinator` supplies an observable local presentation model:
+
+```swift
+let navigation = AWCNavigationCoordinator(
+    baseURL: URL(string: "https://awc.local/demo/")!
+)
+_ = navigation.createContext(id: "editor", parentID: navigation.rootID)
+navigation.shouldNavigate = { request in appPolicy.allows(request.url) }
+navigation.onPresent = { transition in
+    // State/history is committed here; present your own native destination.
+    presentNativeScreen(contextID: transition.destinationID)
+}
+AWCNativeView(tag: "md-button", properties: ["href": "next", "target": "details"],
+              children: [.text("Open details")])
+    .awcURLRouter(navigation.router(from: "editor"))
+```
+
+Use a safe absolute base URL as host configuration. Each route is validated
+before selecting or creating a destination. Relative URLs use the current source
+context, including retained routers and relative child-context initial URLs.
+Empty or case-insensitive `_self` uses the source; `_parent` uses its native owner
+or itself; `_top` follows native owners; `_blank` always creates a distinct native
+top-level context. Ordinary named targets reuse a local named context. Other
+underscore-prefixed targets and invalid native names are rejected.
+
+`shouldNavigate` can veto before context/history mutation. `onPresent` observes
+committed state; synchronous reentrant navigation during these callbacks is
+rejected. `back(in:)` visits local history with the same approval contract, and a
+new route after Back discards the forward branch. The coordinator never loads
+HTTP content or opens an external application. Native named reuse intentionally
+differs from the source browser's noopener/noreferrer route, which can create a
+fresh browsing context for a named target. Native contexts do not implement
+browser origin isolation, opener/referrer relationships or window/document.
+
+`AWCButtonNavigationDemo` displays capture/target/bubble trace, click cancellation,
+both propagation stops, host rejection, native contexts, target routing and Back.
+Its base is https://awc.local/demo/ and every route stays local. Demo observations
+`mdPropagation` and `mdNavigate` use explicit native-event/native-navigation tags;
+they are not additional source md-button events.
 
 `AWCNode.children(inSlot:fallback:)`, `firstDescendant(id:)` and `descendants(tag:)`
 provide explicit native content lookup. Current declarative children control slot
@@ -144,6 +216,9 @@ own private offscreen AppKit window. It checks all 13 automatic families,
 duplicate wrapper IDs, native text edits and checkbox/radio clicks, reset,
 external/nested owners, stable numeric step validation, and real field-editor
 Enter through default button activation, validation and form-event cancellation.
+It also clicks actual native buttons to verify capture/target/bubble, both
+propagation stops, final activation metadata, cancellation, injected navigation,
+blank/named contexts and host routing veto.
 Run `packages/native-ios/scripts/test-native-views.sh` from a macOS WindowServer
 session. It operates on no other windows. These are macOS checks; iOS SDK and
 simulator validation require full Xcode.

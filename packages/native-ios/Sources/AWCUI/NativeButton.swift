@@ -417,10 +417,10 @@ extension AWCNativeView {
         }
     }
 
-    @discardableResult func activateNativeButton() -> AWCButtonActionResult {
+    @discardableResult func activateNativeButton(activation: AWCActivationMetadata = .init(kind: .nativeControl)) -> AWCButtonActionResult {
         var current = node; current.properties = local
         let router = urlRouter ?? AWCURLRouter { request in openURL(request.url); return true }
         return AWCButtonAction.perform(node: current, form: resolvedForm, dispatcher: eventDispatcher, router: router,
-                                observe: onEvent, commitSelected: { set("selected", .bool($0)) })
+                                targetListeners: eventTargetListeners, activation: activation, observe: onEvent, commitSelected: { set("selected", .bool($0)) })
     }
 }

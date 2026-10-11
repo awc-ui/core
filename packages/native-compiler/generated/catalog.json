@@ -6405,8 +6405,9 @@
             "Actual SwiftUI isPressed drives shape morphing (200ms press, 400ms release). Pointer-origin ripple uses source farthest-corner geometry and 450ms growth/150ms fade; hover and pointer geometry are forwarded by the native preview. Reduce Motion suppresses shape/ripple animations. Per-instance CSS overrides are not reproduced.",
             "Loading draws the source 48-vertex morphing polygons with the original 4.55s keyframes and easing; Reduce Motion uses the source opacity pulse. Native button groups do not automatically inject connected corner props. RTL icon mirroring uses native layout direction; expanded trailing-icon rotation requires an explicit aria-expanded property on the native node.",
             "mdClick describes the proposed state before commit and includes value, toggle, selected, href and target; mdChange follows commit and includes selected and value. originalEvent is omitted.",
-            "AWCButtonAction synchronously dispatches cancelable mdClick through AWCEventScope before any toggle, routing or form action. Legacy onEvent observes the result through AWCEvent.defaultPrevented; mdChange follows a committed toggle. Native form state and URL routing are explicit equivalents, not HTML/DOM emulation. Soft-disabled controls suppress activation without preserving web keyboard focusability.",
-            "type submit/reset uses the nearest AWCFormScope or an explicit owner registry. All 13 source form-control families auto-register with stable per-view identity, ordered successful values and validation. Cancelable mdSubmit/mdReset precede form effects; reset restores initial native bindings (OTP clears). Single-line Enter activates the first registered default submit button. AWCFormEncoding generates local UTF-8 URL-encoded data without network submission. target is passed to AWCURLRouter; raw nonempty href suppresses form actions."
+            "AWCButtonAction dispatches actual native capture, target and bubble phases before defaults. preventDefault vetoes activation; stopPropagation retains same-scope listeners and stopImmediatePropagation stops them. Legacy onEvent receives final cancellation, propagationPath and native activation metadata. Native mdChange is noncancelable. Soft-disabled controls suppress activation without reproducing web keyboard focusability.",
+            "type submit/reset uses the nearest AWCFormScope or an explicit owner registry. All 13 source form-control families auto-register with stable per-view identity, ordered successful values and validation. Cancelable mdSubmit/mdReset precede form effects; reset restores initial native bindings (OTP clears). Single-line Enter activates the first registered default submit button. AWCFormEncoding generates local UTF-8 URL-encoded data without network submission. target is passed to AWCURLRouter; raw nonempty href suppresses form actions.",
+            "AWCNavigationCoordinator implements local _self/_blank/_parent/_top and named presentation contexts, current-base relative resolution, ordered histories/back and host veto/presentation callbacks. AWCButtonNavigationDemo shows real button propagation controls and local navigation without external page loads. Named reuse is an explicit native policy, not source noopener browser behavior."
           ],
           "verification": "not-device-verified",
           "nativeEquivalents": {
@@ -6422,21 +6423,22 @@
               ]
             },
             "CANCELABLE_EVENT": {
-              "status": "partial",
-              "api": "AWCEventContext / AWCEventDispatcher / AWCEventScope",
-              "description": "Synchronous inner-to-outer native scopes can prevent md-button default actions or stop propagation. Cancellation precedes toggle, URL and form effects; legacy onEvent remains an observer.",
+              "status": "implemented",
+              "api": "AWCEventDispatcher / AWCEventScope / AWCEventTargetScope / AWCEventContext",
+              "description": "Actual md-button activation dispatches scoped native capture, target and bubble listeners with a stable path/target/current scope, explicit boundaries, synchronous cancellation and both propagation stops. Defaults follow accepted mdClick; noncancelable mdChange follows toggle commit. Legacy observations include final cancellation, native activation metadata and path.",
               "limitations": [
-                "No DOM capture phase, composed/shadow retargeting, originalEvent or underlying browser click event.",
-                "Propagation follows explicit native scopes. md-button activation and native form submit/reset are cancelable; DOM event capture and browser form-event object semantics are not provided."
+                "These are explicit native scopes and boundaries, not DOM nodes, browser capture/retargeting, shadow roots or a browser composedPath. Boundary crossing is a native dispatch option; target identity is never silently retargeted.",
+                "Activation metadata identifies entry through native control, implicit-submit or programmatic action. It does not fabricate a DOM MouseEvent, raw OS event, modifier/middle-button semantics or browser isTrusted. Finished synchronous contexts cannot be canceled later."
               ]
             },
             "DOM_GLOBAL": {
-              "status": "partial",
-              "api": "AWCURLRouter / AWCURLRequest",
-              "description": "Safe explicit URL routing carries URL, original href, target and node identity to a host handler. Raw rejected links cannot fall through into form actions.",
+              "status": "implemented",
+              "api": "AWCNavigationCoordinator / AWCNavigationContext / AWCNavigationTransition / AWCURLRouter",
+              "description": "Observable native contexts resolve safe relative routes against current source history, implement self/blank/parent/top destinations and reusable named contexts, and provide local back navigation. Host approval precedes state changes; presentation callbacks observe committed state. The navigation demo renders local context and history state without external navigation.",
               "limitations": [
-                "No window/document object or browser browsing-context creation. The host decides how to interpret target; default openURL ignores browsing targets.",
-                "Relative URLs require an explicit base URL. URL schemes and control characters are validated using native rules rather than the browser URL parser."
+                "Native contexts replace presentation destinations, not browser window/document objects, browsing-context groups, window.open, opener relationships, referrers, origin security or HTTP page loads. No network request or application launch occurs in the coordinator.",
+                "Named destinations are intentionally reusable native contexts. The source browser route uses noopener/noreferrer and may create fresh browsing contexts for named targets. Reserved native targets are case-insensitive; other underscore-prefixed names are rejected.",
+                "Relative routes use Foundation URL resolution and explicit native context base URLs; URL parsing is not claimed identical to the browser. Schemes are allowlisted and executable/file/data routes rejected. The default SwiftUI openURL fallback still delegates external presentation to the host and does not interpret browser target contexts."
               ]
             },
             "SHADOW_DOM": {
@@ -6511,7 +6513,7 @@
           "unsupportedSlots": [],
           "notes": [
             "Native Compose button with explicit forms, cancelable action scopes, safe routing and named content; browser-specific gaps are described in nativeEquivalents.",
-            "Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Native form scopes automatically register source field adapters, collect ordered successful entries, apply declarative rules and support vetoable submit/reset and Enter; native action scopes can synchronously cancel defaults or stop scoped propagation; safe application routing carries target metadata. Browser form association, browsing contexts, DOM propagation, platform elevation shadows, antialiasing, role overrides and group keyboard navigation remain different. Soft-disabled controls block activation without web focusability. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated."
+            "Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Native form scopes automatically register source field adapters, collect ordered successful entries, apply declarative rules and support vetoable submit/reset and Enter; native action scopes can synchronously cancel defaults or stop scoped propagation; safe application routing carries target metadata. Literal browser form APIs, browser documents/origins, DOM nodes, platform elevation shadows, antialiasing, role overrides and group keyboard navigation remain different. Soft-disabled controls block activation without web focusability. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated."
           ],
           "verification": "not-device-verified",
           "nativeEquivalents": {
@@ -6550,20 +6552,22 @@
               ]
             },
             "DOM_GLOBAL": {
-              "status": "partial",
-              "api": "AWCURLRouter / AWCNavigationScope / AWCNavigationRequest",
-              "description": "Allowlisted navigation requests carry the safe URL and original target to an application router; the default handler opens absolute native URIs. Unsafe raw links never fall through to form actions.",
+              "status": "implemented",
+              "api": "AWCNavigationCoordinator / AWCNavigationContext / AWCNavigationScope / AWCURLRouter",
+              "description": "Safe relative links resolve against the source native context current URL. Observable native contexts implement self, blank, parent, top and reusable named destinations, independent history, back and subtree close. A host can reject navigation before commit and present accepted destinations after commit. Unsafe raw links never fall through to form actions.",
               "limitations": [
-                "Browser target contexts, page origins, modified-click navigation and window APIs are not reproduced.",
-                "Relative routes require an application router; URLs must parse as native URIs."
+                "Contexts are native application state, not browser windows, documents, origins or opener relationships; no page is fetched by the coordinator.",
+                "Named native destinations are deliberately reusable; source window.open with noopener/noreferrer may instead create fresh browser contexts. Browser modifier/middle-click navigation and window APIs are not reproduced.",
+                "URLs must parse as native URIs. Applications supply presentation for coordinator destinations; the legacy default router still opens absolute Android URIs."
               ]
             },
             "CANCELABLE_EVENT": {
-              "status": "partial",
-              "api": "AWCActionEvent / AWCActionScope",
-              "description": "Synchronous mdClick cancellation runs before selection, routing and form defaults; stopPropagation stops enclosing native action scopes while legacy onEvent still observes mdClick.",
+              "status": "implemented",
+              "api": "AWCActionEvent / AWCActionScope / AWCActionTargetScope / AWCActionListener",
+              "description": "Synchronous native capture, target and bubble dispatch uses stable target/path/scope IDs and ordered listeners. Cancelable mdClick runs before defaults, with separate stopPropagation and stopImmediatePropagation controls; committed mdChange is noncancelable. Explicit boundaries and nonbubbling events are supported; legacy callbacks still observe actions after dispatch.",
               "limitations": [
-                "Propagation is limited to explicitly nested AWC action scopes; no DOM capture phase, originalEvent or native OS event cancellation is claimed."
+                "The event path contains explicit native scopes, not DOM nodes or browser shadow-tree retargeting.",
+                "Activation metadata defaults to unknown when the host cannot identify the source; DOM originalEvent, isTrusted, browser modifiers and cancellation of native OS input are not claimed."
               ]
             }
           }

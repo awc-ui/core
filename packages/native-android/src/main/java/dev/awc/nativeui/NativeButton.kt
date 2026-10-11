@@ -102,6 +102,8 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
         }
     }
     val action = LocalAWCAction.current
+    val actionTarget = LocalAWCActionTarget.current
+    val actionID = remember { java.util.UUID.randomUUID().toString() }
     val form = currentAWCForm()
     val slots = LocalAWCSlots.current
     val enabled = p.enabled() && !p.bool("loading")
@@ -153,7 +155,8 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     val elevation by animateDpAsState((if(enabled && hovered && !pressed && !focused) palette.hoverElevation else palette.elevation).dp, tween(colorDuration, easing=Standard), label="source button elevation")
     val focusColor = MaterialTheme.colorScheme.secondary
     val click: () -> Unit = {
-        performNativeButtonAction(p, selected, emit, action, form, router, p.bool("toggle") || group != null) { proposed ->
+        performNativeButtonAction(p, selected, emit, action, form, router, p.bool("toggle") || group != null,
+            targetID = actionTarget?.id ?: actionID, targetListeners = actionTarget?.listeners?.invoke().orEmpty()) { proposed ->
             localSelected = group?.toggle(identity) ?: proposed
             localSelected
         }

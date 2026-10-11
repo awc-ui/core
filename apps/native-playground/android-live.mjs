@@ -5,6 +5,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import path from 'node:path';
 import { RenderError } from './native-render.mjs';
 import { validateLiveInput } from './native-live.mjs';
+import { nativeEventMetadata } from './native-event-metadata.mjs';
 
 const execute = promisify(execFile);
 const fail = (status, code, message) => new RenderError(status, code, message);
@@ -17,7 +18,7 @@ function events(values = []) {
   return values.map(event => {
     if (!event || !['id', 'name', 'tag', 'nodeID'].every(key => typeof event[key] === 'string' && event[key].length > 0 && event[key].length <= 256)
       || Buffer.byteLength(JSON.stringify(event.detail ?? null)) > 16384) throw fail(502, 'INVALID_LIVE_FRAME', 'Invalid Android event.');
-    return { id: event.id, name: event.name, tag: event.tag, nodeID: event.nodeID, detail: event.detail ?? null };
+    return { id: event.id, name: event.name, tag: event.tag, nodeID: event.nodeID, detail: event.detail ?? null, ...nativeEventMetadata(event) };
   });
 }
 

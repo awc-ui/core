@@ -90,6 +90,8 @@ public struct AWCEvent: Identifiable, Sendable {
     public let detail: AWCValue
     /// Observation of cancellation after synchronous native scope dispatch.
     public internal(set) var defaultPrevented: Bool = false
+    public var activation: AWCActivationMetadata? = nil
+    public internal(set) var propagationPath: [String] = []
     public init(name: String, tag: String, nodeID: String, detail: AWCValue = .null) {
         self.id = UUID(); self.name = name; self.tag = tag; self.nodeID = nodeID; self.detail = detail
     }

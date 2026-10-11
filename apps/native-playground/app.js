@@ -64,7 +64,8 @@ async function init() {
     $('#compiler-status').innerHTML = `<i></i>${state.catalog ? 'Generated catalog connected' : 'Source manifest only'}`;
     text('#pipeline-state', state.catalog ? `${generated.size} contracts · ${state.components.reduce((count, component) => count + portabilityFindings(component).total, 0)} findings` : 'Run native:build to inspect output');
     const hashTag = location.hash.slice(1);
-    state.nativeScenario = new URLSearchParams(location.search).get('example') === 'button-behavior' ? 'button-behavior' : '';
+    const requestedExample = new URLSearchParams(location.search).get('example');
+    state.nativeScenario = ['button-behavior', 'navigation-events'].includes(requestedExample) ? requestedExample : '';
     selectComponent(state.components.some(component => component.tag === hashTag) ? hashTag : 'md-button');
     bindEvents();
     const requestedPlatform = new URLSearchParams(location.search).get('platform');
@@ -168,7 +169,7 @@ function renderNativePreview() {
   $('#native-render-button').addEventListener('click', () => scheduleNativeRender(0));
   document.querySelectorAll('[data-native-mode]').forEach(button => button.addEventListener('click', () => { if (target.snapshot) state.nativeMode = button.dataset.nativeMode; if (state.nativeMode === 'snapshot') selectNativeScenario(''); renderPreview(); }));
   if (component.tag === 'md-button') {
-    $('.snapshot-heading').insertAdjacentHTML('afterend', `<label class="native-scenario">Example <select id="native-scenario"><option value="" ${!state.nativeScenario ? 'selected' : ''}>Component</option><option value="button-behavior" ${state.nativeScenario === 'button-behavior' ? 'selected' : ''}>Form & cancellation</option></select></label>`);
+    $('.snapshot-heading').insertAdjacentHTML('afterend', `<label class="native-scenario">Example <select id="native-scenario"><option value="" ${!state.nativeScenario ? 'selected' : ''}>Component</option><option value="button-behavior" ${state.nativeScenario === 'button-behavior' ? 'selected' : ''}>Form & cancellation</option><option value="navigation-events" ${state.nativeScenario === 'navigation-events' ? 'selected' : ''}>Navigation & events</option></select></label>`);
     $('#native-scenario').addEventListener('change', event => { selectNativeScenario(event.target.value); state.nativeMode = 'live'; renderPreview(); });
   }
   setNativeMode(mode);
@@ -178,7 +179,7 @@ function renderNativePreview() {
 }
 
 function selectNativeScenario(value) {
-  state.nativeScenario = value === 'button-behavior' ? value : '';
+  state.nativeScenario = ['button-behavior', 'navigation-events'].includes(value) ? value : '';
   const url = new URL(location.href);
   if (state.nativeScenario) url.searchParams.set('example', state.nativeScenario); else url.searchParams.delete('example');
   history.replaceState(null, '', url);
@@ -209,7 +210,7 @@ function scheduleNativeRender(delay = 300) {
   disposeNativePointer(); nativeLive.stop(); state.liveFrame = null; state.liveDisplayedRevision = -1; state.liveImageVersion = (state.liveImageVersion || 0) + 1;
   const request = nativeRequests.start();
   const payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark');
-  if (state.selected.tag === 'md-button' && state.nativeScenario === 'button-behavior') payload.scenario = state.nativeScenario;
+  if (state.selected.tag === 'md-button' && state.nativeScenario) payload.scenario = state.nativeScenario;
   // Render at the available logical width instead of shrinking a 640pt image
   // (which also shrinks the native button and font in a narrow browser pane).
   const frame = $('#native-render-frame'), frameStyle = getComputedStyle(frame);
@@ -271,6 +272,10 @@ function setNativeMode(mode, fallbackMessage = '') {
   if (mode === 'live' && state.selected.tag === 'md-button' && state.nativeScenario === 'button-behavior') {
     text('#native-preview-note', 'Edit the native field and press Enter or Submit. Try validation, reset and cancellation, then inspect the submitted data and Events. Form data and link actions stay local. This example runs entirely in the native host.');
     text('.props-hint', 'This example has fixed form actions. Choose Component to edit individual button properties.');
+  }
+  if (mode === 'live' && state.selected.tag === 'md-button' && state.nativeScenario === 'navigation-events') {
+    text('#native-preview-note', 'Follow a link, open another native context, or go Back. Try cancellation and propagation controls, then inspect the event trace. Routes stay inside this native demo; no external page opens.');
+    text('.props-hint', 'This example has fixed navigation actions. Choose Component to edit individual button properties.');
   }
   text('#preview-caption', mode === 'live' ? state.platform === 'android' ? 'Real Android emulator · Jetpack Compose frames and native events' : 'Persistent macOS SwiftUI app · live frames and native events' : 'Rendered by SwiftUI on this Mac · displayed as a PNG');
   text('#recipe-status', mode === 'live' ? 'Click & type · native state persists' : 'Native fixture + current root properties');
@@ -389,9 +394,9 @@ function bindNativeInput(surface, input) {
     const image = surface.querySelector('img'), frame = state.liveFrame;
     return image && frame ? nativeImagePoint(image.getBoundingClientRect(), image.naturalWidth, image.naturalHeight, frame.logicalWidth, frame.logicalHeight, event.clientX, event.clientY) : null;
   };
-  // Form fixtures contain native text editors and switches whose platform
+  // Native examples contain editors and switches whose platform
   // tracking loops need the host's atomic click path (down + queued release).
-  const pressable = state.selected.tag === 'md-button' && state.nativeScenario !== 'button-behavior';
+  const pressable = state.selected.tag === 'md-button' && !state.nativeScenario;
   if (pressable) {
     surface.classList.add('native-live-pressable');
     surface.setAttribute('aria-label', `Live native ${nativePreviewTarget(state.platform).renderer} button. Press and hold, then release to activate. Escape cancels.`);
@@ -454,7 +459,10 @@ function bindNativeInput(surface, input) {
 
 function recordNativeEvents(events, platform) {
   const { eventOrigin } = nativePreviewTarget(platform);
-  for (const event of events) state.events.unshift({ name: event.name, time: new Date().toLocaleTimeString('en-GB'), detail: event.detail ?? null, origin: eventOrigin, nodeID: event.nodeID });
+  for (const event of events) {
+    const native = Object.fromEntries(['defaultPrevented', 'activation', 'propagationPath'].filter(key => Object.hasOwn(event, key)).map(key => [key, event[key]]));
+    state.events.unshift({ name: event.name, time: new Date().toLocaleTimeString('en-GB'), detail: event.detail ?? null, origin: eventOrigin, nodeID: event.nodeID, ...(Object.keys(native).length ? { native } : {}) });
+  }
   state.events = state.events.slice(0, 100); text('#event-count', state.events.length);
   if (state.inspector === 'events') renderInspector();
 }
@@ -555,8 +563,10 @@ function renderDiagnostic(component, diagnostic) {
     const equivalent = component.support?.[platform]?.nativeEquivalents?.[diagnostic.code];
     const name = platform === 'ios' ? 'SwiftUI' : 'Compose';
     if (!equivalent) return `<div class="native-equivalent unmapped"><strong>${name} · not mapped</strong><p>No native replacement is declared for this source finding.</p></div>`;
-    const demo = component.tag === 'md-button' && diagnostic.code === 'HTML_FORM'
-      ? `<p><a href="?platform=${platform}&amp;example=button-behavior#md-button">Try the ${name} form →</a></p>` : '';
+    const demoExample = diagnostic.code === 'HTML_FORM' ? 'button-behavior' : ['DOM_GLOBAL', 'CANCELABLE_EVENT'].includes(diagnostic.code) ? 'navigation-events' : '';
+    const demoLabel = diagnostic.code === 'HTML_FORM' ? 'form' : 'navigation & events';
+    const demo = component.tag === 'md-button' && demoExample
+      ? `<p><a href="?platform=${platform}&amp;example=${demoExample}#md-button">Try the ${name} ${demoLabel} →</a></p>` : '';
     return `<div class="native-equivalent ${equivalent.status === 'implemented' ? 'implemented' : 'partial'}"><strong>${name} · ${equivalent.status === 'implemented' ? 'Native replacement' : 'Partial replacement'}</strong><p><code>${escape(equivalent.api)}</code></p><p>${escape(equivalent.description)}</p>${equivalent.limitations?.length ? `<ul>${equivalent.limitations.map(item => `<li>${escape(item)}</li>`).join('')}</ul>` : ''}${demo}</div>`;
   }).join('')}</div></div></div>`;
 }
@@ -574,7 +584,7 @@ function renderInspector() {
       return `<div class="support-card"><h4>${platform === 'ios' ? 'iOS · SwiftUI' : 'Android · Compose'}</h4><p><strong>${escape(status)}</strong></p><p class="equivalent-count">${escape(nativeEquivalentSummary(component, platform))}</p>${support ? `<p class="support-count">${support.properties?.length || 0} supported / ${support.unsupportedProperties?.length || 0} unsupported properties</p><p>${support.events?.length || 0} supported / ${support.unsupportedEvents?.length || 0} unsupported events</p><p>${support.unsupportedMethods?.length || 0} unsupported methods · ${support.unsupportedSlots?.length || 0} unsupported slots</p><details><summary>Inspect coverage details</summary>${Object.entries(support).filter(([key]) => !['status', 'level', 'nativeEquivalents'].includes(key)).map(([key, value]) => `<p><code>${escape(key)}</code>: ${escape(Array.isArray(value) ? value.map(item => typeof item === 'string' ? item || 'default slot' : JSON.stringify(item)).join(', ') || 'None' : typeof value === 'object' ? JSON.stringify(value) : value)}</p>`).join('')}</details>` : '<p>Generate the native catalog to inspect platform coverage.</p>'}<p>Native mappings are scoped to this component. Full source parity remains a separate verification.</p></div>`;
     }).join('')}</div>${!state.catalog ? '<div class="load-error">Compiler diagnostics are unavailable. Run the native generation command and reload this page.</div>' : diagnostics.length ? diagnostics.map(diagnostic => renderDiagnostic(component, diagnostic)).join('') : '<p class="empty-state">No static portability findings reported.<br />This does not establish runtime behavior or native parity.</p>'}</div>`;
   } else {
-    root.innerHTML = `<div class="event-toolbar"><span>Component events · latest 100</span><button id="clear-events" class="text-button">Clear</button></div>${state.events.length ? `<div class="event-log">${state.events.map(event => `<div class="event-row"><time>${event.time}</time><div><code>${escape(event.name)}</code><small class="event-origin">${escape(event.origin || 'Web reference')}</small></div><pre>${escape(JSON.stringify(event.detail))}</pre></div>`).join('')}</div>` : '<p class="empty-state">Interact with the web reference or live native preview to see emitted events.<br />Native records come from the running native app.</p>'}`;
+    root.innerHTML = `<div class="event-toolbar"><span>Component events · latest 100</span><button id="clear-events" class="text-button">Clear</button></div>${state.events.length ? `<div class="event-log">${state.events.map(event => `<div class="event-row"><time>${event.time}</time><div><code>${escape(event.name)}</code><small class="event-origin">${escape(event.origin || 'Web reference')}</small></div><pre>${escape(JSON.stringify(event.native ? { detail: event.detail, native: event.native } : event.detail))}</pre></div>`).join('')}</div>` : '<p class="empty-state">Interact with the web reference or live native preview to see emitted events.<br />Native records come from the running native app.</p>'}`;
     $('#clear-events').addEventListener('click', () => { state.events = []; text('#event-count', '0'); renderInspector(); });
   }
 }

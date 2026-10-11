@@ -111,7 +111,41 @@ struct BehaviorFixture: View {
         check(submissions == 1 && events.contains { $0.name == "mdSubmit" && $0.defaultPrevented }, "Actual Enter respects cancelable form submit event")
         extended.onEvent = { _ in }; window2.close(); pump()
 
-        print("Passed \(count) real SwiftUI form registration, native editing, reset and nested-scope checks.")
+        // Match the production native host: geometry is forwarded separately;
+        // actual NSWindow down/up events remain the only activation source.
+        let navigationState = NavigationFixtureState()
+        let navHost = NSHostingView(rootView: NavigationFixture(state: navigationState))
+        let navWindow = NSWindow(contentRect: NSRect(x: -20000, y: -20000, width: 400, height: 140), styleMask: [.borderless], backing: .buffered, defer: false)
+        navWindow.isReleasedWhenClosed = false; navWindow.contentView = navHost; navWindow.orderFrontRegardless(); navHost.layoutSubtreeIfNeeded(); pump(0.4)
+        func navigationClick() {
+            navigationState.trace = []
+            let point = NSPoint(x: 60, y: navHost.bounds.height - 48), time = ProcessInfo.processInfo.systemUptime
+            let down = NSEvent.mouseEvent(with: .leftMouseDown, location: point, modifierFlags: [], timestamp: time, windowNumber: navWindow.windowNumber, context: nil, eventNumber: 1, clickCount: 1, pressure: 1)!
+            let up = NSEvent.mouseEvent(with: .leftMouseUp, location: point, modifierFlags: [], timestamp: time + 0.01, windowNumber: navWindow.windowNumber, context: nil, eventNumber: 2, clickCount: 1, pressure: 0)!
+            navigationState.pointer.update(phase: .down, location: CGPoint(x: 60, y: 48))
+            navWindow.sendEvent(down); pump(0.04); navWindow.sendEvent(up)
+            navigationState.pointer.update(phase: .up, location: CGPoint(x: 60, y: 48)); pump()
+        }
+        navigationClick()
+        check(navigationState.trace == ["capture:outer", "capture:inner", "target:button", "bubble:first", "bubble:second", "bubble:outer"], "Actual SwiftUI button routes capture-target-bubble through native scopes")
+        check(navigationState.navigation.context(id: "root")?.currentURL.absoluteString == "https://awc.local/demo/next", "Actual native button uses injected local navigation coordinator")
+        check(navigationState.events.map(\.name) == ["mdClick", "mdChange"] && navigationState.events.allSatisfy { $0.activation?.kind == .nativeControl && $0.propagationPath == ["native-nav-button", "inner", "outer"] }, "Actual button observers receive native activation metadata and stable propagation path")
+        let beforeCancel = navigationState.navigation.contexts, beforeChanges = navigationState.events.filter { $0.name == "mdChange" }.count
+        navigationState.cancelCapture = true; navigationClick()
+        check(navigationState.events.last?.defaultPrevented == true && navigationState.navigation.contexts == beforeCancel && navigationState.events.filter { $0.name == "mdChange" }.count == beforeChanges, "Actual capture cancellation blocks both native toggle and navigation")
+        navigationState.cancelCapture = false; navigationState.stopBubble = true; navigationClick()
+        check(navigationState.trace == ["capture:outer", "capture:inner", "target:button", "bubble:first", "bubble:second"] && navigationState.navigation.context(id: "root")?.history.count == 3, "Actual stopPropagation retains sibling listener and default native route")
+        navigationState.stopImmediate = true; navigationClick()
+        check(navigationState.trace == ["capture:outer", "capture:inner", "target:button", "bubble:first"], "Actual stopImmediatePropagation suppresses sibling and outer bubble listeners")
+        navigationState.stopImmediate = false; navigationState.stopBubble = false; navigationState.target = "_blank"; pump(); navigationClick()
+        check(navigationState.navigation.contexts.count == 2, "Actual blank native button creates separate local context")
+        navigationState.target = "details"; pump(); navigationClick(); let namedID = navigationState.navigation.activeContextID; navigationClick()
+        check(navigationState.navigation.contexts.count == 3 && navigationState.navigation.activeContextID == namedID, "Actual named native button reuses its presentation context")
+        let beforeReject = navigationState.navigation.contexts
+        navigationState.navigation.shouldNavigate = { _ in false }; navigationClick()
+        check(navigationState.navigation.contexts == beforeReject, "Actual host routing veto preserves local histories")
+        navWindow.close(); pump()
+        print("Passed \(count) real SwiftUI form, navigation and event-phase integration checks.")
     }
 }
 
@@ -149,5 +183,43 @@ struct ExtendedBehaviorFixture: View {
                 }.padding(20).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
         }
+    }
+}
+
+@Observable final class NavigationFixtureState {
+    var cancelCapture = false
+    var stopBubble = false
+    var stopImmediate = false
+    var target = "_self"
+    var trace: [String] = []
+    var events: [AWCEvent] = []
+    let pointer = AWCNativePointerState()
+    let navigation = AWCNavigationCoordinator(baseURL: URL(string: "https://awc.local/demo/")!)
+    func record(_ context: AWCEventContext, _ listener: String) {
+        if context.event.name == "mdClick" { trace.append("\(context.phase.rawValue):\(listener)") }
+    }
+}
+struct NavigationFixture: View {
+    let state: NavigationFixtureState
+    var body: some View {
+        AWCEventScope(id: "outer", onCapture: { context in
+            state.record(context, "outer")
+            if state.cancelCapture && context.event.name == "mdClick" { context.preventDefault() }
+        }, onEvent: { state.record($0, "outer") }) {
+            AWCEventScope(id: "inner", onCapture: { state.record($0, "inner") }, listeners: [.init { context in
+                state.record(context, "first")
+                if context.event.name == "mdClick" {
+                    if state.stopImmediate { context.stopImmediatePropagation() }
+                    else if state.stopBubble { context.stopPropagation() }
+                }
+            }], onEvent: { state.record($0, "second") }) {
+                AWCEventTargetScope(onEvent: { state.record($0, "button") }) {
+                    AWCNativeView(node: .init(id: "native-nav-button", tag: "md-button", properties: ["href": "next", "target": .string(state.target), "toggle": true, "size": "md"], children: [.text("Go")]), onEvent: { state.events.append($0) })
+                }
+            }
+        }.awcURLRouter(state.navigation.router(from: "root"))
+            .environment(\.awcNativePointerState, state.pointer)
+            .coordinateSpace(name: "awc-native-preview")
+            .padding(20).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }

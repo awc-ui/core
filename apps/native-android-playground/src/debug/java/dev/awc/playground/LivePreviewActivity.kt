@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import dev.awc.nativeui.AWCComponent
 import dev.awc.nativeui.AWCButtonBehaviorDemo
+import dev.awc.nativeui.AWCButtonNavigationDemo
 import dev.awc.nativeui.AWCTheme
 import dev.awc.nativeui.AWCValue
 import dev.awc.nativeui.generated.AWCNativeCatalog
@@ -97,6 +98,7 @@ class LivePreviewActivity : ComponentActivity() {
                             .background(androidx.compose.ui.graphics.Color(if (config.dark) 0xFF141414 else 0xFFFFFFFF))
                             .padding(24.dp)) {
                             if (config.scenario == "button-behavior") AWCButtonBehaviorDemo(config.properties, ::recordEvent)
+                            else if (config.scenario == "navigation-events") AWCButtonNavigationDemo(config.properties, ::recordEvent)
                             else AWCComponent(config.tag, config.properties, onEvent = ::recordEvent) { slot -> SampleSlot(config.tag, slot, ::recordEvent) }
                         }
                     }
@@ -239,7 +241,7 @@ class LivePreviewActivity : ComponentActivity() {
         val properties = jsonValue(supplied) as Map<String, AWCValue>
         val dark = request.optBoolean("dark", false)
         val scenario = request.optString("scenario", "")
-        require(scenario.isEmpty() || (scenario == "button-behavior" && tag == "md-button")) { "Unknown native example." }
+        require(scenario.isEmpty() || (scenario in setOf("button-behavior", "navigation-events") && tag == "md-button")) { "Unknown native example." }
         previewDensity = ((container.width.takeIf { it > 0 } ?: resources.displayMetrics.widthPixels) / width).toFloat()
         configuration = Configuration(tag, AWCNativeCatalog.defaults[tag].orEmpty() + fixture(tag) + properties, dark, width, scenario)
         container.setBackgroundColor(if (dark) 0xFF141414.toInt() else Color.WHITE)

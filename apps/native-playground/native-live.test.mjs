@@ -98,10 +98,10 @@ function fixture(t, options = {}, childOptions = {}) {
   return { renderer, children };
 }
 
-test('SwiftUI receives the explicit behavior example without polluting component properties', async t => {
+for (const scenario of ['button-behavior', 'navigation-events']) test(`SwiftUI receives ${scenario} without polluting component properties`, async t => {
   const { renderer, children } = fixture(t);
-  await renderer.create({ ...request, tag: 'md-button', scenario: 'button-behavior' });
-  assert.equal(children[0].commands[0].scenario, 'button-behavior');
+  await renderer.create({ ...request, tag: 'md-button', scenario });
+  assert.equal(children[0].commands[0].scenario, scenario);
   assert.deepEqual(children[0].commands[0].properties, request.properties);
 });
 
@@ -351,10 +351,13 @@ test('pushed frames interleave with separate input acknowledgements without fram
   assert.throws(() => renderer.subscribe(sessionId, () => {}, () => {}), errorCode('STREAM_EXISTS'));
   child.auto = false;
   const typing = renderer.input(sessionId, { command: 'text', text: 'Salut 👋' });
-  child.pushFrame({ events: [{ id: 'native-event-1', name: 'mdFocus', tag: request.tag, nodeID: 'component', detail: null }] });
+  child.pushFrame({ events: [{ id: 'native-event-1', name: 'mdFocus', tag: request.tag, nodeID: 'component', detail: null, defaultPrevented: false, propagationPath: ['component', 'root'], activation: { id: 'input-1', kind: 'nativeControl' } }] });
   assert.equal(frames.length, 1);
   assert.equal(frames[0].revision, 2);
   assert.equal(frames[0].events[0].id, 'native-event-1');
+  assert.deepEqual(frames[0].events[0].propagationPath, ['component', 'root']);
+  assert.equal(frames[0].events[0].activation.id, 'input-1');
+  assert.equal(frames[0].events[0].defaultPrevented, false);
   child.respond();
   const ack = await typing;
   assert.equal(ack.imageUrl, undefined, 'input ACK must not introduce a second image pipeline');

@@ -4,6 +4,7 @@ import { constants } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { RenderError } from './native-render.mjs';
+import { nativeEventMetadata } from './native-event-metadata.mjs';
 
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 const KEYS = new Set(['Enter', 'Space', 'Tab', 'Escape', 'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']);
@@ -139,7 +140,7 @@ export function createNativeLiveRenderer({
         (event.id !== undefined && (typeof event.id !== 'string' || !event.id.length || event.id.length > 256)) || !validEventDetail(event.detail ?? null)) {
         throw failure(502, 'INVALID_LIVE_FRAME', 'The live renderer returned an invalid event.');
       }
-      return { id: event.id ?? `${session.id}:${++session.eventSequence}`, name: event.name, tag: event.tag, nodeID: event.nodeID, detail: event.detail ?? null };
+      return { id: event.id ?? `${session.id}:${++session.eventSequence}`, name: event.name, tag: event.tag, nodeID: event.nodeID, detail: event.detail ?? null, ...nativeEventMetadata(event) };
     });
   }
 

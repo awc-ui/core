@@ -13,7 +13,7 @@ class NativeButtonBehaviorTest {
             performNativeButtonAction(properties + mapOf("toggle" to true), false, { event, detail ->
                 calls += event; assertEquals(true, (detail as Map<*, *>)["selected"])
             }, action, form, AWCURLRouter { calls += "navigate"; true }) { calls += "commit"; it }
-            assertEquals(listOf("mdClick", "cancel"), calls)
+            assertEquals(listOf("cancel", "mdClick"), calls)
         }
     }
 
@@ -23,7 +23,7 @@ class NativeButtonBehaviorTest {
         val inner = AWCActionDispatcher(outer) { calls += "inner"; it.stopPropagation() }
         performNativeButtonAction(mapOf("toggle" to true, "href" to "https://example.com", "target" to "report"), false,
             { event, _ -> calls += event }, inner, null, AWCURLRouter { calls += "navigate:${it.target}"; true }) { calls += "commit"; it }
-        assertEquals(listOf("mdClick", "inner", "commit", "mdChange", "navigate:report"), calls)
+        assertEquals(listOf("inner", "mdClick", "commit", "inner", "mdChange", "navigate:report"), calls)
         calls.clear()
         AWCActionDispatcher(outer) { calls += "inner"; it.preventDefault() }.dispatch(AWCActionEvent("mdClick", "md-button", emptyMap()))
         assertEquals(listOf("inner", "outer"), calls)

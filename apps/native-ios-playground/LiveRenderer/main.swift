@@ -128,8 +128,14 @@ private final class EventBuffer {
     func append(_ event: AWCEvent) {
         // Keep long-running animated previews from accumulating unbounded event history.
         if events.count == 256 { events.removeFirst() }
-        events.append(["id": .string(event.id.uuidString), "name": .string(event.name),
-                       "tag": .string(event.tag), "nodeID": .string(event.nodeID), "detail": event.detail])
+        var record: [String: AWCValue] = ["id": .string(event.id.uuidString), "name": .string(event.name),
+                       "tag": .string(event.tag), "nodeID": .string(event.nodeID), "detail": event.detail,
+                       "defaultPrevented": .bool(event.defaultPrevented),
+                       "propagationPath": .array(event.propagationPath.map(AWCValue.string))]
+        if let activation = event.activation {
+            record["activation"] = .object(["id": .string(activation.id.uuidString), "kind": .string(activation.kind.rawValue)])
+        }
+        events.append(record)
     }
     func drain() -> AWCValue {
         defer { events.removeAll(keepingCapacity: true) }
@@ -146,6 +152,7 @@ private struct PreviewRoot: View {
     let scenario: String?
     @ViewBuilder private var example: some View {
         if scenario == "button-behavior" { AWCButtonBehaviorDemo(properties: node.properties, onEvent: onEvent) }
+        else if scenario == "navigation-events" { AWCButtonNavigationDemo(properties: node.properties, onEvent: onEvent) }
         else { AWCNativeView(node: node, onEvent: onEvent) }
     }
     var body: some View {
@@ -243,7 +250,7 @@ private final class NativeSession {
             throw PreviewFailure("Native interaction requires access to the macOS WindowServer. Run the preview server in a desktop session outside a restricted process sandbox.")
         }
         logicalWidth = min(1200, max(320, width)).rounded()
-        guard request.scenario == nil || (request.scenario == "button-behavior" && requestedTag == "md-button") else { throw PreviewFailure("Unknown native example.") }
+        guard request.scenario == nil || (["button-behavior", "navigation-events"].contains(request.scenario ?? "") && requestedTag == "md-button") else { throw PreviewFailure("Unknown native example.") }
         var node = AWCExamples.node(for: requestedTag)
         node.properties.merge(request.properties ?? [:]) { _, supplied in supplied }
         tag = requestedTag

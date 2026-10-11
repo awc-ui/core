@@ -158,8 +158,9 @@ a working remote preview does not establish native parity.
 
 The Portability inspector retains the original web-source findings and displays
 SwiftUI and Compose replacements next to each one. `Native replacement` is scoped
-to that source use in the selected component; `Partial replacement` lists the
-browser behavior that remains different. API-gap counts and compiler strict checks
+to that source use in the selected component; `Partial replacement` indicates
+that relevant native behavior still needs an adapter. Both statuses document
+remaining differences from a browser. API-gap counts and compiler strict checks
 are unchanged by this metadata.
 
 For `md-button`, choose **Example → Form & cancellation** in either native Live
@@ -172,3 +173,12 @@ without making a network request, and the router records links without opening
 an external URL. Observe native form and component events in the Events inspector.
 The HTML_FORM coverage cards link directly to each platform's demo. Examples
 require Live mode; Component remains the standard visual preview.
+
+Choose **Example → Navigation & events** to inspect native navigation contexts,
+route history, and event propagation. Links resolve inside the demo; they do not
+open external pages. Cancellation prevents the link's default action, while
+stopping propagation only changes which listeners receive it. The native trace
+shows capture, target, and bubble phases. The DOM_GLOBAL and CANCELABLE_EVENT
+coverage cards link to this example on each platform. Native contexts and event
+scopes replace those component behaviors without providing a browser DOM or
+browser windows.

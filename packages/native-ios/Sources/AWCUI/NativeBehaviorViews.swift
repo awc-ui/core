@@ -6,9 +6,11 @@ import AppKit
 private struct AWCFormRegistryKey: EnvironmentKey { static let defaultValue: AWCFormRegistry? = nil }
 private struct AWCFormOwnerKey: EnvironmentKey { static let defaultValue: String? = nil }
 private struct AWCFormStateKey: EnvironmentKey { static let defaultValue: AWCFormState? = nil }
+private struct AWCEventTargetListenersKey: EnvironmentKey { static let defaultValue: [AWCEventListener] = [] }
 private struct AWCEventDispatcherKey: EnvironmentKey { static let defaultValue: AWCEventDispatcher? = nil }
 private struct AWCURLRouterKey: EnvironmentKey { static let defaultValue: AWCURLRouter? = nil }
 public extension EnvironmentValues {
+    var awcEventTargetListeners: [AWCEventListener] { get { self[AWCEventTargetListenersKey.self] } set { self[AWCEventTargetListenersKey.self] = newValue } }
     var awcFormRegistry: AWCFormRegistry? { get { self[AWCFormRegistryKey.self] } set { self[AWCFormRegistryKey.self] = newValue } }
     var awcFormOwnerID: String? { get { self[AWCFormOwnerKey.self] } set { self[AWCFormOwnerKey.self] = newValue } }
     var awcFormState: AWCFormState? { get { self[AWCFormStateKey.self] } set { self[AWCFormStateKey.self] = newValue } }
@@ -34,12 +36,29 @@ public struct AWCFormRegistryScope<Content: View>: View {
 public struct AWCEventScope<Content: View>: View {
     public let id: String
     private let handler: (AWCEventContext) -> Void
+    private let capture: ((AWCEventContext) -> Void)?
+    private let listeners: [AWCEventListener]
+    private let boundary: Bool
     private let content: () -> Content
     @Environment(\.awcEventDispatcher) private var parent
-    public init(id: String, onEvent: @escaping (AWCEventContext) -> Void, @ViewBuilder content: @escaping () -> Content) {
-        self.id = id; handler = onEvent; self.content = content
+    public init(id: String, isBoundary: Bool = false, onCapture: ((AWCEventContext) -> Void)? = nil,
+                listeners: [AWCEventListener] = [], onEvent: @escaping (AWCEventContext) -> Void,
+                @ViewBuilder content: @escaping () -> Content) {
+        self.id = id; boundary = isBoundary; capture = onCapture; self.listeners = listeners; handler = onEvent; self.content = content
     }
-    public var body: some View { content().environment(\.awcEventDispatcher, AWCEventDispatcher(id: id, parent: parent, handler: handler)) }
+    public var body: some View {
+        content().environment(\.awcEventDispatcher, AWCEventDispatcher(id: id, parent: parent, isBoundary: boundary, onCapture: capture, listeners: listeners, handler: handler))
+    }
+}
+
+/// These listeners run at the actual component target, after ancestor capture.
+public struct AWCEventTargetScope<Content: View>: View {
+    private let listeners: [AWCEventListener]
+    private let content: () -> Content
+    public init(listeners: [AWCEventListener] = [], onEvent: @escaping (AWCEventContext) -> Void = { _ in }, @ViewBuilder content: @escaping () -> Content) {
+        self.listeners = listeners + [AWCEventListener(handler: onEvent)]; self.content = content
+    }
+    public var body: some View { content().environment(\.awcEventTargetListeners, listeners) }
 }
 
 public extension View {
@@ -64,7 +83,7 @@ extension AWCNativeView {
         if registeredForm !== form { registeredForm?.unregister(id: formRegistrationID); registeredForm = form }
         guard let form else { return }
         if node.tag == "md-button" {
-            if s("type") == "submit", s("href").isEmpty { form.registerSubmitter(id: formRegistrationID) { activateNativeButton() } }
+            if s("type") == "submit", s("href").isEmpty { form.registerSubmitter(id: formRegistrationID) { activateNativeButton(activation: .init(kind: .implicitSubmit)) } }
             else { form.unregisterSubmitter(id: formRegistrationID) }
             return
         }

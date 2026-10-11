@@ -119,20 +119,66 @@ re-register reordered retained keyed controls when order matters. Custom control
 can still use `rememberAWCFormField` or `form.register`/`unregister`; their initial
 values are retained until unregistration, and manual validation remains optional.
 
-Wrap buttons in `AWCActionScope(onAction = { event -> ... })` to call
-`event.preventDefault()` synchronously before selection, navigation or form
-effects. Legacy `onEvent("mdClick", detail)` observes the proposed selection
-first; then scopes run from inner to outer; accepted toggles emit `mdChange`
-after committing. `stopPropagation()` only stops enclosing AWC action scopes
-and does not cancel defaults or native OS input. DOM capture, `originalEvent`
-and browser event propagation remain outside this API.
+`AWCActionScope(onAction = { event -> ... })` remains the bubble-listener API.
+Add `id`, `onCapture` and ordered `AWCActionListener` entries to observe capture
+from outer to inner, the target, then bubble from inner to outer. Wrap one
+button in `AWCActionTargetScope(id = "save", onAction = { ... })` for target
+listeners. Stable `targetID`, target-first `path`, `currentScopeID` and `phase`
+identify delivery without exposing DOM nodes. Membership and listener lists
+are snapshotted for each synchronous dispatch. After dispatch, phase returns to
+`NONE` and current scope is cleared; the stable path remains available.
 
-`AWCNavigationScope(AWCURLRouter { request -> ...; true })` receives an
-allowlisted `request.url` and unchanged `request.target`. The default router
-uses Android's URI handler for absolute URLs. Relative routes require an
-application router. Unsafe raw links are refused and cannot accidentally submit
-or reset a form. Target names are application metadata, not browser windows;
-browser origins, modifier-click and browsing-context behavior are not implied.
+`preventDefault()` cancels `mdClick` selection, navigation and form defaults.
+`stopPropagation()` allows remaining listeners on the same scope or target but
+stops subsequent scopes; `stopImmediatePropagation()` also stops remaining
+listeners on that scope or target. Neither propagation control cancels defaults.
+Legacy `onEvent("mdClick", detail)` always observes after scoped dispatch, even
+when capture stopped target delivery. Accepted toggles commit before dispatching
+noncancelable `mdChange`; attempts to cancel that notification have no effect.
+A native event with `bubbles = false` still captures and reaches its target;
+`crossesBoundaries = false` stops its path at the nearest explicit scope boundary.
+Activation metadata remains `unknown` unless a caller supplies a known source.
+This does not expose a DOM MouseEvent, `isTrusted`, modifier/middle-click browser
+behavior, shadow-tree retargeting or cancellation of native OS input.
+
+```kotlin
+val navigation = rememberAWCNavigationCoordinator(
+    baseURL = "https://awc.local/demo/",
+    shouldNavigate = { transition -> canPresent(transition.url) },
+    onPresent = { transition -> presentNativeScreen(transition.contextID, transition.url) },
+)
+AWCNavigationScope(navigation) {
+    AWCComponent("md-button", mapOf("label" to "Report", "href" to "reports", "target" to "report"))
+}
+```
+
+`AWCNavigationCoordinator` resolves allowlisted relative links against the source
+context's current URL at activation time. `_self` and empty targets navigate the
+source context, `_parent` its parent, `_top` its root, `_blank` a new context,
+and named targets reuse a native destination. New navigation contexts are top-level;
+only explicit `createContext()` establishes a parent. Reserved target matching ignores
+case. Contexts expose observable URL/history/index state, `back()` truncates the
+forward branch on subsequent navigation, and `close()` removes a child and its
+descendants. `createContext()` defines explicit native parent relationships;
+`AWCNavigationScope(navigation, contextID)` pins a source context when needed.
+`shouldNavigate` rejects before any context/history mutation. Reentrant mutations
+are refused during approval (`createContext` throws if invoked there); `onPresent` runs
+after commit. The coordinator never fetches a page or opens an external app.
+
+`AWCNavigationScope(AWCURLRouter { request -> ...; true })` and its existing
+request API remain available. The legacy fallback opens absolute Android URIs.
+Unsafe raw links cannot accidentally submit/reset a form. Native contexts are
+application state, not browser windows, origins or opener relationships. Native
+named reuse is deliberate: source `window.open` with `noopener,noreferrer` may
+create a fresh browser context even for a name. URLs use native URI parsing;
+applications own destination presentation.
+
+`AWCButtonNavigationDemo` provides the **Navigation & events** scenario with
+real native buttons in an explicit root → section → editor hierarchy, target
+selection, local context/history display, capture/
+target/bubble trace, default cancellation, both propagation controls and host
+navigation rejection. All routes stay under the local example base and no
+external destination opens.
 
 `AWCSlotsScope(AWCSlotRegistry(mapOf("leading-icon" to { Text("★") })))`
 provides explicit native slots. Supported names are `""`, `leading-icon`,
