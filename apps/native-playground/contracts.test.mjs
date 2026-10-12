@@ -1,7 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { setImmediate as nextTurn } from 'node:timers/promises';
-import { createNativeLiveClient, createNativeSessionCoordinator, nativeLiveEndpoint } from './contracts.js';
+import { createNativeLiveClient, createNativeSessionCoordinator, nativeLiveEndpoint, nativeRenderRequest, nativeViewportWidth } from './contracts.js';
+
+test('native viewport width subtracts measured padding and respects host bounds', () => {
+  assert.equal(nativeViewportWidth(622, { paddingLeft: '0px', paddingRight: '0px' }), 622);
+  assert.equal(nativeViewportWidth(426, { paddingLeft: '12.5px', paddingRight: '8.25px' }), 405);
+  assert.equal(nativeViewportWidth(240, { paddingLeft: '24px', paddingRight: '24px' }), 320);
+  assert.equal(nativeViewportWidth(2000), 1200);
+  assert.equal(nativeViewportWidth(400, { paddingLeft: '500px', paddingRight: '500px' }), 320);
+});
+
+test('native viewport width treats unavailable or nonfinite computed padding as zero', () => {
+  for (const padding of [undefined, null, '', 'auto', 'normal', 'calc(1px + 2px)', 'NaN', 'Infinity', '-Infinity', Infinity, NaN, '-12px']) {
+    assert.equal(nativeViewportWidth(622, { paddingLeft: padding, paddingRight: padding }), 622, String(padding));
+    assert.equal(nativeViewportWidth(622, { paddingLeft: padding, paddingRight: '10px' }), 612);
+  }
+  assert.equal(nativeViewportWidth(622, null), 622);
+  assert.equal(nativeViewportWidth(622, { paddingLeft: '1e308px', paddingRight: '1e308px' }), 320, 'finite padding cannot overflow into an invalid width');
+});
+
+test('unavailable native layout falls back to a finite request width that survives JSON serialization', () => {
+  for (const dimension of [undefined, null, '', '622', NaN, Infinity, -Infinity, 0, -1]) {
+    const request = nativeRenderRequest('md-button', { label: 'Continue' }, false);
+    request.width = nativeViewportWidth(dimension, { paddingLeft: '24px', paddingRight: '' });
+    assert.equal(request.width, 640, String(dimension));
+    assert.equal(JSON.parse(JSON.stringify(request)).width, 640, 'NaN/Infinity must never serialize as null');
+  }
+});
 
 const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; };
 const frame = (sessionId, platform) => ({ sessionId, revision: 1, events: [], imageUrl: 'data:image/png;base64,aA==', platform: platform === 'ios' ? 'macos' : 'android', renderer: platform === 'ios' ? 'SwiftUI' : 'Jetpack Compose', logicalWidth: 640, logicalHeight: 200 });

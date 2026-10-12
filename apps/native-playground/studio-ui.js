@@ -1,3 +1,4 @@
+import { createCanvasTools } from './canvas-tools.js';
 import { renderCode } from './syntax-highlighting.js';
 import { computeStudioTheme, applyStudioTheme, DEFAULT_STUDIO_THEME, loadStudioTheme, saveStudioTheme, exportStudioTheme, nativeThemeTokens } from './studio-theme.js';
 
@@ -5,7 +6,8 @@ const $ = selector => document.querySelector(selector);
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 export function createStudioUI({ getState, onLayoutChange, onThemeChange, notify }) {
   const state = getState();
-  state.layout = { direction: 'ltr', width: 'fit', grid: false, bounds: false };
+  state.layout = { direction: 'ltr', width: 'fit', grid: false, bounds: false, expanded: false };
+  const canvas = createCanvasTools({ getState, onLayoutChange });
   state.studioTheme = computeStudioTheme(loadStudioTheme());
   function applyTheme() {
     applyStudioTheme(state.studioTheme, { root: document.documentElement });
@@ -44,21 +46,6 @@ export function createStudioUI({ getState, onLayoutChange, onThemeChange, notify
       applyTheme(); renderThemeControls(); onThemeChange();
     } catch (error) { $('#theme-error').textContent = error.message; $('#theme-error').hidden = false; }
   }
-  function applyCanvas() {
-    const { layout } = state;
-    $('#preview-stage').dataset.grid = String(layout.grid);
-    $('#preview-stage').dataset.bounds = String(layout.bounds);
-    const frame = $('#component-frame');
-    if (frame) frame.style.width = layout.width === 'fit' ? '100%' : `${layout.width}px`;
-    const root = state.previewDocument?.documentElement;
-    if (root) { root.dir = layout.direction; root.dataset.grid = String(layout.grid); root.dataset.bounds = String(layout.bounds); }
-    const native = $('#preview-content > .native-snapshot');
-    if (native) native.style.width = layout.width === 'fit' ? '100%' : `${layout.width}px`;
-    const width = (layout.width !== 'fit' ? Number(layout.width) : frame?.getBoundingClientRect().width || native?.getBoundingClientRect().width);
-    $('#canvas-dimensions').textContent = `${width ? `${Math.round(width)}px` : 'Auto width'} · ${layout.direction.toUpperCase()}`;
-    $('#canvas-rtl').selected = layout.direction === 'rtl'; $('#canvas-grid').selected = layout.grid; $('#canvas-bounds').selected = layout.bounds;
-  }
-  function changeLayout(patch) { Object.assign(state.layout, patch); applyCanvas(); onLayoutChange(patch); }
   function init() {
     applyTheme(); renderThemeControls();
     $('#open-theme').addEventListener('click', () => { $('#theme-sheet').open = true; });
@@ -87,14 +74,9 @@ export function createStudioUI({ getState, onLayoutChange, onThemeChange, notify
     $('#theme-contrast').addEventListener('mdChange', event => { if (event.target === $('#theme-contrast')) changeTheme({ contrastLevel: Number(event.detail) }); });
     $('#theme-reset').addEventListener('click', () => changeTheme({ ...DEFAULT_STUDIO_THEME, mode: state.studioTheme.config.mode }));
     $('#theme-copy-css').addEventListener('click', async () => { try { await navigator.clipboard.writeText(exportStudioTheme(state.studioTheme)); notify('Theme CSS copied'); } catch { notify('Clipboard unavailable'); } });
-    $('#canvas-width').addEventListener('mdChange', event => { if (event.target === $('#canvas-width')) changeLayout({ width: ['360', '768', '1024'].includes(event.detail) ? Number(event.detail) : 'fit' }); });
-    $('#canvas-rtl').addEventListener('mdClick', event => changeLayout({ direction: event.detail.selected ? 'rtl' : 'ltr' }));
-    $('#canvas-grid').addEventListener('mdClick', event => changeLayout({ grid: event.detail.selected }));
-    $('#canvas-bounds').addEventListener('mdClick', event => changeLayout({ bounds: event.detail.selected }));
-    $('#canvas-fullscreen').addEventListener('click', async () => { try { if (document.fullscreenElement) await document.exitFullscreen(); else await $('.preview-panel').requestFullscreen(); } catch { notify('Fullscreen is unavailable in this browser'); } });
-    new ResizeObserver(() => applyCanvas()).observe($('#preview-stage'));
+    canvas.init();
   }
-  return { init, applyTheme, applyCanvas, nativeOptions: () => ({ themeTokens: nativeThemeTokens(state.studioTheme), direction: state.layout.direction }) };
+  return { init, applyTheme, applyCanvas: canvas.update, dispose: canvas.dispose, nativeOptions: () => ({ themeTokens: nativeThemeTokens(state.studioTheme), direction: state.layout.direction }) };
 }
 
 export function createCoverageUI({ getState, notify }) {

@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/web-dist/md3/md3.css" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/studio.css" />
+  <link rel="stylesheet" href="/canvas-tools.css" />
   <script type="module" src="/app.js"></script>
 </head>
 <body>
@@ -36,9 +37,11 @@
               <md-button id="platform-android" variant="filled" value="android" data-platform="android" icon="android">Android</md-button>
             </md-button-group><span id="preview-runtime" class="runtime-badge">LIVE WEB</span></div>
             <div class="canvas-toolbar" aria-label="Canvas controls">
-              <div class="viewport-controls"><md-select id="canvas-width" aria-label="Preview viewport width" variant="outlined" density="-4" value="fit"><md-select-option value="fit">Responsive</md-select-option><md-select-option value="360">Phone · 360px</md-select-option><md-select-option value="768">Tablet · 768px</md-select-option><md-select-option value="1024">Desktop · 1024px</md-select-option></md-select><span id="canvas-dimensions" class="canvas-dimensions">Auto width</span></div>
-              <div class="canvas-toggles"><md-icon-button id="canvas-rtl" icon="format_textdirection_r_to_l" toggle aria-label="Toggle right-to-left layout" title="Right-to-left layout"></md-icon-button><md-icon-button id="canvas-grid" icon="grid_4x4" toggle aria-label="Toggle spacing grid" title="8px spacing grid"></md-icon-button><md-icon-button id="canvas-bounds" icon="border_outer" toggle aria-label="Toggle component bounds" title="Component bounds"></md-icon-button><md-icon-button id="canvas-fullscreen" icon="fullscreen" aria-label="Expand preview" title="Expand preview"></md-icon-button></div>
+              <div class="viewport-controls"><md-select id="canvas-width" aria-label="Preview viewport width" variant="outlined" density="-4" value="fit"><md-select-option value="fit">Responsive</md-select-option><md-select-option value="360">Phone · 360px</md-select-option><md-select-option value="768">Tablet · 768px</md-select-option><md-select-option value="1024">Desktop · 1024px</md-select-option></md-select><span id="canvas-dimensions" class="canvas-dimensions">Auto width</span><span id="canvas-direction">LTR →</span></div>
+              <span id="canvas-expanded-label" hidden>Expanded studio · Esc to exit</span>
+              <div class="canvas-toggles"><md-tooltip text="Switch left-to-right / right-to-left layout" position="bottom"><md-icon-button id="canvas-rtl" icon="format_textdirection_l_to_r" toggle aria-label="Toggle right-to-left layout"></md-icon-button></md-tooltip><md-tooltip text="8px grid with 64px pixel rulers" position="bottom"><md-icon-button id="canvas-grid" icon="grid_4x4" toggle aria-label="Toggle pixel grid and rulers"></md-icon-button></md-tooltip><md-tooltip text="Inspect size, padding, spacing and typography" position="bottom"><md-icon-button id="canvas-bounds" icon="design_services" toggle aria-label="Inspect component measurements"></md-icon-button></md-tooltip><md-tooltip id="canvas-expand-tooltip" text="Expand canvas and properties" position="bottom"><md-icon-button id="canvas-fullscreen" icon="fullscreen" aria-label="Expand studio with properties" aria-expanded="false"></md-icon-button></md-tooltip></div>
             </div>
+            <p id="canvas-help" hidden></p>
             <div id="preview-stage" class="preview-stage"><div id="preview-content"></div></div>
             <div class="preview-footer"><span id="preview-caption">Original AWC component</span><span id="recipe-status">Live reference</span></div>
             </md-card>

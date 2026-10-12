@@ -1,4 +1,4 @@
-import { encodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, nativePreviewTarget, nativeLiveEndpoint, createNativeSessionCoordinator, createNativeLiveClient, createNativePointerInput, nativeImagePoint, nativeTextChunks } from './contracts.js';
+import { encodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, nativeViewportWidth, nativePreviewTarget, nativeLiveEndpoint, createNativeSessionCoordinator, createNativeLiveClient, createNativePointerInput, nativeImagePoint, nativeTextChunks } from './contracts.js';
 import { recipeFor, categoryFor, categoryOrder, displayName, icons } from './recipes.js';
 import { mergeComponentDocumentation, memberDocumentation } from './documentation.js';
 import { createDocumentationUI } from './documentation-ui.js';
@@ -192,7 +192,7 @@ function renderPreview() {
         if (frame.style.height !== `${height}px`) frame.style.height = `${height}px`;
       });
       state.previewObserver.observe(canvas.querySelector('.demo'));
-      renderProperties();
+      renderProperties(); studioUI.applyCanvas();
     } catch (error) { if (generation === state.previewGeneration) { root.innerHTML = `<p class="load-error">${escape(error.message)}</p>`; } }
   });
   root.append(frame); studioUI.applyCanvas();
@@ -251,7 +251,7 @@ function scheduleNativeRender(delay = 300) {
   // Render at the available logical width instead of shrinking a 640pt image
   // (which also shrinks the native button and font in a narrow browser pane).
   const frame = $('#native-render-frame'), frameStyle = getComputedStyle(frame);
-  payload.width = Math.max(320, Math.min(1200, Math.floor(frame.clientWidth - parseFloat(frameStyle.paddingLeft) - parseFloat(frameStyle.paddingRight))));
+  payload.width = nativeViewportWidth(frame.clientWidth, frameStyle);
   nativeRenderState('loading', delay ? 'Waiting for property changes…' : 'Checking the native renderer…');
   const platform = state.platform;
   state.nativeRenderTimer = setTimeout(() => chooseNativePreview(payload, request, platform), delay);
@@ -376,6 +376,7 @@ function showNativeLiveFrame(result, platform) {
 function presentNativeLiveFrame(image, result, platform) {
   const target = nativePreviewTarget(platform);
   let surface = $('#native-live-surface');
+  const firstFrame = !surface;
   if (!surface) {
     if (!image) return;
     nativeRenderState('ready', 'Native session connected.');
@@ -394,6 +395,7 @@ function presentNativeLiveFrame(image, result, platform) {
     surface.dataset.frameMetrics = JSON.stringify({ received: perf.received, presented: perf.presented, fps: perf.fps, decodeMs: +perf.decodeMs.toFixed(2) });
   }
   updateNativeLiveFrameMetadata(result, target);
+  if (firstFrame) studioUI.applyCanvas();
 }
 
 function updateNativeLiveFrameMetadata(result, target) {

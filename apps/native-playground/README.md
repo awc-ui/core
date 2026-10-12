@@ -45,9 +45,19 @@ accordions. Coverage source links use AWC lists.
 
 The web preview runs in a dedicated same-origin iframe. Responsive, 360 px,
 768 px and 1024 px widths change its actual viewport, so media queries respond
-to the preview width. Canvas controls offer RTL, an 8 px grid, component bounds
-and fullscreen. RTL is also sent to native hosts; native sizing follows the
-host's capture limits rather than a browser viewport.
+to the preview width. Canvas controls offer RTL, an 8 px grid with 64 px rulers,
+and a live measurement inspector. The inspector reads rendered web geometry,
+computed padding/margins/gaps, font size, line height, weight and direction;
+hover inspection can select internal shadow parts without blocking clicks.
+RTL changes start/end layout and icon order; centered text-only controls can
+look identical in both directions.
+
+Expanded studio keeps the canvas and editable Properties panel together, with
+an explicit exit control and Escape support. When browser fullscreen is
+unavailable, the same workspace expands inside the page. Native previews get
+RTL and a grid measured in displayed CSS pixels. Their internal element spacing
+and typography are unavailable from image streams; the inspector states this
+explicitly. Native pt/dp dimensions remain in the live-stream status.
 
 **Usage & API**, below the preview, has copyable HTML, React, Angular, Vue, Svelte,
 SwiftUI and Android examples. Selecting a code language is independent of the

@@ -72,6 +72,17 @@ export function nativeRenderRequest(tag, properties, dark, options = {}) {
   return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640, ...nativeThemeOptions(options) };
 }
 
+/** A native request must remain valid before the preview's CSS/layout is ready. */
+export function nativeViewportWidth(clientWidth, style = {}) {
+  if (!Number.isFinite(clientWidth) || clientWidth <= 0) return 640;
+  const padding = value => {
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  };
+  const available = Math.max(0, clientWidth - padding(style?.paddingLeft) - padding(style?.paddingRight));
+  return Math.max(320, Math.min(1200, Math.floor(available)));
+}
+
 const NATIVE_PREVIEW_TARGETS = Object.freeze({
   ios: Object.freeze({ platform: 'macos', renderer: 'SwiftUI', title: 'SwiftUI · macOS native render', host: 'macOS', unit: 'pt', eventOrigin: 'SwiftUI · macOS', badge: 'LIVE SWIFTUI', snapshot: true, playground: 'open apps/native-ios-playground/AWCPlayground.xcodeproj' }),
   android: Object.freeze({ platform: 'android', renderer: 'Jetpack Compose', title: 'Jetpack Compose · Android emulator', host: 'Android emulator', unit: 'dp', eventOrigin: 'Jetpack Compose · Android', badge: 'LIVE COMPOSE', snapshot: false, playground: 'Open apps/native-android-playground in Android Studio, start an emulator, and run the native playground.' }),
