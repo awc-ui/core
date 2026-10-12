@@ -125,6 +125,8 @@ private func awcButtonNumber(_ value: String?, _ fallback: Double) -> Double {
 /// md-ripple's farthest-corner geometry and 450ms grow / 150ms release fade.
 private struct AWCNativeButtonRipple: View {
     let pressed: Bool
+    let nativePressed: Bool
+    let nativeActivation: Int
     let color: Color
     let origin: CGPoint?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -139,7 +141,7 @@ private struct AWCNativeButtonRipple: View {
                 let elapsed = started.map { context.date.timeIntervalSince($0) } ?? 0
                 let growth = reduceMotion ? 1 : AWCNativeButtonTiming.cubic(min(1, max(0, elapsed / 0.45)), x1: 0.2, y1: 0, x2: 0, y2: 1)
                 let fadeStart = max(0.45, released.flatMap { release in started.map { release.timeIntervalSince($0) } } ?? .infinity)
-                let alpha = reduceMotion ? (pressed ? 0.12 : 0) : started == nil ? 0 : 0.12 * (1 - AWCNativeButtonTiming.cubic(min(1, max(0, (elapsed - fadeStart) / 0.15)), x1: 0.2, y1: 0, x2: 0, y2: 1))
+                let alpha = reduceMotion ? (pressed || nativePressed ? 0.12 : 0) : started == nil ? 0 : 0.12 * (1 - AWCNativeButtonTiming.cubic(min(1, max(0, (elapsed - fadeStart) / 0.15)), x1: 0.2, y1: 0, x2: 0, y2: 1))
                 let point = waveOrigin ?? CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
                 let dx = max(abs(point.x), abs(geometry.size.width - point.x))
                 let dy = max(abs(point.y), abs(geometry.size.height - point.y))
@@ -155,16 +157,26 @@ private struct AWCNativeButtonRipple: View {
             else if let started {
                 let release = Date(); released = release
                 let remaining = max(0, 0.45 - release.timeIntervalSince(started)) + 0.15
-                completion = Task { @MainActor in
-                    try? await Task.sleep(for: .seconds(remaining))
-                    guard !Task.isCancelled else { return }
-                    self.started = nil; self.released = nil
-                }
+                finish(after: remaining)
             }
+        }
+        .onChange(of: nativeActivation) { _, _ in
+            // Keyboard/accessibility activation has no pointer location or
+            // held ButtonStyle press. Start a centered, self-releasing wave.
+            completion?.cancel()
+            let now = Date(); started = now; released = now; waveOrigin = nil
+            finish(after: 0.6)
         }
         .onDisappear { completion?.cancel() }
     }
 
+    private func finish(after seconds: Double) {
+        completion = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(seconds))
+            guard !Task.isCancelled else { return }
+            started = nil; released = nil
+        }
+    }
 }
 
 private struct AWCNativeButtonStyle: ButtonStyle {
@@ -183,6 +195,8 @@ private struct AWCNativeButtonStyle: ButtonStyle {
     let connectedLeft: Bool
     let connectedRight: Bool
     var pointerPressed: () -> Void = {}
+    var nativePressed = false
+    var nativeActivation = 0
     func makeBody(configuration: Configuration) -> some View {
         AWCNativeButtonStyleBody(metrics: metrics, palette: palette, theme: theme,
                                  variant: variant, shape: shape, shapeMorph: shapeMorph,
@@ -190,6 +204,7 @@ private struct AWCNativeButtonStyle: ButtonStyle {
                                  loading: loading, fullWidth: fullWidth, focused: focused,
                                  connectedLeft: connectedLeft, connectedRight: connectedRight,
                                  pointerPressed: pointerPressed,
+                                 nativePressed: nativePressed, nativeActivation: nativeActivation,
                                  configuration: configuration)
     }
 }
@@ -210,6 +225,8 @@ private struct AWCNativeButtonStyleBody: View {
     let connectedLeft: Bool
     let connectedRight: Bool
     let pointerPressed: () -> Void
+    let nativePressed: Bool
+    let nativeActivation: Int
     let configuration: ButtonStyleConfiguration
     @State private var hovered = false
     @State private var frame = CGRect.zero
@@ -242,7 +259,8 @@ private struct AWCNativeButtonStyleBody: View {
 
     var body: some View {
         let active = enabled && !blocked
-        let pressed = active && configuration.isPressed
+        let pointerIsPressed = active && configuration.isPressed
+        let pressed = active && (configuration.isPressed || nativePressed)
         let isHovered = pointer.map { state in state.location.map(frame.contains) ?? false } ?? hovered
         let pointerOrigin = pointer.flatMap { state in
             state.isPointerDown ? state.pressLocation.map { CGPoint(x: $0.x - frame.minX, y: $0.y - frame.minY) } : nil
@@ -280,7 +298,11 @@ private struct AWCNativeButtonStyleBody: View {
                             .animation(reduceMotion ? nil : .timingCurve(pressed ? 0.05 : 0.2, pressed ? 0.7 : 0, pressed ? 0.1 : 0, 1, duration: pressed ? 0.05 : 0.1), value: stateOpacity)
                     }
                     .overlay {
-                        if ripple { AWCNativeButtonRipple(pressed: pressed, color: color(palette.labelRole), origin: pointerOrigin) }
+                        if ripple {
+                            AWCNativeButtonRipple(pressed: pointerIsPressed, nativePressed: active && nativePressed,
+                                                  nativeActivation: nativeActivation, color: color(palette.labelRole), origin: pointerOrigin)
+                                .opacity(active ? 1 : 0)
+                        }
                     }
             })
         let bordered = AnyView(surface.overlay {
@@ -320,7 +342,7 @@ private struct AWCNativeButtonStyleBody: View {
                 localPointerDown = true; localOrigin = value.startLocation
             }.onEnded { _ in localPointerDown = false }, including: pointer == nil ? .all : .none)
             .onHover { hovered = $0 }
-            .onChange(of: pressed) { _, isPressed in
+            .onChange(of: pointerIsPressed) { _, isPressed in
                 if isPressed { pointerPressed() }
             }
     }
@@ -337,11 +359,27 @@ private struct AWCNativeButtonControl<Label: View>: View {
     let direction: String
     @ViewBuilder let label: () -> Label
     @State private var focusHandle = AWCButtonFocusHandle()
+    @State private var nativePressed = false
+    @State private var nativeActivation = 0
+    @State private var nativePressCompletion: Task<Void, Never>?
     @Environment(\.layoutDirection) private var inheritedDirection
     @Environment(\.awcButtonFocusGroup) private var group
     @Environment(\.awcGridCellContext) private var cell
     @Environment(\.awcNativeFocusChanged) private var focusChanged
-    private func activate() { _ = focusHandle.requestFocus?(); action() }
+    private func activate() {
+        guard !policy.activationBlocked else { return }
+        _ = focusHandle.requestFocus?()
+        nativeActivation &+= 1
+        nativePressed = true
+        nativePressCompletion?.cancel()
+        nativePressCompletion = Task { @MainActor in
+            // Match md-button's Enter/Space pulse, independently of keyUp.
+            try? await Task.sleep(for: .milliseconds(150))
+            guard !Task.isCancelled else { return }
+            nativePressed = false; nativePressCompletion = nil
+        }
+        action()
+    }
     private func pointerActivate() { _ = focusHandle.requestPointerFocus?(); action() }
     var body: some View {
         Button(action: pointerActivate, label: label)
@@ -350,7 +388,8 @@ private struct AWCNativeButtonControl<Label: View>: View {
                                               selected: style.selected, ripple: style.ripple, blocked: style.blocked, loading: style.loading,
                                               fullWidth: style.fullWidth, focused: focusHandle.isFocusVisible,
                                               connectedLeft: style.connectedLeft, connectedRight: style.connectedRight,
-                                              pointerPressed: { _ = focusHandle.requestPointerFocus?() }))
+                                              pointerPressed: { _ = focusHandle.requestPointerFocus?() },
+                                              nativePressed: nativePressed, nativeActivation: nativeActivation))
             .focusable(false)
             .disabled(policy.activationBlocked)
             .accessibilityHidden(true)
@@ -361,6 +400,10 @@ private struct AWCNativeButtonControl<Label: View>: View {
             }
             .accessibilityElement(children: .contain)
             .environment(\.layoutDirection, direction == "rtl" ? .rightToLeft : direction == "ltr" ? .leftToRight : inheritedDirection)
+            .onChange(of: policy.activationBlocked) { _, blocked in
+                if blocked { nativePressCompletion?.cancel(); nativePressed = false }
+            }
+            .onDisappear { nativePressCompletion?.cancel(); nativePressed = false }
     }
 }
 

@@ -105,6 +105,53 @@ struct FocusFixture: View {
         check(pixels(host) != baseline, "Keyboard use on a pointer-focused button restores visible focus")
         window.close(); pump()
     }
+    static func checkNativeKeyboardRipple() {
+        func runCase(_ name: String, properties: [String: AWCValue], expectAction: Bool, expectWave: Bool, keyCode: UInt16 = 36, characters: String = "\r", presses: Int = 1) {
+            let keyName = keyCode == 49 ? "Space" : "Enter"
+            let state = FocusModalityFixtureState()
+            let host = NSHostingView(rootView: KeyboardRippleFixture(state: state, properties: properties))
+            let window = NSWindow(contentRect: .init(x: -20000, y: -20000, width: 320, height: 140), styleMask: [.borderless], backing: .buffered, defer: false)
+            window.isReleasedWhenClosed = false; window.colorSpace = .sRGB
+            window.contentView = host; window.orderFrontRegardless(); host.layoutSubtreeIfNeeded(); pump(0.25)
+            guard let target = descendants(host).first(where: {
+                String(describing: type(of: $0)).contains("AWCNativeButtonFocusView") && $0.accessibilityIdentifier() == "keyboard-ripple-target"
+            }) else { fatalError("Missing native keyboard-ripple target") }
+            _ = window.makeFirstResponder(target)
+            // Focus is already visible and settled before Enter; shapeMorph is
+            // false in the fixture. Neither can make the ripple assertion pass.
+            pump(0.3)
+            let baseline = pixels(host)
+            check(window.firstResponder === target, "\(name): baseline has real settled native keyboard focus")
+            for press in 0..<presses {
+                let time = ProcessInfo.processInfo.systemUptime
+                let down = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: time,
+                    windowNumber: window.windowNumber, context: nil, characters: characters, charactersIgnoringModifiers: characters, isARepeat: false, keyCode: keyCode)!
+                let up = NSEvent.keyEvent(with: .keyUp, location: .zero, modifierFlags: [], timestamp: time + 0.01,
+                    windowNumber: window.windowNumber, context: nil, characters: characters, charactersIgnoringModifiers: characters, isARepeat: false, keyCode: keyCode)!
+                window.sendEvent(down); window.sendEvent(up)
+                if press + 1 < presses { pump(0.06) }
+            }
+            var frames: [[UInt8]] = []
+            for _ in 0..<8 { pump(0.045); frames.append(pixels(host)) }
+            check(state.clicks == (expectAction ? presses : 0), "\(name): \(keyName) dispatches exactly the allowed action count")
+            if expectWave {
+                let largestDifference = frames.map { zip($0, baseline).filter { $0 != $1 }.count }.max() ?? 0
+                check(largestDifference > 100, "\(name): \(keyName) produces actual transient native ripple pixels with shape morph and focus changes excluded")
+                check(Set(frames.map { Data($0) }).count > 1, "\(name): multiple sampled native frames show the ripple progressing")
+            } else {
+                check(frames.allSatisfy { $0 == baseline }, "\(name): disabled ripple or blocked activation produces no native wave")
+            }
+            pump(0.4)
+            check(pixels(host) == baseline && window.firstResponder === target, "\(name): ripple settles exactly to the focused baseline without losing focus")
+            check(state.clicks == (expectAction ? presses : 0), "\(name): completing native animation never dispatches another action")
+            window.close(); pump()
+        }
+        runCase("Enabled keyboard ripple", properties: ["ripple": true], expectAction: true, expectWave: true)
+        runCase("Space keyboard ripple", properties: ["ripple": true], expectAction: true, expectWave: true, keyCode: 49, characters: " ")
+        runCase("Repeated Enter ripple", properties: ["ripple": true], expectAction: true, expectWave: true, presses: 2)
+        runCase("Ripple disabled", properties: ["ripple": false], expectAction: true, expectWave: false)
+        runCase("Soft-disabled activation", properties: ["ripple": true, "softDisabled": true], expectAction: false, expectWave: false)
+    }
     static func main() {
         setbuf(stdout, nil)
         let app = NSApplication.shared; app.setActivationPolicy(.accessory)
@@ -163,6 +210,7 @@ struct FocusFixture: View {
         check(!view("z").canBecomeKeyView && view("a").canBecomeKeyView, "Mounted hard-disable recomputes group entry")
         window.close(); pump()
         checkPointerFocusModality()
+        checkNativeKeyboardRipple()
         print("Passed \(count) real native keyboard, focus-visual and accessibility integration checks.")
     }
 }
@@ -176,6 +224,22 @@ struct FocusModalityFixture: View {
     var body: some View {
         AWCNativeView(node: .init(id: "modality-target", tag: "md-button",
             properties: ["variant": "filled", "size": "md", "ripple": false], children: [.text("Continue")]), onEvent: { event in
+                if event.name == "mdClick" { state.clicks += 1 }
+            })
+            .padding(24).frame(width: 320, height: 140, alignment: .topLeading).background(Color.white)
+            .environment(\.awcNativePointerState, state.pointer)
+            .environment(\.colorScheme, .light)
+            .coordinateSpace(name: "awc-native-preview")
+    }
+}
+
+struct KeyboardRippleFixture: View {
+    let state: FocusModalityFixtureState
+    let properties: [String: AWCValue]
+    var body: some View {
+        AWCNativeView(node: .init(id: "keyboard-ripple-target", tag: "md-button",
+            properties: ["variant": "filled", "size": "md", "shapeMorph": false].merging(properties) { _, value in value },
+            children: [.text("Continue")]), onEvent: { event in
                 if event.name == "mdClick" { state.clicks += 1 }
             })
             .padding(24).frame(width: 320, height: 140, alignment: .topLeading).background(Color.white)
