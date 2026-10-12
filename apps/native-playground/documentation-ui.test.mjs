@@ -101,29 +101,25 @@ test('Text input immediately applies safe plain content to the Web preview', asy
   assert.equal(appended[0].innerHTML, '');
 });
 
-test('same-component docs enrichment and platform switches retain open sections, method args and caret', t => {
+test('same-component docs enrichment and platform switches retain method args and caret', t => {
   const { ui, root, state } = fixture(t);
   ui.renderUsage();
-  root.querySelector('[data-usage-section="Methods"]').expanded = true;
   const input = root.querySelector('[data-method-name="setCustomValidity"]');
   input.value = '["Use a longer value"]'; input.focus(); input.setSelectionRange(2, 9);
   state.selected = { ...state.selected, dataTypes: [{ name: 'Value', body: 'string' }] };
   ui.renderUsage();
-  assert.equal(root.querySelector('[data-usage-section="Methods"]').expanded, true);
   assert.ok(root.querySelector('#usage-language-tabs'));
   assert.equal(document.activeElement.value, '["Use a longer value"]');
   assert.deepEqual([document.activeElement.selectionStart, document.activeElement.selectionEnd], [2, 9]);
   assert.doesNotMatch(root.innerHTML, /Returns <code>inferred/);
   state.platform = 'android'; ui.renderUsage();
-  assert.equal(root.querySelector('[data-usage-section="Methods"]').expanded, true);
   assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').value, '["Use a longer value"]');
   assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').disabled, true);
   state.selected = { ...state.selected, tag: 'md-number-field' }; ui.renderUsage();
-  assert.equal(root.querySelector('[data-usage-section="Methods"]').expanded, false);
   assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').value, '[]');
 });
 
-test('API topics and payloads use AWC disclosures, retain independent expansion and restore header focus', t => {
+test('API topics and code use visible AWC cards and preserve keyboard focus on code', t => {
   const { ui, root, state } = fixture(t, {
     events: [{ name: 'mdInput', detail: 'string' }, { name: 'mdChange', detail: '{ value: string }' }],
     slots: [{ name: '' }], cssParts: [{ name: 'input' }], dataTypes: [{ name: 'Payload', body: 'string' }],
@@ -131,30 +127,25 @@ test('API topics and payloads use AWC disclosures, retain independent expansion 
   ui.renderUsage();
   assert.equal(root.querySelectorAll('[data-usage-section]').length, 5);
   assert.equal(root.querySelectorAll('[data-usage-payload]').length, 2);
-  assert.doesNotMatch(root.innerHTML, /<details\b|<summary\b|<button\b|<input\b/);
-  assert.match(root.innerHTML, /<md-accordion-item[^>]+data-usage-section="Events"/);
-  assert.match(root.innerHTML, /<md-accordion-item[^>]+data-usage-payload="mdInput"[^>]+content-max-height="300px"/);
+  assert.doesNotMatch(root.innerHTML, /<details\b|<summary\b|<button\b|<input\b|<md-accordion/);
+  assert.match(root.innerHTML, /<md-card[^>]+data-usage-section="Events"[^>]+variant="outlined"/);
+  assert.match(root.innerHTML, /<md-card[^>]+class="usage-code-card"[^>]+data-usage-payload="mdInput"/);
+  assert.match(root.innerHTML, /class="usage-code-description"/);
   assert.match(root.innerHTML, /<md-button[^>]+class="usage-guide"/);
-  root.querySelector('[data-usage-section="Events"]').expanded = true;
-  root.querySelector('[data-usage-section="Slots"]').expanded = true;
-  const payload = root.querySelector('[data-usage-payload="mdInput"]');
-  payload.expanded = true;
-  payload.focus();
+  const code = root.querySelector('#usage-payload-0-code');
+  assert.equal(code.attributes.tabindex, '0');
+  assert.equal(code.attributes['aria-labelledby'], 'usage-payload-0-title');
+  code.focus();
   state.platform = 'ios';
   ui.renderUsage();
-  assert.equal(root.querySelector('[data-usage-section="Events"]').expanded, true);
-  assert.equal(root.querySelector('[data-usage-section="Slots"]').expanded, true);
-  assert.equal(root.querySelector('[data-usage-payload="mdInput"]').expanded, true);
-  assert.equal(root.querySelector('[data-usage-payload="mdChange"]').expanded, false);
-  assert.equal(document.activeElement, root.querySelector('[data-usage-payload="mdInput"]'));
-  assert.equal(document.activeElement.focusHeaderCalls, 1, 'Restores the actual AWC header through its public API');
+  assert.equal(document.activeElement, root.querySelector('#usage-payload-0-code'));
+  assert.doesNotMatch(root.innerHTML, /<md-accordion|content-max-height/);
   state.selected = { ...state.selected, tag: 'md-number-field' };
   ui.renderUsage();
-  assert.ok(root.querySelectorAll('[data-usage-section]').every(item => !item.expanded));
-  assert.ok(root.querySelectorAll('[data-usage-payload]').every(item => !item.expanded));
+  assert.notEqual(document.activeElement, root.querySelector('#usage-payload-0-code'), 'Changing component does not move focus into new code');
 });
 
-test('event details show readable source fields and examples before an optional escaped type definition', t => {
+test('event details show readable source fields and explained code cards with escaped type definitions', t => {
   const { ui, root, state } = fixture(t, {
     tag: 'md-button', methods: [], events: [{ name: 'mdClick', detail: 'ClickDetail', cancelable: true }, { name: 'mdOpen', detail: 'void' }],
     eventTypes: [{ name: 'ClickDetail', kind: 'interface', body: '/** <source> */\nselected: boolean;', fields: [
@@ -169,11 +160,12 @@ test('event details show readable source fields and examples before an optional 
   assert.match(root.innerHTML, /payload-field-optional">Optional/);
   assert.match(root.innerHTML, /Read this event/);
   assert.match(root.innerHTML, /event\.preventDefault/);
-  assert.match(root.innerHTML, /headline="Type definition"/);
-  assert.equal(root.querySelector('[data-usage-payload="mdClick"]').expanded, false);
+  assert.match(root.innerHTML, />Type definition<\/h4>/);
+  assert.match(root.innerHTML, /The TypeScript contract for <code>mdClick<\/code> event detail/);
+  assert.ok(root.querySelector('[data-usage-payload="mdClick"]'));
   assert.equal(root.querySelector('[data-usage-payload="mdOpen"]'), null);
   assert.match(root.innerHTML, /This event does not carry payload data/);
-  assert.ok(root.innerHTML.indexOf('class="payload-fields"') < root.innerHTML.indexOf('headline="Type definition"'));
+  assert.ok(root.innerHTML.indexOf('class="payload-fields"') < root.innerHTML.indexOf('>Type definition</h4>'));
   assert.doesNotMatch(root.innerHTML, /<source>|<script>/);
   assert.match(root.innerHTML, /&lt;source&gt;/);
   state.platform = 'ios'; ui.renderUsage();

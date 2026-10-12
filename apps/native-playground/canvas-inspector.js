@@ -102,12 +102,7 @@ export function createCanvasInspector({ getState, document: ownerDocument = glob
     doc.fonts?.ready?.then(() => { if (frameDocument === doc) schedule(); });
   }
   function draw() {
-    if (disposed || !panel || !getState().layout?.bounds) return;
-    if (getState().platform !== 'web') {
-      heading.textContent = 'Native image stream'; hoverButton.hidden = true;
-      content.innerHTML = '<p class="canvas-inspector-note">Element size, padding, margin, gap and typography are unavailable from the native pixel stream. Use the Web preview to inspect real CSS measurements.</p>';
-      return;
-    }
+    if (disposed || !panel || !getState().layout?.bounds || getState().platform !== 'web') return;
     hoverButton.hidden = false; hoverButton.selected = hovered;
     if (!selected?.isConnected || !composedContains(target, selected)) selected = target;
     const metrics = inspectElement(selected);
@@ -143,7 +138,7 @@ export function createCanvasInspector({ getState, document: ownerDocument = glob
   function update() {
     if (disposed) return;
     const state = getState(); ensurePanel(); if (!panel) return;
-    panel.hidden = !state.layout?.bounds;
+    panel.hidden = state.platform !== 'web' || !state.layout?.bounds;
     if (panel.hidden) { disconnect(); return; }
     if (state.platform === 'web' && state.previewDocument && state.target?.ownerDocument === state.previewDocument) {
       if (frameDocument !== state.previewDocument || target !== state.target) connect(state.previewDocument, state.target);

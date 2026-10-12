@@ -90,16 +90,20 @@ test('style mutations refresh measurements and transformed boxes do not pretend 
   assert.match(parent.window.document.querySelector('[data-inspector-content]').textContent, /transformed element: spacing guides omitted/);
 });
 
-test('native mode never borrows web element measurements and disabling/disposal removes overlays', async t => {
+test('both native modes hide inspection while retaining the Web preference and removing overlays', async t => {
   const { parent, frame, state, inspector } = setup(t); inspector.update();
-  state.platform = 'android'; inspector.update();
   const panel = parent.window.document.querySelector('#canvas-inspector-panel');
-  assert.match(panel.textContent, /unavailable from the native pixel stream/);
-  assert.doesNotMatch(panel.textContent, /105\.25px/);
-  assert.equal(frame.window.document.querySelector('.canvas-measure-overlay'), null);
-  assert.equal(parent.window.document.querySelector('#canvas-inspector-hover').hidden, true);
-  state.platform = 'web'; inspector.update();
-  assert.ok(frame.window.document.querySelector('.canvas-measure-overlay'));
+  for (const platform of ['ios', 'android']) {
+    state.platform = platform; inspector.update();
+    assert.equal(panel.hidden, true);
+    assert.equal(state.layout.bounds, true, 'native mode does not erase the Web preference');
+    assert.equal(frame.window.document.querySelector('.canvas-measure-overlay'), null);
+    assert.equal(frame.window.document.querySelector('link[data-canvas-inspector-style]'), null);
+    state.platform = 'web'; inspector.update();
+    assert.equal(panel.hidden, false);
+    assert.ok(frame.window.document.querySelector('.canvas-measure-overlay'));
+    assert.match(panel.textContent, /105\.25px × 56px/);
+  }
   state.layout.bounds = false; inspector.update();
   assert.equal(panel.hidden, true);
   assert.equal(frame.window.document.querySelector('.canvas-measure-overlay'), null);

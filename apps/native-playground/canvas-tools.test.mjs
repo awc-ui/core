@@ -21,6 +21,7 @@ class ElementStub {
   async emit(name, detail = {}) { for (const listener of [...this.listeners.get(name) || []]) await listener({ target: this, defaultPrevented: false, ...detail }); }
   setAttribute(name, value) { this.attributes.set(name, String(value)); }
   getAttribute(name) { return this.attributes.get(name) ?? null; }
+  closest(selector) { return selector === 'md-tooltip' ? this.tooltip : null; }
   append(...children) { for (const child of children) { child.remove(); child.parentNode = this; this.children.push(child); } }
   replaceChildren(...children) { for (const child of this.children) child.parentNode = null; this.children = []; this.append(...children); }
   remove() { if (this.parentNode) this.parentNode.children = this.parentNode.children.filter(child => child !== this); this.parentNode = null; }
@@ -38,6 +39,7 @@ function frameDocument(width = 384, height = 256) {
 function fixture(t, options = {}) {
   const selectors = ['.workspace-grid', '#preview-stage', '#component-frame', '#canvas-dimensions', '#canvas-direction', '#canvas-help', '#canvas-rtl', '#canvas-grid', '#canvas-bounds', '#canvas-fullscreen', '#canvas-expand-tooltip', '#canvas-expanded-label', '#canvas-width'];
   const nodes = new Map(selectors.map(selector => [selector, new ElementStub()]));
+  for (const selector of ['#canvas-grid', '#canvas-bounds']) nodes.get(selector).tooltip = new ElementStub();
   const doc = frameDocument(), frame = nodes.get('#component-frame'), workspace = nodes.get('.workspace-grid');
   const preview = frameDocument();
   frame.clientWidth = preview.documentElement.clientWidth; frame.clientHeight = preview.documentElement.clientHeight;
@@ -130,42 +132,43 @@ test('actual surface resizing refreshes dimensions and rulers after a width tran
   assert.ok(observers.every(observer => !observer.elements.has(frame)), 'old frames are unobserved');
   assert.ok(observers.some(observer => observer.elements.has(nativeSurface)));
   assert.equal(nodes.get('#canvas-dimensions').textContent, '426 × 180 px', 'native measurements exclude fixture headings, status and documentation');
-  assert.match(nodes.get('#canvas-help').textContent, /screen CSS px/);
+  assert.equal(nodes.get('#canvas-help').hidden, true);
+  assert.equal(nativeSurface.children.length, 0, 'native surfaces never receive Web rulers');
 });
 
-test('native rulers measure screen CSS pixels and resize, transfer, hide and dispose with their live surface', t => {
-  const { ui, state, nodes, observers, flush } = fixture(t, { platform: 'ios', previewDocument: null });
-  nodes.delete('#component-frame');
-  const surface = new ElementStub(); surface.clientWidth = 384; surface.clientHeight = 256;
-  nodes.set('#native-live-surface', surface);
-  state.liveFrame = { width: 1536, height: 1024, logicalWidth: 768, logicalHeight: 512 };
-  state.layout.grid = true; ui.init();
-  const ruler = surface.children[0];
-  assert.equal(ruler.getAttribute('aria-hidden'), 'true');
-  assert.match(ruler.className, /canvas-rulers-native/);
-  assert.equal(ruler.children[0].children.at(-1).textContent, '320', 'labels use displayed CSS size, not native image pixels or points');
-  assert.deepEqual(ruler.children[1].children.map(tick => Number.parseFloat(tick.style.top) + 18), [64, 128, 192]);
-  const unchangedAxis = ruler.children[0]; ui.update();
-  assert.equal(ruler.children[0], unchangedAxis);
-
-  surface.clientWidth = 240; surface.clientHeight = 160;
-  for (const observer of observers) if (observer.elements.has(surface)) observer.callback([{ target: surface }]);
-  flush();
-  assert.equal(surface.children[0], ruler, 'resize reuses the overlay container');
-  assert.deepEqual(ruler.children[0].children.map(tick => tick.textContent), ['64', '128', '192']);
-  assert.deepEqual(ruler.children[1].children.map(tick => Number.parseFloat(tick.style.top) + 18), [64, 128]);
-
-  const replacement = new ElementStub(); replacement.clientWidth = 320; replacement.clientHeight = 200;
-  nodes.set('#native-live-surface', replacement); ui.update();
-  assert.equal(surface.children.length, 0);
-  assert.equal(replacement.children.length, 1);
-  assert.ok(observers.every(observer => !observer.elements.has(surface)));
-  state.layout.grid = false; ui.update();
-  assert.equal(replacement.children.length, 0);
-  state.layout.grid = true; ui.update();
-  assert.equal(replacement.children.length, 1);
-  ui.dispose();
-  assert.equal(replacement.children.length, 0);
+for (const platform of ['ios', 'android']) test(`${platform} disables Web inspection controls and preserves preferences for return to Web`, async t => {
+  const { ui, state, preview, nodes, changes } = fixture(t);
+  const stage = nodes.get('#preview-stage'), grid = nodes.get('#canvas-grid'), bounds = nodes.get('#canvas-bounds');
+  ui.init();
+  await grid.emit('mdClick', { detail: { selected: true } });
+  await bounds.emit('mdClick', { detail: { selected: true } });
+  assert.equal(preview.body.children.length, 1);
+  const originalChanges = changes.length;
+  state.platform = platform;
+  const surface = new ElementStub(); nodes.set('#native-live-surface', surface);
+  ui.update();
+  for (const button of [grid, bounds]) {
+    assert.equal(button.disabled, true); assert.equal(button.selected, false);
+    assert.equal(button.getAttribute('aria-disabled'), 'true');
+    assert.match(button.getAttribute('aria-label'), /Web preview only/);
+    assert.equal(button.tooltip.text, 'Available in Web preview only');
+    await button.emit('mdClick', { detail: { selected: false } });
+  }
+  assert.equal(changes.length, originalChanges, 'native clicks must not change layout or restart the native session');
+  assert.equal(state.layout.grid, true); assert.equal(state.layout.bounds, true);
+  assert.equal(stage.dataset.grid, 'false'); assert.equal(stage.dataset.bounds, 'false');
+  assert.equal(preview.documentElement.dataset.grid, 'false');
+  assert.equal(preview.body.children.length, 0); assert.equal(surface.children.length, 0);
+  assert.equal(nodes.get('#canvas-help').hidden, true);
+  state.platform = 'web'; ui.update();
+  for (const button of [grid, bounds]) {
+    assert.equal(button.disabled, false); assert.equal(button.selected, true);
+    assert.equal(button.getAttribute('aria-disabled'), 'false');
+    assert.doesNotMatch(button.getAttribute('aria-label'), /only/);
+  }
+  assert.equal(grid.tooltip.text, '8px grid with 64px pixel rulers');
+  assert.equal(stage.dataset.grid, 'true'); assert.equal(stage.dataset.bounds, 'true');
+  assert.equal(preview.body.children.length, 1);
 });
 
 test('native fullscreen enters the complete workspace and handles explicit or browser exit', async t => {

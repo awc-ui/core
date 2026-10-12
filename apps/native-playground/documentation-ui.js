@@ -144,15 +144,19 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
     return `<div class="usage-member"><div class="usage-member-heading"><code>${escape(member.name || 'Default slot')}</code>${infoButton(kind, member)}</div>
       <p>${prose(doc.description)}</p>${status === 'unsupported' || status === 'unknown' ? `<span class="usage-support">${escape(doc.support.description)}</span>` : ''}${content}</div>`;
   }
-  function eventPayload(event, index, expanded) {
+  function codeCard({ id, title, description, language, code, payload }) {
+    return `<md-card id="${id}" class="usage-code-card" variant="filled" full-width density="-3"${payload ? ` data-usage-payload="${escape(payload)}"` : ''}><div class="usage-code-card-heading"><h4 id="${id}-title">${escape(title)}</h4><span class="usage-code-language">${language === 'javascript' ? 'JavaScript' : 'TypeScript'}</span></div><p class="usage-code-description">${prose(description)}</p><pre id="${id}-code" class="usage-code-body" data-code-language="${language}" tabindex="0" aria-labelledby="${id}-title">${escape(code)}</pre></md-card>`;
+  }
+  function eventPayload(event, index) {
     const state = getState(), doc = memberDocumentation(state.selected, 'event', event, state.platform);
     const payload = eventPayloadDocumentation(state.selected, doc);
     const fields = payload.fields.length ? `<dl class="payload-fields">${payload.fields.map(field => `<div class="payload-field"><dt><code>${escape(field.name)}</code>${field.optional ? '<span class="payload-field-optional">Optional</span>' : ''}<code class="payload-field-type">${escape(field.type)}</code></dt><dd>${prose(field.description)}</dd></div>`).join('')}</dl>` : '';
     const typeLabel = payload.fields.length ? doc.payloadType?.name || 'object' : payload.type.length < 80 && !/[\n{};]/.test(payload.type) ? payload.type : 'declared type';
     return `<div class="event-payload"><p class="payload-heading">Web event detail${payload.empty ? '' : ` · <code>${escape(typeLabel)}</code>`}</p><p>${escape(payload.description)}</p>${fields}
-      ${payload.example ? `<p class="payload-example-heading">Read this event</p><pre class="payload-example" data-code-language="javascript" tabindex="0" aria-label="${escape(event.name)} web event example">${escape(payload.example)}</pre>` : ''}
+      <div class="payload-code-cards">${payload.example ? codeCard({ id: `usage-event-example-${index}`, title: 'Read this event', description: `Listen for \`${event.name}\`${payload.empty ? '.' : ' and read its payload through `event.detail`.'}`, language: 'javascript', code: payload.example }) : ''}
+      ${payload.empty ? '' : codeCard({ id: `usage-payload-${index}`, title: 'Type definition', description: `The TypeScript contract for \`${event.name}\` event detail.`, language: 'typescript', code: payload.definition, payload: event.name })}</div>
       ${state.platform !== 'web' ? '<p class="payload-platform-note">This is the source web contract. Native callbacks use their adapter payload; DOM event objects are not sent to the native renderer.</p>' : ''}
-      ${payload.empty ? '' : `<md-accordion-item id="usage-payload-${index}" class="usage-type" data-usage-payload="${escape(event.name)}" headline="Type definition" heading-level="4" region-role="group" density="-3" content-max-height="300px"${expanded ? ' expanded' : ''}><pre data-code-language="typescript">${escape(payload.definition)}</pre></md-accordion-item>`}</div>`;
+      </div>`;
   }
   let renderedCssKey;
   function renderCssVariables(styles, sameComponent) {
@@ -187,24 +191,19 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
     const state = getState(), component = state.selected, web = state.platform === 'web';
     const root = document.querySelector('#usage-docs'), cssRoot = document.querySelector('#css-controls');
     const sameComponent = renderedTag === component.tag;
-    const openSections = sameComponent ? new Map([...root.querySelectorAll('[data-usage-section]')].map(section => [section.dataset.usageSection, section.expanded])) : new Map();
-    const openPayloads = sameComponent ? new Map([...root.querySelectorAll('[data-usage-payload]')].map(section => [section.dataset.usagePayload, section.expanded])) : new Map();
     const methodArguments = sameComponent ? new Map([...root.querySelectorAll('[data-method-name]')].map(input => [input.dataset.methodName, input.value])) : new Map();
     const focused = sameComponent && (root.contains(document.activeElement) || cssRoot.contains(document.activeElement)) ? document.activeElement : null;
     const editor = focused?.shadowRoot?.activeElement || focused;
-    const focus = focused?.id ? { id: focused.id, start: editor.selectionStart, end: editor.selectionEnd, header: focused.matches('[data-usage-section]') || focused.matches('[data-usage-payload]') } : null;
+    const focus = focused?.id ? { id: focused.id, start: editor.selectionStart, end: editor.selectionEnd } : null;
     renderedTag = component.tag;
     const generation = ++renderGeneration;
-    // Each API topic is an independent disclosure, as recommended for a single
-    // region. Standalone items also keep nested payload headers from sending
-    // their arrow-key focus requests to an unrelated outer accordion group.
-    const section = (title, rows, body) => `<md-accordion-item id="usage-section-${title.toLowerCase().replace(/[^a-z]+/g, '-')}" class="usage-section" data-usage-section="${escape(title)}" headline="${escape(title)}" heading-level="3" density="-2"${openSections.get(title) ? ' expanded' : ''}><span slot="headline" class="usage-section-headline">${escape(title)} <span class="usage-section-count">${rows.length}</span></span>${rows.length ? body : `<p class="usage-empty">No public ${escape(title.toLowerCase())} declared.</p>`}</md-accordion-item>`;
+    const section = (title, rows, body, action = '') => `<md-card id="usage-section-${title.toLowerCase().replace(/[^a-z]+/g, '-')}" class="usage-section" data-usage-section="${escape(title)}" variant="outlined" full-width density="-3"><div class="usage-section-heading"><div class="usage-section-label"><h3 class="usage-section-title">${escape(title)}</h3><span class="usage-section-count">${rows.length}</span></div>${action}</div>${rows.length ? body : `<p class="usage-empty">No public ${escape(title.toLowerCase())} declared.</p>`}</md-card>`;
     const events = component.events || [], slots = component.slots || [], methods = component.methods || [], styles = component.cssProperties || [], parts = component.cssParts || [];
     root.innerHTML = `<div class="usage-intro"><p>Change properties and interact with the preview. Use <span aria-hidden="true">ⓘ</span> for details, defaults and platform support.</p><md-button class="usage-guide" variant="text" size="xs" icon="open_in_new" href="/repo/packages/core/src/components/${escape(component.tag)}/readme.md" target="_blank">Full component guide</md-button></div>
       <section class="usage-example" aria-label="Live usage example"><div class="usage-code-heading"><md-tabs id="usage-language-tabs" variant="secondary" tab-width="auto" active-tab-index="${snippetLanguages.findIndex(language => language.id === snippetLanguage)}" aria-label="Code language">${snippetLanguages.map(language => `<md-tab label="${escape(language.label)}" data-snippet-language="${language.id}" inline-icon${language.id === 'android' ? ' icon="android"' : ''}>${usageBrandIcon(language.id)}</md-tab>`).join('')}</md-tabs><md-button type="button" id="copy-usage" variant="text" size="xs" icon="content_copy">Copy</md-button></div><pre id="usage-snippet" class="usage-code" tabindex="0" aria-label="Usage code"></pre></section>
-      <div class="api-reference">${section('Events', events, `<md-button type="button" id="watch-usage-events" class="usage-action" variant="text" size="xs">Watch live events</md-button>${events.map((event, index) => {
-        return memberRow('event', event, eventPayload(event, index, openPayloads.get(event.name)));
-      }).join('')}`)}
+      <div class="api-reference">${section('Events', events, events.map((event, index) => {
+        return memberRow('event', event, eventPayload(event, index));
+      }).join(''), events.length ? '<md-button type="button" id="watch-usage-events" class="usage-action" variant="tonal" size="xs" density="0" icon="bolt">Watch live events</md-button>' : '')}
       ${section('Slots', slots, `<p class="usage-empty">Edit plain slot text in the examples${web ? ' and Web preview' : ''}. ${component.tag === 'md-button' ? 'The default slot is also editable as Text in Properties and updates native previews. ' : ''}Reset props restores the fixture.</p>${slots.map((slot, index) => memberRow('slot', slot, `<md-text-field id="slot-${index}" data-slot-index="${index}" label="${escape(slot.name || 'Default')} slot text" aria-label="${escape(slot.name || 'Default')} slot text" placeholder="Use fixture content" value="${escape(slotValue(slot.name))}" density="-2" variant="outlined"></md-text-field>`)).join('')}`)}
       ${section('Methods', methods, `<p class="usage-empty">${web ? 'Arguments use a JSON array, for example ["Message"].' : 'Methods are documented here; browser invocation is available in the Web reference.'}</p>${methods.map((method, index) => {
         const doc = memberDocumentation(component, 'method', method, state.platform);
@@ -212,7 +211,7 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
         return memberRow('method', method, `<code class="usage-signature">${escape(signature)}</code>${doc.returnType && doc.returnType !== 'inferred' ? `<p>Returns <code>${escape(doc.returnType)}</code></p>` : ''}<md-text-field id="method-${index}" data-method-args="${index}" data-method-name="${escape(method.name)}" label="Arguments (JSON array)" value="${escape(methodArguments.get(method.name) ?? '[]')}" density="-2" variant="outlined" ${web ? '' : 'disabled'}></md-text-field><md-button type="button" class="usage-action" variant="tonal" size="xs" data-run-method="${index}" ${web ? '' : 'disabled'}>Run ${escape(method.name)}</md-button><output class="usage-result" id="method-result-${index}" aria-live="polite"></output>`);
       }).join('')}`)}
       ${section('CSS parts', parts, parts.map(part => memberRow('cssPart', part, `<code class="usage-signature">${escape(component.tag)}::part(${escape(part.name)}) { … }</code>`)).join(''))}
-      ${(component.dataTypes?.length || component.callableProps?.length) ? section('Data & callback types', [...(component.dataTypes || []), ...(component.callableProps || [])], [...(component.dataTypes || []).map(type => ['dataType', type]), ...(component.callableProps || []).map(type => ['callableProp', type])].map(([kind, type]) => memberRow(kind, type, `<pre class="usage-code" data-code-language="typescript">${escape(type.body || type.type?.text || type.type || '')}</pre>`)).join('')) : ''}</div>`;
+      ${(component.dataTypes?.length || component.callableProps?.length) ? section('Data & callback types', [...(component.dataTypes || []), ...(component.callableProps || [])], [...(component.dataTypes || []).map(type => ['dataType', type]), ...(component.callableProps || []).map(type => ['callableProp', type])].map(([kind, type], index) => memberRow(kind, type, codeCard({ id: `usage-data-type-${index}`, title: type.name, description: kind === 'callableProp' ? 'The function signature accepted by this callback property.' : 'The TypeScript declaration used by this component.', language: 'typescript', code: type.body || type.type?.text || type.type || '' }))).join('')) : ''}</div>`;
     root.querySelectorAll('[data-code-language]').forEach(code => renderCode(code, code.textContent, code.dataset.codeLanguage));
     renderCssVariables(styles, sameComponent);
     if (focus) {
@@ -221,8 +220,7 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
         const restore = input => { if (generation === renderGeneration && typeof input?.setSelectionRange === 'function' && focus.start != null) input.setSelectionRange(focus.start, focus.end); };
         const restoreFocus = () => {
           if (generation !== renderGeneration || !next.isConnected) return;
-          if (focus.header && typeof next.focusHeader === 'function') next.focusHeader();
-          else next.focus({ preventScroll: true });
+          next.focus({ preventScroll: true });
           if (typeof next.getInputElement === 'function') next.getInputElement().then(restore); else restore(next);
         };
         if (typeof next.componentOnReady === 'function') next.componentOnReady().then(restoreFocus); else restoreFocus();
