@@ -107,7 +107,7 @@ function bindEvents() {
   window.addEventListener('pageshow', event => { if (event.persisted && isNativePlatform(state.platform)) renderPreview(); });
   document.addEventListener('visibilitychange', () => nativeLive.setVisible(!document.hidden));
   $('#reset').addEventListener('click', () => { selectComponent(state.selected.tag); toast('Component properties reset'); });
-  $('#preview-platform-tabs').addEventListener('mdTabChange', event => { if (event.target === $('#preview-platform-tabs')) selectPlatform(['web', 'ios', 'android'][event.detail.index]); });
+  $('#preview-platform-buttons').addEventListener('mdSelectionChange', event => { if (event.target === $('#preview-platform-buttons')) selectPlatform(event.detail.values[0]); });
   $('#studio-doc-tabs').addEventListener('mdTabChange', event => { if (event.target === $('#studio-doc-tabs')) selectStudioSection(['usage', 'coverage', 'events', 'source', 'diagnostics'][event.detail.index]); });
   document.querySelectorAll('[data-inspector]').forEach(button => button.addEventListener('click', () => selectInspector(button.dataset.inspector)));
   $('#copy-source').addEventListener('click', async () => { try { await navigator.clipboard.writeText(state.sourceText); toast('Generated source copied'); } catch { toast('Clipboard unavailable in this browser'); } });
@@ -120,8 +120,7 @@ function selectPlatform(platform) {
   const url = new URL(location.href);
   if (platform === 'web') url.searchParams.delete('platform'); else url.searchParams.set('platform', platform);
   history.replaceState(null, '', url);
-  document.querySelectorAll('[data-platform]').forEach(button => { const active = button.dataset.platform === platform; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); });
-  $('#preview-platform-tabs').activeTabIndex = ['web', 'ios', 'android'].indexOf(platform);
+  document.querySelectorAll('[data-platform]').forEach(button => { button.selected = button.dataset.platform === platform; });
   if (platform !== 'web') state.sourcePlatform = platform;
   renderPreview(); renderProperties(); if (state.docSection === 'source') renderInspector();
 }
