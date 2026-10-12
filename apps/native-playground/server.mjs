@@ -31,14 +31,15 @@ export async function resolveAsset(rawUrl, options = {}) {
   } else if (pathname.startsWith('/repo/')) {
     relative = pathname.slice('/repo/'.length);
     const allowed = ['packages/native-compiler/generated/', 'packages/native-ios/', 'packages/native-android/'];
-    if (relative !== 'packages/core/custom-elements.json' && !allowed.some(prefix => relative.startsWith(prefix))) return null;
+    const componentDocumentation = /^(?:apps\/docs\/src\/data\/components\/[a-z][a-z0-9]*(?:-[a-z0-9]+)*\.json|packages\/core\/src\/components\/md-[a-z][a-z0-9]*(?:-[a-z0-9]+)*\/readme\.md)$/.test(relative);
+    if (relative !== 'packages/core/custom-elements.json' && !componentDocumentation && !allowed.some(prefix => relative.startsWith(prefix))) return null;
     if (!['.json', '.swift', '.kt', '.md'].includes(path.extname(relative))) return null;
     if (relative.split('/').some(part => part.startsWith('.'))) return null;
     root = repo;
   } else {
     root = app;
     relative = pathname === '/' ? 'index.html' : pathname.slice(1);
-    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js'].includes(relative)) return null;
+    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'documentation.js', 'documentation-ui.js', 'usage-snippets.js', 'property-controls.js'].includes(relative)) return null;
   }
   const absolute = path.resolve(root, relative);
   if (!within(path.resolve(root), absolute)) return null;

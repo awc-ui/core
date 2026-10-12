@@ -1,11 +1,15 @@
-import { literalChoices, encodeLiteralChoice, decodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, nativePreviewTarget, nativeLiveEndpoint, createNativeSessionCoordinator, createNativeLiveClient, createNativePointerInput, nativeImagePoint, nativeTextChunks } from './contracts.js';
+import { encodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, nativePreviewTarget, nativeLiveEndpoint, createNativeSessionCoordinator, createNativeLiveClient, createNativePointerInput, nativeImagePoint, nativeTextChunks } from './contracts.js';
 import { recipeFor, categoryFor, categoryOrder, displayName, icons } from './recipes.js';
+import { mergeComponentDocumentation, memberDocumentation } from './documentation.js';
+import { createDocumentationUI } from './documentation-ui.js';
+import { propertyEditor, parsePropertyInput } from './property-controls.js';
 
 const $ = selector => document.querySelector(selector);
 const state = { components: [], selected: null, platform: 'web', inspector: 'contract', filter: 'all', props: {}, events: [], catalog: null, ready: false, target: null, sourcePlatform: 'ios', sourceText: '', sourceCache: new Map(), renderVersion: 0 };
+const documentationUI = createDocumentationUI({ getState: () => state, notify: toast, afterInteraction: syncReferenceState, watchEvents: () => { selectInspector('events'); $('.inspector-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
+const documentationRequests = new Map();
 const nativeRequests = createLatestRequest();
 const nativeSessions = { ios: createNativeSessionCoordinator(), android: createNativeSessionCoordinator() };
-state.nativeMode = 'live';
 let nativeLive = nativeClientFor('ios');
 const isNativePlatform = platform => platform === 'ios' || platform === 'android';
 function nativeClientFor(platform) {
@@ -34,11 +38,24 @@ function parseDefault(value) {
   try { return JSON.parse(value); } catch { return undefined; }
 }
 function normalizeManifest(manifest) {
-  return manifest.modules.flatMap(module => module.declarations || []).filter(component => component.tagName).map(component => ({
-    tag: component.tagName, name: component.name, category: categoryFor(component.tagName), description: component.description || component.summary || '',
-    properties: (component.members || []).filter(member => member.kind === 'field' && member.privacy !== 'private').map(member => ({ name: member.name, type: member.type?.text || 'unknown', default: member.default, defaultValue: parseDefault(member.default), options: Array.from((member.type?.text || '').matchAll(/'([^']*)'/g), match => match[1]) })),
-    events: (component.events || []).map(event => ({ name: event.name, detail: event.type?.text || '' })), slots: component.slots || [], methods: (component.members || []).filter(member => member.kind === 'method'), diagnostics: [], support: {},
-  }));
+  return manifest.modules.flatMap(module => module.declarations || []).filter(component => component.tagName).map(component => {
+    const normalized = mergeComponentDocumentation(component);
+    return { ...normalized, category: categoryFor(normalized.tag), description: normalized.description || normalized.summary || '',
+      properties: normalized.properties.map(normalizeProperty), events: normalized.events.map(event => ({ ...event, detail: event.detail || event.type?.text || '' })), diagnostics: [], support: {} };
+  });
+}
+function normalizeProperty(prop) {
+  const type = typeof prop.type === 'object' ? prop.type.text : prop.type || 'unknown';
+  return { ...prop, type, defaultValue: Object.hasOwn(prop, 'defaultValue') ? prop.defaultValue : parseDefault(prop.default), options: prop.options || Array.from(type.matchAll(/'([^']*)'/g), match => match[1]) };
+}
+async function loadComponentDocumentation(component) {
+  if (component.documentationLoaded) return;
+  if (!documentationRequests.has(component.tag)) documentationRequests.set(component.tag, getJSON(`/repo/apps/docs/src/data/components/${component.tag.replace(/^md-/, '')}.json`));
+  try {
+    const reference = await documentationRequests.get(component.tag);
+    Object.assign(component, mergeComponentDocumentation(component, {}, reference), { documentationLoaded: true });
+    if (state.selected === component) renderProperties();
+  } catch { documentationRequests.delete(component.tag); }
 }
 async function getJSON(url) { const response = await fetch(url); if (!response.ok) throw new Error(`${response.status} ${url}`); return response.json(); }
 
@@ -57,7 +74,8 @@ async function init() {
     const generated = new Map((state.catalog?.components || []).map(component => [component.tag, component]));
     state.components = contracts.map(component => {
       const output = generated.get(component.tag);
-      return output ? { ...component, ...output, category: categoryFor(component.tag), properties: (output.properties || component.properties).map(prop => ({ ...prop, type: typeof prop.type === 'object' ? prop.type.text : prop.type, defaultValue: Object.hasOwn(prop, 'defaultValue') ? prop.defaultValue : parseDefault(prop.default), options: prop.options || Array.from((typeof prop.type === 'string' ? prop.type : '').matchAll(/'([^']*)'/g), match => match[1]) })) } : component;
+      const merged = mergeComponentDocumentation(component, output || {});
+      return { ...merged, category: categoryFor(component.tag), properties: merged.properties.map(normalizeProperty) };
     });
     state.ready = runtimeResult.status === 'fulfilled';
     text('#component-count', state.components.length); text('#coverage-count', state.components.length);
@@ -81,8 +99,8 @@ async function init() {
 function bindEvents() {
   $('#search').addEventListener('input', renderNavigation);
   document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => { state.filter = button.dataset.filter; document.querySelectorAll('[data-filter]').forEach(item => item.classList.toggle('active', item === button)); renderNavigation(); }));
-  $('#component-list').addEventListener('click', event => { const button = event.target.closest('[data-tag]'); if (button) { location.hash = button.dataset.tag; if (state.selected?.tag === button.dataset.tag) selectComponent(button.dataset.tag); } });
-  window.addEventListener('hashchange', () => { const tag = location.hash.slice(1); if (state.components.some(component => component.tag === tag)) selectComponent(tag); });
+  $('#component-list').addEventListener('click', event => { const button = event.target.closest('[data-tag]'); if (button) { selectNativeScenario(''); location.hash = button.dataset.tag; if (state.selected?.tag === button.dataset.tag) selectComponent(button.dataset.tag); } });
+  window.addEventListener('hashchange', () => { const tag = location.hash.slice(1); if (state.components.some(component => component.tag === tag)) { selectNativeScenario(''); selectComponent(tag); } });
   window.addEventListener('pagehide', () => { disposeNativePointer(); nativeRequests.cancel(); clearTimeout(state.nativeRenderTimer); nativeLive.stop(); });
   window.addEventListener('pageshow', event => { if (event.persisted && isNativePlatform(state.platform)) renderPreview(); });
   document.addEventListener('visibilitychange', () => nativeLive.setVisible(!document.hidden));
@@ -109,7 +127,7 @@ function selectPlatform(platform) {
   history.replaceState(null, '', url);
   document.querySelectorAll('[data-platform]').forEach(button => { const active = button.dataset.platform === platform; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); });
   if (platform !== 'web') { state.sourcePlatform = platform; selectInspector('source'); }
-  renderPreview();
+  renderPreview(); renderProperties();
 }
 function toast(message) { text('#toast', message); $('#toast').classList.add('visible'); clearTimeout(state.toastTimer); state.toastTimer = setTimeout(() => $('#toast').classList.remove('visible'), 2000); }
 function renderNavigation() {
@@ -121,11 +139,13 @@ function renderNavigation() {
 function selectComponent(tag) {
   const component = state.components.find(item => item.tag === tag); if (!component) return;
   state.selected = component; state.events = []; state.props = {}; state.editedTag = tag; state.editedProps = {};
+  state.docSlotValues = {}; state.docCssValues = {}; $('#props-search').value = ''; $('#props-controls').scrollTop = 0;
   for (const prop of component.properties || []) { if (prop.defaultValue !== undefined) state.props[prop.name] = structuredClone(prop.defaultValue); }
   Object.assign(state.props, recipeFor(tag).props);
   text('#category-label', component.category); text('#tag-label', tag); text('#component-title', displayName(tag)); text('#component-description', component.description);
   text('#props-count', component.properties.length); text('#findings-count', portabilityFindings(component).total); text('#event-count', '0');
   renderNavigation(); renderPreview(); renderProperties(); renderInspector();
+  void loadComponentDocumentation(component);
 }
 function renderPreview() {
   disposeNativePointer(); clearTimeout(state.nativeRenderTimer); nativeRequests.cancel(); nativeLive.stop();
@@ -154,6 +174,7 @@ function renderPreview() {
     for (const [name, value] of Object.entries(state.editedTag === state.selected.tag ? state.editedProps || {} : {})) { state.target[name] = value; state.props[name] = value; }
   }
   recipe.setup?.(root);
+  documentationUI.applyOverrides();
   const eventNames = new Set(['click', ...(state.selected.events || []).map(event => event.name)]);
   for (const eventName of eventNames) root.addEventListener(eventName, recordEvent);
   root.addEventListener('click', event => { if (event.composedPath().some(element => element?.tagName === 'A')) event.preventDefault(); });
@@ -164,16 +185,10 @@ function renderNativePreview() {
   const component = state.selected;
   const target = nativePreviewTarget(state.platform);
   const support = component.support?.[state.platform];
-  const mode = target.snapshot ? state.nativeMode : 'live';
-  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><div class="native-mode-switch" role="group" aria-label="Native preview mode"><button type="button" data-native-mode="live" aria-pressed="${mode === 'live'}">Live</button>${target.snapshot ? `<button type="button" data-native-mode="snapshot" aria-pressed="${mode === 'snapshot'}">Snapshot</button>` : ''}</div><button class="secondary-button" id="native-render-button" type="button">Reconnect</button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div><p class="snapshot-status" id="native-render-status" role="status" aria-live="polite"></p><p class="snapshot-note" id="native-preview-note"></p><details class="snapshot-details"><summary>Fixture & native playground</summary><p>The native example uses this component’s root properties. Its child content and text may differ from the web reference.</p><p>Live pixels preserve native state. Native accessibility remains in the running ${state.platform === 'android' ? 'Android' : 'macOS'} app; this image does not expose its control tree to the browser.</p>${state.platform === 'android' ? '<p>Live rendering requires the Android emulator and native playground. One Android preview can use the emulator at a time. Capture covers the visible Activity surface; separate Popup/Dialog windows and off-screen content are outside this preview.</p>' : ''}<p>${support ? `${support.unsupportedProperties?.length || 0} unsupported properties · ${support.unsupportedEvents?.length || 0} unsupported events. Inspect full coverage in Portability.` : 'Adapter coverage has not been reported.'}</p><code>${escape(target.playground)}</code></details></section>`;
+  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><span class="native-live-badge">Live</span><button class="secondary-button" id="native-render-button" type="button">Reconnect</button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div><p class="snapshot-status" id="native-render-status" role="status" aria-live="polite"></p><p class="snapshot-note" id="native-preview-note"></p><details class="snapshot-details"><summary>Fixture & native playground</summary><p>The native example uses this component’s root properties. Its child content and text may differ from the web reference.</p><p>Live pixels preserve native state. Native accessibility remains in the running ${state.platform === 'android' ? 'Android' : 'macOS'} app; this image does not expose its control tree to the browser.</p>${state.platform === 'android' ? '<p>Live rendering requires the Android emulator and native playground. One Android preview can use the emulator at a time. Capture covers the visible Activity surface; separate Popup/Dialog windows and off-screen content are outside this preview.</p>' : ''}<p>${support ? `${support.unsupportedProperties?.length || 0} unsupported properties · ${support.unsupportedEvents?.length || 0} unsupported events. Inspect full coverage in Portability.` : 'Adapter coverage has not been reported.'}</p><code>${escape(target.playground)}</code></details></section>`;
   $('#native-render-button').addEventListener('click', () => scheduleNativeRender(0));
-  document.querySelectorAll('[data-native-mode]').forEach(button => button.addEventListener('click', () => { if (target.snapshot) state.nativeMode = button.dataset.nativeMode; if (state.nativeMode === 'snapshot') selectNativeScenario(''); renderPreview(); }));
-  if (component.tag === 'md-button') {
-    $('.snapshot-heading').insertAdjacentHTML('afterend', `<label class="native-scenario">Example <select id="native-scenario"><option value="" ${!state.nativeScenario ? 'selected' : ''}>Component</option><option value="button-behavior" ${state.nativeScenario === 'button-behavior' ? 'selected' : ''}>Form & cancellation</option><option value="navigation-events" ${state.nativeScenario === 'navigation-events' ? 'selected' : ''}>Navigation & events</option><option value="focus-accessibility" ${state.nativeScenario === 'focus-accessibility' ? 'selected' : ''}>Focus & accessibility</option></select></label>`);
-    $('#native-scenario').addEventListener('change', event => { selectNativeScenario(event.target.value); state.nativeMode = 'live'; renderPreview(); });
-  }
-  setNativeMode(mode);
-  text('#preview-caption', state.platform === 'android' ? 'Real Android emulator · connecting to Jetpack Compose' : 'Real SwiftUI on this Mac · choosing preview mode');
+  configureNativeLivePreview();
+  text('#preview-caption', state.platform === 'android' ? 'Real Android emulator · connecting to Jetpack Compose' : 'Real SwiftUI on this Mac · connecting to the live host');
   text('#recipe-status', 'Native fixture + current root properties');
   scheduleNativeRender(0);
 }
@@ -201,7 +216,7 @@ function nativeRenderState(kind, message) {
     frame.append(marker, label);
   }
   text('#native-render-status', message);
-  text('#native-render-button', state.nativeFallback ? 'Retry Live' : state.activeNativeMode === 'live' ? 'Reconnect' : kind === 'error' ? 'Retry render' : kind === 'loading' ? 'Restart render' : 'Render again');
+  text('#native-render-button', kind === 'error' ? 'Retry connection' : 'Reconnect');
 }
 
 function scheduleNativeRender(delay = 300) {
@@ -261,59 +276,48 @@ function subscribeNativeLive(id, onFrame, onError, platform) {
   return () => controller.abort();
 }
 
-function setNativeMode(mode, fallbackMessage = '') {
+function configureNativeLivePreview() {
   const target = nativePreviewTarget(state.platform);
-  state.activeNativeMode = mode;
-  state.nativeFallback = Boolean(fallbackMessage);
-  document.querySelectorAll('[data-native-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.nativeMode === mode)));
-  text('#preview-runtime', mode === 'live' ? 'CONNECTING' : 'NATIVE SNAPSHOT');
-  text('.props-hint', mode === 'live' ? 'Initial properties · editing restarts the native session.' : 'Changes rerender the native snapshot.');
-  text('#native-preview-note', mode === 'live' ? state.selected.tag === 'md-button' ? `Press and hold to see the native button response; release to activate. Esc cancels and releases keyboard focus. Frames stream directly from ${target.renderer}; hover and pointer position are forwarded.` : 'Click the native view, then type. Esc releases keyboard focus. Clicks and typing are live; dragging, hover and sheets are not validated.' : `${fallbackMessage ? `${fallbackMessage} ` : ''}Static snapshot — interact in the native app. For iOS, open the native playground.`);
-  if (mode === 'live' && state.selected.tag === 'md-button' && state.nativeScenario === 'button-behavior') {
+  state.activeNativeMode = 'live';
+  text('#preview-runtime', 'CONNECTING');
+  text('.props-hint', 'Initial properties · editing restarts the native session.');
+  text('#native-preview-note', state.selected.tag === 'md-button' ? `Press and hold to see the native button response; release to activate. Esc cancels and releases keyboard focus. Frames stream directly from ${target.renderer}; hover and pointer position are forwarded.` : 'Click the native view, then type. Esc releases keyboard focus. Clicks and typing are live; dragging, hover and sheets are not validated.');
+  if (state.selected.tag === 'md-button' && state.nativeScenario === 'button-behavior') {
     text('#native-preview-note', 'Edit the native field and press Enter or Submit. Try validation, reset and cancellation, then inspect the submitted data and Events. Form data and link actions stay local. This example runs entirely in the native host.');
-    text('.props-hint', 'This example has fixed form actions. Choose Component to edit individual button properties.');
+    text('.props-hint', 'This linked form demo has fixed actions. Select Button in the library to edit the component.');
   }
-  if (mode === 'live' && state.selected.tag === 'md-button' && state.nativeScenario === 'navigation-events') {
+  if (state.selected.tag === 'md-button' && state.nativeScenario === 'navigation-events') {
     text('#native-preview-note', 'Follow a link, open another native context, or go Back. Try cancellation and propagation controls, then inspect the event trace. Routes stay inside this native demo; no external page opens.');
-    text('.props-hint', 'This example has fixed navigation actions. Choose Component to edit individual button properties.');
+    text('.props-hint', 'This linked navigation demo has fixed actions. Select Button in the library to edit the component.');
   }
-  if (mode === 'live' && state.selected.tag === 'md-button' && state.nativeScenario === 'focus-accessibility') {
+  if (state.selected.tag === 'md-button' && state.nativeScenario === 'focus-accessibility') {
     text('#native-preview-note', 'Click the native preview to give it keyboard input. Tab enters or leaves the group; Left, Right, Home and End move within it without selecting. Enter or Space activates. Escape returns keyboard control to the browser. Native accessibility semantics are tested in the platform app; this image cannot expose them to a browser screen reader.');
-    text('.props-hint', 'This example has fixed keyboard and accessibility controls. Choose Component to edit individual button properties.');
+    text('.props-hint', 'This linked focus demo has fixed controls. Select Button in the library to edit the component.');
   }
-  text('#preview-caption', mode === 'live' ? state.platform === 'android' ? 'Real Android emulator · Jetpack Compose frames and native events' : 'Persistent macOS SwiftUI app · live frames and native events' : 'Rendered by SwiftUI on this Mac · displayed as a PNG');
-  text('#recipe-status', mode === 'live' ? 'Click & type · native state persists' : 'Native fixture + current root properties');
-  text('#native-render-button', state.nativeFallback ? 'Retry Live' : mode === 'live' ? 'Reconnect' : 'Render again');
+  text('#preview-caption', state.platform === 'android' ? 'Real Android emulator · Jetpack Compose frames and native events' : 'Persistent macOS SwiftUI app · live frames and native events');
+  text('#recipe-status', 'Click & type · native state persists');
+  text('#native-render-button', 'Reconnect');
 }
 
 async function chooseNativePreview(payload, request, platform) {
   if (!request.isCurrent()) return;
   const target = nativePreviewTarget(platform);
-  if (!target.snapshot || state.nativeMode === 'live') {
-    try {
-      const status = await readNativeResponse(await fetch(nativeLiveEndpoint('status', platform), { signal: request.signal }));
-      if (!request.isCurrent()) return;
-      if (status.available) {
-        setNativeMode('live'); text('#native-render-status', `Starting a persistent ${target.renderer} session…`);
-        nativeLive.setVisible(!document.hidden);
-        void nativeLive.start(payload);
-        return;
-      }
-      if (!target.snapshot || payload.scenario) {
-        text('#preview-runtime', platform === 'android' ? 'EMULATOR OFFLINE' : 'LIVE HOST OFFLINE');
-        nativeRenderState('error', platform === 'android'
-          ? `${status.message || 'The Android emulator is not ready.'} Start the native Android playground, then reconnect.`
-          : `${status.message || 'The SwiftUI live host is not ready.'} Build AWCLivePreview in apps/native-ios-playground, then reconnect. This example requires Live mode.`);
-        return;
-      }
-      setNativeMode('snapshot', `Live unavailable: ${status.message || 'the native host is not ready.'}`);
-    } catch (error) {
-      if (!request.isCurrent() || error.name === 'AbortError') return;
-      if (!target.snapshot || payload.scenario) { reportNativeLiveError(error); return; }
-      setNativeMode('snapshot', `Live unavailable: ${error.message}`);
+  try {
+    const status = await readNativeResponse(await fetch(nativeLiveEndpoint('status', platform), { signal: request.signal }));
+    if (!request.isCurrent()) return;
+    if (status.available) {
+      configureNativeLivePreview(); text('#native-render-status', `Starting a persistent ${target.renderer} session…`);
+      nativeLive.setVisible(!document.hidden);
+      void nativeLive.start(payload);
+      return;
     }
-  } else setNativeMode('snapshot');
-  void fetchNativeRender(payload, request);
+    text('#preview-runtime', platform === 'android' ? 'EMULATOR OFFLINE' : 'LIVE HOST OFFLINE');
+    nativeRenderState('error', platform === 'android'
+      ? `${status.message || 'The Android emulator is not ready.'} Start the native Android playground, then reconnect.`
+      : `${status.message || 'The SwiftUI live host is not ready.'} Build AWCLivePreview in apps/native-ios-playground, then reconnect.`);
+  } catch (error) {
+    if (request.isCurrent() && error.name !== 'AbortError') reportNativeLiveError(error);
+  }
 }
 
 function showNativeLiveFrame(result, platform) {
@@ -471,63 +475,73 @@ function recordNativeEvents(events, platform) {
   if (state.inspector === 'events') renderInspector();
 }
 
-async function fetchNativeRender(payload, request) {
-  const current = () => request.isCurrent() && state.platform === 'ios' && state.selected.tag === payload.tag;
-  async function readResponse(response) {
-    let result;
-    try { result = await response.json(); } catch { throw new Error(`The render server returned an invalid response (${response.status}). Restart the playground server and retry.`); }
-    if (!response.ok) throw new Error(result.message || result.error || `Native rendering failed (${response.status}).`);
-    return result;
-  }
-  try {
-    const status = await readResponse(await fetch('/api/native-render/status', { signal: request.signal }));
-    if (!current()) return;
-    if (!status.available) throw new Error(status.message || 'The SwiftUI renderer is not available on this host.');
-    text('#native-render-status', 'SwiftUI is rendering this component on your Mac…');
-    const result = await readResponse(await fetch('/api/native-render', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: request.signal }));
-    if (!current()) return;
-    if (result.tag !== payload.tag || result.platform !== 'macos' || result.renderer !== 'SwiftUI' || !/^\/native-renders\/[a-f\d]+\.png$/.test(result.imageUrl || '')) throw new Error('The renderer returned an unexpected component or image. Retry this render.');
-    const snapshot = new Image();
-    snapshot.className = 'snapshot-image';
-    snapshot.style.width = `${payload.width}px`; // PNG pixels may be 2× the logical SwiftUI width on Retina displays.
-    snapshot.alt = `${displayName(payload.tag)} rendered natively by SwiftUI on macOS in ${payload.dark ? 'dark' : 'light'} mode`;
-    snapshot.addEventListener('load', () => {
-      if (!current()) return;
-      nativeRenderState('ready', `${result.width} × ${result.height} px · ${payload.dark ? 'Dark' : 'Light'} appearance · ${payload.tag}`);
-      $('#native-render-frame').append(snapshot);
-    }, { once: true });
-    snapshot.addEventListener('error', () => { if (current()) nativeRenderState('error', 'The native render completed, but the snapshot could not be loaded. Retry the render.'); }, { once: true });
-    snapshot.src = result.imageUrl;
-  } catch (error) {
-    if (current() && error.name !== 'AbortError') nativeRenderState('error', error.message || 'The native render failed. Retry the render.');
-  }
-}
-
 function renderProperties() {
+  const active = document.activeElement;
+  const focusedId = active?.closest('#props-controls') ? active.id : null;
+  const draft = focusedId && active.dataset.prop ? { value: active.value, checked: active.checked, invalid: active.getAttribute('aria-invalid'), error: document.getElementById(`${focusedId}-error`)?.textContent } : null;
+  const selection = ['text', 'search', 'textarea'].includes(active?.type) ? [active.selectionStart, active.selectionEnd] : null;
+  const scrollTop = $('#props-controls').scrollTop;
+  documentationUI.beginRender();
   const fields = state.selected.properties || [];
   const preferred = ['label', 'headline', 'variant', 'size', 'shape', 'value', 'selected', 'checked', 'disabled', 'loading', 'icon', 'supportingText', 'options', 'series', 'data', 'nodes'];
   const sorted = [...fields].sort((a, b) => { const ai = preferred.indexOf(a.name), bi = preferred.indexOf(b.name); return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi); });
+  const editors = new Map();
   $('#props-controls').innerHTML = sorted.map(prop => {
-    const value = state.props[prop.name]; const id = `prop-${prop.name}`; const type = prop.type || ''; const choices = literalChoices(prop);
-    if (type === 'boolean') return `<div class="prop-control boolean"><label class="prop-label" for="${id}"><code>${escape(prop.name)}</code><input id="${id}" data-prop="${escape(prop.name)}" class="switch-control" type="checkbox" ${value ? 'checked' : ''} /></label></div>`;
+    const value = state.props[prop.name], id = `prop-${prop.name}`, type = prop.type || '';
+    const editor = propertyEditor(state.selected, prop, value); editors.set(prop.name, editor);
+    const doc = memberDocumentation(state.selected, 'property', prop, state.platform);
+    const unsupported = doc.support.status === 'unsupported';
+    const attrs = `id="${id}" data-prop="${escape(prop.name)}" aria-describedby="${id}-error${editor.note || unsupported ? ` ${id}-note` : ''}" ${unsupported ? 'disabled' : ''}`;
+    const label = editor.kind === 'readonly' ? `<span class="prop-label"><code>${escape(prop.name)}</code></span>` : `<label class="prop-label" for="${id}"><code>${escape(prop.name)}</code></label>`;
+    const header = `<div class="prop-heading">${label}${documentationUI.infoButton('property', prop)}${editor.kind === 'boolean' ? `<input ${attrs} class="switch-control" type="checkbox" ${value ? 'checked' : ''} />` : `<span class="prop-type" title="${escape(type)}">${escape(type)}</span>`}</div>`;
     let input;
-    if (type.includes('=>') || type.includes('HTMLElement')) input = `<p class="prop-note">Function or DOM reference. Inspect this contract in Portability.</p>`;
-    else if (choices.length > 1) input = `<select id="${id}" data-prop="${escape(prop.name)}" data-literal="true">${choices.some(option => Object.is(option, value)) ? '' : '<option value="" selected disabled>Unset</option>'}${choices.map(option => `<option value="${escape(encodeLiteralChoice(option))}" ${Object.is(value, option) ? 'selected' : ''}>${escape(literalChoiceLabel(option, choices))}</option>`).join('')}</select>`;
-    else if (typeof value === 'object' && value !== null || /\[\]|\{|MdChartAxis|NodeInput|Options/.test(type) && !['string', 'number'].includes(type)) input = `<textarea id="${id}" data-prop="${escape(prop.name)}" data-json="true" spellcheck="false" aria-describedby="${id}-error">${escape(JSON.stringify(value ?? [], null, 2))}</textarea><span class="prop-error" id="${id}-error" hidden></span>`;
-    else input = `<input id="${id}" data-prop="${escape(prop.name)}" type="${/^number( \| null)?$/.test(type) ? 'number' : 'text'}" ${/^number/.test(type) ? 'step="any"' : ''} value="${escape(value ?? '')}" placeholder="${escape(prop.default ?? '')}" />`;
-    return `<div class="prop-control"><label class="prop-label" for="${id}"><code>${escape(prop.name)}</code><span class="prop-type" title="${escape(type)}">${escape(type)}</span></label>${input}</div>`;
+    if (editor.kind === 'boolean') input = '';
+    else if (editor.kind === 'readonly') input = `<code class="prop-signature" id="${id}">${escape(type)}</code>`;
+    else if (editor.kind === 'literal') {
+      const isSet = editor.choices.some(option => Object.is(option, value));
+      input = `<select ${attrs} data-literal="true">${editor.optional || !isSet ? `<option value="" ${!isSet ? 'selected' : ''} ${editor.optional ? '' : 'disabled'}>Unset</option>` : ''}${editor.choices.map(option => `<option value="${escape(encodeLiteralChoice(option))}" ${Object.is(value, option) ? 'selected' : ''}>${escape(literalChoiceLabel(option, editor.choices))}</option>`).join('')}</select>`;
+    }
+    else if (editor.kind === 'json') input = `<textarea ${attrs} data-json="true" spellcheck="false" placeholder="JSON value">${escape(value === undefined ? '' : JSON.stringify(value, null, 2))}</textarea>`;
+    else input = `<input ${attrs} type="${editor.kind === 'number' ? 'number' : 'text'}" ${editor.kind === 'number' ? 'step="any"' : ''} value="${escape(value ?? '')}" placeholder="${escape(prop.default ?? '')}" />`;
+    const note = unsupported ? 'Not available in this native adapter. Try it in the Web reference.' : editor.note;
+    const unset = editor.optional && ['text', 'boolean'].includes(editor.kind) ? `<button type="button" class="prop-unset text-button" data-unset-prop="${escape(prop.name)}" aria-label="Unset ${escape(prop.name)}" ${unsupported ? 'disabled' : ''}>${value === undefined ? 'Unset · using default' : 'Unset'}</button>` : '';
+    return `<div class="prop-control ${editor.kind}" data-search="${escape(`${prop.name} ${type} ${doc.description}`.toLowerCase())}">${header}${input}${note ? `<p class="prop-note" id="${id}-note">${escape(note)}</p>` : ''}${unset}<span class="prop-error" id="${id}-error" role="status" hidden></span></div>`;
   }).join('') || '<p class="prop-note">This structural component has no public properties. Explore it through its parent composition.</p>';
+  const applyValue = (name, value) => {
+    if (value === undefined) delete state.props[name]; else state.props[name] = value;
+    if (state.editedTag !== state.selected.tag) { state.editedTag = state.selected.tag; state.editedProps = {}; }
+    state.editedProps[name] = value;
+    if (state.target) state.target[name] = value;
+    const unset = [...$('#props-controls').querySelectorAll('[data-unset-prop]')].find(button => button.dataset.unsetProp === name);
+    if (unset) unset.textContent = value === undefined ? 'Unset · using default' : 'Unset';
+    documentationUI.updateSnippet(); scheduleNativeRender();
+  };
+  $('#props-controls').querySelectorAll('[data-unset-prop]').forEach(button => button.addEventListener('click', () => {
+    const name = button.dataset.unsetProp, input = document.getElementById(`prop-${name}`);
+    if (input.type === 'checkbox') input.checked = false; else input.value = '';
+    applyValue(name, undefined);
+  }));
   $('#props-controls').querySelectorAll('[data-prop]').forEach(input => input.addEventListener('input', () => {
     let value;
-    if (input.dataset.literal) value = decodeLiteralChoice(input.value, state.selected.properties.find(prop => prop.name === input.dataset.prop));
-    else if (input.dataset.json) { try { value = JSON.parse(input.value); input.setAttribute('aria-invalid', 'false'); $(`#${input.id}-error`).hidden = true; } catch { input.setAttribute('aria-invalid', 'true'); $(`#${input.id}-error`).hidden = false; $(`#${input.id}-error`).textContent = 'Enter valid JSON to update the reference.'; return; } }
-    else value = input.type === 'checkbox' ? input.checked : input.type === 'number' ? (input.value === '' ? null : Number(input.value)) : input.value;
-    state.props[input.dataset.prop] = value;
-    if (state.editedTag !== state.selected.tag) { state.editedTag = state.selected.tag; state.editedProps = {}; }
-    state.editedProps[input.dataset.prop] = value;
-    if (state.target) state.target[input.dataset.prop] = value;
-    scheduleNativeRender();
+    const error = document.getElementById(`${input.id}-error`);
+    try {
+      if (input.validity?.badInput) throw new Error('Enter a finite number.');
+      value = parsePropertyInput(editors.get(input.dataset.prop), input.value, input.checked);
+      input.removeAttribute('aria-invalid'); error.hidden = true;
+    } catch (issue) { input.setAttribute('aria-invalid', 'true'); error.hidden = false; error.textContent = issue.message; return; }
+    applyValue(input.dataset.prop, value);
   }));
+  documentationUI.renderUsage(); documentationUI.filterProperties();
+  $('#props-controls').scrollTop = scrollTop;
+  const replacement = focusedId && document.getElementById(focusedId);
+  if (replacement && !replacement.disabled) {
+    if (draft && replacement.dataset.prop) {
+      if (replacement.type === 'checkbox') replacement.checked = draft.checked; else replacement.value = draft.value;
+      if (draft.invalid === 'true') { replacement.setAttribute('aria-invalid', 'true'); const error = document.getElementById(`${focusedId}-error`); error.textContent = draft.error; error.hidden = false; }
+    }
+    replacement.focus({ preventScroll: true });
+    if (selection && ['text', 'search', 'textarea'].includes(replacement.type)) replacement.setSelectionRange(...selection);
+  }
 }
 function syncReferenceState() {
   if (!state.target) return;
@@ -541,6 +555,7 @@ function syncReferenceState() {
     else if (input.dataset.json) input.value = JSON.stringify(value, null, 2);
     else input.value = value ?? '';
   }
+  documentationUI.updateSnippet();
 }
 function recordEvent(event) {
   if (state.platform !== 'web') return;

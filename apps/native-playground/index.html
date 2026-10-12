@@ -33,7 +33,19 @@
           <div id="preview-stage" class="preview-stage"><div id="preview-content"></div></div>
           <div class="preview-footer"><span id="preview-caption">Original AWC web component · browser rendering</span><span id="recipe-status">Interactive reference</span></div>
         </section>
-        <aside class="props-panel" aria-label="Component properties"><div class="panel-heading"><h3>Properties</h3><span id="props-count" class="count-badge">0</span></div><p class="props-hint">Changes apply to the web reference.</p><div id="props-controls"></div></aside>
+        <aside class="props-panel" aria-label="Component documentation">
+          <div class="panel-heading"><h3>Properties &amp; usage</h3><span id="props-count" class="count-badge">0</span></div>
+          <div class="documentation-tabs" role="tablist" aria-label="Component documentation">
+            <button id="properties-tab" role="tab" aria-selected="true" aria-controls="properties-panel" data-doc-tab="properties">Properties</button>
+            <button id="usage-tab" role="tab" aria-selected="false" aria-controls="usage-docs" data-doc-tab="usage" tabindex="-1">Usage &amp; API</button>
+          </div>
+          <div id="properties-panel" role="tabpanel" aria-labelledby="properties-tab">
+            <p class="props-hint">Changes apply to the web reference.</p>
+            <label class="props-search"><span class="sr-only">Search properties</span><input id="props-search" type="search" placeholder="Find a property…" autocomplete="off" /></label>
+            <div id="props-controls"></div><p id="props-empty" class="prop-note" hidden>No matching properties.</p>
+          </div>
+          <div id="usage-docs" role="tabpanel" aria-labelledby="usage-tab" hidden></div>
+        </aside>
       </div>
       <section class="inspector-panel" aria-label="Component inspector">
         <div class="inspector-toolbar"><div class="inspector-tabs" role="tablist" aria-label="Inspector"><button class="active" data-inspector="contract" role="tab" aria-selected="true">Contract</button><button data-inspector="source" role="tab" aria-selected="false">Generated code</button><button data-inspector="diagnostics" role="tab" aria-selected="false">Portability <span id="findings-count">0</span></button><button data-inspector="events" role="tab" aria-selected="false">Events <span id="event-count">0</span></button></div><button id="copy-source" class="text-button" hidden>Copy source</button></div>

@@ -5,7 +5,7 @@ original web components as an interactive **web reference**, alongside the actua
 SwiftUI and Jetpack Compose output and explicit portability coverage. On macOS,
 the SwiftUI tab connects to a persistent native view through the local
 `AWCLivePreview` executable. The browser displays native frames and forwards clicks
-and text input to that view. `AWCSnapshots` also provides a static preview mode.
+and text input to that view. The browser preview always uses Live mode.
 The Android tab connects to a debug playground Activity on a dedicated Android
 emulator. Jetpack Compose renders its window; PixelCopy captures the real frames.
 
@@ -100,8 +100,8 @@ matches the source variant palettes, density rules, fonts and press shape timing
 its ripple follows the pointer position and its native loader uses the source
 polygon keyframes and easing. Text rasterization remains platform-dependent.
 
-Snapshot mode renders one image per property/theme change and caches identical
-requests until the executable changes. `AWC_NATIVE_RENDERER` and
+The standalone snapshot endpoint remains available for tooling, but the browser
+does not offer snapshots or fall back to them. `AWC_NATIVE_RENDERER` and
 `AWC_NATIVE_LIVE_RENDERER` can point at executables built in another directory.
 
 ## Included
@@ -111,10 +111,18 @@ requests until the executable changes. `AWC_NATIVE_RENDERER` and
   select, tabs, stepper, and accordion children composed in their parent context.
 - Live scalar, boolean, enum and JSON property editing, plus reset. Mixed literal
   unions preserve boolean and numeric values (for example, `multiline=false`).
+- Searchable **Properties & usage** documentation for every declared property.
+  Each info button explains usage, source defaults/types and native support on
+  hover or keyboard focus; click pins the explanation and Escape dismisses it.
+- **Usage & API** includes copyable Web, SwiftUI and Compose examples reflecting
+  the current props, event payloads, slots, methods, CSS hooks and named data or
+  callback types. In the Web reference, edit slot text/CSS variables and invoke
+  public methods with JSON arguments. Callbacks and object references remain
+  application-code inputs; native unsupported members are labeled explicitly.
 - Light/dark themes, locally served fonts and icons, responsive layout, and the
   `/` keyboard shortcut for search.
-- Persistent SwiftUI previews with clicks, text input, native events, explicit
-  session lifecycle and static snapshot fallback.
+- Persistent SwiftUI previews with clicks, text input, native events and explicit
+  session lifecycle. An unavailable host shows a reconnect action.
 - Persistent Compose previews with authenticated emulator streaming, native
   input/events and one bounded live session.
 - Web and native event capture, contract metadata, compiler IR, actual generated source
@@ -151,6 +159,8 @@ external web build roots, intentional reference recipes for every current
 manifest element, typed render payloads, stale-result cancellation, render request
 validation, caching, process failure/timeout cleanup, bounded native sessions,
 input serialization, mixed literal value round-trips and coverage-only findings.
+Documentation tests check source/catalog merging, every current property's editor,
+platform-aware help, safe snippet encoding and documentation interaction state.
 Native builds and full interaction tests belong to the separate platform projects;
 a working remote preview does not establish native parity.
 
@@ -163,8 +173,8 @@ that relevant native behavior still needs an adapter. Both statuses document
 remaining differences from a browser. API-gap counts and compiler strict checks
 are unchanged by this metadata.
 
-For `md-button`, choose **Example → Form & cancellation** in either native Live
-preview. The native Name field registers automatically and supports required and
+For `md-button`, open the form demo from the **HTML_FORM** coverage card in the
+Portability inspector. The native Name field registers automatically and supports required and
 length validation. Press Enter or Submit to see the encoded form data, or Reset
 to restore initial values. **Cancel actions** vetoes button activation; the
 separate form-event switch vetoes submit/reset after activation but before form
@@ -172,9 +182,10 @@ effects. Toggle and Link actions remain available. Form data is encoded locally
 without making a network request, and the router records links without opening
 an external URL. Observe native form and component events in the Events inspector.
 The HTML_FORM coverage cards link directly to each platform's demo. Examples
-require Live mode; Component remains the standard visual preview.
+require Live mode. The normal preview contains just the component; select Button
+in the library to return to it from a behavior demo.
 
-Choose **Example → Navigation & events** to inspect native navigation contexts,
+Open the **DOM_GLOBAL** or **CANCELABLE_EVENT** demo link to inspect native navigation contexts,
 route history, and event propagation. Links resolve inside the demo; they do not
 open external pages. Cancellation prevents the link's default action, while
 stopping propagation only changes which listeners receive it. The native trace
@@ -183,7 +194,7 @@ coverage cards link to this example on each platform. Native contexts and event
 scopes replace those component behaviors without providing a browser DOM or
 browser windows.
 
-Choose **Example → Focus & accessibility** to try a native button group with a
+Open **Focus & accessibility** from a platform coverage card to try a native button group with a
 hardware keyboard. Tab enters and leaves the group; Left/Right and Home/End move
 focus without changing selection. Enter/Space activates the focused control.
 The button coverage cards link directly to this example. Click inside the live

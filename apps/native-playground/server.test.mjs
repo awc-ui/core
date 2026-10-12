@@ -32,6 +32,74 @@ test('an explicitly configured web build can live outside the checkout', async (
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
+test('browser documentation modules are served without opening nearby internal modules', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'awc-native-doc-modules-'));
+  try {
+    const allowed = ['documentation.js', 'documentation-ui.js', 'usage-snippets.js', 'property-controls.js'];
+    const denied = ['documentation.test.mjs', 'documentation-ui.test.js', 'usage-snippets.mjs', 'server.mjs', 'native-live.mjs'];
+    for (const file of [...allowed, ...denied]) await writeFile(path.join(root, file), 'export {};');
+    for (const file of allowed) assert.equal(await resolveAsset(`/${file}`, { appRoot: root }), await realpath(path.join(root, file)), file);
+    for (const file of denied) assert.equal(await resolveAsset(`/${file}`, { appRoot: root }), null, file);
+    assert.equal(await resolveAsset('/nested/documentation.js', { appRoot: root }), null);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+test('component documentation routes allow only JSON records and component readmes', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'awc-native-docs-'));
+  try {
+    const repo = path.join(root, 'repo');
+    const allowed = [
+      'apps/docs/src/data/components/button.json',
+      'apps/docs/src/data/components/text-field.json',
+      'packages/core/src/components/md-button/readme.md',
+    ];
+    const denied = [
+      'apps/docs/src/data/components.json',
+      'apps/docs/src/data/components/button.md',
+      'apps/docs/src/data/components/button.test.json',
+      'apps/docs/src/data/components/.private.json',
+      'apps/docs/src/data/components/Button.json',
+      'apps/docs/src/data/components/button--private.json',
+      'apps/docs/src/data/components/nested/button.json',
+      'apps/docs/src/content/docs/components/button.mdx',
+      'packages/core/src/components/md-button/md-button.tsx',
+      'packages/core/src/components/md-button/notes.md',
+      'packages/core/src/components/md-button/nested/readme.md',
+      'packages/core/src/components/button/readme.md',
+      'packages/core/src/components/md-button--private/readme.md',
+    ];
+    for (const file of [...allowed, ...denied]) {
+      await mkdir(path.dirname(path.join(repo, file)), { recursive: true });
+      await writeFile(path.join(repo, file), '{}');
+    }
+    for (const file of allowed) assert.equal(await resolveAsset(`/repo/${file}`, { repoRoot: repo }), await realpath(path.join(repo, file)), file);
+    for (const file of denied) assert.equal(await resolveAsset(`/repo/${file}`, { repoRoot: repo }), null, file);
+    for (const url of [
+      '/repo/apps/docs/src/data/components/../components.json',
+      '/repo/apps/docs/src/data/components/%2e%2e/components.json',
+      '/repo/apps/docs/src/data/components/button.json/../../components.json',
+      '/repo/packages/core/src/components/md-button/%2e%2e/md-button/readme.md',
+    ]) assert.equal(await resolveAsset(url, { repoRoot: repo }), null, url);
+    await writeFile(path.join(root, 'private.json'), '{}');
+    await symlink(path.join(root, 'private.json'), path.join(repo, 'apps/docs/src/data/components/escape.json'));
+    await mkdir(path.join(repo, 'packages/core/src/components/md-escape'));
+    await symlink(path.join(root, 'private.json'), path.join(repo, 'packages/core/src/components/md-escape/readme.md'));
+    for (const url of ['/repo/apps/docs/src/data/components/escape.json', '/repo/packages/core/src/components/md-escape/readme.md']) {
+      assert.equal(await resolveAsset(url, { repoRoot: repo }), null, url);
+    }
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+test('all 81 source components have reachable JSON documentation and readmes', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../../packages/core/custom-elements.json', import.meta.url), 'utf8'));
+  const tags = manifest.modules.flatMap(module => module.declarations || []).map(component => component.tagName).filter(Boolean);
+  assert.equal(tags.length, 81);
+  for (const tag of tags) {
+    assert.ok(await resolveAsset(`/repo/apps/docs/src/data/components/${tag.slice(3)}.json`), `${tag} JSON`);
+    assert.ok(await resolveAsset(`/repo/packages/core/src/components/${tag}/readme.md`), `${tag} readme`);
+  }
+});
+
 test('every manifest component has a recipe containing that component', async () => {
   const manifest = JSON.parse(await readFile(new URL('../../packages/core/custom-elements.json', import.meta.url), 'utf8'));
   const tags = manifest.modules.flatMap(module => module.declarations || []).map(component => component.tagName).filter(Boolean);
