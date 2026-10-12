@@ -4,6 +4,7 @@ extension AWCNativeView {
     var isFilledButton: Bool { ["filled", "primary", "secondary", "tertiary"].contains(s("variant", "filled")) }
     var actionButton: some View {
         Button {
+            _ = iconFocusHandle.requestFocus?()
             if b("toggle") { set("selected", .bool(!b("selected"))) }
             if node.tag == "md-icon-button" { emit("mdClick", ["selected": .bool(b("selected"))]) }
             else { emit("mdClick") }
@@ -27,6 +28,13 @@ extension AWCNativeView {
         }.buttonStyle(.plain).disabled(b("loading"))
         .accessibilityLabel(label.isEmpty ? s("icon", "Action") : label)
         .accessibilityAddTraits(b("selected") ? .isSelected : [])
+        .modifier(AWCIconButtonFocusModifier(id: node.id, label: label.isEmpty ? s("icon", "Action") : label,
+            enabled: node.tag == "md-icon-button", properties: local, group: inheritedButtonFocusGroup,
+            handle: iconFocusHandle, focusChanged: nativeFocusChanged, activate: {
+                guard !disabled && !b("loading") else { return }
+                if b("toggle") { set("selected", .bool(!b("selected"))) }
+                emit("mdClick", ["selected": .bool(b("selected"))]); activateLink()
+            }))
     }
     var splitButton: some View {
         HStack(spacing: 2) {
@@ -46,6 +54,31 @@ extension AWCNativeView {
             HStack { if b("selected") && !b("noCheckmark") { Image(systemName: "checkmark") }; content("icon"); symbol(s("icon")); Text(label) }
                 .padding(12).background(b("selected") ? theme.primary.opacity(0.22) : surface, in: Capsule())
         }.buttonStyle(.plain).accessibilityAddTraits(b("selected") ? .isSelected : [])
+    }
+    var nativeButtonFocusItems: [AWCButtonFocusItem] {
+        func collect(_ item: AWCNode, selected: Bool? = nil) -> [AWCButtonFocusItem] {
+            if item.tag == "md-button-group" { return [] } // Explicit nearest native scope.
+            if ["md-button", "md-icon-button"].contains(item.tag) {
+                return [.init(id: item.id, disabled: item.properties["disabled"]?.bool == true,
+                              selected: selected ?? (item.properties["selected"]?.bool == true))]
+            }
+            return item.children.flatMap { collect($0) }
+        }
+        return node.children.enumerated().flatMap { index, item in
+            collect(item, selected: ["md-button", "md-icon-button"].contains(item.tag) ? groupSelection.contains(index) : nil)
+        }
+    }
+    func synchronizeButtonFocusGroup() {
+        buttonFocusGroup.configure(items: nativeButtonFocusItems, singleSelection: s("selectionMode", "single-select") != "multi-select",
+                                   rightToLeft: s("dir") == "rtl" || (s("dir") != "ltr" && layoutDirection == .rightToLeft))
+    }
+    var nativeButtonGroup: AnyView {
+        AnyView(selectionGroup.environment(\.awcButtonFocusGroup, buttonFocusGroup)
+            .onAppear { synchronizeButtonFocusGroup() }
+            .onChange(of: nativeButtonFocusItems) { _, _ in synchronizeButtonFocusGroup() }
+            .onChange(of: s("dir")) { _, _ in synchronizeButtonFocusGroup() }
+            .onChange(of: s("selectionMode")) { _, _ in synchronizeButtonFocusGroup() }
+            .onChange(of: layoutDirection) { _, _ in synchronizeButtonFocusGroup() })
     }
     var selectionGroup: some View {
         HStack(spacing: s("variant") == "connected" ? 2 : 8) {

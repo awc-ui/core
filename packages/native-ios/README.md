@@ -24,6 +24,8 @@ The renderer merges source defaults with supplied properties, keeps local intera
 
 See [native forms, events and routing](NativeBehavior.md) for `AWCFormState`, form validation and reset, cancellation scopes, URL routing, named-child lookup, and the interactive `AWCButtonBehaviorDemo`.
 
+See [native button focus and accessibility](NativeFocus.md) for roving group focus, `groupTabindex`, supported native roles, cell context, platform validation limits and `AWCButtonAccessibilityDemo`.
+
 `AWCTheme.generated(dark:)` reads generated source color tokens. The renderer follows the system appearance automatically; `.awcTheme(...)` supplies a custom theme. Source icon names map to common SF Symbols. Raw SF Symbol names are also accepted.
 
 The native adapter covers all catalog tags. Full web parity is **not** implied: `NativeSupport.json` is the explicit property/event/method/slot support policy. It lists unsupported web behaviors and platform substitutions, including advanced chart features, DOM focus/form machinery, virtualized lists, draggable surfaces, CSS layout, and imperative methods.

@@ -92,7 +92,14 @@ try {
     noEvents(await renderer.input(frame.sessionId,{command:'click',x:80,y:50}),`${blocked} must also suppress legacy click activation.`);
     renderer.close(frame.sessionId);
   }
-  console.log(`Live SwiftUI check passed: native Chip toggling, persistent state, Unicode typing, deletion, submit; button held press (${distinctFrames} distinct frames), release, cancellation, disabled/soft-disabled/loading guards, and exact event delivery.`);
+
+  const keyboard = await renderer.create(buttonRequest({groupTabindex:0}));
+  noEvents(await renderer.input(keyboard.sessionId,{command:'key',key:'Tab',modifiers:[]}), 'Tab focuses the native button without activating it.');
+  assertToggle(await renderer.input(keyboard.sessionId,{command:'key',key:'Enter',modifiers:[]}),true);
+  assertToggle(await renderer.input(keyboard.sessionId,{command:'key',key:'Space',modifiers:[]}),false);
+  renderer.close(keyboard.sessionId);
+
+  console.log(`Live SwiftUI check passed: native Chip toggling, persistent state, Unicode typing, deletion, submit; button held press (${distinctFrames} distinct frames), release, cancellation, disabled/soft-disabled/loading guards, Tab/Enter/Space forwarding, and exact event delivery.`);
 } finally {
   renderer.dispose();
 }

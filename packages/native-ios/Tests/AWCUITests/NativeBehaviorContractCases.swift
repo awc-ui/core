@@ -193,5 +193,6 @@ enum NativeBehaviorContractCases {
         check(firstReset == false && secondReset == true, "Reset callbacks receive normalized radio values for actual view bindings")
 
         NativeNavigationEventCases.run(check)
+        NativeFocusCases.run(check)
     }
 }

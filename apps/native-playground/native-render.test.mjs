@@ -9,7 +9,7 @@ import { resolveAsset } from './server.mjs';
 
 const tags = new Set(['md-chip']);
 const request = properties => validateRenderRequest({tag:'md-chip',properties,dark:false,width:640},tags);
-for (const scenario of ['button-behavior', 'navigation-events']) test(`${scenario} is explicit, live-only and restricted to the button`, async () => {
+for (const scenario of ['button-behavior', 'navigation-events', 'focus-accessibility']) test(`${scenario} is explicit, live-only and restricted to the button`, async () => {
   const tags = new Set(['md-button', 'md-chip']);
   const value = {tag:'md-button', scenario};
   assert.equal(validateRenderRequest(value, tags).scenario, scenario);

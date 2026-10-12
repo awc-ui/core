@@ -192,3 +192,59 @@ DOM element lists are not exposed.
 buttons, a toggle, separate action/form cancellation switches, an Enter hint, encoded submitted data and an intercepted example.com link.
 `NativeButtonBehaviorTest` covers pure contracts and device-level composition,
 including cancellation ordering, validation/reset, nested scopes and slots.
+
+
+## Native button focus and roles
+
+`md-button.groupTabindex` accepts `null` (normal traversal), `0` (a sequential
+entry) and `-1` (skipped by Tab/Shift+Tab). Minus one keeps the click/accessibility
+action and can be focused by touch or `AWCButtonFocusState.requestFocus()` through
+`AWCButtonFocusScope`. The request first enables the target for programmatic
+focus, then requests real Compose focus after recomposition; it is not left
+permanently unfocusable. Direct arbitrary `FocusRequester` access to the internal
+button target is not exposed. Positive browser tabindex ordering is not emulated.
+
+```kotlin
+val focus = remember { AWCButtonFocusState() }
+AWCButtonFocusScope(focus, onFocusChanged = { focused -> /* observe native focus */ }) {
+    AWCComponent("md-button", mapOf("label" to "Secondary", "groupTabindex" to -1))
+}
+// Later, while attached: focus.requestFocus()
+```
+
+`md-button-group` automatically owns one sequential stop across its native
+button/icon-button children. Recent focus/activation wins, then the selected
+single-select child, then the first eligible child. Left/Right wrap and reverse
+in RTL; Home/End jump to endpoints. Focus does not change selection or emit a
+click. Enter/Space keep native activation. Only hard `disabled` excludes a child;
+`softDisabled` and `loading` remain focusable but block activation. Up/Down are
+not group navigation keys; their platform behavior remains native. Removal and
+disabling recompute eligibility. Nested groups use nearest native membership;
+retained keyed reorder requires re-registration to change traversal order.
+
+`roleOverride` currently maps empty/`button` to `Role.Button`, and `gridcell` to
+native collection-item semantics without assigning a misleading Button role.
+A cell exposes `Selected` independently of `toggle`, retains click/enabled
+semantics and works with `groupTabindex`. Supply its real grid dimensions and
+position through `AWCGridScope` and `AWCGridCellScope`:
+
+```kotlin
+AWCGridScope(rows = 6, columns = 7) {
+    AWCGridCellScope(row = 2, column = 3) {
+        AWCComponent("md-button", mapOf("label" to "15", "roleOverride" to "gridcell",
+            "selected" to true, "groupTabindex" to -1))
+    }
+}
+```
+
+Unknown role strings safely fall back to Button semantics. Other ARIA roles,
+DOM accessibility nodes, browser link-role machinery and full TalkBack speech
+parity are not claimed. Collection semantics are tested at the real Compose
+accessibility tree; automated tests do not substitute for manual TalkBack review.
+The Material date-picker retains its own native calendar navigation; a standalone
+`gridcell` does not gain calendar arrow handling from its role.
+
+`AWCButtonAccessibilityDemo` powers **Focus & accessibility**, with real before/
+after buttons, a roving group, RTL control and an explicitly focusable grid cell.
+Device regressions send real Compose hardware Tab, Shift+Tab, arrows, Home/End
+and Enter, and inspect selected, click, role and collection semantics.

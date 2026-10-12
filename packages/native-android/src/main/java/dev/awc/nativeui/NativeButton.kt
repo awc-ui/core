@@ -154,6 +154,9 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     val stateColor = roleColor(palette.label)
     val elevation by animateDpAsState((if(enabled && hovered && !pressed && !focused) palette.hoverElevation else palette.elevation).dp, tween(colorDuration, easing=Standard), label="source button elevation")
     val focusColor = MaterialTheme.colorScheme.secondary
+    val nativeFocus = nativeButtonFocusModifier(p, identity, group?.focus, selected)
+    val role = nativeButtonRole(p)
+    val gridCell = LocalAWCGridCell.current
     val click: () -> Unit = {
         performNativeButtonAction(p, selected, emit, action, form, router, p.bool("toggle") || group != null,
             targetID = actionTarget?.id ?: actionID, targetListeners = actionTarget?.listeners?.invoke().orEmpty()) { proposed ->
@@ -172,7 +175,7 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
         ProvideTextStyle(textStyle) {
             Box((if(p.bool("fullWidth")) Modifier.fillMaxWidth() else Modifier)
                 .shadow(elevation, shape, clip=false)
-                .drawBehind { if(focused && enabled) { val focusPath = shape.createOutline(size,layoutDirection,this); drawOutline(focusPath,focusColor,style=Stroke(7.dp.toPx())) } }
+                .drawBehind { if(focused && !p.bool("disabled")) { val focusPath = shape.createOutline(size,layoutDirection,this); drawOutline(focusPath,focusColor,style=Stroke(7.dp.toPx())) } }
                 .clip(shape).background(container)
                 .drawWithContent {
                     drawRect(stateColor.copy(alpha=opacity))
@@ -189,8 +192,16 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
                     drawContent()
                 }
                 .then(if(p.str("variant") == "outlined") Modifier.border(1.dp,outline,shape) else Modifier)
-                .clickable(interactionSource=interactions, indication=null, enabled=enabled, role=Role.Button, onClick=click)
-                .semantics { if(p.bool("toggle")) this.selected=selected }
+                .then(nativeFocus)
+                .clickable(interactionSource=interactions, indication=null, enabled=!p.bool("disabled"), role=if(role == "gridcell") null else Role.Button, onClick=click)
+                .semantics {
+                    if(!enabled) disabled()
+                    if(p.bool("toggle") || group != null || role == "gridcell") this.selected=selected
+                    if(role == "gridcell") {
+                        val cell = gridCell ?: AWCGridCell(0, 0)
+                        collectionItemInfo = CollectionItemInfo(cell.row, cell.rowSpan, cell.column, cell.columnSpan)
+                    }
+                }
                 .sizeIn(minWidth=metrics.minimumWidth.dp,minHeight=metrics.height.dp)
                 .padding(horizontal=metrics.padding.dp), contentAlignment=Alignment.Center) {
                 ButtonSlotRow(metrics.gap.dp, metrics.lineHeight.dp) {

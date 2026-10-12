@@ -302,7 +302,7 @@ private struct AWCNativeButtonStyleBody: View {
                 }
             })
         return bordered.overlay {
-                if focused && active {
+                if focused {
                     outline.stroke(color("secondary"), lineWidth: 3).padding(-3.5).animation(shapeAnimation, value: corners)
                 }
             }
@@ -320,26 +320,38 @@ private struct AWCNativeButtonStyleBody: View {
     }
 }
 
-/// Keeps keyboard focus in SwiftUI's native Button while drawing the source's
-/// visual states. The body/action is unchanged by the remote preview transport.
+/// A native responder supplies roving keyboard focus and accessibility while
+/// SwiftUI's actual Button remains the pointer/press animation authority.
 private struct AWCNativeButtonControl<Label: View>: View {
     let style: AWCNativeButtonStyle
-    let blocked: Bool
+    let policy: AWCButtonAccessibilityPolicy
+    let id: String
+    let accessibleLabel: String
     let action: () -> Void
     let direction: String
     @ViewBuilder let label: () -> Label
-    @FocusState private var focused: Bool
+    @State private var focusHandle = AWCButtonFocusHandle()
     @Environment(\.layoutDirection) private var inheritedDirection
+    @Environment(\.awcButtonFocusGroup) private var group
+    @Environment(\.awcGridCellContext) private var cell
+    @Environment(\.awcNativeFocusChanged) private var focusChanged
+    private func activate() { _ = focusHandle.requestFocus?(); action() }
     var body: some View {
-        Button(action: action, label: label)
+        Button(action: activate, label: label)
             .buttonStyle(AWCNativeButtonStyle(metrics: style.metrics, palette: style.palette, theme: style.theme,
                                               variant: style.variant, shape: style.shape, shapeMorph: style.shapeMorph,
                                               selected: style.selected, ripple: style.ripple, blocked: style.blocked, loading: style.loading,
-                                              fullWidth: style.fullWidth, focused: focused,
+                                              fullWidth: style.fullWidth, focused: focusHandle.isFocused,
                                               connectedLeft: style.connectedLeft, connectedRight: style.connectedRight))
-            .focused($focused)
-            .focusEffectDisabled()
-            .disabled(blocked)
+            .focusable(false)
+            .disabled(policy.activationBlocked)
+            .accessibilityHidden(true)
+            .background {
+                AWCNativeButtonFocusBridge(configuration: .init(id: id, label: accessibleLabel, policy: policy,
+                    group: group, cell: cell, handle: focusHandle, focusChanged: { focusChanged?(id, $0) }, activate: activate))
+                    .accessibilityHidden(false)
+            }
+            .accessibilityElement(children: .contain)
             .environment(\.layoutDirection, direction == "rtl" ? .rightToLeft : direction == "ltr" ? .leftToRight : inheritedDirection)
     }
 }
@@ -374,7 +386,7 @@ extension AWCNativeView {
                                          shape: s("shape", "round"), shapeMorph: b("shapeMorph", true), selected: b("selected"), ripple: b("ripple", true),
                                          blocked: blocked, loading: b("loading"), fullWidth: b("fullWidth"), focused: false,
                                          connectedLeft: b("connectedLeft"), connectedRight: b("connectedRight"))
-        return AWCNativeButtonControl(style: style, blocked: blocked, action: { _ = activateNativeButton() }, direction: s("dir")) {
+        return AWCNativeButtonControl(style: style, policy: AWCButtonAccessibilityPolicy(properties: local), id: node.id, accessibleLabel: label, action: { _ = activateNativeButton() }, direction: s("dir")) {
             HStack(spacing: metrics.gap) {
                 buttonIcon(slot: "leading-icon", fallback: s("icon"), size: metrics.iconSize)
                 let textChildren = node.children(inSlot: "")
@@ -398,8 +410,7 @@ extension AWCNativeView {
                 }
             }
         }
-        .accessibilityLabel(label)
-        .accessibilityAddTraits(b("toggle") && b("selected") ? .isSelected : [])
+
     }
 
     @ViewBuilder private func buttonIcon(slot: String, fallback: String, size: CGFloat) -> some View {

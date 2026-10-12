@@ -22,7 +22,7 @@ export function validateRenderRequest(value, tags) {
   if (props === null || typeof props !== 'object' || Array.isArray(props)) throw new RenderError(400,'INVALID_PROPERTIES','Properties must be a JSON object.');
   if (value.dark !== undefined && typeof value.dark !== 'boolean') throw new RenderError(400,'INVALID_THEME','dark must be a boolean.');
   if (value.width !== undefined && (typeof value.width !== 'number' || !Number.isFinite(value.width))) throw new RenderError(400,'INVALID_WIDTH','width must be a finite number.');
-  if (value.scenario !== undefined && (!['button-behavior', 'navigation-events'].includes(value.scenario) || value.tag !== 'md-button')) throw new RenderError(400,'INVALID_SCENARIO','Choose a supported native example for md-button.');
+  if (value.scenario !== undefined && (!['button-behavior', 'navigation-events', 'focus-accessibility'].includes(value.scenario) || value.tag !== 'md-button')) throw new RenderError(400,'INVALID_SCENARIO','Choose a supported native example for md-button.');
   function depth(v, level=0) {
     if (level>32) throw new RenderError(400,'INVALID_PROPERTIES','Property nesting is too deep.');
     if (v && typeof v==='object') for(const child of Object.values(v))depth(child,level+1);

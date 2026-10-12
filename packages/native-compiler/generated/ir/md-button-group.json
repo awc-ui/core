@@ -912,7 +912,9 @@
       "unsupportedSlots": [],
       "notes": [
         "Coordinates selected child indices and values. Native selection payload omits DOM button references.",
-        "mdSelectionChange includes values, added and removed; originalEvent is omitted."
+        "mdSelectionChange includes values, added and removed; originalEvent is omitted.",
+        "AWCButtonFocusGroup provides one native sequential entry and source-ordered Left/Right (RTL-aware), Home/End focus movement across button/icon-button descendants. Focus skips only hard-disabled controls and never activates or selects. Recent focus, single selected fallback and first eligible fallback recompute on membership/mode changes.",
+        "Nested native button groups own isolated focus scopes; this intentionally differs from the source broad descendant query. Dynamic native IDs must stay stable and unique within a scope. Native selection remains coordinated through the adapter child composition."
       ],
       "verification": "not-device-verified"
     },
@@ -941,7 +943,7 @@
       "unsupportedSlots": [],
       "notes": [
         "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native single/multi selection and required coordination. DOM originalEvent is omitted from payloads."
+        "Native single/multi selection and required coordination. A roving focus stop follows recent focus/activation, selected single-select child, then first enabled child. Real Left/Right wrap with RTL reversal; Home/End move to endpoints without selecting. Disabled children are skipped; soft-disabled/loading children remain keyboard focusable but inert. Native groups isolate nearest-group membership rather than traversing nested DOM descendants. Retained keyed child reordering requires re-registration to update traversal order. DOM originalEvent is omitted from payloads."
       ],
       "verification": "not-device-verified"
     }

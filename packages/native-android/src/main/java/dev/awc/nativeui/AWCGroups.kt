@@ -2,12 +2,14 @@
 package dev.awc.nativeui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
 
-internal class SelectionScope(val tag: String, val props: Props, val emit: EventSink) {
+internal class SelectionScope(val tag: String, val props: Props, val focus: ButtonFocusGroup = ButtonFocusGroup(props.str("selectionMode", "single-select") == "single-select"), val emit: EventSink) {
     val states = mutableStateMapOf<Any, Boolean>()
     private val values = linkedMapOf<Any, String>()
     val indices get() = values.keys.toList()
@@ -17,6 +19,7 @@ internal class SelectionScope(val tag: String, val props: Props, val emit: Event
     }
     fun remove(id: Any) { values.remove(id); states.remove(id) }
     fun toggle(id: Any): Boolean {
+        if(tag == "md-button-group") focus.focused(id)
         val previous = values.filterKeys { states[it] == true }.values.toList()
         val current = states[id] == true
         val multi = when(tag) { "md-segmented-button-set" -> props.bool("multiselect"); "md-accordion" -> !props.bool("exclusive"); else -> props.str("selectionMode", if(tag == "md-button-group") "single-select" else "none") == "multi-select" }
@@ -39,10 +42,12 @@ internal val LocalSelection = compositionLocalOf<SelectionScope?> { null }
 
 @Composable internal fun SelectionContainer(tag: String, p: Props, emit: EventSink, slot: Slot?) {
     val latest by rememberUpdatedState(emit)
-    val scope = remember(tag, p) { SelectionScope(tag, p) { name, value -> latest(name, value) } }
+    val focus = remember(tag) { ButtonFocusGroup(p.str("selectionMode", "single-select") == "single-select") }
+    SideEffect { focus.updateSelectionMode(p.str("selectionMode", "single-select") == "single-select") }
+    val scope = remember(tag, p) { SelectionScope(tag, p, focus) { name, value -> latest(name, value) } }
     CompositionLocalProvider(LocalSelection provides scope) {
         when(tag) {
-            "md-button-group", "md-segmented-button-set" -> FlowRow(modifier = if(p.bool("fullWidth")) Modifier.fillMaxWidth() else Modifier, horizontalArrangement = Arrangement.spacedBy(4.dp)) { slot?.invoke("") }
+            "md-button-group", "md-segmented-button-set" -> FlowRow(modifier = (if(p.bool("fullWidth")) Modifier.fillMaxWidth() else Modifier).then(if(tag == "md-button-group") Modifier.selectableGroup().semantics { collectionInfo = CollectionInfo(1, scope.focus.count) } else Modifier), horizontalArrangement = Arrangement.spacedBy(4.dp)) { slot?.invoke("") }
             else -> Column(verticalArrangement = Arrangement.spacedBy(if(p.str("listStyle") == "segmented") 8.dp else 4.dp)) { if(tag == "md-list" && p.label().isNotEmpty()) Text(p.label(), style = MaterialTheme.typography.labelLarge); slot?.invoke("") }
         }
     }

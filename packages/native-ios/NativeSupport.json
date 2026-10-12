@@ -40,7 +40,9 @@
         "mirrorIcon",
         "suppressExpandIconFlip",
         "type",
-        "target"
+        "target",
+        "groupTabindex",
+        "roleOverride"
       ],
       "events": [
         "mdClick",
@@ -53,10 +55,7 @@
         "trailing-icon",
         "loader"
       ],
-      "unsupportedProperties": [
-        "groupTabindex",
-        "roleOverride"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
@@ -65,9 +64,12 @@
         "Actual SwiftUI isPressed drives shape morphing (200ms press, 400ms release). Pointer-origin ripple uses source farthest-corner geometry and 450ms growth/150ms fade; hover and pointer geometry are forwarded by the native preview. Reduce Motion suppresses shape/ripple animations. Per-instance CSS overrides are not reproduced.",
         "Loading draws the source 48-vertex morphing polygons with the original 4.55s keyframes and easing; Reduce Motion uses the source opacity pulse. Native button groups do not automatically inject connected corner props. RTL icon mirroring uses native layout direction; expanded trailing-icon rotation requires an explicit aria-expanded property on the native node.",
         "mdClick describes the proposed state before commit and includes value, toggle, selected, href and target; mdChange follows commit and includes selected and value. originalEvent is omitted.",
-        "AWCButtonAction dispatches actual native capture, target and bubble phases before defaults. preventDefault vetoes activation; stopPropagation retains same-scope listeners and stopImmediatePropagation stops them. Legacy onEvent receives final cancellation, propagationPath and native activation metadata. Native mdChange is noncancelable. Soft-disabled controls suppress activation without reproducing web keyboard focusability.",
+        "AWCButtonAction dispatches actual native capture, target and bubble phases before defaults. preventDefault vetoes activation; stopPropagation retains same-scope listeners and stopImmediatePropagation stops them. Legacy onEvent receives final cancellation, propagationPath and native activation metadata. Native mdChange is noncancelable. Soft-disabled and loading controls keep native keyboard focus while suppressing activation.",
         "type submit/reset uses the nearest AWCFormScope or an explicit owner registry. All 13 source form-control families auto-register with stable per-view identity, ordered successful values and validation. Cancelable mdSubmit/mdReset precede form effects; reset restores initial native bindings (OTP clears). Single-line Enter activates the first registered default submit button. AWCFormEncoding generates local UTF-8 URL-encoded data without network submission. target is passed to AWCURLRouter; raw nonempty href suppresses form actions.",
-        "AWCNavigationCoordinator implements local _self/_blank/_parent/_top and named presentation contexts, current-base relative resolution, ordered histories/back and host veto/presentation callbacks. AWCButtonNavigationDemo shows real button propagation controls and local navigation without external page loads. Named reuse is an explicit native policy, not source noopener browser behavior."
+        "AWCNavigationCoordinator implements local _self/_blank/_parent/_top and named presentation contexts, current-base relative resolution, ordered histories/back and host veto/presentation callbacks. AWCButtonNavigationDemo shows real button propagation controls and local navigation without external page loads. Named reuse is an explicit native policy, not source noopener browser behavior.",
+        "groupTabindex implements the source null/0/-1 native focus contract: -1 skips sequential keyboard entry while retaining pointer, programmatic and accessibility actions. Hard-disabled excludes focus; soft-disabled/loading remain focusable and inert. Positive HTML tabindex sorting is not reproduced.",
+        "roleOverride supports native button/link/gridcell mappings with safe inference for empty/unknown roles. Gridcell selected state is independent of toggle. AppKit exposes a native actionable cell; UIKit supplies button/selected traits and data-table-cell coordinates through explicit AWCGridCellContext, not arbitrary ARIA roles or a browser calendar grid.",
+        "Native responder/accessibility assertions run on macOS. UIKit focus-engine/responder synchronization is implemented against documented iOS 17+ APIs, but this host has no iOS SDK/device to validate hardware keyboard or VoiceOver runtime behavior."
       ],
       "nativeEquivalents": {
         "HTML_FORM": {
@@ -334,7 +336,9 @@
       "unsupportedSlots": [],
       "notes": [
         "Coordinates selected child indices and values. Native selection payload omits DOM button references.",
-        "mdSelectionChange includes values, added and removed; originalEvent is omitted."
+        "mdSelectionChange includes values, added and removed; originalEvent is omitted.",
+        "AWCButtonFocusGroup provides one native sequential entry and source-ordered Left/Right (RTL-aware), Home/End focus movement across button/icon-button descendants. Focus skips only hard-disabled controls and never activates or selects. Recent focus, single selected fallback and first eligible fallback recompute on membership/mode changes.",
+        "Nested native button groups own isolated focus scopes; this intentionally differs from the source broad descendant query. Dynamic native IDs must stay stable and unique within a scope. Native selection remains coordinated through the adapter child composition."
       ]
     },
     "md-checkbox": {

@@ -98,7 +98,7 @@ function fixture(t, options = {}, childOptions = {}) {
   return { renderer, children };
 }
 
-for (const scenario of ['button-behavior', 'navigation-events']) test(`SwiftUI receives ${scenario} without polluting component properties`, async t => {
+for (const scenario of ['button-behavior', 'navigation-events', 'focus-accessibility']) test(`SwiftUI receives ${scenario} without polluting component properties`, async t => {
   const { renderer, children } = fixture(t);
   await renderer.create({ ...request, tag: 'md-button', scenario });
   assert.equal(children[0].commands[0].scenario, scenario);

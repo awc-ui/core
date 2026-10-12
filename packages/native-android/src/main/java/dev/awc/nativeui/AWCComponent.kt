@@ -206,9 +206,10 @@ fun AWCComponent(
         if (p.str("trailingIcon").isNotBlank()) Glyph(p.str("trailingIcon"))
         slot?.invoke("trailing-icon")
     }
-    val modifier = (if (p.bool("fullWidth")) Modifier.fillMaxWidth() else Modifier).semantics { if(p.bool("toggle")) this.selected = selected }
+    val iconFocus = if (tag == "md-icon-button") nativeButtonFocusModifier(p, identity, group?.takeIf { it.tag == "md-button-group" }?.focus, selected) else Modifier
+    val modifier = (if (p.bool("fullWidth")) Modifier.fillMaxWidth() else Modifier).then(iconFocus).semantics { if(p.bool("toggle") || group != null) this.selected = selected; if(!enabled) disabled() }
     when(tag) {
-        "md-icon-button" -> IconToggleButton(checked = selected, onCheckedChange = { click() }, enabled = enabled, modifier = modifier) { Glyph(p.str("icon", "favorite"), p.label(p.str("icon"))) }
+        "md-icon-button" -> IconToggleButton(checked = selected, onCheckedChange = { if(enabled) click() }, enabled = !p.bool("disabled"), modifier = modifier) { Glyph(p.str("icon", "favorite"), p.label(p.str("icon"))) }
         "md-fab" -> FloatingActionButton(onClick = { if(enabled) click() }, modifier = modifier.semantics { if(!enabled) disabled() }) { Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically, content = label) }
         "md-split-button" -> Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) { Button(onClick = click, enabled = enabled, content = label); FilledIconButton(onClick = { trailingChecked = !trailingChecked; emit("mdTrailingClick", mapOf("checked" to trailingChecked)) }, enabled = enabled) { Glyph(p.str("trailingIcon", "expand_more"), p.str("menuLabel", "Open menu")) } }
         "md-segmented-button" -> FilterChip(selected, click, enabled = enabled, label = { Row(content = label) })

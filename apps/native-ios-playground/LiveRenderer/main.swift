@@ -153,6 +153,7 @@ private struct PreviewRoot: View {
     @ViewBuilder private var example: some View {
         if scenario == "button-behavior" { AWCButtonBehaviorDemo(properties: node.properties, onEvent: onEvent) }
         else if scenario == "navigation-events" { AWCButtonNavigationDemo(properties: node.properties, onEvent: onEvent) }
+        else if scenario == "focus-accessibility" { AWCButtonAccessibilityDemo(properties: node.properties, onEvent: onEvent) }
         else { AWCNativeView(node: node, onEvent: onEvent) }
     }
     var body: some View {
@@ -250,7 +251,7 @@ private final class NativeSession {
             throw PreviewFailure("Native interaction requires access to the macOS WindowServer. Run the preview server in a desktop session outside a restricted process sandbox.")
         }
         logicalWidth = min(1200, max(320, width)).rounded()
-        guard request.scenario == nil || (["button-behavior", "navigation-events"].contains(request.scenario ?? "") && requestedTag == "md-button") else { throw PreviewFailure("Unknown native example.") }
+        guard request.scenario == nil || (["button-behavior", "navigation-events", "focus-accessibility"].contains(request.scenario ?? "") && requestedTag == "md-button") else { throw PreviewFailure("Unknown native example.") }
         var node = AWCExamples.node(for: requestedTag)
         node.properties.merge(request.properties ?? [:]) { _, supplied in supplied }
         tag = requestedTag
@@ -390,9 +391,6 @@ private final class NativeSession {
         guard modifiers.isSubset(of: ["shift", "control", "alt", "meta"]) else {
             throw PreviewFailure("Unknown key modifier.")
         }
-        if modifiers.contains("control") {
-            inputNotice = "Control chords are not supported by this native preview."; return
-        }
         if key == "Tab" {
             guard modifiers.isSubset(of: ["shift"]) else { inputNotice = "Tab supports only the shift modifier."; return }
             if modifiers.contains("shift") { window?.selectPreviousKeyView(nil) }
@@ -400,7 +398,10 @@ private final class NativeSession {
             return
         }
         guard let client = window?.firstResponder as? NSTextInputClient else {
-            inputNotice = "This key requires focus in a native text input."; return
+            try sendControlKey(key, modifiers: modifiers); return
+        }
+        if modifiers.contains("control") {
+            inputNotice = "Control chords are not supported in native text inputs."; return
         }
         if let editor = window?.firstResponder as? NSTextView, !editor.isEditable {
             inputNotice = "The focused native text input is not editable."; return
@@ -436,6 +437,34 @@ private final class NativeSession {
             ? String(command.dropLast()) + "AndModifySelection:" : command
         // Every selector comes from the fixed table above; input never supplies a selector or source code.
         client.doCommand(by: NSSelectorFromString(selector))
+    }
+
+    /// Dispatch only fixed named keys to this session's private native window.
+    /// Button responders need keyDown/keyUp, rather than text-editor commands.
+    private func sendControlKey(_ key: String, modifiers: Set<String>) throws {
+        guard let window else { throw PreviewFailure("Native window unavailable.") }
+        let keys: [String: (UInt16, String)] = [
+            "Enter": (0x24, "\r"), "Space": (0x31, " "), "Escape": (0x35, "\u{1b}"),
+            "Backspace": (0x33, "\u{7f}"), "Delete": (0x75, "\u{f728}"),
+            "ArrowLeft": (0x7b, "\u{f702}"), "ArrowRight": (0x7c, "\u{f703}"),
+            "ArrowUp": (0x7e, "\u{f700}"), "ArrowDown": (0x7d, "\u{f701}"),
+            "Home": (0x73, "\u{f729}"), "End": (0x77, "\u{f72b}"),
+            "PageUp": (0x74, "\u{f72c}"), "PageDown": (0x79, "\u{f72d}")
+        ]
+        guard let (code, characters) = keys[key] else { throw PreviewFailure("Unsupported native key: \(key)") }
+        var flags: NSEvent.ModifierFlags = []
+        if modifiers.contains("shift") { flags.insert(.shift) }
+        if modifiers.contains("control") { flags.insert(.control) }
+        if modifiers.contains("alt") { flags.insert(.option) }
+        if modifiers.contains("meta") { flags.insert(.command) }
+        if characters.unicodeScalars.contains(where: { $0.value >= 0xf700 }) { flags.insert(.function) }
+        for type in [NSEvent.EventType.keyDown, .keyUp] {
+            guard let event = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: flags,
+                timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber,
+                context: nil, characters: characters, charactersIgnoringModifiers: characters,
+                isARepeat: false, keyCode: code) else { throw PreviewFailure("Could not construct a native key event.") }
+            window.sendEvent(event)
+        }
     }
 
     private func frame() throws -> [String: AWCValue] {

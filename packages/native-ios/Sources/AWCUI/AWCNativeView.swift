@@ -7,6 +7,12 @@ public struct AWCNativeView: View {
     public var onEvent: (AWCEvent) -> Void
     @State var local: [String: AWCValue]
     @State var selectedIDs: Set<String> = []
+    @State var buttonFocusGroup = AWCButtonFocusGroup()
+    @State var iconFocusHandle = AWCButtonFocusHandle()
+    @Environment(\.awcButtonFocusGroup) var inheritedButtonFocusGroup
+    @Environment(\.awcGridCellContext) var gridCellContext
+    @Environment(\.awcNativeFocusChanged) var nativeFocusChanged
+    @Environment(\.layoutDirection) var layoutDirection
     @State var query = ""
     @State var auxiliaryQuery = ""
     @State var passwordVisible = false
@@ -105,7 +111,8 @@ public struct AWCNativeView: View {
         case "md-button": nativeButton
         case "md-icon-button", "md-fab", "md-fab-menu-item": actionButton
         case "md-split-button": splitButton
-        case "md-button-group", "md-segmented-button-set": selectionGroup
+        case "md-button-group": nativeButtonGroup
+        case "md-segmented-button-set": selectionGroup
         case "md-segmented-button": segmentedButton
         case "md-checkbox", "md-radio", "md-switch": checkControl
         case "md-chip": chip

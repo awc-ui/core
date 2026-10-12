@@ -45,7 +45,7 @@ function fixture(t, options = {}) {
   return { renderer, mock, adbCalls, requests, streams };
 }
 
-for (const scenario of ['button-behavior', 'navigation-events']) test(`Android receives ${scenario} separately from component properties`, async t => {
+for (const scenario of ['button-behavior', 'navigation-events', 'focus-accessibility']) test(`Android receives ${scenario} separately from component properties`, async t => {
   const { renderer, requests } = fixture(t);
   await renderer.create({ ...config, scenario });
   const configure = requests.find(request => request.body?.command === 'configure').body;

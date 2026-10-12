@@ -182,3 +182,11 @@ shows capture, target, and bubble phases. The DOM_GLOBAL and CANCELABLE_EVENT
 coverage cards link to this example on each platform. Native contexts and event
 scopes replace those component behaviors without providing a browser DOM or
 browser windows.
+
+Choose **Example → Focus & accessibility** to try a native button group with a
+hardware keyboard. Tab enters and leaves the group; Left/Right and Home/End move
+focus without changing selection. Enter/Space activates the focused control.
+The button coverage cards link directly to this example. Click inside the live
+preview before sending keys, and press Escape to return keyboard control to the
+browser. The native accessibility roles belong to the running platform app;
+streamed pixels cannot expose its accessibility tree to a browser screen reader.
