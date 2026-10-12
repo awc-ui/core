@@ -138,10 +138,6 @@ export function createCanvasInspector({ getState, document: ownerDocument = glob
     const label = `${formatPixels(rect.width)} × ${formatPixels(rect.height)}`;
     const labelX = Math.max(4, Math.min(rect.left, width - 158)), labelY = Math.max(4, Math.min(rect.top >= 25 ? rect.top - 23 : rect.bottom + 4, height - 23));
     boxes.push(`<div class="canvas-measure-label" style="left:${labelX}px;top:${labelY}px">${escape(label)}</div>`);
-    if (rect.width > 0 && rect.height > 0) {
-      boxes.push(`<div class="canvas-measure-guide canvas-measure-guide-x" style="left:${rect.left}px;top:${Math.max(3, rect.top - 7)}px;width:${rect.width}px"></div>`);
-      boxes.push(`<div class="canvas-measure-guide canvas-measure-guide-y" style="left:${Math.max(3, rect.left - 7)}px;top:${rect.top}px;height:${rect.height}px"></div>`);
-    }
     overlay.innerHTML = boxes.join('');
   }
   function update() {

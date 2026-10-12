@@ -11,9 +11,8 @@
 .canvas-inspector-font{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .canvas-measure-overlay,.canvas-measure-overlay *{box-sizing:border-box;pointer-events:none!important;user-select:none}
 .canvas-measure-overlay{overflow:hidden;contain:strict;color-scheme:light}
-.canvas-measure-bounds,.canvas-measure-padding,.canvas-measure-margin,.canvas-measure-guide,.canvas-measure-label{position:absolute}
+.canvas-measure-bounds,.canvas-measure-padding,.canvas-measure-margin,.canvas-measure-label{position:absolute}
 .canvas-measure-bounds{border:1px solid #3b82f6;background:rgb(59 130 246 / 5%)}
 .canvas-measure-padding{background:rgb(34 164 110 / 19%)}.canvas-measure-margin{background:repeating-linear-gradient(135deg,rgb(220 146 59 / 24%) 0 3px,rgb(220 146 59 / 9%) 3px 6px)}
 .canvas-measure-label{font:10px/16px ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;background:#2563eb;color:white;border-radius:3px;padding:1px 5px;box-shadow:0 1px 3px #0002}
-.canvas-measure-guide{border-color:#3b82f6;border-style:solid}.canvas-measure-guide-x{height:5px;border-width:1px 1px 0}.canvas-measure-guide-y{width:5px;border-width:1px 0 1px 1px}
 @media(max-width:640px){.canvas-inspector-panel{margin-inline:8px;max-inline-size:calc(100% - 16px)}.canvas-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.canvas-inspector-heading{align-items:flex-start;gap:6px}.canvas-inspector-heading md-button{max-inline-size:155px}}
