@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { mergeComponentDocumentation, memberDocumentation } from './documentation.js';
+import { mergeComponentDocumentation, memberDocumentation, eventPayloadDocumentation } from './documentation.js';
 
 test('merges raw CEM fields and attributes with generated contracts without losing source prose', () => {
   const manifest = { tagName: 'md-example', description: 'Source component', members: [
@@ -152,4 +152,67 @@ test('method explanations distinguish validation, text selection and state-chang
   const authored = memberDocumentation(component('md-text-field'), 'method', { name: 'setFocus', description: 'New source description' });
   assert.equal(authored.description, 'New source description');
   assert.equal(authored.descriptionSource, 'source');
+});
+
+test('event payload docs consume AST fields and retain exact source descriptions without parsing TypeScript', () => {
+  const component = {
+    tag: 'md-button', events: [{ name: 'mdClick', detail: 'MdButtonClickDetail', cancelable: true }],
+    eventTypes: [{ name: 'MdButtonClickDetail', kind: 'interface', body: '/** Proposed state. */\nselected: boolean;', fields: [{ name: 'selected', type: 'boolean', description: 'The proposed selected state.', optional: false }] }],
+    eventPayloads: [{ name: 'mdClick', detail: 'MdButtonClickDetail', fields: [
+      { name: 'selected', type: 'boolean', description: 'Selected state the button WILL transition to if the click is not cancelled.', optional: false },
+      { name: 'originalEvent', type: 'MouseEvent | KeyboardEvent', description: 'The original DOM event that triggered the activation.', optional: false },
+    ] }],
+  };
+  const original = JSON.stringify(component);
+  const doc = memberDocumentation(component, 'event', 'mdClick');
+  const payload = eventPayloadDocumentation(component, doc);
+  assert.equal(payload.fields.length, 2);
+  assert.equal(payload.fields[0].description, component.eventPayloads[0].fields[0].description);
+  assert.match(payload.definition, /^interface MdButtonClickDetail \{/);
+  assert.match(payload.example, /event\.detail\["selected"\]/);
+  assert.doesNotMatch(payload.example, /event\.detail\["originalEvent"\]/);
+  assert.match(payload.example, /event\.preventDefault/);
+  assert.match(doc.description, /before activation effects/);
+  assert.equal(doc.cancelable, true);
+  doc.payloadFields[0].description = 'Changed copy';
+  assert.equal(JSON.stringify(component), original);
+  const noMetadata = eventPayloadDocumentation(component, { type: '{ count: number; }', payloadType: { body: 'count: number;' } });
+  assert.deepEqual(noMetadata.fields, [], 'Raw source text is not parsed heuristically in the browser');
+});
+
+test('simple, empty, optional and inline event payloads have readable truthful fallbacks', () => {
+  const component = { tag: 'md-select' };
+  const string = eventPayloadDocumentation(component, { name: 'mdChange', detail: 'string' });
+  assert.equal(string.description, 'The detail is a text value.');
+  assert.match(string.example, /console\.log\(event\.detail\)/);
+  const empty = eventPayloadDocumentation(component, { name: 'mdOpen', detail: 'void' });
+  assert.equal(empty.empty, true);
+  assert.match(empty.description, /does not carry payload data/);
+  assert.doesNotMatch(empty.example, /event\.detail/);
+  const inline = eventPayloadDocumentation(component, { name: 'mdValidityChange', detail: '{ valid: boolean; message?: string }', payloadFields: [{ name: 'message', type: { text: 'string' }, optional: true }] });
+  assert.deepEqual(inline.fields[0], { name: 'message', type: 'string', optional: true, description: 'No additional field description is declared in the source.' });
+  assert.equal(inline.definition, '{ valid: boolean; message?: string }');
+  assert.doesNotMatch(eventPayloadDocumentation({ tag: 'md-button' }, { name: 'mdChange', detail: 'MdButtonChangeDetail' }).example, /preventDefault/);
+});
+
+test('actual server AST enrichment reaches button and inline validity payload documentation', async () => {
+  const { enrichEventDocumentation } = await import('./event-documentation.mjs');
+  const { fileURLToPath } = await import('node:url');
+  const repository = fileURLToPath(new URL('../../', import.meta.url));
+  const catalog = JSON.parse(readFileSync(new URL('../../packages/native-compiler/generated/catalog.json', import.meta.url)));
+  const merged = async tag => {
+    const docs = JSON.parse(readFileSync(new URL(`../docs/src/data/components/${tag.slice(3)}.json`, import.meta.url)));
+    return mergeComponentDocumentation({}, catalog.components.find(component => component.tag === tag), await enrichEventDocumentation(repository, tag, docs));
+  };
+  const button = await merged('md-button');
+  const click = eventPayloadDocumentation(button, memberDocumentation(button, 'event', 'mdClick'));
+  assert.deepEqual(click.fields.map(field => field.name), ['value', 'toggle', 'selected', 'href', 'target', 'originalEvent']);
+  assert.ok(click.fields.every(field => field.description.length > 10));
+  assert.match(click.fields.find(field => field.name === 'selected').description, /not.*cancelled/s);
+  assert.match(click.example, /event\.detail\["value"\], event\.detail\["selected"\]/);
+  const select = await merged('md-select');
+  const validity = eventPayloadDocumentation(select, memberDocumentation(select, 'event', 'mdValidityChange'));
+  assert.deepEqual(validity.fields.map(field => field.name), ['valid', 'validationMessage', 'flags']);
+  assert.equal(validity.fields.find(field => field.name === 'flags').type, 'Record<string, boolean>');
+  assert.match(validity.definition, /Record<string, boolean>/);
 });

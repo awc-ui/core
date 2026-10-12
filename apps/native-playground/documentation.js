@@ -341,6 +341,33 @@ export function memberDocumentation(component = {}, requestedKind, requestedMemb
     const detail = typeText(member.detail) || typeText(payload?.detail) || typeText(member.type).replace(/^CustomEvent<([\s\S]+)>$/, '$1');
     const payloadType = (normalized.eventTypes || []).find(item => item.name === detail || item.name === detail.replace(/<.*$/, ''));
     if (payloadType) result.payloadType = clone(payloadType);
+    // Fields are supplied by the server's TypeScript AST analysis. Keep the
+    // browser renderer independent of source parsing and preserve authored prose.
+    const fields = payload?.fields ?? payloadType?.fields;
+    if (Array.isArray(fields)) result.payloadFields = clone(fields);
   }
   return result;
+}
+
+/** Plain presentation data for an event payload; never parses TypeScript text. */
+export function eventPayloadDocumentation(component = {}, doc = {}) {
+  const type = typeText(doc.detail) || typeText(doc.payload?.detail) || typeText(doc.type).replace(/^CustomEvent<([\s\S]+)>$/, '$1') || 'unknown';
+  const fields = (doc.payloadFields || []).filter(field => nonempty(field.name)).map(field => ({
+    name: field.name, type: typeText(field.type) || 'unknown', optional: Boolean(field.optional),
+    description: nonempty(field.description) ? field.description : 'No additional field description is declared in the source.',
+  }));
+  const empty = ['void', 'undefined', 'never'].includes(type.trim());
+  const simple = { string: 'The detail is a text value.', number: 'The detail is a number.', boolean: 'The detail is true or false.', null: 'The detail is null.' };
+  const description = empty ? 'This event does not carry payload data.' : fields.length ? 'Read these fields from event.detail.' : simple[type.trim()] || 'Read event.detail using the declared source type below.';
+  const source = doc.payloadType;
+  const definition = source?.body ? source.kind === 'interface' ? `interface ${source.name}${source.extends ? ` extends ${source.extends}` : ''} {\n${source.body}\n}` : `type ${source.name} = ${source.body};` : type;
+  const readableFields = fields.filter(field => !/\b(?:MouseEvent|KeyboardEvent|PointerEvent|HTMLElement|Element)\b/.test(field.type));
+  const firstFields = component.tag === 'md-button' && ['mdClick', 'mdChange'].includes(doc.name)
+    ? ['value', 'selected'].map(name => readableFields.find(field => field.name === name)).filter(Boolean)
+    : readableFields.slice(0, 2);
+  const access = firstFields.length ? firstFields.map(field => `event.detail[${JSON.stringify(field.name)}]`).join(', ') : 'event.detail';
+  const example = /^md-[a-z0-9-]+$/.test(component.tag || '') && nonempty(doc.name)
+    ? `document.querySelector(${JSON.stringify(component.tag)}).addEventListener(${JSON.stringify(doc.name)}, (event) => {\n  console.log(${empty ? JSON.stringify(doc.name) : access});\n${component.tag === 'md-button' && doc.name === 'mdClick' ? '  // event.preventDefault(); // Cancel this activation before its effects.\n' : ''}});`
+    : '';
+  return { type, fields, empty, description, definition, example };
 }

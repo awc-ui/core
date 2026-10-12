@@ -7,6 +7,8 @@
     "dev": "node server.mjs",
     "test": "node --test *.test.mjs",
     "theme:build": "node build-studio-theme.mjs",
-    "theme:check": "node build-studio-theme.mjs --check"
+    "theme:check": "node build-studio-theme.mjs --check",
+    "syntax:build": "node build-syntax-highlighting.mjs",
+    "syntax:check": "node build-syntax-highlighting.mjs --check"
   }
 }

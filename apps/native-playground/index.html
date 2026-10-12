@@ -29,6 +29,7 @@
       <div class="workspace-grid">
         <div class="studio-main-column">
           <section class="preview-panel" aria-label="Component preview">
+            <md-card class="studio-card" variant="outlined" full-width>
             <div class="preview-toolbar"><md-button-group id="preview-platform-buttons" variant="standard" size="sm" selection-mode="single-select" required aria-label="Preview platform">
               <md-button id="platform-web" variant="filled" value="web" data-platform="web" icon="language" selected>Web</md-button>
               <md-button id="platform-ios" variant="filled" value="ios" data-platform="ios"><svg class="platform-brand-icon" slot="leading-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true" focusable="false"><path d="M17.6 12.7c0-2.4 2-3.6 2.1-3.7-1.2-1.7-3-1.9-3.7-1.9-1.6-.2-3.1 1-3.9 1-.8 0-2-1-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.2 10.2.8 1.2 1.7 2.4 3 2.3 1.2-.1 1.7-.8 3.2-.8 1.5 0 1.9.8 3.3.8 1.4 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.4-2.8-.1 0-2.7-1-2.7-4.3ZM15.1 5.5c.7-.9 1.2-2 1.1-3.2-1.1 0-2.4.8-3.1 1.6-.7.7-1.3 1.9-1.2 3 1.2.1 2.4-.6 3.2-1.4Z"/></svg>SwiftUI</md-button>
@@ -40,21 +41,26 @@
             </div>
             <div id="preview-stage" class="preview-stage"><div id="preview-content"></div></div>
             <div class="preview-footer"><span id="preview-caption">Original AWC component</span><span id="recipe-status">Live reference</span></div>
+            </md-card>
           </section>
           <section class="studio-documentation" aria-label="Component documentation">
-            <md-tabs id="studio-doc-tabs" variant="secondary" tab-width="auto" aria-label="Documentation sections"><md-tab label="Usage & API" active></md-tab><md-tab label="Test coverage"></md-tab><md-tab label="Events"></md-tab><md-tab label="Native source"></md-tab><md-tab label="Portability"></md-tab></md-tabs>
+            <md-card class="studio-card" variant="outlined" full-width>
+            <md-tabs id="studio-doc-tabs" variant="secondary" tab-width="auto" aria-label="Documentation sections"><md-tab label="Usage & API" active></md-tab><md-tab label="Test coverage"></md-tab><md-tab label="Events"></md-tab></md-tabs>
             <div id="usage-docs" aria-label="Usage and API"></div>
             <div id="coverage-panel" hidden></div>
-            <section class="inspector-panel" aria-label="Component inspector" hidden><div class="inspector-toolbar"><h3 id="inspector-title">Events</h3><md-button id="copy-source" variant="text" size="xs" icon="content_copy" hidden>Copy source</md-button></div><div id="inspector-content"></div></section>
+            <section class="inspector-panel" aria-label="Live component events" hidden><div class="inspector-toolbar"><h3>Live events</h3></div><div id="inspector-content"></div></section>
+            </md-card>
           </section>
           <p class="footnote">Built with the same AWC components you’re exploring. SwiftUI streams from this Mac; Android streams from a connected emulator.</p>
         </div>
         <aside class="props-panel" aria-label="Component properties">
+          <md-card class="studio-card props-card" variant="outlined" full-width>
           <div class="panel-heading"><div><span class="panel-eyebrow">CONFIGURE</span><h2>Properties</h2></div><span id="props-count" class="count-badge">0</span></div>
           <p class="props-hint">Changes apply to the web reference.</p>
           <md-text-field id="props-search" class="props-search" placeholder="Find a property…" aria-label="Search properties" variant="outlined" density="-3" clearable="internal"></md-text-field>
           <div id="properties-panel"><div id="props-controls"></div><p id="props-empty" class="prop-note" hidden>No matching properties.</p><div class="css-variables-panel"><md-accordion id="css-variables-accordion" variant="outlined" density="-3" heading-level="3" transition="standard"><md-accordion-item id="css-variables-section" headline="CSS variables" density="-3"><span slot="headline" class="css-variables-heading">CSS variables <span id="css-variables-count" class="count-badge">0</span></span><p id="css-variables-note" class="prop-note"></p><div id="css-controls"></div></md-accordion-item></md-accordion></div></div>
           <div class="props-panel-footer"><span class="material-symbols-outlined" aria-hidden="true">info</span>Hover an info icon for details and platform support.</div>
+          </md-card>
         </aside>
       </div>
     </main>
@@ -70,9 +76,9 @@
       <div class="theme-section-title"><h3>Your color roles</h3><span id="theme-mode-label">Light</span></div><div id="theme-swatches" class="theme-swatches"></div>
       <p class="theme-note">Secondary and tertiary are derived from the primary seed. Turn off Auto to give either its own seed.</p>
       <div class="theme-export"><md-button id="theme-copy-css" variant="tonal" size="sm" icon="content_copy">Copy theme CSS</md-button><md-button id="theme-reset" variant="text" size="sm">Reset theme</md-button></div>
-      <details class="theme-source"><summary>Theme code</summary><pre id="theme-code"></pre></details>
+      <md-accordion-item class="theme-source" headline="Theme code" density="-3" transition="standard"><pre id="theme-code"></pre></md-accordion-item>
     </div>
   </md-side-sheet>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <md-snackbar id="toast" position="bottom" closeable auto-hide-duration="4000"></md-snackbar>
 </body>
 </html>

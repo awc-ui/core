@@ -8,7 +8,7 @@ const decode = value => value.replace(/&(amp|quot|lt|gt|#39);/g, (_, entity) => 
 class ElementStub {
   constructor(attributes = {}) {
     this.attributes = attributes; this.dataset = {}; this.listeners = {}; this.nodes = [];
-    this.id = attributes.id; this.value = attributes.value || ''; this.open = Object.hasOwn(attributes, 'open');
+    this.id = attributes.id; this.value = attributes.value || ''; this.open = Object.hasOwn(attributes, 'open'); this.expanded = Object.hasOwn(attributes, 'expanded');
     this.disabled = Object.hasOwn(attributes, 'disabled'); this.hidden = false; this.isConnected = true;
     this.style = {}; this.offsetWidth = 300; this.offsetHeight = 120;
     for (const [name, value] of Object.entries(attributes)) if (name.startsWith('data-')) this.dataset[name.slice(5).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())] = value;
@@ -23,6 +23,7 @@ class ElementStub {
   closest(selector) { return this.matches(selector) ? this : null; }
   contains(node) { return this.nodes.includes(node); }
   focus() { document.activeElement = this; }
+  async focusHeader() { this.focusHeaderCalls = (this.focusHeaderCalls || 0) + 1; document.activeElement = this; }
   setSelectionRange(start, end) { this.selectionStart = start; this.selectionEnd = end; }
   querySelectorAll(selector) {
     const match = /^\[([\w-]+)(?:="([^"]*)")?\]$/.exec(selector);
@@ -64,23 +65,81 @@ function fixture(t, extra = {}) {
 test('same-component docs enrichment and platform switches retain open sections, method args and caret', t => {
   const { ui, root, state } = fixture(t);
   ui.renderUsage();
-  root.querySelector('[data-usage-section="Methods"]').open = true;
+  root.querySelector('[data-usage-section="Methods"]').expanded = true;
   const input = root.querySelector('[data-method-name="setCustomValidity"]');
   input.value = '["Use a longer value"]'; input.focus(); input.setSelectionRange(2, 9);
   state.selected = { ...state.selected, dataTypes: [{ name: 'Value', body: 'string' }] };
   ui.renderUsage();
-  assert.equal(root.querySelector('[data-usage-section="Methods"]').open, true);
+  assert.equal(root.querySelector('[data-usage-section="Methods"]').expanded, true);
   assert.ok(root.querySelector('#usage-language-tabs'));
   assert.equal(document.activeElement.value, '["Use a longer value"]');
   assert.deepEqual([document.activeElement.selectionStart, document.activeElement.selectionEnd], [2, 9]);
   assert.doesNotMatch(root.innerHTML, /Returns <code>inferred/);
   state.platform = 'android'; ui.renderUsage();
-  assert.equal(root.querySelector('[data-usage-section="Methods"]').open, true);
+  assert.equal(root.querySelector('[data-usage-section="Methods"]').expanded, true);
   assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').value, '["Use a longer value"]');
   assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').disabled, true);
   state.selected = { ...state.selected, tag: 'md-number-field' }; ui.renderUsage();
-  assert.equal(root.querySelector('[data-usage-section="Methods"]').open, false);
+  assert.equal(root.querySelector('[data-usage-section="Methods"]').expanded, false);
   assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').value, '[]');
+});
+
+test('API topics and payloads use AWC disclosures, retain independent expansion and restore header focus', t => {
+  const { ui, root, state } = fixture(t, {
+    events: [{ name: 'mdInput', detail: 'string' }, { name: 'mdChange', detail: '{ value: string }' }],
+    slots: [{ name: '' }], cssParts: [{ name: 'input' }], dataTypes: [{ name: 'Payload', body: 'string' }],
+  });
+  ui.renderUsage();
+  assert.equal(root.querySelectorAll('[data-usage-section]').length, 5);
+  assert.equal(root.querySelectorAll('[data-usage-payload]').length, 2);
+  assert.doesNotMatch(root.innerHTML, /<details\b|<summary\b|<button\b|<input\b/);
+  assert.match(root.innerHTML, /<md-accordion-item[^>]+data-usage-section="Events"/);
+  assert.match(root.innerHTML, /<md-accordion-item[^>]+data-usage-payload="mdInput"[^>]+content-max-height="300px"/);
+  assert.match(root.innerHTML, /<md-button[^>]+class="usage-guide"/);
+  root.querySelector('[data-usage-section="Events"]').expanded = true;
+  root.querySelector('[data-usage-section="Slots"]').expanded = true;
+  const payload = root.querySelector('[data-usage-payload="mdInput"]');
+  payload.expanded = true;
+  payload.focus();
+  state.platform = 'ios';
+  ui.renderUsage();
+  assert.equal(root.querySelector('[data-usage-section="Events"]').expanded, true);
+  assert.equal(root.querySelector('[data-usage-section="Slots"]').expanded, true);
+  assert.equal(root.querySelector('[data-usage-payload="mdInput"]').expanded, true);
+  assert.equal(root.querySelector('[data-usage-payload="mdChange"]').expanded, false);
+  assert.equal(document.activeElement, root.querySelector('[data-usage-payload="mdInput"]'));
+  assert.equal(document.activeElement.focusHeaderCalls, 1, 'Restores the actual AWC header through its public API');
+  state.selected = { ...state.selected, tag: 'md-number-field' };
+  ui.renderUsage();
+  assert.ok(root.querySelectorAll('[data-usage-section]').every(item => !item.expanded));
+  assert.ok(root.querySelectorAll('[data-usage-payload]').every(item => !item.expanded));
+});
+
+test('event details show readable source fields and examples before an optional escaped type definition', t => {
+  const { ui, root, state } = fixture(t, {
+    tag: 'md-button', methods: [], events: [{ name: 'mdClick', detail: 'ClickDetail', cancelable: true }, { name: 'mdOpen', detail: 'void' }],
+    eventTypes: [{ name: 'ClickDetail', kind: 'interface', body: '/** <source> */\nselected: boolean;', fields: [
+      { name: 'selected', type: 'boolean', description: 'Proposed **selected** state; cancellation prevents the change.', optional: false },
+      { name: 'hint', type: 'string', description: '<script>untrusted()</script>', optional: true },
+    ] }],
+  });
+  ui.renderUsage();
+  assert.match(root.innerHTML, /class="payload-fields"/);
+  assert.match(root.innerHTML, /<dt><code>selected<\/code>/);
+  assert.match(root.innerHTML, /Proposed <strong>selected<\/strong> state; cancellation prevents the change/);
+  assert.match(root.innerHTML, /payload-field-optional">Optional/);
+  assert.match(root.innerHTML, /Read this event/);
+  assert.match(root.innerHTML, /event\.preventDefault/);
+  assert.match(root.innerHTML, /headline="Type definition"/);
+  assert.equal(root.querySelector('[data-usage-payload="mdClick"]').expanded, false);
+  assert.equal(root.querySelector('[data-usage-payload="mdOpen"]'), null);
+  assert.match(root.innerHTML, /This event does not carry payload data/);
+  assert.ok(root.innerHTML.indexOf('class="payload-fields"') < root.innerHTML.indexOf('headline="Type definition"'));
+  assert.doesNotMatch(root.innerHTML, /<source>|<script>/);
+  assert.match(root.innerHTML, /&lt;source&gt;/);
+  state.platform = 'ios'; ui.renderUsage();
+  assert.match(root.innerHTML, /Native callbacks use their adapter payload/);
+  assert.match(root.innerHTML, /DOM event objects are not sent to the native renderer/);
 });
 
 test('data/callback types have accessible help and escaped source content', async t => {

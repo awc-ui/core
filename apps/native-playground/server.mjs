@@ -6,6 +6,7 @@ import { createNativeRenderer, readRenderRequest, readLocalJSONRequest, validate
 import { createNativeLiveRenderer } from './native-live.mjs';
 import { createAndroidLiveRenderer } from './android-live.mjs';
 import { getComponentCoverage, isCoverageEvidencePath } from './coverage.mjs';
+import { enrichEventDocumentation } from './event-documentation.mjs';
 
 const appRoot = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appRoot, '../..');
@@ -41,7 +42,7 @@ export async function resolveAsset(rawUrl, options = {}) {
   } else {
     root = app;
     relative = pathname === '/' ? 'index.html' : pathname.slice(1);
-    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'documentation.js', 'documentation-ui.js', 'brand-icons.js', 'usage-snippets.js', 'property-controls.js', 'studio.css', 'studio-ui.js', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'].includes(relative)) return null;
+    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'documentation.js', 'documentation-ui.js', 'brand-icons.js', 'usage-snippets.js', 'syntax-highlighting.js', 'syntax-vendor/highlighter.js', 'syntax-vendor/LICENSES.txt', 'property-controls.js', 'studio.css', 'studio-ui.js', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'].includes(relative)) return null;
   }
   const absolute = path.resolve(root, relative);
   if (!within(path.resolve(root), absolute)) return null;
@@ -70,6 +71,14 @@ export async function handleCoverageRequest(req, res, { repoRoot: repository = r
 
 export function assetContentSecurityPolicy(pathname) {
   return `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors '${pathname === '/preview-frame.html' ? 'self' : 'none'}'`;
+}
+
+export async function readAssetContent(file, repository = repoRoot) {
+  const content = await readFile(file);
+  const relative = path.relative(await realpath(repository), file).split(path.sep).join('/');
+  const component = /^apps\/docs\/src\/data\/components\/([a-z][a-z0-9]*(?:-[a-z0-9]+)*)\.json$/.exec(relative);
+  if (!component) return content;
+  return Buffer.from(JSON.stringify(await enrichEventDocumentation(repository, `md-${component[1]}`, JSON.parse(content.toString('utf8')))));
 }
 
 export async function handleNativeLiveRequest(req, res, { renderer, androidRenderer, tags, json }) {
@@ -180,7 +189,7 @@ export function createServer(options = {}) {
     const file = await resolveAsset(req.url || '/', {...options,renderRoot:renderer.directory});
     if (!file) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('Not found'); return; }
     try {
-      const content = await readFile(file);
+      const content = await readAssetContent(file, options.repoRoot || repoRoot);
       res.writeHead(200, {
         'Content-Type': mime[path.extname(file)] || 'text/plain; charset=utf-8',
         'Cache-Control': 'no-store',

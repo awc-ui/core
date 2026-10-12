@@ -6,8 +6,8 @@ import { propertyEditor, parsePropertyInput } from './property-controls.js';
 import { createStudioUI, createCoverageUI } from './studio-ui.js';
 
 const $ = selector => document.querySelector(selector);
-const state = { components: [], selected: null, platform: 'web', inspector: 'events', docSection: 'usage', snippetLanguage: 'html', filter: 'all', props: {}, events: [], catalog: null, ready: false, target: null, sourcePlatform: 'ios', sourceText: '', sourceCache: new Map(), renderVersion: 0 };
-const documentationUI = createDocumentationUI({ getState: () => state, notify: toast, afterInteraction: syncReferenceState, watchEvents: () => { selectInspector('events'); $('.inspector-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
+const state = { components: [], selected: null, platform: 'web', docSection: 'usage', snippetLanguage: 'html', filter: 'all', props: {}, events: [], catalog: null, ready: false, target: null };
+const documentationUI = createDocumentationUI({ getState: () => state, notify: toast, afterInteraction: syncReferenceState, watchEvents: () => { selectStudioSection('events'); $('.inspector-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
 const studioUI = createStudioUI({ getState: () => state, notify: toast, onLayoutChange: patch => { if ('direction' in patch || 'width' in patch) scheduleNativeRender(); }, onThemeChange: () => scheduleNativeRender(400) });
 const coverageUI = createCoverageUI({ getState: () => state, notify: toast });
 const documentationRequests = new Map();
@@ -29,7 +29,6 @@ function nativeClientFor(platform) {
 }
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const text = (selector, value) => { if ($(selector)) $(selector).textContent = String(value ?? ''); };
-const sourceURL = value => value && !value.startsWith('/') && !value.split('/').includes('..') ? `/repo/${value}` : null;
 
 function parseDefault(value) {
   if (value === undefined || value === 'undefined') return undefined;
@@ -101,16 +100,14 @@ async function init() {
 function bindEvents() {
   $('#search').addEventListener('mdInput', renderNavigation);
   document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => { state.filter = button.dataset.filter; document.querySelectorAll('[data-filter]').forEach(item => item.variant = item === button ? 'tonal' : 'text'); renderNavigation(); }));
-  $('#component-list').addEventListener('click', event => { const button = event.target.closest('[data-tag]'); if (button) { selectNativeScenario(''); location.hash = button.dataset.tag; if (state.selected?.tag === button.dataset.tag) selectComponent(button.dataset.tag); } });
+  $('#component-list').addEventListener('mdClick', event => { const button = event.target.closest('[data-tag]'); if (button) { selectNativeScenario(''); location.hash = button.dataset.tag; if (state.selected?.tag === button.dataset.tag) selectComponent(button.dataset.tag); } });
   window.addEventListener('hashchange', () => { const tag = location.hash.slice(1); if (state.components.some(component => component.tag === tag)) { selectNativeScenario(''); selectComponent(tag); } });
   window.addEventListener('pagehide', () => { disposeNativePointer(); nativeRequests.cancel(); clearTimeout(state.nativeRenderTimer); nativeLive.stop(); });
   window.addEventListener('pageshow', event => { if (event.persisted && isNativePlatform(state.platform)) renderPreview(); });
   document.addEventListener('visibilitychange', () => nativeLive.setVisible(!document.hidden));
   $('#reset').addEventListener('click', () => { selectComponent(state.selected.tag); toast('Component properties reset'); });
   $('#preview-platform-buttons').addEventListener('mdSelectionChange', event => { if (event.target === $('#preview-platform-buttons')) selectPlatform(event.detail.values[0]); });
-  $('#studio-doc-tabs').addEventListener('mdTabChange', event => { if (event.target === $('#studio-doc-tabs')) selectStudioSection(['usage', 'coverage', 'events', 'source', 'diagnostics'][event.detail.index]); });
-  document.querySelectorAll('[data-inspector]').forEach(button => button.addEventListener('click', () => selectInspector(button.dataset.inspector)));
-  $('#copy-source').addEventListener('click', async () => { try { await navigator.clipboard.writeText(state.sourceText); toast('Generated source copied'); } catch { toast('Clipboard unavailable in this browser'); } });
+  $('#studio-doc-tabs').addEventListener('mdTabChange', event => { if (event.target === $('#studio-doc-tabs')) selectStudioSection(['usage', 'coverage', 'events'][event.detail.index]); });
   document.addEventListener('keydown', event => { if (event.key === '/' && !event.composedPath().some(element => ['INPUT', 'TEXTAREA', 'SELECT', 'MD-TEXT-FIELD', 'MD-SELECT'].includes(element?.tagName))) { event.preventDefault(); $('#search').setFocus(); } });
 }
 function selectPlatform(platform) {
@@ -121,15 +118,25 @@ function selectPlatform(platform) {
   if (platform === 'web') url.searchParams.delete('platform'); else url.searchParams.set('platform', platform);
   history.replaceState(null, '', url);
   document.querySelectorAll('[data-platform]').forEach(button => { button.selected = button.dataset.platform === platform; });
-  if (platform !== 'web') state.sourcePlatform = platform;
-  renderPreview(); renderProperties(); if (state.docSection === 'source') renderInspector();
+  renderPreview(); renderProperties();
 }
-function toast(message) { text('#toast', message); $('#toast').classList.add('visible'); clearTimeout(state.toastTimer); state.toastTimer = setTimeout(() => $('#toast').classList.remove('visible'), 2000); }
+async function toast(message) {
+  const generation = state.toastGeneration = (state.toastGeneration || 0) + 1;
+  await customElements.whenDefined('md-snackbar');
+  if (generation !== state.toastGeneration) return;
+  const snackbar = $('#toast');
+  // show() only changes open; close first so repeated messages restart the
+  // snackbar's own dismiss timer, without a second timer in the Studio.
+  await snackbar.hide();
+  if (generation !== state.toastGeneration) return;
+  snackbar.message = String(message ?? '');
+  await snackbar.show();
+}
 function renderNavigation() {
   const query = ($('#search').value || '').trim().toLowerCase();
   const filtered = state.components.filter(component => `${component.tag} ${displayName(component.tag)} ${component.category}`.toLowerCase().includes(query) && (state.filter === 'all' || portabilityFindings(component).total));
   const groups = categoryOrder.map(category => ({ category, components: filtered.filter(component => component.category === category) })).filter(group => group.components.length);
-  $('#component-list').innerHTML = groups.map(({ category, components }) => `<section class="nav-group"><h3>${escape(category)}<span>${components.length}</span></h3>${components.map(component => `<button class="component-link ${component.tag === state.selected?.tag ? 'active' : ''}" data-tag="${escape(component.tag)}" ${component.tag === state.selected?.tag ? 'aria-current="true"' : ''}><span class="nav-icon" aria-hidden="true">${icons[category]}</span><span>${escape(displayName(component.tag))}</span>${portabilityFindings(component).total ? `<span class="nav-warning" title="${portabilityFindings(component).source} source diagnostics · ${portabilityFindings(component).ios} iOS API gaps · ${portabilityFindings(component).android} Android API gaps">${portabilityFindings(component).total}</span>` : ''}</button>`).join('')}</section>`).join('') || '<p class="empty-state">No matching components.</p>';
+  $('#component-list').innerHTML = groups.map(({ category, components }) => `<section class="nav-group"><h3>${escape(category)}<span>${components.length}</span></h3>${components.map(component => `<md-button type="button" class="component-link ${component.tag === state.selected?.tag ? 'active' : ''}" variant="${component.tag === state.selected?.tag ? 'tonal' : 'text'}" size="xs" shape="square" full-width data-tag="${escape(component.tag)}" ${component.tag === state.selected?.tag ? 'aria-current="true"' : ''}><span class="nav-icon" slot="leading-icon" aria-hidden="true">${icons[category]}</span><span>${escape(displayName(component.tag))}</span>${portabilityFindings(component).total ? `<span class="nav-warning" slot="trailing-icon" title="${portabilityFindings(component).source} source diagnostics · ${portabilityFindings(component).ios} iOS API gaps · ${portabilityFindings(component).android} Android API gaps">${portabilityFindings(component).total}</span>` : ''}</md-button>`).join('')}</section>`).join('') || '<p class="empty-state">No matching components.</p>';
 }
 function selectComponent(tag) {
   const component = state.components.find(item => item.tag === tag); if (!component) return;
@@ -139,7 +146,7 @@ function selectComponent(tag) {
   Object.assign(state.props, recipeFor(tag).props);
   text('#category-label', component.category); text('#tag-label', tag); text('#component-title', displayName(tag)); text('#component-description', component.description);
   text('#props-count', component.properties.length); text('#findings-count', portabilityFindings(component).total); text('#event-count', '0');
-  renderNavigation(); renderPreview(); renderProperties(); renderInspector(); if (state.docSection === 'coverage') void coverageUI.load();
+  renderNavigation(); renderPreview(); renderProperties(); renderEvents(); if (state.docSection === 'coverage') void coverageUI.load();
   void loadComponentDocumentation(component);
 }
 function renderPreview() {
@@ -196,9 +203,9 @@ function renderNativePreview() {
   const component = state.selected;
   const target = nativePreviewTarget(state.platform);
   const support = component.support?.[state.platform];
-  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><span class="native-live-badge">Live</span><md-button variant="text" size="xs" id="native-render-button" icon="refresh">Reconnect</md-button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div><p class="snapshot-status" id="native-render-status" role="status" aria-live="polite"></p><p class="snapshot-note" id="native-preview-note"></p><details class="snapshot-details"><summary>Fixture & native playground</summary><p>The native example uses this component’s root properties. Its child content and text may differ from the web reference.</p><p>Live pixels preserve native state. Native accessibility remains in the running ${state.platform === 'android' ? 'Android' : 'macOS'} app; this image does not expose its control tree to the browser.</p>${state.platform === 'android' ? '<p>Live rendering requires the Android emulator and native playground. One Android preview can use the emulator at a time. Capture covers the visible Activity surface; separate Popup/Dialog windows and off-screen content are outside this preview.</p>' : ''}<p>${support ? `${support.unsupportedProperties?.length || 0} unsupported properties · ${support.unsupportedEvents?.length || 0} unsupported events. Inspect full coverage in Portability.` : 'Adapter coverage has not been reported.'}</p><code>${escape(target.playground)}</code></details></section>`;
+  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><span class="native-live-badge">Live</span><md-button variant="text" size="xs" id="native-render-button" icon="refresh">Reconnect</md-button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div><p class="snapshot-status" id="native-render-status" role="status" aria-live="polite"></p><p class="snapshot-note" id="native-preview-note"></p><md-accordion-item class="snapshot-details" headline="Fixture &amp; native playground" heading-level="4" region-role="group" density="-3"><p>The native example uses this component’s root properties. Its child content and text may differ from the web reference.</p><p>Live pixels preserve native state. Native accessibility remains in the running ${state.platform === 'android' ? 'Android' : 'macOS'} app; this image does not expose its control tree to the browser.</p>${state.platform === 'android' ? '<p>Live rendering requires the Android emulator and native playground. One Android preview can use the emulator at a time. Capture covers the visible Activity surface; separate Popup/Dialog windows and off-screen content are outside this preview.</p>' : ''}<p>${support ? `${support.unsupportedProperties?.length || 0} unsupported properties · ${support.unsupportedEvents?.length || 0} unsupported events. Use the property info controls to inspect member support.` : 'Adapter coverage has not been reported.'}</p><code>${escape(target.playground)}</code></md-accordion-item></section>`;
   studioUI.applyCanvas();
-  $('#native-render-button').addEventListener('click', () => scheduleNativeRender(0));
+  $('#native-render-button').addEventListener('mdClick', () => scheduleNativeRender(0));
   configureNativeLivePreview();
   text('#preview-caption', state.platform === 'android' ? 'Real Android emulator · connecting to Jetpack Compose' : 'Real SwiftUI on this Mac · connecting to the live host');
   text('#recipe-status', 'Native fixture + current root properties');
@@ -220,10 +227,13 @@ function nativeRenderState(kind, message) {
   if (kind === 'loading' && state.activeNativeMode === 'live') text('#preview-runtime', 'CONNECTING');
   frame.replaceChildren();
   if (kind !== 'ready') {
-    const marker = document.createElement('span');
-    marker.className = kind === 'loading' ? 'snapshot-spinner' : 'snapshot-error-symbol';
-    marker.setAttribute('aria-hidden', 'true');
-    if (kind !== 'loading') marker.textContent = '◇';
+    const marker = document.createElement(kind === 'loading' ? 'md-progress-indicator' : 'span');
+    if (kind === 'loading') {
+      marker.setAttribute('variant', 'circular'); marker.setAttribute('indeterminate', '');
+      marker.setAttribute('size', '32'); marker.setAttribute('label', 'Rendering native component');
+    } else {
+      marker.className = 'snapshot-error-symbol'; marker.setAttribute('aria-hidden', 'true'); marker.textContent = '◇';
+    }
     const label = document.createElement('p'); label.textContent = kind === 'loading' ? 'Rendering native component…' : 'Native render unavailable';
     frame.append(marker, label);
   }
@@ -484,7 +494,7 @@ function recordNativeEvents(events, platform) {
     state.events.unshift({ name: event.name, time: new Date().toLocaleTimeString('en-GB'), detail: event.detail ?? null, origin: eventOrigin, nodeID: event.nodeID, ...(Object.keys(native).length ? { native } : {}) });
   }
   state.events = state.events.slice(0, 100); text('#event-count', state.events.length);
-  if (state.inspector === 'events') renderInspector();
+  if (state.docSection === 'events') renderEvents();
 }
 
 function renderProperties() {
@@ -578,81 +588,21 @@ function recordEvent(event) {
   let detail = event.detail;
   if (detail && typeof detail === 'object') { try { detail = JSON.parse(JSON.stringify(detail, (_, value) => value?.nodeType === 1 ? `<${value.tagName.toLowerCase()}>` : value)); } catch { detail = '[Non-serializable event detail]'; } }
   state.events.unshift({ name: event.type, time: new Date().toLocaleTimeString('en-GB'), detail: detail === undefined ? null : detail, origin: 'Web reference' });
-  state.events = state.events.slice(0, 100); text('#event-count', state.events.length); if (state.inspector === 'events') renderInspector();
+  state.events = state.events.slice(0, 100); text('#event-count', state.events.length); if (state.docSection === 'events') renderEvents();
 }
 function selectStudioSection(section) {
-  const names = ['usage', 'coverage', 'events', 'source', 'diagnostics'];
+  const names = ['usage', 'coverage', 'events'];
   if (!names.includes(section)) return;
   state.docSection = section;
   $('#studio-doc-tabs').activeTabIndex = names.indexOf(section);
   $('#usage-docs').hidden = section !== 'usage'; $('#coverage-panel').hidden = section !== 'coverage';
-  $('.inspector-panel').hidden = ['usage', 'coverage'].includes(section);
+  $('.inspector-panel').hidden = section !== 'events';
   if (section === 'coverage') void coverageUI.load();
-  else if (!['usage'].includes(section)) { state.inspector = section; renderInspector(); }
+  else if (section === 'events') renderEvents();
 }
-function selectInspector(tab) { selectStudioSection(tab === 'contract' ? 'usage' : tab); }
-function nativeEquivalentSummary(component, platform) {
-  const equivalents = component.support?.[platform]?.nativeEquivalents || {};
-  const entries = (component.diagnostics || []).map(diagnostic => equivalents[diagnostic.code]);
-  const implemented = entries.filter(entry => entry?.status === 'implemented').length;
-  const partial = entries.filter(entry => entry?.status === 'partial').length;
-  return `${implemented} native replacements · ${partial} partial replacements · ${entries.length - implemented - partial} unmapped source findings`;
-}
-function renderDiagnostic(component, diagnostic) {
-  const platforms = ['ios', 'android'];
-  const mapped = platforms.every(platform => component.support?.[platform]?.nativeEquivalents?.[diagnostic.code]?.status === 'implemented');
-  return `<div class="diagnostic${mapped ? ' mapped' : ''}"><span class="diag-symbol" aria-hidden="true">${mapped ? '✓' : '△'}</span><div class="diagnostic-body"><code>${escape(diagnostic.code || diagnostic.severity || 'PORTABILITY')}${diagnostic.line ? ` · source line ${escape(diagnostic.line)}` : ''}</code><p>${escape(diagnostic.message || diagnostic.description)}</p><div class="native-equivalents">${platforms.map(platform => {
-    const equivalent = component.support?.[platform]?.nativeEquivalents?.[diagnostic.code];
-    const name = platform === 'ios' ? 'SwiftUI' : 'Compose';
-    if (!equivalent) return `<div class="native-equivalent unmapped"><strong>${name} · not mapped</strong><p>No native replacement is declared for this source finding.</p></div>`;
-    const demoExample = diagnostic.code === 'HTML_FORM' ? 'button-behavior' : ['DOM_GLOBAL', 'CANCELABLE_EVENT'].includes(diagnostic.code) ? 'navigation-events' : '';
-    const demoLabel = diagnostic.code === 'HTML_FORM' ? 'form' : 'navigation & events';
-    const demo = component.tag === 'md-button' && demoExample
-      ? `<p><a href="?platform=${platform}&amp;example=${demoExample}#md-button">Try the ${name} ${demoLabel} →</a></p>` : '';
-    return `<div class="native-equivalent ${equivalent.status === 'implemented' ? 'implemented' : 'partial'}"><strong>${name} · ${equivalent.status === 'implemented' ? 'Native replacement' : 'Partial replacement'}</strong><p><code>${escape(equivalent.api)}</code></p><p>${escape(equivalent.description)}</p>${equivalent.limitations?.length ? `<ul>${equivalent.limitations.map(item => `<li>${escape(item)}</li>`).join('')}</ul>` : ''}${demo}</div>`;
-  }).join('')}</div></div></div>`;
-}
-function renderInspector() {
-  const component = state.selected; const root = $('#inspector-content');
-  $('#copy-source').hidden = state.inspector !== 'source';
-  text('#inspector-title', { events: 'Live events', source: 'Generated native source', diagnostics: 'Portability' }[state.inspector]);
-  state.renderVersion++;
-  if (state.inspector === 'contract') {
-    root.innerHTML = `<div class="contract-grid"><div class="contract-section"><h4>Public properties · ${component.properties.length}</h4>${component.properties.slice(0, 5).map(prop => `<div class="contract-property"><code>${escape(prop.name)}</code><span title="${escape(prop.type)}">${escape(prop.type)}</span></div>`).join('') || '<p>No public properties.</p>'}${component.properties.length > 5 ? `<span class="more-contract">+ ${component.properties.length - 5} more in the property editor</span>` : ''}</div><div class="contract-section"><h4>Events · ${component.events.length}</h4>${component.events.slice(0, 7).map(event => `<p><code>${escape(event.name)}</code></p>`).join('') || '<p>No custom events declared.</p>'}${component.events.length > 7 ? `<p>+ ${component.events.length - 7} more in the source contract</p>` : ''}</div><div class="contract-section"><h4>Content & methods</h4><p>${component.slots.length ? component.slots.map(slot => `<code>${escape(slot.name || 'default')}</code>`).join(' · ') : 'No slots declared.'}</p><p>${component.methods?.length || 0} public methods</p><p>Extracted from the source contract.</p>${component.irPath ? `<p><a href="${escape(sourceURL(component.irPath))}" target="_blank" rel="noopener">Open component IR ↗</a></p>` : ''}</div></div>`;
-  } else if (state.inspector === 'source') { void renderSource(state.renderVersion); }
-  else if (state.inspector === 'diagnostics') {
-    const diagnostics = component.diagnostics || []; const findings = portabilityFindings(component);
-    root.innerHTML = `<div class="diagnostics"><p class="source-note">${findings.source} source findings · ${findings.ios} iOS API gaps · ${findings.android} Android API gaps. Source findings remain visible after a native replacement is added. Each mapping below describes the behavior implemented and its remaining limits.</p><div class="support-summary">${['ios', 'android'].map(platform => {
-      const support = component.support?.[platform]; const status = support?.status || support?.level || 'No policy reported';
-      return `<div class="support-card"><h4>${platform === 'ios' ? 'iOS · SwiftUI' : 'Android · Compose'}</h4><p><strong>${escape(status)}</strong></p><p class="equivalent-count">${escape(nativeEquivalentSummary(component, platform))}</p>${support ? `<p class="support-count${support.unsupportedProperties?.length ? '' : ' complete'}">${support.properties?.length || 0} supported / ${support.unsupportedProperties?.length || 0} unsupported properties</p><p>${support.events?.length || 0} supported / ${support.unsupportedEvents?.length || 0} unsupported events</p><p>${support.unsupportedMethods?.length || 0} unsupported methods · ${support.unsupportedSlots?.length || 0} unsupported slots</p><details><summary>Inspect coverage details</summary>${Object.entries(support).filter(([key]) => !['status', 'level', 'nativeEquivalents'].includes(key)).map(([key, value]) => `<p><code>${escape(key)}</code>: ${escape(Array.isArray(value) ? value.map(item => typeof item === 'string' ? item || 'default slot' : JSON.stringify(item)).join(', ') || 'None' : typeof value === 'object' ? JSON.stringify(value) : value)}</p>`).join('')}</details>` : '<p>Generate the native catalog to inspect platform coverage.</p>'}<p>Native mappings are scoped to this component. Full source parity remains a separate verification.</p>${component.tag === 'md-button' ? `<p><a href="?platform=${platform}&amp;example=focus-accessibility#md-button">Try ${platform === 'ios' ? 'SwiftUI' : 'Compose'} focus &amp; accessibility →</a></p>` : ''}</div>`;
-    }).join('')}</div>${!state.catalog ? '<div class="load-error">Compiler diagnostics are unavailable. Run the native generation command and reload this page.</div>' : diagnostics.length ? diagnostics.map(diagnostic => renderDiagnostic(component, diagnostic)).join('') : '<p class="empty-state">No static portability findings reported.<br />This does not establish runtime behavior or native parity.</p>'}</div>`;
-  } else {
-    root.innerHTML = `<div class="event-toolbar"><span>Component events · latest 100</span><md-button id="clear-events" variant="text" size="xs">Clear</md-button></div>${state.events.length ? `<div class="event-log">${state.events.map(event => `<div class="event-row"><time>${event.time}</time><div><code>${escape(event.name)}</code><small class="event-origin">${escape(event.origin || 'Web reference')}</small></div><pre>${escape(JSON.stringify(event.native ? { detail: event.detail, native: event.native } : event.detail))}</pre></div>`).join('')}</div>` : '<p class="empty-state">Interact with the web reference or live native preview to see emitted events.<br />Native records come from the running native app.</p>'}`;
-    $('#clear-events').addEventListener('click', () => { state.events = []; text('#event-count', '0'); renderInspector(); });
-  }
-}
-async function renderSource(version) {
-  const component = state.selected; const root = $('#inspector-content');
-  const platform = state.sourcePlatform; const implementation = platform === 'ios' ? component.sources?.swiftImplementation : component.sources?.kotlinImplementation; const path = platform === 'ios' ? component.swiftPath : component.kotlinPath;
-  root.innerHTML = `<div class="source-bar"><select id="source-platform" aria-label="Generated source platform"><option value="ios" ${platform === 'ios' ? 'selected' : ''}>SwiftUI · Swift</option><option value="android" ${platform === 'android' ? 'selected' : ''}>Compose · Kotlin</option></select><code>${escape(path || 'No generated source available')}</code>${sourceURL(path) ? `<a href="${escape(sourceURL(path))}" target="_blank" rel="noopener">Full file ↗</a>${sourceURL(implementation) ? `<a href="${escape(sourceURL(implementation))}" target="_blank" rel="noopener">Runtime ↗</a>` : ''}` : ''}</div><p class="source-note">Actual compiler output from this checkout. Generated wrappers use the native runtime; this view is not a native build or a behavior test.</p><pre class="source-code" id="generated-source">${path ? 'Reading generated source…' : 'Run the native compiler to generate platform source files.'}</pre>`;
-  $('#source-platform').addEventListener('change', event => { state.sourcePlatform = event.target.value; renderInspector(); });
-  state.sourceText = '';
-  if (!sourceURL(path)) return;
-  try {
-    let source = state.sourceCache.get(path);
-    if (!source) { const response = await fetch(sourceURL(path)); if (!response.ok) throw new Error(`Generated file unavailable (${response.status}). Run the compiler and reload.`); source = await response.text(); state.sourceCache.set(path, source); }
-    if (version !== state.renderVersion) return;
-    const lines = source.split('\n');
-    const typeName = `AWC${(component.className || '').replace(/^Md/, '') || displayName(component.tag).replaceAll(' ', '')}`;
-    const search = lines.findIndex(line => line.includes(`struct ${typeName}Properties`) || line.includes(`data class ${typeName}Properties`));
-    const wrapper = lines.findIndex(line => line.includes(`struct ${typeName}: View`) || line.includes(`fun ${typeName}(`));
-    let snippet = source;
-    if (search >= 0 && wrapper > search) {
-      const end = lines.findIndex((line, index) => index > wrapper && line === '}') + 1;
-      snippet = lines.slice(search, end || lines.length).join('\n').trimEnd();
-      $('.source-note').textContent = `Actual generated ${typeName} properties and declaration, lines ${search + 1}–${end}. Open the full file for enums and imports, or Runtime for the implementation. Generation does not establish behavior parity.`;
-    }
-    state.sourceText = snippet; text('#generated-source', snippet);
-  } catch (error) { if (version === state.renderVersion) text('#generated-source', error.message); }
+function renderEvents() {
+  const root = $('#inspector-content');
+  root.innerHTML = `<div class="event-toolbar"><span>Component events · latest 100</span><md-button id="clear-events" variant="text" size="xs">Clear</md-button></div>${state.events.length ? `<div class="event-log">${state.events.map(event => `<div class="event-row"><time>${event.time}</time><div><code>${escape(event.name)}</code><small class="event-origin">${escape(event.origin || 'Web reference')}</small></div><pre>${escape(JSON.stringify(event.native ? { detail: event.detail, native: event.native } : event.detail))}</pre></div>`).join('')}</div>` : '<p class="empty-state">Interact with the web reference or live native preview to see emitted events.<br />Native records come from the running native app.</p>'}`;
+  $('#clear-events').addEventListener('mdClick', () => { state.events = []; text('#event-count', '0'); renderEvents(); });
 }
 void init();

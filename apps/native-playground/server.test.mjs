@@ -9,6 +9,11 @@ import { readFile } from 'node:fs/promises';
 
 // The lab serves source files from a repository, so traversal and symlink
 // escape protection are part of its functional security contract.
+test('syntax highlighting serves only its public helper, selected bundle and licenses', async () => {
+  for (const asset of ['/syntax-highlighting.js', '/syntax-vendor/highlighter.js', '/syntax-vendor/LICENSES.txt']) assert.ok(await resolveAsset(asset), asset);
+  for (const asset of ['/build-syntax-highlighting.mjs', '/syntax-highlighting.test.mjs', '/syntax-vendor/../server.mjs']) assert.equal(await resolveAsset(asset), null, asset);
+});
+
 test('asset routing rejects traversal, private files and symlink escapes', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'awc-native-lab-'));
   try {

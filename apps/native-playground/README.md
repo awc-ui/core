@@ -26,9 +26,9 @@ build:
 AWC_WEB_DIST=/absolute/path/to/core/dist node apps/native-playground/server.mjs
 ```
 
-Generated native sources enable source and portability inspection. If those
-artifacts are missing, the catalog falls back to the core custom elements
-manifest and labels compiler output as unavailable. Refresh after regeneration.
+The generated native catalog supplies adapter support metadata. If that artifact
+is missing, the studio falls back to the core custom elements manifest.
+Refresh after regeneration.
 Native previews additionally require the platform hosts described below.
 
 ## Explore components
@@ -39,6 +39,9 @@ reset, and a property search. Mixed literal unions retain their actual types,
 including values such as `false`. Info controls explain source types, defaults,
 usage and native support. Hover, focus or tap for help; use Escape or click
 outside to dismiss it.
+
+Studio panels use AWC cards; API groups and supporting details use AWC
+accordions. Coverage source links use AWC lists.
 
 The web preview runs in a dedicated same-origin iframe. Responsive, 360 px,
 768 px and 1024 px widths change its actual viewport, so media queries respond
@@ -54,6 +57,11 @@ edit supplies them. Web framework examples use the repository's public AWC
 packages; native examples use `AWCNativeView`/`AWCNode` and `AWCComponent`.
 Generated examples use inert recipe markup, never hydrated preview markup.
 
+Code examples, payload types, theme code and test commands use local Shiki syntax
+highlighting in light and dark mode. Copy preserves the original source exactly.
+The checked-in bundle contains only the required grammars; rebuild it from the
+existing workspace dependencies with `node apps/native-playground/build-syntax-highlighting.mjs`.
+
 API sections document events and payloads, slots, methods, CSS parts, and
 data/callback types. CSS variables are editable in the AWC accordion at the bottom
 of the right Properties panel. Slot text and CSS edits update the relevant
@@ -63,11 +71,13 @@ not rewrite those fixtures. Native snippets preserve AWC children and slot text,
 while HTML layout CSS and recipe setup callbacks require native layout or state
 in the consuming app. Callbacks and object references remain application code.
 
-**Events**, **Native source** and **Portability** provide recorded events, compiler
-IR, generated and runtime source links, source diagnostics, and per-platform
-property/event/method/slot support. Source diagnostics, native implementation
-coverage and verified parity are distinct. Unsupported native members remain
-visible.
+Event entries explain `event.detail`, list source-declared fields with their
+types and descriptions, and show handler examples. Full type definitions are
+available in an AWC accordion.
+
+**Events** displays recorded Web and native events. Member help and property
+controls show per-platform support, including unsupported native members.
+SwiftUI and Android examples remain available under **Usage & API**.
 
 ## Theme studio
 
@@ -91,6 +101,7 @@ and verify it without modifying files:
 ```sh
 node apps/native-playground/build-studio-theme.mjs
 node apps/native-playground/build-studio-theme.mjs --check
+node apps/native-playground/build-syntax-highlighting.mjs --check
 ```
 
 ## Test evidence
@@ -204,6 +215,7 @@ the emulator and ADB server running. The live host is absent from release builds
 ```sh
 node --test apps/native-playground/*.test.mjs
 node apps/native-playground/build-studio-theme.mjs --check
+node apps/native-playground/build-syntax-highlighting.mjs --check
 ```
 
 Tests cover server boundaries, native request/session handling, documentation
