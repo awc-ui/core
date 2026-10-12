@@ -36,7 +36,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import dev.awc.nativeui.AWCComponent
 import dev.awc.nativeui.AWCButtonBehaviorDemo
@@ -44,6 +46,7 @@ import dev.awc.nativeui.AWCButtonNavigationDemo
 import dev.awc.nativeui.AWCButtonAccessibilityDemo
 import dev.awc.nativeui.AWCTheme
 import dev.awc.nativeui.AWCValue
+import dev.awc.nativeui.normalizeAWCThemeOverrides
 import dev.awc.nativeui.generated.AWCNativeCatalog
 import org.json.JSONArray
 import org.json.JSONObject
@@ -58,7 +61,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * input is dispatched to this activity's views, never to the Android system.
  */
 class LivePreviewActivity : ComponentActivity() {
-    private data class Configuration(val tag: String, val properties: Map<String, AWCValue>, val dark: Boolean, val width: Double, val scenario: String)
+    private data class Configuration(val tag: String, val properties: Map<String, AWCValue>, val dark: Boolean, val width: Double, val scenario: String, val themeTokens: Map<String, String>, val direction: LayoutDirection)
     private val main = Handler(Looper.getMainLooper())
     private var configuration by mutableStateOf<Configuration?>(null)
     private var previewDensity by mutableFloatStateOf(1f)
@@ -93,10 +96,10 @@ class LivePreviewActivity : ComponentActivity() {
         }
         preview.setContent {
             configuration?.let { config ->
-                CompositionLocalProvider(LocalDensity provides Density(previewDensity, 1f)) {
-                    AWCTheme(darkTheme = config.dark) {
+                CompositionLocalProvider(LocalDensity provides Density(previewDensity, 1f), LocalLayoutDirection provides config.direction) {
+                    AWCTheme(darkTheme = config.dark, tokenOverrides = config.themeTokens) {
                         Box(Modifier.fillMaxWidth().heightIn(min = 100.dp, max = 2000.dp)
-                            .background(androidx.compose.ui.graphics.Color(if (config.dark) 0xFF141414 else 0xFFFFFFFF))
+                            .background(if (config.themeTokens.isEmpty()) androidx.compose.ui.graphics.Color(if (config.dark) 0xFF141414 else 0xFFFFFFFF) else androidx.compose.material3.MaterialTheme.colorScheme.surface)
                             .padding(24.dp)) {
                             if (config.scenario == "button-behavior") AWCButtonBehaviorDemo(config.properties, ::recordEvent)
                             else if (config.scenario == "navigation-events") AWCButtonNavigationDemo(config.properties, ::recordEvent)
@@ -244,9 +247,19 @@ class LivePreviewActivity : ComponentActivity() {
         val dark = request.optBoolean("dark", false)
         val scenario = request.optString("scenario", "")
         require(scenario.isEmpty() || (scenario in setOf("button-behavior", "navigation-events", "focus-accessibility") && tag == "md-button")) { "Unknown native example." }
+        val direction = request.optString("direction", "ltr")
+        require(direction in setOf("ltr", "rtl")) { "Direction must be ltr or rtl." }
+        val themeTokens = if (request.has("themeTokens")) {
+            val colors = request.getJSONObject("themeTokens")
+            normalizeAWCThemeOverrides(colors.keys().asSequence().associateWith { name ->
+                val value = colors.get(name)
+                require(value is String) { "Native theme colors must be strings." }
+                value
+            })
+        } else emptyMap()
         previewDensity = ((container.width.takeIf { it > 0 } ?: resources.displayMetrics.widthPixels) / width).toFloat()
-        configuration = Configuration(tag, AWCNativeCatalog.defaults[tag].orEmpty() + fixture(tag) + properties, dark, width, scenario)
-        container.setBackgroundColor(if (dark) 0xFF141414.toInt() else Color.WHITE)
+        configuration = Configuration(tag, AWCNativeCatalog.defaults[tag].orEmpty() + fixture(tag) + properties, dark, width, scenario, themeTokens, if(direction == "rtl") LayoutDirection.Rtl else LayoutDirection.Ltr)
+        container.setBackgroundColor(themeTokens["--md-sys-color-surface"]?.let(Color::parseColor) ?: if (dark) 0xFF141414.toInt() else Color.WHITE)
     }
 
     private fun requireConfigured(): Configuration = checkNotNull(configuration) { "Configure the native session first." }

@@ -105,6 +105,14 @@ for (const scenario of ['button-behavior', 'navigation-events', 'focus-accessibi
   assert.deepEqual(children[0].commands[0].properties, request.properties);
 });
 
+test('SwiftUI configure receives validated theme colors and direction separately from properties', async t => {
+  const { renderer, children } = fixture(t);
+  await renderer.create({ ...request, themeTokens: { '--md-sys-color-primary': '#007733' }, direction: 'rtl' });
+  assert.deepEqual(children[0].commands[0].themeTokens, { '--md-sys-color-primary': '#007733' });
+  assert.equal(children[0].commands[0].direction, 'rtl');
+  assert.deepEqual(children[0].commands[0].properties, request.properties);
+});
+
 test('live input accepts only bounded view-local coordinates, Unicode text, and known keys', () => {
   assert.deepEqual(validateLiveInput({ command: 'click', x: 0, y: 199.5 }, bounds), { command: 'click', x: 0, y: 199.5 });
   assert.deepEqual(validateLiveInput({ command: 'text', text: 'Salut, România 👋' }, bounds), { command: 'text', text: 'Salut, România 👋' });

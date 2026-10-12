@@ -4,56 +4,71 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="light dark" />
-  <title>AWC UI · Native compiler lab</title>
+  <title>AWC UI · Component Studio</title>
   <link rel="stylesheet" href="/web-dist/md3/md3.css" />
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/studio.css" />
   <script type="module" src="/app.js"></script>
 </head>
 <body>
   <header class="app-header">
-    <a href="#md-button" class="brand" aria-label="AWC UI home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>AWC<span> UI</span></strong></a>
-    <span class="header-divider"></span><span class="header-title">Native compiler lab <span class="pill experimental">EXPERIMENTAL</span></span>
-    <div class="header-actions"><span class="compiler-status" id="compiler-status"><i></i>Reading source</span><button class="icon-button" id="theme-toggle" aria-label="Switch to dark theme" title="Switch theme">◐</button></div>
+    <a href="#md-button" class="brand" aria-label="AWC UI Component Studio"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>AWC<span> UI</span></strong></a>
+    <span class="header-divider"></span><span class="header-title">Component Studio <span class="studio-beta">LAB</span></span>
+    <div class="header-actions"><span class="compiler-status" id="compiler-status"><i></i>Connecting</span><md-button id="open-theme" variant="tonal" size="sm" icon="palette">Theme studio</md-button><md-icon-button id="theme-toggle" icon="dark_mode" aria-label="Switch to dark theme" title="Switch theme"></md-icon-button></div>
   </header>
   <div class="shell">
     <aside class="sidebar" aria-label="Component navigation">
-      <div class="sidebar-heading"><span>COMPONENT LIBRARY</span><span class="count-badge" id="component-count">—</span></div>
-      <label class="search-box"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Find a component…" aria-label="Find a component" /><kbd>/</kbd></label>
-      <div class="filter-row"><button class="filter active" data-filter="all">All components</button><button class="filter" data-filter="findings">With findings</button></div>
+      <div class="sidebar-heading"><span>COMPONENTS</span><span class="count-badge" id="component-count">—</span></div>
+      <md-text-field id="search" placeholder="Find a component…" aria-label="Find a component" variant="outlined" density="-3" clearable="internal"></md-text-field>
+      <div class="filter-row"><md-button class="filter active" size="xs" variant="tonal" data-filter="all">All</md-button><md-button class="filter" size="xs" variant="text" data-filter="findings">With findings</md-button></div>
       <nav id="component-list" aria-label="Components"><p class="muted">Reading component manifest…</p></nav>
-      <footer class="sidebar-footer"><span class="tiny-orbit" aria-hidden="true">✧</span><div><strong>Source → native</strong><span>SwiftUI & Jetpack Compose</span></div><span class="version">v0.1</span></footer>
+      <footer class="sidebar-footer"><span class="studio-symbol material-symbols-outlined" aria-hidden="true">science</span><div><strong>Built with AWC UI</strong><span>One system. Every surface.</span></div></footer>
     </aside>
     <main>
-      <section class="intro"><div><p class="eyebrow">ONE SYSTEM. EVERY SURFACE.</p><h1>Explore the native boundary.</h1><p class="intro-copy">Inspect the source, try the web reference, and follow each component into SwiftUI and Compose.</p></div><div class="coverage-stat"><strong id="coverage-count">—</strong><span>components in the<br />source contract</span></div></section>
-      <div class="pipeline" aria-label="Compilation pipeline"><span><i class="step-dot">1</i>AWC source</span><b>→</b><span><i class="step-dot">2</i>Portable contract</span><b>→</b><span><i class="step-dot">3</i>SwiftUI + Compose</span><span class="pipeline-tail" id="pipeline-state">Checking generation…</span></div>
-      <section class="component-heading"><div><div class="component-kicker"><span id="category-label">Actions</span><span class="dot-separator">/</span><code id="tag-label">md-button</code></div><h2 id="component-title">Button</h2><p id="component-description"></p></div><button id="reset" class="secondary-button"><span aria-hidden="true">↺</span> Reset props</button></section>
+      <section class="component-heading"><div><div class="component-kicker"><span>Library</span><span class="dot-separator">/</span><span id="category-label">Actions</span><span class="dot-separator">/</span><code id="tag-label">md-button</code></div><h1 id="component-title">Button</h1><p id="component-description"></p></div><div class="component-actions"><md-button id="reset" variant="outlined" size="sm" icon="restart_alt">Reset</md-button></div></section>
       <div class="workspace-grid">
-        <section class="preview-panel" aria-label="Component preview">
-          <div class="preview-toolbar"><div class="platform-tabs" role="tablist" aria-label="Preview target"><button id="platform-web" class="active" role="tab" aria-selected="true" data-platform="web">Web reference</button><button id="platform-ios" role="tab" aria-selected="false" data-platform="ios">iOS <span>SwiftUI</span></button><button id="platform-android" role="tab" aria-selected="false" data-platform="android">Android <span>Compose</span></button></div><span id="preview-runtime" class="runtime-badge">LIVE WEB</span></div>
-          <div id="preview-stage" class="preview-stage"><div id="preview-content"></div></div>
-          <div class="preview-footer"><span id="preview-caption">Original AWC web component · browser rendering</span><span id="recipe-status">Interactive reference</span></div>
-        </section>
-        <aside class="props-panel" aria-label="Component documentation">
-          <div class="panel-heading"><h3>Properties &amp; usage</h3><span id="props-count" class="count-badge">0</span></div>
-          <div class="documentation-tabs" role="tablist" aria-label="Component documentation">
-            <button id="properties-tab" role="tab" aria-selected="true" aria-controls="properties-panel" data-doc-tab="properties">Properties</button>
-            <button id="usage-tab" role="tab" aria-selected="false" aria-controls="usage-docs" data-doc-tab="usage" tabindex="-1">Usage &amp; API</button>
-          </div>
-          <div id="properties-panel" role="tabpanel" aria-labelledby="properties-tab">
-            <p class="props-hint">Changes apply to the web reference.</p>
-            <label class="props-search"><span class="sr-only">Search properties</span><input id="props-search" type="search" placeholder="Find a property…" autocomplete="off" /></label>
-            <div id="props-controls"></div><p id="props-empty" class="prop-note" hidden>No matching properties.</p>
-          </div>
-          <div id="usage-docs" role="tabpanel" aria-labelledby="usage-tab" hidden></div>
+        <div class="studio-main-column">
+          <section class="preview-panel" aria-label="Component preview">
+            <div class="preview-toolbar"><md-tabs id="preview-platform-tabs" variant="secondary" tab-width="auto" aria-label="Preview target"><md-tab id="platform-web" label="Web" active data-platform="web"></md-tab><md-tab id="platform-ios" label="SwiftUI" data-platform="ios"></md-tab><md-tab id="platform-android" label="Android" data-platform="android"></md-tab></md-tabs><span id="preview-runtime" class="runtime-badge">LIVE WEB</span></div>
+            <div class="canvas-toolbar" aria-label="Canvas controls">
+              <div class="viewport-controls"><md-select id="canvas-width" aria-label="Preview viewport width" variant="outlined" density="-4" value="fit"><md-select-option value="fit">Responsive</md-select-option><md-select-option value="360">Phone · 360px</md-select-option><md-select-option value="768">Tablet · 768px</md-select-option><md-select-option value="1024">Desktop · 1024px</md-select-option></md-select><span id="canvas-dimensions" class="canvas-dimensions">Auto width</span></div>
+              <div class="canvas-toggles"><md-icon-button id="canvas-rtl" icon="format_textdirection_r_to_l" toggle aria-label="Toggle right-to-left layout" title="Right-to-left layout"></md-icon-button><md-icon-button id="canvas-grid" icon="grid_4x4" toggle aria-label="Toggle spacing grid" title="8px spacing grid"></md-icon-button><md-icon-button id="canvas-bounds" icon="border_outer" toggle aria-label="Toggle component bounds" title="Component bounds"></md-icon-button><md-icon-button id="canvas-fullscreen" icon="fullscreen" aria-label="Expand preview" title="Expand preview"></md-icon-button></div>
+            </div>
+            <div id="preview-stage" class="preview-stage"><div id="preview-content"></div></div>
+            <div class="preview-footer"><span id="preview-caption">Original AWC component</span><span id="recipe-status">Live reference</span></div>
+          </section>
+          <section class="studio-documentation" aria-label="Component documentation">
+            <md-tabs id="studio-doc-tabs" variant="secondary" tab-width="auto" aria-label="Documentation sections"><md-tab label="Usage & API" active></md-tab><md-tab label="Test coverage"></md-tab><md-tab label="Events"></md-tab><md-tab label="Native source"></md-tab><md-tab label="Portability"></md-tab></md-tabs>
+            <div id="usage-docs" aria-label="Usage and API"></div>
+            <div id="coverage-panel" hidden></div>
+            <section class="inspector-panel" aria-label="Component inspector" hidden><div class="inspector-toolbar"><h3 id="inspector-title">Events</h3><md-button id="copy-source" variant="text" size="xs" icon="content_copy" hidden>Copy source</md-button></div><div id="inspector-content"></div></section>
+          </section>
+          <p class="footnote">Built with the same AWC components you’re exploring. SwiftUI streams from this Mac; Android streams from a connected emulator.</p>
+        </div>
+        <aside class="props-panel" aria-label="Component properties">
+          <div class="panel-heading"><div><span class="panel-eyebrow">CONFIGURE</span><h2>Properties</h2></div><span id="props-count" class="count-badge">0</span></div>
+          <p class="props-hint">Changes apply to the web reference.</p>
+          <md-text-field id="props-search" class="props-search" placeholder="Find a property…" aria-label="Search properties" variant="outlined" density="-3" clearable="internal"></md-text-field>
+          <div id="properties-panel"><div id="props-controls"></div><p id="props-empty" class="prop-note" hidden>No matching properties.</p></div>
+          <div class="props-panel-footer"><span class="material-symbols-outlined" aria-hidden="true">info</span>Hover an info icon for details and platform support.</div>
         </aside>
       </div>
-      <section class="inspector-panel" aria-label="Component inspector">
-        <div class="inspector-toolbar"><div class="inspector-tabs" role="tablist" aria-label="Inspector"><button class="active" data-inspector="contract" role="tab" aria-selected="true">Contract</button><button data-inspector="source" role="tab" aria-selected="false">Generated code</button><button data-inspector="diagnostics" role="tab" aria-selected="false">Portability <span id="findings-count">0</span></button><button data-inspector="events" role="tab" aria-selected="false">Events <span id="event-count">0</span></button></div><button id="copy-source" class="text-button" hidden>Copy source</button></div>
-        <div id="inspector-content"></div>
-      </section>
-      <p class="footnote">SwiftUI Live runs on this Mac; Compose Live runs on an Android emulator. Both forward real native frames and events. Use the platform apps to verify native accessibility, gestures and full visual parity.</p>
     </main>
   </div>
+  <md-side-sheet id="theme-sheet" variant="modal" side="end" headline="Theme studio" closeable sheet-aria-label="Theme studio">
+    <div class="theme-editor"><p class="theme-intro">Make it yours. Your palette updates the studio and component previews together.</p>
+      <div class="theme-section-title"><h3>Color palette</h3><span>Material 3 · HCT</span></div>
+      <div class="theme-color-field"><label for="theme-primary">Primary seed</label><div class="theme-color-input"><input id="theme-primary" type="color" value="#6750a4" aria-label="Primary seed color"><md-text-field id="theme-primary-hex" aria-label="Primary hex color" value="#6750A4" density="-3"></md-text-field></div></div>
+      <div class="theme-color-field"><div class="theme-label-row"><label for="theme-secondary">Secondary seed</label><label class="theme-auto"><md-switch id="theme-secondary-auto" selected density="-3" aria-label="Derive secondary color"></md-switch>Auto</label></div><div class="theme-color-input"><input id="theme-secondary" type="color" value="#625b71" aria-label="Secondary seed color" disabled><md-text-field id="theme-secondary-hex" aria-label="Secondary hex color" value="#625B71" density="-3" disabled></md-text-field></div></div>
+      <div class="theme-color-field"><div class="theme-label-row"><label for="theme-tertiary">Tertiary seed</label><label class="theme-auto"><md-switch id="theme-tertiary-auto" selected density="-3" aria-label="Derive tertiary color"></md-switch>Auto</label></div><div class="theme-color-input"><input id="theme-tertiary" type="color" value="#7d5260" aria-label="Tertiary seed color" disabled><md-text-field id="theme-tertiary-hex" aria-label="Tertiary hex color" value="#7D5260" density="-3" disabled></md-text-field></div></div>
+      <p id="theme-error" class="prop-error" role="status" hidden></p>
+      <md-select id="theme-contrast" label="Contrast" value="0" density="-2"><md-select-option value="0">Standard</md-select-option><md-select-option value="0.5">Medium</md-select-option><md-select-option value="1">High</md-select-option></md-select>
+      <div class="theme-section-title"><h3>Your color roles</h3><span id="theme-mode-label">Light</span></div><div id="theme-swatches" class="theme-swatches"></div>
+      <p class="theme-note">Secondary and tertiary are derived from the primary seed. Turn off Auto to give either its own seed.</p>
+      <div class="theme-export"><md-button id="theme-copy-css" variant="tonal" size="sm" icon="content_copy">Copy theme CSS</md-button><md-button id="theme-reset" variant="text" size="sm">Reset theme</md-button></div>
+      <details class="theme-source"><summary>Theme code</summary><pre id="theme-code"></pre></details>
+    </div>
+  </md-side-sheet>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>

@@ -4,6 +4,7 @@ import { access, mkdir, readFile, writeFile, rename, unlink, stat } from 'node:f
 import { constants } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
+import { nativeThemeOptions } from './native-theme-options.js';
 
 const run = promisify(execFile);
 const MAX_BODY = 128 * 1024;
@@ -28,7 +29,10 @@ export function validateRenderRequest(value, tags) {
     if (v && typeof v==='object') for(const child of Object.values(v))depth(child,level+1);
   }
   depth(props);
-  return {tag:value.tag,properties:canonical(props),dark:value.dark??false,width:Math.round(Math.min(1200,Math.max(320,value.width??640))),...(value.scenario ? {scenario:value.scenario} : {})};
+  let themeOptions;
+  try { themeOptions = nativeThemeOptions(value); }
+  catch (error) { throw new RenderError(400, error.code || 'INVALID_THEME', error.message); }
+  return {tag:value.tag,properties:canonical(props),dark:value.dark??false,width:Math.round(Math.min(1200,Math.max(320,value.width??640))),...(value.scenario ? {scenario:value.scenario} : {}),...themeOptions};
 }
 
 export async function readLocalJSONRequest(req) {

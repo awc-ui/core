@@ -6,31 +6,53 @@ public struct AWCTheme: Sendable {
     public var tertiary: Color
     public var error: Color
     public var surface: Color
+    public var background: Color
     public var onPrimary: Color
     public var onSurface: Color
+    /// Resolved source tokens, including non-color defaults used by native motion and shapes.
+    public private(set) var tokens: [String: String] = [:]
     public init(primary: Color = Color(red: 0.36, green: 0.32, blue: 0.65), secondary: Color = Color(red: 0.38, green: 0.37, blue: 0.47), tertiary: Color = Color(red: 0.50, green: 0.32, blue: 0.44), error: Color = Color(red: 0.73, green: 0.15, blue: 0.15)) {
         self.primary = primary; self.secondary = secondary; self.tertiary = tertiary; self.error = error
-        self.surface = Color(awcHex: "#F3EDF7"); self.onPrimary = .white; self.onSurface = Color(awcHex: "#1C1B1F")
+        self.surface = Color(awcHex: "#F3EDF7"); self.background = .white; self.onPrimary = .white; self.onSurface = Color(awcHex: "#1C1B1F")
     }
-    public static func generated(dark: Bool = false) -> AWCTheme {
-        let tokens = dark ? AWCGeneratedTokens.dark : AWCGeneratedTokens.light
-        func color(_ key: String, _ fallback: String) -> Color { Color(awcHex: tokens["--md-sys-color-" + key] ?? fallback) }
+    public static func generated(dark: Bool = false, tokens overrides: [String: String] = [:]) -> AWCTheme {
+        let resolved = resolvedTokens(dark: dark, overrides: overrides)
+        func color(_ key: String, _ fallback: String) -> Color { Color(awcHex: resolved["--md-sys-color-" + key] ?? fallback) }
         var value = AWCTheme(primary: color("primary", dark ? "#D0BCFF" : "#6750A4"), secondary: color("secondary", "#625B71"), tertiary: color("tertiary", "#7D5260"), error: color("error", "#B3261E"))
         value.surface = color("surface-container", dark ? "#211F26" : "#F3EDF7")
+        value.background = color("surface", dark ? "#141218" : "#FEF7FF")
         value.onPrimary = color("on-primary", dark ? "#381E72" : "#FFFFFF")
         value.onSurface = color("on-surface", dark ? "#E6E1E5" : "#1C1B1F")
+        value.tokens = resolved
         return value
+    }
+
+    static func resolvedTokens(dark: Bool, overrides: [String: String]) -> [String: String] {
+        var resolved = dark ? AWCGeneratedTokens.dark : AWCGeneratedTokens.light
+        for (name, value) in overrides where name.hasPrefix("--md-sys-color-")
+            && name.range(of: "^--md-sys-color-[a-z0-9]+(?:-[a-z0-9]+)*$", options: .regularExpression) != nil
+            && value.range(of: "^#[0-9a-fA-F]{6}$", options: .regularExpression) != nil {
+            resolved[name] = value.uppercased()
+        }
+        return resolved
     }
 }
 private struct AWCThemeKey: EnvironmentKey { static let defaultValue: AWCTheme? = nil }
+private struct AWCThemeTokensKey: EnvironmentKey { static let defaultValue: [String: String] = [:] }
 public extension EnvironmentValues {
     var awcTheme: AWCTheme? {
         get { self[AWCThemeKey.self] }
         set { self[AWCThemeKey.self] = newValue }
     }
+    var awcThemeTokens: [String: String] {
+        get { self[AWCThemeTokensKey.self] }
+        set { self[AWCThemeTokensKey.self] = newValue }
+    }
 }
 public extension View {
-    func awcTheme(_ theme: AWCTheme) -> some View { environment(\.awcTheme, theme) }
+    func awcTheme(_ theme: AWCTheme) -> some View {
+        environment(\.awcTheme, theme).environment(\.awcThemeTokens, theme.tokens)
+    }
 }
 
 extension Color {

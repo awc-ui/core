@@ -5,10 +5,11 @@ import { fileURLToPath } from 'node:url';
 import { createNativeRenderer, readRenderRequest, readLocalJSONRequest, validateRenderRequest, RenderError } from './native-render.mjs';
 import { createNativeLiveRenderer } from './native-live.mjs';
 import { createAndroidLiveRenderer } from './android-live.mjs';
+import { getComponentCoverage, isCoverageEvidencePath } from './coverage.mjs';
 
 const appRoot = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appRoot, '../..');
-const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.png': 'image/png', '.swift': 'text/plain; charset=utf-8', '.kt': 'text/plain; charset=utf-8', '.tsx': 'text/plain; charset=utf-8', '.md': 'text/plain; charset=utf-8' };
+const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.png': 'image/png', '.swift': 'text/plain; charset=utf-8', '.kt': 'text/plain; charset=utf-8', '.ts': 'text/plain; charset=utf-8', '.tsx': 'text/plain; charset=utf-8', '.mts': 'text/plain; charset=utf-8', '.cjs': 'text/plain; charset=utf-8', '.info': 'text/plain; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.md': 'text/plain; charset=utf-8' };
 const within = (root, file) => file === root || file.startsWith(root + path.sep);
 
 export async function resolveAsset(rawUrl, options = {}) {
@@ -32,14 +33,15 @@ export async function resolveAsset(rawUrl, options = {}) {
     relative = pathname.slice('/repo/'.length);
     const allowed = ['packages/native-compiler/generated/', 'packages/native-ios/', 'packages/native-android/'];
     const componentDocumentation = /^(?:apps\/docs\/src\/data\/components\/[a-z][a-z0-9]*(?:-[a-z0-9]+)*\.json|packages\/core\/src\/components\/md-[a-z][a-z0-9]*(?:-[a-z0-9]+)*\/readme\.md)$/.test(relative);
-    if (relative !== 'packages/core/custom-elements.json' && !componentDocumentation && !allowed.some(prefix => relative.startsWith(prefix))) return null;
-    if (!['.json', '.swift', '.kt', '.md'].includes(path.extname(relative))) return null;
-    if (relative.split('/').some(part => part.startsWith('.'))) return null;
+    const coverageEvidence = isCoverageEvidencePath(relative);
+    if (relative !== 'packages/core/custom-elements.json' && !componentDocumentation && !coverageEvidence && !allowed.some(prefix => relative.startsWith(prefix))) return null;
+    if (!coverageEvidence && !['.json', '.swift', '.kt', '.md'].includes(path.extname(relative))) return null;
+    if (!coverageEvidence && relative.split('/').some(part => part.startsWith('.'))) return null;
     root = repo;
   } else {
     root = app;
     relative = pathname === '/' ? 'index.html' : pathname.slice(1);
-    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'documentation.js', 'documentation-ui.js', 'usage-snippets.js', 'property-controls.js'].includes(relative)) return null;
+    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'documentation.js', 'documentation-ui.js', 'usage-snippets.js', 'property-controls.js', 'studio.css', 'studio-ui.js', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'].includes(relative)) return null;
   }
   const absolute = path.resolve(root, relative);
   if (!within(path.resolve(root), absolute)) return null;
@@ -49,6 +51,25 @@ export async function resolveAsset(rawUrl, options = {}) {
     if (!(await stat(realFile)).isFile()) return null;
     return realFile;
   } catch { return null; }
+}
+
+export async function handleCoverageRequest(req, res, { repoRoot: repository = repoRoot, tags, json }) {
+  const pathname = (req.url || '/').split('?')[0];
+  if (pathname !== '/api/coverage' && !pathname.startsWith('/api/coverage/')) return false;
+  if (req.method !== 'GET') { res.writeHead(405, { Allow: 'GET' }); res.end(); return true; }
+  const match = /^\/api\/coverage\/(md-[a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(pathname);
+  if (!match) { json(res, 404, { error: 'UNKNOWN_COMPONENT', message: 'Choose a known component tag.' }); return true; }
+  try {
+    if (!(await tags()).has(match[1])) { json(res, 404, { error: 'UNKNOWN_COMPONENT', message: 'Choose a known component tag.' }); return true; }
+    json(res, 200, await getComponentCoverage(repository, match[1]));
+  } catch {
+    json(res, 503, { error: 'COVERAGE_UNAVAILABLE', message: 'Local test evidence is unavailable. No test run was started.' });
+  }
+  return true;
+}
+
+export function assetContentSecurityPolicy(pathname) {
+  return `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors '${pathname === '/preview-frame.html' ? 'self' : 'none'}'`;
 }
 
 export async function handleNativeLiveRequest(req, res, { renderer, androidRenderer, tags, json }) {
@@ -145,6 +166,7 @@ export function createServer(options = {}) {
   const json = (res,status,value) => {res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
   const server = http.createServer(async (req, res) => {
     const pathname=(req.url||'/').split('?')[0];
+    if (await handleCoverageRequest(req, res, { repoRoot: options.repoRoot || repoRoot, tags, json })) return;
     if (await handleNativeLiveRequest(req, res, { renderer: liveRenderer, androidRenderer, tags, json })) return;
     if(pathname==='/api/native-render/status' && req.method==='GET'){
       try{json(res,200,await renderer.status());}catch{json(res,503,{available:false,platform:'macos',renderer:'SwiftUI',message:'Native renderer is unavailable.'});}return;
@@ -164,7 +186,7 @@ export function createServer(options = {}) {
         'Cache-Control': 'no-store',
         'X-Content-Type-Options': 'nosniff',
         'Referrer-Policy': 'no-referrer',
-        'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'",
+        'Content-Security-Policy': assetContentSecurityPolicy(pathname),
       });
       res.end(req.method === 'HEAD' ? undefined : content);
     } catch { res.writeHead(500); res.end('Unable to read asset'); }

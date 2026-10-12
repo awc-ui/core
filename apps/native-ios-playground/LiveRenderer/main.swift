@@ -12,6 +12,8 @@ private struct PreviewRequest: Decodable {
     let dark: Bool?
     let width: Double?
     let scenario: String?
+    let themeTokens: [String: String]?
+    let direction: String?
     let x: Double?
     let y: Double?
     let phase: String?
@@ -150,6 +152,9 @@ private struct PreviewRoot: View {
     let onEvent: (AWCEvent) -> Void
     let pointerState: AWCNativePointerState
     let scenario: String?
+    let themeTokens: [String: String]
+    let direction: String
+    private var theme: AWCTheme { .generated(dark: dark, tokens: themeTokens) }
     @ViewBuilder private var example: some View {
         if scenario == "button-behavior" { AWCButtonBehaviorDemo(properties: node.properties, onEvent: onEvent) }
         else if scenario == "navigation-events" { AWCButtonNavigationDemo(properties: node.properties, onEvent: onEvent) }
@@ -161,10 +166,11 @@ private struct PreviewRoot: View {
             .padding(24)
             .frame(width: width, alignment: .leading)
             .frame(minHeight: 100, alignment: .topLeading)
-            .background(dark ? Color(white: 0.08) : .white)
+            .background(themeTokens.isEmpty ? (dark ? Color(white: 0.08) : .white) : theme.background)
             .environment(\.colorScheme, dark ? .dark : .light)
+            .environment(\.layoutDirection, direction == "rtl" ? .rightToLeft : .leftToRight)
             .environment(\.openURL, OpenURLAction { _ in .discarded })
-            .awcTheme(.generated(dark: dark))
+            .awcTheme(theme)
             .environment(\.awcNativePointerState, pointerState)
             .coordinateSpace(name: "awc-native-preview")
     }
@@ -252,10 +258,11 @@ private final class NativeSession {
         }
         logicalWidth = min(1200, max(320, width)).rounded()
         guard request.scenario == nil || (["button-behavior", "navigation-events", "focus-accessibility"].contains(request.scenario ?? "") && requestedTag == "md-button") else { throw PreviewFailure("Unknown native example.") }
+        guard request.direction == nil || ["ltr", "rtl"].contains(request.direction ?? "") else { throw PreviewFailure("Direction must be ltr or rtl.") }
         var node = AWCExamples.node(for: requestedTag)
         node.properties.merge(request.properties ?? [:]) { _, supplied in supplied }
         tag = requestedTag
-        let newHost = NSHostingView(rootView: PreviewRoot(node: node, width: logicalWidth, dark: request.dark ?? false, onEvent: events.append, pointerState: pointerState, scenario: request.scenario))
+        let newHost = NSHostingView(rootView: PreviewRoot(node: node, width: logicalWidth, dark: request.dark ?? false, onEvent: events.append, pointerState: pointerState, scenario: request.scenario, themeTokens: request.themeTokens ?? [:], direction: request.direction ?? "ltr"))
         // The window is realized outside every display, never activated, and never made key.
         let left = NSScreen.screens.map { $0.frame.minX }.min() ?? 0
         let bottom = NSScreen.screens.map { $0.frame.minY }.min() ?? 0

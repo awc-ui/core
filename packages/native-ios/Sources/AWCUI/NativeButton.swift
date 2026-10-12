@@ -236,8 +236,13 @@ private struct AWCNativeButtonStyleBody: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isEnabled) private var enabled
     @Environment(\.awcNativePointerState) private var pointer
+    @Environment(\.awcThemeTokens) private var themeTokens
 
-    private var tokens: [String: String] { colorScheme == .dark ? AWCGeneratedTokens.dark : AWCGeneratedTokens.light }
+    private var tokens: [String: String] {
+        if !themeTokens.isEmpty { return themeTokens }
+        if !theme.tokens.isEmpty { return theme.tokens }
+        return colorScheme == .dark ? AWCGeneratedTokens.dark : AWCGeneratedTokens.light
+    }
     private func color(_ role: String?) -> Color {
         switch role {
         case "primary": return theme.primary
@@ -429,7 +434,7 @@ private struct AWCNativeButtonIconAppearance<Content: View>: View {
 extension AWCNativeView {
     var nativeButton: some View {
         let variant = s("variant", "filled")
-        let tokens = colorScheme == .dark ? AWCGeneratedTokens.dark : AWCGeneratedTokens.light
+        let tokens = theme.tokens.isEmpty ? (colorScheme == .dark ? AWCGeneratedTokens.dark : AWCGeneratedTokens.light) : theme.tokens
         let metrics = AWCNativeButtonMetrics(size: s("size", "sm"), density: n("density"), variant: variant, tokens: tokens)
         let blocked = disabled || b("loading")
         let palette = AWCNativeButtonPalette(variant: variant, toggle: b("toggle"), selected: b("selected"), disabled: disabled)

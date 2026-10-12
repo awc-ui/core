@@ -1,3 +1,5 @@
+import { nativeThemeOptions } from './native-theme-options.js';
+
 // Browser-safe contract helpers. Literal parsing never evaluates source code.
 export function literalChoices(property) {
   const type = typeof property.type === 'string' ? property.type : property.type?.text || '';
@@ -66,8 +68,8 @@ export function createLatestRequest() {
   };
 }
 
-export function nativeRenderRequest(tag, properties, dark) {
-  return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640 };
+export function nativeRenderRequest(tag, properties, dark, options = {}) {
+  return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640, ...nativeThemeOptions(options) };
 }
 
 const NATIVE_PREVIEW_TARGETS = Object.freeze({

@@ -1,38 +1,127 @@
-# AWC native compiler lab
+# AWC Component Studio
 
-A dependency-free browser workbench for the AWC native compiler. It presents the
-original web components as an interactive **web reference**, alongside the actual
-SwiftUI and Jetpack Compose output and explicit portability coverage. On macOS,
-the SwiftUI tab connects to a persistent native view through the local
-`AWCLivePreview` executable. The browser displays native frames and forwards clicks
-and text input to that view. The browser preview always uses Live mode.
-The Android tab connects to a debug playground Activity on a dedicated Android
-emulator. Jetpack Compose renders its window; PixelCopy captures the real frames.
+A local playground for all 81 AWC components, built with AWC controls. Explore the
+original web components, edit their properties, copy framework examples, inspect
+test evidence, and compare them with live SwiftUI and Jetpack Compose adapters.
 
 ## Run
 
-From the repository root, install the workspace dependencies and generate the
-native sources:
+Install the workspace dependencies, then run from the repository root:
 
 ```sh
 node packages/native-compiler/src/cli.mjs build
-swift build --package-path apps/native-ios-playground
+node apps/native-playground/build-studio-theme.mjs
 node apps/native-playground/server.mjs
 ```
 
-Open <http://127.0.0.1:4177>. `PORT` overrides the port; the server always binds to
-`127.0.0.1`.
-Use <http://127.0.0.1:4177/?platform=ios#md-chip> to open Chip directly in the
-SwiftUI preview. The selected platform is preserved in the URL when switching tabs.
+Open <http://127.0.0.1:4177>. `PORT` changes the port; the server binds only to
+`127.0.0.1`. `pnpm native:playground` also starts the server. Component URLs are
+shareable, for example <http://127.0.0.1:4177/?platform=ios#md-chip>.
 
-The web reference requires `packages/core/dist`. Build it using the existing core
-package build, or point at an existing AWC build:
+The studio and web previews require the core web build in `packages/core/dist`.
+Build it with the core package's existing build command, or use another local
+build:
 
 ```sh
 AWC_WEB_DIST=/absolute/path/to/core/dist node apps/native-playground/server.mjs
 ```
 
-For live Android, start a dedicated emulator (API 26+) and install the debug app:
+Generated native sources enable source and portability inspection. If those
+artifacts are missing, the catalog falls back to the core custom elements
+manifest and labels compiler output as unavailable. Refresh after regeneration.
+Native previews additionally require the platform hosts described below.
+
+## Explore components
+
+The left catalog groups and searches all source tags; `/` focuses search. The
+right properties panel provides typed scalar, boolean, enum and JSON editors,
+reset, and a property search. Mixed literal unions retain their actual types,
+including values such as `false`. Info controls explain source types, defaults,
+usage and native support. Hover or focus for help; click to pin it and Escape to
+dismiss it.
+
+The web preview runs in a dedicated same-origin iframe. Responsive, 360 px,
+768 px and 1024 px widths change its actual viewport, so media queries respond
+to the preview width. Canvas controls offer RTL, an 8 px grid, component bounds
+and fullscreen. RTL is also sent to native hosts; native sizing follows the
+host's capture limits rather than a browser viewport.
+
+**Usage & API**, below the preview, has copyable HTML, React, Angular, Vue, Svelte,
+SwiftUI and Android examples. Selecting a code language is independent of the
+preview platform. Examples update from current properties and slot text, retain
+composed children, and omit unchanged defaults unless the fixture or an explicit
+edit supplies them. Web framework examples use the repository's public AWC
+packages; native examples use `AWCNativeView`/`AWCNode` and `AWCComponent`.
+Generated examples use inert recipe markup, never hydrated preview markup.
+
+API sections document events and payloads, slots, methods, CSS variables, CSS
+parts, and data/callback types. Slot text and CSS edits update the relevant
+examples and the live Web preview. Public web methods accept JSON argument
+arrays. Native fixtures keep their own children; editing documentation slots does
+not rewrite those fixtures. Native snippets preserve AWC children and slot text,
+while HTML layout CSS and recipe setup callbacks require native layout or state
+in the consuming app. Callbacks and object references remain application code.
+
+**Events**, **Native source** and **Portability** provide recorded events, compiler
+IR, generated and runtime source links, source diagnostics, and per-platform
+property/event/method/slot support. Source diagnostics, native implementation
+coverage and verified parity are distinct. Unsupported native members remain
+visible.
+
+## Theme studio
+
+The theme panel uses the actual `@awc-ui/theme` engine from `packages/theme`,
+including its Material Color Utilities HCT computation. A primary seed derives
+secondary and tertiary palettes automatically. Disable Auto to supply either
+seed independently; light/dark mode and contrast regenerate both color schemes.
+The panel includes role swatches, copyable setup code and CSS export.
+
+Theme configuration persists in local storage when storage is available. The
+studio and web iframe receive the computed color tokens. Native sessions receive
+the same selected palette through the adapters' supported theme roles; changing
+colors restarts the native preview. This updates native palette inputs, not
+arbitrary CSS or every browser styling hook. Typography and component dimensions
+remain defined by their respective renderers.
+
+The browser theme bundle is generated from local workspace dependencies, with
+its licenses included under `theme-vendor/`. Rebuild it after theme-engine changes
+and verify it without modifying files:
+
+```sh
+node apps/native-playground/build-studio-theme.mjs
+node apps/native-playground/build-studio-theme.mjs --check
+```
+
+## Test evidence
+
+**Test coverage** has four tabs: **Unit**, **Component**, **End-to-end** and
+**Accessibility**. Each lists matching source files, static declaration counts,
+configuration evidence and copyable local test commands. Component evidence
+includes Storybook and framework tests; accessibility evidence includes relevant
+axe, ARIA, keyboard and focus checks and configured Storybook checks.
+
+The panel reads evidence; it never runs tests. Declaration counts do not expand
+parameterized cases and may describe a shared file. Saved component-specific
+LCOV reports supply line, branch and function measurements when available.
+Report modification times do not prove freshness or a passing run. Without a
+matching measured report, coverage is unavailable and execution status remains
+unknown. A historical whole-library snapshot cannot establish coverage for the
+selected component. Accessibility evidence is not a WCAG conformance result.
+
+## Live native previews
+
+For SwiftUI, build the local host on macOS with the Swift/macOS SDK:
+
+```sh
+swift build --package-path apps/native-ios-playground
+```
+
+The browser's iOS/SwiftUI preview runs an actual **macOS SwiftUI view**, not an iOS
+simulator. Each session owns a local `AWCLivePreview` process and retains native
+state between inputs. Full iOS device validation still requires the native
+playground and the appropriate Apple toolchain.
+
+For Android, start a dedicated API 26+ emulator and install the debug playground:
 
 ```sh
 export ANDROID_HOME=/absolute/path/to/android-sdk
@@ -44,160 +133,80 @@ cd ../..
 node apps/native-playground/server.mjs
 ```
 
-Open <http://127.0.0.1:4177/?platform=android&preview=live#md-button>.
-`AWC_ANDROID_SERIAL` is optional when exactly one emulator is connected. Physical
-devices are not selected by this transport. `AWC_ANDROID_ADB` can override the
-ADB executable. The server never downloads SDKs, starts emulators, or installs
-APKs automatically. Android offers live preview and source inspection.
-Use hardware graphics for the emulator where available (`-gpu host`); software
-graphics can limit animation frame rate even when idle streaming reaches 60 fps.
+Open <http://127.0.0.1:4177/?platform=android#md-button>.
+`AWC_ANDROID_SERIAL` is optional with exactly one connected emulator;
+`AWC_ANDROID_ADB` can override the ADB executable. The transport does not select
+physical devices, download SDKs, start emulators or install APKs. Hardware
+emulator graphics (`-gpu host`) can improve animation performance.
 
-The native inspector works without the web build. If generated output is missing,
-the component browser falls back to the core custom elements manifest and clearly
-marks compiler output as unavailable. Refresh after regenerating native sources.
+Compose renders into the actual Activity window, captured with PixelCopy. Both
+platforms send lossless native frames over a bounded NDJSON stream, targeting
+60 fps; the browser presents decoded frames with `requestAnimationFrame` and
+reports the measured presentation rate. Achievable speed depends on the host,
+component size and tab visibility. SwiftUI Retina output is converted to sRGB;
+Android fits the requested logical width to the available emulator surface.
 
-The Swift build is optional for source inspection and requires macOS with the
-Swift/macOS SDK. Each live session hosts an actual SwiftUI view in a separate
-local process. Its native state survives between input commands and frames.
-The Events inspector displays events emitted by the native AWC adapter. The
-browser does not simulate the component's selection or text state in JavaScript.
+Clicks, text and supported keys operate the native view. Button press, release,
+cancel and hover forwarding expose actual native press animations, including
+keyboard activation. The Events inspector receives native adapter events;
+JavaScript does not simulate component selection or text state. Focus the preview
+to send keys; Escape returns keyboard control to the browser.
 
-The renderer merges inspector properties into each native example while
-preserving its example children. Changing these initial properties or the theme
-starts a new session. Focus the preview to send text and supported keys; Escape
-releases browser focus. Navigation closes the previous session, hidden tabs stop
-polling, and idle sessions expire after 60 seconds. At most two native sessions
-can run at once on SwiftUI; Android has one session per emulator. Retry starts a
-fresh native view after an error or expiry.
+Changing initial props, theme, direction or viewport width starts a new native session. Grid and bounds overlays preserve native state. Navigation
+closes the previous session, hidden tabs close their frame stream, and idle
+sessions expire after 60 seconds. SwiftUI allows at most two sessions; Android
+uses one per emulator. Reconnect creates a fresh view after expiry or an error.
+Slow consumers retain the latest picture and a bounded event batch instead of
+accumulating animation latency.
 
-Live previews run on **macOS SwiftUI**, not an iOS simulator. Clicks and typing are
-supported. `md-button` also forwards separate press/release/cancel commands, so
-holding the pointer keeps its actual SwiftUI pressed state. Frame polling speeds
-up while pressed and during release animation when using the polling fallback.
-Button hover and pointer position are forwarded too. General dragging, scrolling, separate native windows, sheets and system
-menus are not validated by this transport. Browser accessibility does not expose
-the native accessibility tree. Use the native app for full platform interaction
-and accessibility testing. Web slot content is not translated into the native
-fixture. Android supports the same view-local clicks, button press/release/hover,
-text and keys on its Compose Activity. Separate Android Popup/Dialog windows
-are not composited into the Activity capture. Long content is limited to the
-visible emulator surface; its reported logical bounds reflect the captured area.
-Existing adapter API gaps remain visible.
+General dragging, scrolling, separate native windows and system menus are not
+fully validated by this transport. Android Popup/Dialog windows are outside the
+Activity capture, and long content is limited to the visible emulator surface.
+Streamed pixels do not expose the native accessibility tree to browser assistive
+technology. Use the native apps for complete platform interaction and
+accessibility testing. Text rasterization remains platform-dependent; a working
+preview does not establish full web/native parity.
 
-Native frames are pushed over one bounded NDJSON connection at a target 60 fps,
-independently of input acknowledgments. The browser presents decoded frames on
-`requestAnimationFrame`; the live status reports the measured presentation rate.
-Hidden tabs close their frame stream. Slow consumers retain only the latest
-picture plus a bounded event batch instead of building up animation latency.
-PNGs stay lossless; each native renderer draws its own animation. SwiftUI Retina
-frames are converted to sRGB. Android fits the requested logical width to the
-emulator display without stretching the component layout.
-Achievable frame rate depends on the host, component size and tab visibility.
+For `md-button`, platform portability cards link to three native behavior demos:
 
-The web reference uses the same generated light/dark tokens as the native view.
-The Button examples share their label, size and preview canvas. Native Button
-matches the source variant palettes, density rules, fonts and press shape timing;
-its ripple follows the pointer position and its native loader uses the source
-polygon keyframes and easing. Text rasterization remains platform-dependent.
+- **HTML_FORM**: automatic field registration, validation, Enter/Submit, reset to
+  initial values, encoded local form data and cancelable button/form actions.
+- **DOM_GLOBAL / CANCELABLE_EVENT**: local navigation contexts, history and
+  capture/target/bubble event propagation with cancellation controls.
+- **Focus & accessibility**: Tab entry, horizontal arrow/Home/End group navigation
+  without selection, and Enter/Space activation.
 
-The standalone snapshot endpoint remains available for tooling, but the browser
-does not offer snapshots or fall back to them. `AWC_NATIVE_RENDERER` and
-`AWC_NATIVE_LIVE_RENDERER` can point at executables built in another directory.
+Demo links never open external pages or submit data over the network. Native
+contexts, event scopes and accessibility roles are explicit native equivalents,
+not browser DOM or window implementations. Selecting Button again restores its
+normal component preview.
 
-## Included
+`AWC_NATIVE_LIVE_RENDERER` can select another built live executable.
+`AWC_NATIVE_RENDERER` selects the standalone snapshot executable. The snapshot
+endpoint remains available for tooling; the browser uses Live mode and does not
+silently fall back to screenshots.
 
-- All 81 source custom elements, grouped and searchable, with shareable hash URLs.
-- Explicit web examples for every element, including table, menu, navigation,
-  select, tabs, stepper, and accordion children composed in their parent context.
-- Live scalar, boolean, enum and JSON property editing, plus reset. Mixed literal
-  unions preserve boolean and numeric values (for example, `multiline=false`).
-- Searchable **Properties & usage** documentation for every declared property.
-  Each info button explains usage, source defaults/types and native support on
-  hover or keyboard focus; click pins the explanation and Escape dismisses it.
-- **Usage & API** includes copyable Web, SwiftUI and Compose examples reflecting
-  the current props, event payloads, slots, methods, CSS hooks and named data or
-  callback types. In the Web reference, edit slot text/CSS variables and invoke
-  public methods with JSON arguments. Callbacks and object references remain
-  application-code inputs; native unsupported members are labeled explicitly.
-- Light/dark themes, locally served fonts and icons, responsive layout, and the
-  `/` keyboard shortcut for search.
-- Persistent SwiftUI previews with clicks, text input, native events and explicit
-  session lifecycle. An unavailable host shows a reconnect action.
-- Persistent Compose previews with authenticated emulator streaming, native
-  input/events and one bounded live session.
-- Web and native event capture, contract metadata, compiler IR, actual generated source
-  excerpts, complete-file links, and native runtime source links.
-- Per-platform supported and unsupported property/event/method/slot coverage.
-  Navigation findings combine static diagnostics and native API gaps.
-  Static findings, adapter implementation and native parity are kept distinct.
-- Launch directions for the separate native iOS and Android playgrounds.
+## Local boundary and checks
 
-No code is uploaded and no build is triggered by this server. It serves the
-workbench assets, selected native source directories, generated compiler artifacts,
-core manifest, fonts, the configured web build and generated PNGs. Its local
-`POST /api/native-render` and `/api/native-live/*` endpoints accept bounded JSON
-requests and invoke fixed native executables without a shell. Live sessions accept
-only allowlisted input commands, scoped to their own native window; they do not
-inject global OS input. It rejects foreign origins, traversal and symlink escapes,
-and uses a same-origin content policy. Other routes support GET/HEAD only.
-Snapshot images live in the ignored `.cache/native-playground/renders` directory;
-live frames travel in memory as PNG data URLs.
+The server does not upload code or trigger builds. It serves a narrow set of
+studio assets, documentation/test evidence, compiler artifacts and native source
+files. Native endpoints accept bounded JSON and fixed commands without a shell;
+input stays inside the host's own native window. Foreign origins, traversal and
+symlink escapes are rejected. Only the dedicated preview document permits
+same-origin framing. Snapshots use the ignored `.cache/native-playground/renders`
+directory; live frames travel in memory.
 
-Android uses only the debug APK's loopback HTTP host, a random token per session,
-and a temporary ADB forward. Every host request requires bearer authentication.
-Session cleanup closes its Activity and removes only its own forward; it does
-not stop the emulator or ADB server. The live host is absent from release builds.
-
-## Checks
+Android uses the debug APK's authenticated loopback host and a temporary ADB
+forward. Cleanup closes its Activity and removes only the owned forward, leaving
+the emulator and ADB server running. The live host is absent from release builds.
 
 ```sh
 node --test apps/native-playground/*.test.mjs
+node apps/native-playground/build-studio-theme.mjs --check
 ```
 
-The tests cover route traversal, private-file exposure, symlink escape handling,
-external web build roots, intentional reference recipes for every current
-manifest element, typed render payloads, stale-result cancellation, render request
-validation, caching, process failure/timeout cleanup, bounded native sessions,
-input serialization, mixed literal value round-trips and coverage-only findings.
-Documentation tests check source/catalog merging, every current property's editor,
-platform-aware help, safe snippet encoding and documentation interaction state.
-Native builds and full interaction tests belong to the separate platform projects;
-a working remote preview does not establish native parity.
-
-### Native behavior equivalents
-
-The Portability inspector retains the original web-source findings and displays
-SwiftUI and Compose replacements next to each one. `Native replacement` is scoped
-to that source use in the selected component; `Partial replacement` indicates
-that relevant native behavior still needs an adapter. Both statuses document
-remaining differences from a browser. API-gap counts and compiler strict checks
-are unchanged by this metadata.
-
-For `md-button`, open the form demo from the **HTML_FORM** coverage card in the
-Portability inspector. The native Name field registers automatically and supports required and
-length validation. Press Enter or Submit to see the encoded form data, or Reset
-to restore initial values. **Cancel actions** vetoes button activation; the
-separate form-event switch vetoes submit/reset after activation but before form
-effects. Toggle and Link actions remain available. Form data is encoded locally
-without making a network request, and the router records links without opening
-an external URL. Observe native form and component events in the Events inspector.
-The HTML_FORM coverage cards link directly to each platform's demo. Examples
-require Live mode. The normal preview contains just the component; select Button
-in the library to return to it from a behavior demo.
-
-Open the **DOM_GLOBAL** or **CANCELABLE_EVENT** demo link to inspect native navigation contexts,
-route history, and event propagation. Links resolve inside the demo; they do not
-open external pages. Cancellation prevents the link's default action, while
-stopping propagation only changes which listeners receive it. The native trace
-shows capture, target, and bubble phases. The DOM_GLOBAL and CANCELABLE_EVENT
-coverage cards link to this example on each platform. Native contexts and event
-scopes replace those component behaviors without providing a browser DOM or
-browser windows.
-
-Open **Focus & accessibility** from a platform coverage card to try a native button group with a
-hardware keyboard. Tab enters and leaves the group; Left/Right and Home/End move
-focus without changing selection. Enter/Space activates the focused control.
-The button coverage cards link directly to this example. Click inside the live
-preview before sending keys, and press Escape to return keyboard control to the
-browser. The native accessibility roles belong to the running platform app;
-streamed pixels cannot expose its accessibility tree to a browser screen reader.
+Tests cover server boundaries, native request/session handling, documentation
+state, typed property editors, all component recipes, framework snippet
+syntax/templates and prop types, safe literals, theme computation and coverage
+provenance. Native build and interaction suites live in the separate platform
+projects; inspect their results independently of source evidence shown here.

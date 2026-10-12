@@ -53,7 +53,7 @@ export function recipeFor(tag) {
       case 'md-card': html = '<md-card><div class="card-content"><div class="card-symbol">✧</div><h3>Ideas take shape.</h3><p>A shared design language, built for every surface.</p><md-button variant="text">Explore workspace</md-button></div></md-card>'; break;
       case 'md-avatar': html = '<md-avatar></md-avatar>'; props = { name: 'Alex Morgan', size: 'large' }; break;
       case 'md-badge': html = '<div style="position:relative"><md-icon-button icon="notifications" size="lg" aria-label="Notifications"></md-icon-button><md-badge style="position:absolute;top:-4px;right:-5px"></md-badge></div>'; props = { value: '8' }; break;
-      case 'md-status-dot': html = '<md-status-dot></md-status-dot>'; props = { state: 'success', label: 'All systems operational', inline: true }; break;
+      case 'md-status-dot': html = '<md-status-dot></md-status-dot>'; props = { state: 'online', label: 'All systems operational', inline: true }; break;
       case 'md-checkbox': html = '<md-checkbox>Keep me updated</md-checkbox>'; props = { checked: true }; break;
       case 'md-switch': html = '<div style="display:flex;align-items:center;gap:18px"><span class="demo-label">Enable notifications</span><md-switch aria-label="Enable notifications"></md-switch></div>'; props = { selected: true, icons: true }; break;
       case 'md-radio': html = '<md-radio name="demo-choice" value="shared">Shared workspace</md-radio>'; props = { checked: true }; break;

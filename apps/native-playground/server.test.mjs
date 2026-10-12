@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, symlink, rm, realpath } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { resolveAsset } from './server.mjs';
+import { resolveAsset, handleCoverageRequest, assetContentSecurityPolicy } from './server.mjs';
 import { recipeFor } from './recipes.js';
 import { readFile } from 'node:fs/promises';
 
@@ -35,13 +35,60 @@ test('an explicitly configured web build can live outside the checkout', async (
 test('browser documentation modules are served without opening nearby internal modules', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'awc-native-doc-modules-'));
   try {
-    const allowed = ['documentation.js', 'documentation-ui.js', 'usage-snippets.js', 'property-controls.js'];
-    const denied = ['documentation.test.mjs', 'documentation-ui.test.js', 'usage-snippets.mjs', 'server.mjs', 'native-live.mjs'];
-    for (const file of [...allowed, ...denied]) await writeFile(path.join(root, file), 'export {};');
+    const allowed = ['documentation.js', 'documentation-ui.js', 'usage-snippets.js', 'property-controls.js', 'studio.css', 'studio-ui.js', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'];
+    const denied = ['documentation.test.mjs', 'documentation-ui.test.js', 'usage-snippets.mjs', 'server.mjs', 'native-live.mjs', 'coverage.mjs', 'theme-vendor/private.js', 'theme-vendor/awc-theme.js.map', 'build-studio-theme.mjs'];
+    for (const file of [...allowed, ...denied]) { await mkdir(path.dirname(path.join(root, file)), { recursive: true }); await writeFile(path.join(root, file), 'export {};'); }
     for (const file of allowed) assert.equal(await resolveAsset(`/${file}`, { appRoot: root }), await realpath(path.join(root, file)), file);
     for (const file of denied) assert.equal(await resolveAsset(`/${file}`, { appRoot: root }), null, file);
     assert.equal(await resolveAsset('/nested/documentation.js', { appRoot: root }), null);
   } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+test('coverage evidence routes retain a narrow source/config allowlist and symlink containment', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'awc-native-evidence-'));
+  try {
+    const repo = path.join(root, 'repo');
+    const allowed = ['packages/core/src/components/md-button/md-button.spec.ts', 'apps/test-react/e2e/button.spec.tsx', 'apps/storybook/src/stories/MdButton.stories.ts', 'apps/storybook/.storybook/preview.ts', 'packages/core/jest.coverage.config.cjs', 'packages/core/coverage-spec/lcov.info'];
+    const denied = ['packages/core/src/components/md-button/private.ts', 'packages/core/src/components/md-button/.private.spec.ts', 'apps/storybook/.storybook/private.ts', 'packages/core/coverage-spec/private.json'];
+    for (const file of [...allowed, ...denied]) { await mkdir(path.dirname(path.join(repo, file)), { recursive: true }); await writeFile(path.join(repo, file), 'source'); }
+    for (const file of allowed) assert.equal(await resolveAsset(`/repo/${file}`, { repoRoot: repo }), await realpath(path.join(repo, file)), file);
+    for (const file of denied) assert.equal(await resolveAsset(`/repo/${file}`, { repoRoot: repo }), null, file);
+    await writeFile(path.join(root, 'private.ts'), 'private');
+    await symlink(path.join(root, 'private.ts'), path.join(repo, 'packages/core/src/components/md-button/escape.spec.ts'));
+    assert.equal(await resolveAsset('/repo/packages/core/src/components/md-button/escape.spec.ts', { repoRoot: repo }), null);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+test('coverage endpoint validates known tags and returns read-only evidence without a passing claim', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'awc-native-coverage-api-'));
+  try {
+    await mkdir(path.join(root, 'packages/core/src/components/md-button'), { recursive: true });
+    await writeFile(path.join(root, 'packages/core/custom-elements.json'), JSON.stringify({ modules: [{ declarations: [{ tagName: 'md-button' }] }] }));
+    await writeFile(path.join(root, 'packages/core/src/components/md-button/md-button.spec.ts'), "throw new Error('must not execute'); it('button works', () => {});");
+    const request = async (url, method = 'GET') => {
+      const res = { writeHead(status, headers) { this.status = status; this.headers = headers; }, end() { this.ended = true; } };
+      const handled = await handleCoverageRequest({ url, method }, res, { repoRoot: root, tags: async () => new Set(['md-button']), json: (output, status, value) => { output.status = status; output.value = value; } });
+      return { ...res, handled };
+    };
+    const valid = await request('/api/coverage/md-button');
+    assert.equal(valid.status, 200); assert.equal(valid.value.tag, 'md-button');
+    assert.equal(valid.value.categories.unit.status, 'evidence-only');
+    assert.equal(valid.value.categories.unit.executionStatus, 'unknown');
+    assert.equal(valid.value.categories.unit.testCount, 1);
+    for (const url of ['/api/coverage/md-missing', '/api/coverage/%2e%2e', '/api/coverage/md-button/extra', '/api/coverage', '/api/coverage/../md-button']) assert.equal((await request(url)).status, 404, url);
+    const post = await request('/api/coverage/md-button', 'POST');
+    assert.equal(post.status, 405); assert.equal(post.headers.Allow, 'GET');
+    assert.equal((await request('/other-route')).handled, false);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+test('only the dedicated preview document permits same-origin framing', () => {
+  assert.match(assetContentSecurityPolicy('/preview-frame.html'), /frame-ancestors 'self'/);
+  for (const pathname of ['/', '/index.html', '/app.js', '/repo/apps/storybook/.storybook/preview.ts', '/nested/preview-frame.html']) {
+    assert.match(assetContentSecurityPolicy(pathname), /frame-ancestors 'none'/, pathname);
+  }
+  assert.match(assetContentSecurityPolicy('/preview-frame.html'), /script-src 'self';/);
+  assert.doesNotMatch(assetContentSecurityPolicy('/preview-frame.html'), /unsafe-eval/);
 });
 
 test('component documentation routes allow only JSON records and component readmes', async () => {

@@ -53,6 +53,15 @@ for (const scenario of ['button-behavior', 'navigation-events', 'focus-accessibi
   assert.deepEqual(configure.properties, config.properties);
 });
 
+test('Android configure forwards generated theme colors and direction outside component properties', async t => {
+  const { renderer, requests } = fixture(t);
+  await renderer.create({ ...config, themeTokens: { '--md-sys-color-primary': '#007733' }, direction: 'rtl' });
+  const configure = requests.find(request => request.body?.command === 'configure').body;
+  assert.deepEqual(configure.themeTokens, { '--md-sys-color-primary': '#007733' });
+  assert.equal(configure.direction, 'rtl');
+  assert.deepEqual(configure.properties, config.properties);
+});
+
 test('Android discovery rejects physical, offline and ambiguous devices and accepts an explicit emulator', async t => {
   for (const devices of ['phone-123 device\n', 'emulator-5554 offline\n', 'emulator-5554 device\nemulator-5556 device\n', '']) {
     const { renderer, mock, adbCalls } = fixture(t);

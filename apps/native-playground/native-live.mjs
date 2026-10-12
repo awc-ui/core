@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { RenderError } from './native-render.mjs';
 import { nativeEventMetadata } from './native-event-metadata.mjs';
+import { nativeThemeOptions } from './native-theme-options.js';
 
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 const KEYS = new Set(['Enter', 'Space', 'Tab', 'Escape', 'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']);
@@ -285,7 +286,7 @@ export function createNativeLiveRenderer({
         children.delete(session);
         stop(session, failure(502, 'LIVE_PROCESS_EXITED', 'The native preview process exited. Start it again.'));
       });
-      return await enqueue(session, { command: 'configure', tag: request.tag, properties: request.properties, dark: request.dark, width: request.width, ...(request.scenario ? { scenario: request.scenario } : {}) });
+      return await enqueue(session, { command: 'configure', tag: request.tag, properties: request.properties, dark: request.dark, width: request.width, ...(request.scenario ? { scenario: request.scenario } : {}), ...nativeThemeOptions(request) });
     } catch (error) {
       const safeError = error instanceof RenderError ? error : failure(502, 'LIVE_PROCESS_FAILED', 'The native preview process could not start.');
       stop(session, safeError);

@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
-import { readFile } from 'node:fs/promises';
-import { usageSnippet } from './usage-snippets.js';
+import { readFile, readdir } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { usageSnippet, snippetLanguages } from './usage-snippets.js';
 import { recipeFor } from './recipes.js';
 
 const button = {
@@ -113,13 +114,14 @@ test('omitted props inherit native defaults; supplied false/zero/null/empty valu
   assert.equal(usageSnippet(component, { value: undefined }, 'android').includes('"value" to'), false);
 });
 
-test('complex recipes retain supplied text and explain native child/slot composition', () => {
-  const html = '<div><md-button><md-icon slot="leading-icon">add</md-icon>Continue</md-button></div>';
+test('complex recipes retain native children and named slots along with supplied text', () => {
+  const html = '<div><md-button><span slot="leading-icon">add</span>Continue</md-button></div>';
   const swift = usageSnippet(button, {}, 'ios', { html, text: 'Continue' });
   const kotlin = usageSnippet(button, {}, 'android', { html, text: 'Continue' });
-  assert.ok(swift.includes('named slots with AWCNode'));
-  assert.ok(kotlin.includes('matching content slots'));
-  assert.ok(swift.includes('children: [.text("Continue")]'));
+  assert.ok(swift.includes('AWCNode preserves native children and named slots'));
+  assert.ok(kotlin.includes('matching native content slots'));
+  assert.ok(swift.includes('children: [.text("add", slot: "leading-icon"), .text("Continue")]'));
+  assert.ok(kotlin.includes('if (slot == "leading-icon") Text("add")'));
   assert.ok(kotlin.includes('Text("Continue")'));
   assert.equal(swift.includes('<md-icon'), false);
   assert.ok(usageSnippet(button, {}, 'web', { html }).includes(html));
@@ -149,12 +151,128 @@ test('all 81 actual source components produce examples for each platform', async
   for (const source of components) {
     const component = { tag: source.tagName, properties: (source.members ?? []).filter(member => member.kind === 'field'), events: source.events ?? [] };
     const recipe = recipeFor(component.tag);
-    for (const platform of ['web', 'ios', 'android']) {
+    for (const platform of snippetLanguages.map(language => language.id)) {
       const snippet = usageSnippet(component, recipe.props, platform, { html: recipe.html });
-      assert.ok(snippet.includes(component.tag), `${component.tag}/${platform}`);
+      assert.ok(snippet.includes(['react', 'vue'].includes(platform) ? component.tag.split('-').map(part => part[0].toUpperCase() + part.slice(1)).join('') : component.tag), `${component.tag}/${platform}`);
       assert.equal(snippet.includes('[object Object]'), false);
     }
   }
+});
+
+test('language metadata is immutable and the original platform aliases remain identical', () => {
+  assert.deepEqual(snippetLanguages.map(language => language.id), ['html', 'react', 'angular', 'vue', 'svelte', 'swift', 'android']);
+  assert.ok(Object.isFrozen(snippetLanguages) && snippetLanguages.every(Object.isFrozen));
+  assert.equal(usageSnippet(button, {}, 'web'), usageSnippet(button, {}, 'html'));
+  assert.equal(usageSnippet(button, {}, 'ios'), usageSnippet(button, {}, 'swift'));
+});
+
+test('framework examples use verified package APIs, typed state, events and live structured values', () => {
+  const props = { variant: 'outlined', selected: false, groupTabindex: null, payload: { items: ['a', 1, null] } };
+  const html = '<md-button variant="filled"><span slot="leading-icon">add</span>Old label</md-button>';
+  for (const language of ['react', 'angular', 'vue', 'svelte']) {
+    const snippet = usageSnippet(button, props, language, { html, text: 'Current label' });
+    assert.ok(snippet.includes(`@awc-ui/${language}`));
+    assert.ok(snippet.includes('Partial<Components.MdButton>'));
+    assert.ok(snippet.includes('"selected": false') && snippet.includes('"groupTabindex": null'));
+    assert.ok(snippet.includes('Current label') && snippet.includes('leading-icon'));
+    assert.equal(snippet.includes('Old label'), false);
+    assert.equal(snippet.includes('filled'), false, 'Current props override old recipe attributes');
+  }
+  assert.ok(usageSnippet(button, props, 'react', { html }).includes('onMdClick={onEvent}'));
+  assert.ok(usageSnippet(button, props, 'angular', { html }).includes('(mdClick)="onEvent($event)"'));
+  assert.ok(usageSnippet(button, props, 'angular', { html }).includes('[variant]="properties.variant!"'));
+  assert.ok(usageSnippet(button, props, 'vue', { html }).includes('@mdClick="onEvent"'));
+  assert.ok(usageSnippet(button, props, 'svelte', { html }).includes('onmdClick={onEvent}'));
+  assert.ok(usageSnippet(button, props, 'svelte', { html }).includes('import "@awc-ui/core/components/md-button";'));
+});
+
+test('all platforms discard hydration internals, comments, inline scripts and handler strings', () => {
+  const html = '<md-button class="demo hydrated" s-id="1" c-id="2" data-stencil-root="x" onclick="evil()"><!--t.0--><span s-sn="" slot="leading-icon">add</span>Keep<script>evil()</script></md-button>';
+  for (const language of snippetLanguages) {
+    const snippet = usageSnippet(button, {}, language.id, { html });
+    for (const unwanted of ['hydrated', 's-id', 'c-id', 's-sn', 'data-stencil', 'onclick', 'evil()', '<!--t.0-->']) assert.equal(snippet.includes(unwanted), false, `${language.id}: ${unwanted}`);
+    assert.ok(snippet.includes('Keep') && snippet.includes('leading-icon'));
+  }
+});
+
+test('parent context and only the first selected child receive edited props in all frameworks', () => {
+  const component = { tag: 'md-table-cell', properties: [{ name: 'colspan' }], events: [] };
+  const html = '<md-table columns="2"><md-table-body><md-table-row><md-table-cell>One</md-table-cell><md-table-cell>Two</md-table-cell></md-table-row></md-table-body></md-table>';
+  for (const language of snippetLanguages) {
+    const snippet = usageSnippet(component, { colspan: 2 }, language.id, { html });
+    assert.ok(snippet.includes(language.id === 'react' || language.id === 'vue' ? 'MdTableBody' : 'md-table-body'));
+    assert.ok(snippet.includes('One') && snippet.includes('Two'));
+    if (['react', 'svelte'].includes(language.id)) assert.equal(snippet.split('{...properties}').length - 1, 1);
+    if (language.id === 'vue') assert.equal(snippet.split('v-bind="properties"').length - 1, 1);
+    if (language.id === 'angular') assert.equal(snippet.split('[colspan]="properties.colspan!"').length - 1, 1);
+  }
+});
+
+async function compilerPackage(name, entry) {
+  const directory = new URL('../../node_modules/.pnpm/', import.meta.url);
+  const prefix = name.replaceAll('/', '+') + '@';
+  const matches = (await readdir(directory)).filter(item => item.startsWith(prefix)).sort();
+  if (!matches.length) throw new Error(`Compiler ${name} is not installed in this workspace.`);
+  const loaded = await import(new URL(`${matches.at(-1)}/node_modules/${name}/${entry}`, directory));
+  return loaded.default ?? loaded;
+}
+
+test('real TSX, Angular, Vue and Svelte compilers accept all 81 composed examples', async () => {
+  const ts = (await import('typescript')).default;
+  const angular = await compilerPackage('@angular/compiler', 'fesm2022/compiler.mjs');
+  const vue = await compilerPackage('@vue/compiler-sfc', 'dist/compiler-sfc.cjs.js');
+  const svelte = await compilerPackage('svelte', 'compiler/index.js');
+  const manifest = JSON.parse(await readFile(new URL('../../packages/core/custom-elements.json', import.meta.url), 'utf8'));
+  const components = manifest.modules.flatMap(module => module.declarations ?? []).filter(component => component.tagName);
+  const extras = [{ tag: 'md-button', properties: [{ name: 'value' }, { name: 'payload' }], events: [{ name: 'mdClick' }], recipe: { props: { value: '</script> ${danger} ` \\ \u2028', payload: { a: [1, null, false, '<b>'] } }, html: '<md-button title="a > b" style="--custom: red; display:flex">{{value}} {code} @else ${eval} ` \\</md-button>' } }];
+  for (const source of [...components, ...extras]) {
+    const component = source.tag ? source : { tag: source.tagName, properties: (source.members ?? []).filter(member => member.kind === 'field'), events: source.events ?? [] };
+    const recipe = source.recipe ?? recipeFor(component.tag);
+    for (const language of ['react', 'angular', 'vue', 'svelte']) {
+      const code = usageSnippet(component, recipe.props, language, { html: recipe.html });
+      const label = `${component.tag}/${language}`;
+      if (language === 'react' || language === 'angular') {
+        const file = ts.createSourceFile(language === 'react' ? 'Example.tsx' : 'Example.ts', code, ts.ScriptTarget.Latest, true, language === 'react' ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+        assert.deepEqual(file.parseDiagnostics.map(diagnostic => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')), [], label);
+        if (language === 'angular') {
+          let template;
+          function visit(node) { if (ts.isPropertyAssignment(node) && node.name.getText(file) === 'template') template = node.initializer.text; ts.forEachChild(node, visit); }
+          visit(file);
+          const result = angular.parseTemplate(template, 'Example.html');
+          assert.deepEqual((result.errors ?? []).map(error => error.toString()), [], label);
+        }
+      } else if (language === 'vue') {
+        const parsed = vue.parse(code, { filename: 'Example.vue' });
+        assert.deepEqual(parsed.errors, [], label);
+        vue.compileScript(parsed.descriptor, { id: 'example' });
+        const result = vue.compileTemplate({ source: parsed.descriptor.template.content, filename: 'Example.vue', id: 'example' });
+        assert.deepEqual(result.errors, [], label);
+      } else {
+        assert.doesNotThrow(() => svelte.compile(code, { filename: 'Example.svelte', generate: 'client' }), label);
+      }
+    }
+  }
+});
+
+test('all 81 selected fixture prop objects typecheck against the actual public core interfaces', async () => {
+  const ts = (await import('typescript')).default;
+  const manifest = JSON.parse(await readFile(new URL('../../packages/core/custom-elements.json', import.meta.url), 'utf8'));
+  const components = manifest.modules.flatMap(module => module.declarations ?? []).filter(component => component.tagName);
+  const filename = fileURLToPath(new URL('GeneratedUsageProperties.ts', import.meta.url));
+  const core = fileURLToPath(new URL('../../packages/core/src/components', import.meta.url));
+  let source = `import type { Components } from ${JSON.stringify(core)};\n`;
+  for (const component of components) {
+    const declared = new Set((component.members ?? []).filter(member => member.kind === 'field').map(member => member.name));
+    const values = Object.fromEntries(Object.entries(recipeFor(component.tagName).props).filter(([key]) => declared.has(key)));
+    const name = component.tagName.split('-').map(part => part[0].toUpperCase() + part.slice(1)).join('');
+    source += `export const ${name}: Partial<Components.${name}> = ${JSON.stringify(values)};\n`;
+  }
+  const options = { strict: true, noEmit: true, skipLibCheck: true, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler };
+  const host = ts.createCompilerHost(options), original = host.getSourceFile.bind(host);
+  host.getSourceFile = (path, language, ...rest) => path === filename ? ts.createSourceFile(path, source, language, true) : original(path, language, ...rest);
+  const program = ts.createProgram([filename], options, host);
+  const errors = ts.getPreEmitDiagnostics(program).filter(diagnostic => diagnostic.file?.fileName === filename);
+  assert.deepEqual(errors.map(diagnostic => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')), []);
 });
 
 test('plain recipe text tolerates quoted angle brackets, entities and explicit empty content', () => {

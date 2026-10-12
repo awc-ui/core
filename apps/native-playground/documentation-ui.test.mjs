@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createDocumentationUI } from './documentation-ui.js';
+import { createDocumentationUI, snippetProperties } from './documentation-ui.js';
 
 // Minimal DOM boundary for event/state tests; rendering and focus behavior are
 // additionally checked in the real browser. No browser implementation dependency.
@@ -55,20 +55,19 @@ function fixture(t, extra = {}) {
   const state = { selected: component, platform: 'web', props: {}, target: { outerHTML: '<md-text-field></md-text-field>' } };
   let interactions = 0;
   const ui = createDocumentationUI({ getState: () => state, notify() {}, watchEvents() {}, afterInteraction() { interactions++; } });
-  return { ui, root, state, doc, interactions: () => interactions };
+  return { ui, root, state, doc, search, interactions: () => interactions };
 }
 
 test('same-component docs enrichment and platform switches retain open sections, method args and caret', t => {
   const { ui, root, state } = fixture(t);
   ui.renderUsage();
   root.querySelector('[data-usage-section="Methods"]').open = true;
-  root.querySelector('[data-usage-section="Usage example"]').open = false;
   const input = root.querySelector('[data-method-name="setCustomValidity"]');
   input.value = '["Use a longer value"]'; input.focus(); input.setSelectionRange(2, 9);
   state.selected = { ...state.selected, dataTypes: [{ name: 'Value', body: 'string' }] };
   ui.renderUsage();
   assert.equal(root.querySelector('[data-usage-section="Methods"]').open, true);
-  assert.equal(root.querySelector('[data-usage-section="Usage example"]').open, false);
+  assert.ok(root.querySelector('#usage-language-tabs'));
   assert.equal(document.activeElement.value, '["Use a longer value"]');
   assert.deepEqual([document.activeElement.selectionStart, document.activeElement.selectionEnd], [2, 9]);
   assert.doesNotMatch(root.innerHTML, /Returns <code>inferred/);
@@ -101,21 +100,101 @@ test('late async method results cannot synchronize a replacement preview', async
   let complete;
   state.target.setCustomValidity = () => new Promise(resolve => { complete = resolve; });
   ui.renderUsage();
-  const running = root.querySelector('[data-run-method="0"]').emit('click');
+  const running = root.querySelector('[data-run-method="0"]').emit('mdClick');
   state.target = { outerHTML: '<md-text-field></md-text-field>' }; ui.renderUsage();
   complete('Old result'); await running;
   assert.equal(interactions(), 0);
   assert.equal(root.querySelector('#method-result-0').textContent, undefined);
 });
 
-test('examples retain static recipe composition without live runtime markup or native text overrides', t => {
+test('examples retain inert recipe composition and edited slots across all code languages', async t => {
   const { ui, root, state } = fixture(t);
   state.selected = { ...state.selected, tag: 'md-button' };
   state.target.outerHTML = '<md-button class="hydrated runtime-only" tabindex="-1">Runtime mutated</md-button>';
-  state.docSlotValues = { '': 'Web-only label' };
+  state.docSlotValues = { '': 'Current slot label' };
   ui.renderUsage();
   const web = root.querySelector('#usage-snippet').textContent;
   assert.doesNotMatch(web, /hydrated|runtime-only|Runtime mutated/);
   state.platform = 'android'; ui.renderUsage();
-  assert.doesNotMatch(root.querySelector('#usage-snippet').textContent, /Web-only label/);
+  await root.querySelector('#usage-language-tabs').emit('mdTabChange', { detail: { index: 6 } });
+  assert.match(root.querySelector('#usage-snippet').textContent, /AWCComponent/);
+  assert.match(root.querySelector('#usage-snippet').textContent, /Current slot label/);
+  assert.doesNotMatch(root.querySelector('#usage-snippet').textContent, /hydrated|runtime-only|Runtime mutated/);
+});
+
+test('usage exposes seven AWC language tabs and keeps the chosen language when props or preview platform change', async t => {
+  const { ui, root, state } = fixture(t);
+  state.selected = { tag: 'md-button', properties: [{ name: 'variant', defaultValue: 'filled' }, { name: 'selected', defaultValue: false }, { name: 'disabled', defaultValue: false }], events: [], slots: [], methods: [] };
+  state.props = { variant: 'filled', selected: false, disabled: false };
+  ui.renderUsage();
+  assert.equal(root.querySelectorAll('[data-snippet-language]').length, 7);
+  assert.match(root.innerHTML, /<md-tabs id="usage-language-tabs"/);
+  assert.match(root.innerHTML, /<md-button[^>]+id="copy-usage"/);
+  assert.match(root.innerHTML, /class="api-reference"/);
+  assert.doesNotMatch(root.querySelector('#usage-snippet').textContent, /"disabled"/);
+  await root.querySelector('#usage-language-tabs').emit('mdTabChange', { detail: { index: 1 } });
+  assert.match(root.querySelector('#usage-snippet').textContent, /@awc-ui\/react/);
+  state.props.selected = true;
+  ui.updateSnippet();
+  assert.match(root.querySelector('#usage-snippet').textContent, /"selected": true/);
+  state.platform = 'ios'; ui.renderUsage();
+  assert.match(root.querySelector('#usage-snippet').textContent, /@awc-ui\/react/);
+  assert.equal(root.querySelector('#usage-language-tabs').attributes['active-tab-index'], '1');
+});
+
+test('concise props retain explicit defaults, fixture values and changed structured values', () => {
+  const state = {
+    selected: { tag: 'md-button', properties: [{ name: 'variant', defaultValue: 'filled' }, { name: 'size', defaultValue: 'md' }, { name: 'disabled', defaultValue: false }, { name: 'selected', defaultValue: false }, { name: 'value', defaultValue: '' }, { name: 'payload', defaultValue: [1] }] },
+    props: { variant: 'filled', size: 'md', disabled: false, selected: false, value: '', payload: [1], unknown: 'omit' },
+    editedTag: 'md-button', editedProps: { selected: false },
+  };
+  assert.deepEqual(snippetProperties(state), { variant: 'filled', size: 'md', selected: false });
+  state.props.payload = [2]; state.props.value = 'Changed';
+  assert.deepEqual(snippetProperties(state), { variant: 'filled', size: 'md', selected: false, value: 'Changed', payload: [2] });
+});
+
+test('AWC field events edit slot examples and filter properties; browser input events do not duplicate actions', async t => {
+  const { ui, root, state, search, doc } = fixture(t, { slots: [{ name: '' }], cssProperties: [{ name: '--md-color' }] });
+  state.platform = 'ios';
+  ui.renderUsage();
+  assert.match(root.innerHTML, /<md-text-field[^>]+data-slot-index/);
+  assert.match(root.innerHTML, /<md-text-field[^>]+data-css-index/);
+  assert.match(root.innerHTML, /<md-text-field[^>]+data-method-args/);
+  await root.querySelector('[data-slot-index="0"]').emit('mdInput', { detail: 'New label' });
+  assert.equal(state.docSlotValues[''], 'New label');
+  assert.match(root.querySelector('#usage-snippet').textContent, /New label/);
+  await root.querySelector('[data-css-index="0"]').emit('mdInput', { detail: 'rebeccapurple' });
+  assert.equal(state.docCssValues['--md-color'], 'rebeccapurple');
+  const rows = [{ dataset: { search: 'label string' } }, { dataset: { search: 'disabled boolean' } }];
+  const empty = {};
+  doc.querySelectorAll = selector => selector === '#props-controls .prop-control' ? rows : [];
+  const query = doc.querySelector; doc.querySelector = selector => selector === '#props-empty' ? empty : query(selector);
+  search.value = 'disabled'; await search.emit('mdInput');
+  assert.equal(rows[0].hidden, true); assert.equal(rows[1].hidden, false); assert.equal(empty.hidden, true);
+});
+
+test('method invocation recognizes iframe Elements by nodeType and ignores plain click', async t => {
+  const { ui, root, state, interactions } = fixture(t);
+  let calls = 0;
+  state.target.setCustomValidity = () => { calls++; return { nodeType: 1, tagName: 'INPUT', circular: state.target }; };
+  ui.renderUsage();
+  await root.querySelector('[data-run-method="0"]').emit('click');
+  assert.equal(calls, 0);
+  await root.querySelector('[data-run-method="0"]').emit('mdClick');
+  assert.equal(calls, 1); assert.equal(interactions(), 1);
+  assert.equal(root.querySelector('#method-result-0').textContent, '<input>');
+});
+
+test('slot overrides use the target document and preserve unrelated named slots', t => {
+  const { ui, state } = fixture(t);
+  const removed = [], appended = [], properties = [];
+  const text = { nodeType: 3, remove: () => removed.push('text') };
+  const leading = { nodeType: 1, getAttribute: () => 'leading-icon', remove: () => removed.push('leading') };
+  const created = [];
+  state.target = { childNodes: [text, leading], ownerDocument: { createElement: name => { created.push(name); return {}; } }, append: node => appended.push(node), style: { setProperty: (...args) => properties.push(args), removeProperty: name => properties.push([name]) } };
+  state.docSlotValues = { '': 'New default' }; state.docCssValues = { '--md-color': 'red' };
+  ui.applyOverrides();
+  assert.deepEqual(removed, ['text']); assert.deepEqual(created, ['span']);
+  assert.equal(appended[0].textContent, 'New default');
+  assert.deepEqual(properties, [['--md-color', 'red']]);
 });
