@@ -22,7 +22,7 @@ body.component-canvas{margin:0;padding:0;background:var(--md-sys-color-surface,v
 .material-symbols-outlined{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-feature-settings:'liga';font-feature-settings:'liga';-webkit-font-smoothing:antialiased}
 .props-search{width:calc(100% - 36px);min-width:0}
 .css-variables-panel{margin:0 18px 18px;min-width:0}.css-variables-panel md-accordion{--md-accordion-item-header-padding:10px 12px;--md-accordion-item-content-padding:12px;--md-accordion-item-header-min-height:40px}.css-variables-heading{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500}.css-variables-heading .count-badge{font-size:10px}.css-variables-panel .prop-note{margin:0 0 14px;line-height:1.6}.css-variable-control{display:grid;gap:7px;min-width:0;margin-bottom:16px}.css-variable-control:last-child{margin-bottom:0}.css-variable-heading{display:flex;align-items:center;gap:6px;min-width:0}.css-variable-heading>code{font-size:11px;line-height:1.5;min-width:0;overflow-wrap:anywhere;flex:1}.css-variable-control md-text-field{display:block;width:100%;min-width:0}
-#usage-language-tabs{min-width:0;flex:1;overflow:auto}#copy-usage{flex-shrink:0}.usage-code-heading{flex-wrap:wrap}#usage-language-tabs{flex-basis:100%}#copy-usage{margin-left:auto}
+#usage-language-tabs{min-width:0;flex:1;overflow:auto}.usage-code-heading{flex-wrap:wrap}#usage-language-tabs{flex-basis:100%}
 
 #component-frame{border:0;box-shadow:0 0 0 1px var(--border)}
 .native-mode .snapshot-frame{padding:0;border:0}
@@ -148,3 +148,19 @@ body.component-canvas{margin:0;padding:0;background:var(--md-sys-color-surface,v
 }
 
 @media(max-width:360px){.app-header{padding-inline:12px;gap:8px}}
+
+/* The copy action belongs to the snippet surface, outside the scrolling code. */
+#usage-docs .usage-snippet-card {
+  --md-card-padding: 0;
+  --md-card-gap: 0;
+  --md-card-container-color: var(--surface);
+  --md-card-container-shape: 12px;
+  --md-card-outline-color: var(--border);
+  --md-card-min-width: 0;
+  --md-card-max-width: 100%;
+  margin: 8px 0 20px;
+}
+.usage-snippet-actions { display: flex; justify-content: flex-end; padding: 8px 10px 0; }
+#copy-usage { flex-shrink: 0; }
+#usage-docs .usage-snippet-card .usage-code { min-width: 0; margin: 0; border: 0; border-radius: 0; padding-top: 8px; }
+@media(max-width:640px) { #copy-usage { --md-button-min-height: 44px; } }
