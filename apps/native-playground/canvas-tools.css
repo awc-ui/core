@@ -3,6 +3,10 @@
 .canvas-viewport-shell{position:relative;flex:none;min-width:0;max-width:100%;overflow:hidden;border-radius:9px;outline:1px solid var(--border)}
 .canvas-viewport-scale{position:absolute;inset:0 auto auto 0;transform-origin:top left}
 .canvas-viewport-scale>#component-frame{min-width:0;max-width:none;margin:0;box-shadow:none;transition:none}
+.preview-stage>#preview-content:has(>.native-snapshot){min-width:0}
+.native-snapshot .snapshot-frame,.native-snapshot .native-live-surface{min-width:0;max-width:100%}
+.native-snapshot .native-live-image{min-width:0;max-width:100%;flex-shrink:1}
+.native-snapshot .snapshot-heading{flex-wrap:wrap}.native-snapshot .snapshot-heading>div:first-child{min-width:0;overflow-wrap:anywhere}
 .canvas-toggles{align-items:center;gap:2px}.canvas-toggles md-tooltip{display:inline-flex}
 #canvas-direction{font:500 10px/1 ui-monospace,monospace;color:var(--primary);padding:5px 6px;background:var(--primary-soft);border-radius:4px;white-space:nowrap}
 #canvas-help{margin:0;padding:9px 18px;color:var(--muted);background:var(--panel);border-bottom:1px solid var(--border);font-size:11px;line-height:1.5}

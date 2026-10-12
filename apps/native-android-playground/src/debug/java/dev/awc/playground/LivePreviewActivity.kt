@@ -17,7 +17,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.PixelCopy
 import android.view.View
-import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
@@ -32,7 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -67,7 +66,8 @@ class LivePreviewActivity : ComponentActivity() {
     private data class Configuration(val tag: String, val properties: Map<String, AWCValue>, val dark: Boolean, val width: Double, val scenario: String, val themeTokens: Map<String, String>, val direction: LayoutDirection, val text: String?)
     private val main = Handler(Looper.getMainLooper())
     private var configuration by mutableStateOf<Configuration?>(null)
-    private var previewDensity by mutableFloatStateOf(1f)
+    private val previewDensity = 2f
+    private var surface: LivePreviewSurface? = null
     private lateinit var preview: ComposeView
     private lateinit var container: FrameLayout
     private var server: LivePreviewServer? = null
@@ -78,41 +78,23 @@ class LivePreviewActivity : ComponentActivity() {
     private val captureInFlight = AtomicBoolean(false)
     private var encodingInFlight = false
     private var pendingCapture: Pair<LivePreviewServer.Stream, Captured>? = null
-    private var nextFrameNanos = 0L
+    private var committedDraw = 0L
+    private var capturedDraw = -1L
+    private var captureSequence = 0L
+    private var droppedCaptures = 0L
+    private var cachedFrame: JSONObject? = null
+    private val firstDraw = CompletableFuture<Unit>()
     private val destroyed = AtomicBoolean(false)
-    private val frameIntervalNanos = 1_000_000_000L / 60
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // There is deliberately no live-preview activity in the release manifest.
         if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE == 0) { finish(); return }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        container = FrameLayout(this).apply { setBackgroundColor(Color.WHITE) }
-        preview = ComposeView(this).apply {
-            layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        }
-        container.addView(preview)
-        setContentView(container)
+        // The physical Activity only owns lifecycle and authentication. The
+        // private Presentation below owns native pixels and receives local input.
+        setContentView(FrameLayout(this).apply { setBackgroundColor(Color.WHITE) })
         hideSystemUI()
-        container.addOnLayoutChangeListener { _, left, _, right, _, _, _, _, _ ->
-            configuration?.let { previewDensity = ((right - left) / it.width).toFloat().coerceAtLeast(0.1f) }
-        }
-        preview.setContent {
-            configuration?.let { config ->
-                CompositionLocalProvider(LocalDensity provides Density(previewDensity, 1f), LocalLayoutDirection provides config.direction) {
-                    AWCTheme(darkTheme = config.dark, tokenOverrides = config.themeTokens) {
-                        Box(Modifier.fillMaxWidth().heightIn(min = 100.dp, max = 2000.dp)
-                            .background(if (config.themeTokens.isEmpty()) androidx.compose.ui.graphics.Color(if (config.dark) 0xFF141414 else 0xFFFFFFFF) else androidx.compose.material3.MaterialTheme.colorScheme.surface)
-                            .padding(24.dp), contentAlignment = Alignment.Center) {
-                            if (config.scenario == "button-behavior") AWCButtonBehaviorDemo(config.properties, ::recordEvent)
-                            else if (config.scenario == "navigation-events") AWCButtonNavigationDemo(config.properties, ::recordEvent)
-                            else if (config.scenario == "focus-accessibility") AWCButtonAccessibilityDemo(config.properties, ::recordEvent)
-                            else AWCComponent(config.tag, config.properties, onEvent = ::recordEvent) { slot -> LivePreviewSampleSlot(config.tag, slot, config.scenario, config.text, ::recordEvent) }
-                        }
-                    }
-                }
-            }
-        }
         startHost(intent)
     }
 
@@ -146,11 +128,15 @@ class LivePreviewActivity : ComponentActivity() {
         stopStream()
         if (::preview.isInitialized) cancelPointer()
         server?.close()
+        if (::preview.isInitialized && preview.viewTreeObserver.isAlive) preview.viewTreeObserver.removeOnPreDrawListener(drawListener)
+        surface?.close()
+        surface = null
         super.onDestroy()
     }
 
     @Suppress("DEPRECATION")
     private fun hideSystemUI() {
+        surface?.hideSystemUI()
         if (Build.VERSION.SDK_INT >= 30) {
             window.setDecorFitsSystemWindows(false)
             window.insetsController?.hide(WindowInsets.Type.systemBars() or WindowInsets.Type.ime())
@@ -204,10 +190,10 @@ class LivePreviewActivity : ComponentActivity() {
         }
         if (name == "configure") {
             onMain { configure(request) }
-            // Initial composition and its first window buffer must complete before PixelCopy.
-            val ready = CompletableFuture<Unit>()
-            main.postDelayed({ ready.complete(Unit) }, 80)
-            ready.get(2, TimeUnit.SECONDS)
+            // A frame-commit callback ensures the first GPU window buffer exists.
+            try { firstDraw.get(5, TimeUnit.SECONDS) } catch (error: java.util.concurrent.TimeoutException) {
+                throw IllegalStateException(onMain { "Native first draw timed out (${preview.width}×${preview.height}, hardware=${preview.isHardwareAccelerated}, attached=${preview.isAttachedToWindow})." }, error)
+            }
             return frame()
         }
         if (name == "frame") { onMain { requireConfigured() }; return frame() }
@@ -261,9 +247,56 @@ class LivePreviewActivity : ComponentActivity() {
                 value
             })
         } else emptyMap()
-        previewDensity = ((container.width.takeIf { it > 0 } ?: resources.displayMetrics.widthPixels) / width).toFloat()
         configuration = Configuration(tag, AWCNativeCatalog.defaults[tag].orEmpty() + fixture(tag) + properties, dark, width, scenario, themeTokens, if(direction == "rtl") LayoutDirection.Rtl else LayoutDirection.Ltr, text)
+        createSurface(width)
         container.setBackgroundColor(themeTokens["--md-sys-color-surface"]?.let(Color::parseColor) ?: if (dark) 0xFF141414.toInt() else Color.WHITE)
+    }
+
+    private fun createSurface(width: Double) {
+        val nativeSurface = LivePreviewSurface(this, width)
+        surface = nativeSurface
+        preview = nativeSurface.preview
+        container = nativeSurface.container
+        preview.viewTreeObserver.addOnPreDrawListener(drawListener)
+        preview.setContent {
+            configuration?.let { config ->
+                CompositionLocalProvider(LocalDensity provides Density(previewDensity, 1f), LocalLayoutDirection provides config.direction) {
+                    AWCTheme(darkTheme = config.dark, tokenOverrides = config.themeTokens) {
+                        Box(Modifier.fillMaxWidth().heightIn(min = 100.dp, max = nativeSurface.maxLogicalHeight.dp)
+                            .background(if (config.themeTokens.isEmpty()) androidx.compose.ui.graphics.Color(if (config.dark) 0xFF141414 else 0xFFFFFFFF) else androidx.compose.material3.MaterialTheme.colorScheme.surface)
+                            .padding(24.dp), contentAlignment = Alignment.Center) {
+                            if (config.scenario == "button-behavior") AWCButtonBehaviorDemo(config.properties, ::recordEvent)
+                            else if (config.scenario == "navigation-events") AWCButtonNavigationDemo(config.properties, ::recordEvent)
+                            else if (config.scenario == "focus-accessibility") AWCButtonAccessibilityDemo(config.properties, ::recordEvent)
+                            else AWCComponent(config.tag, config.properties, onEvent = ::recordEvent) { slot -> LivePreviewSampleSlot(config.tag, slot, config.scenario, config.text, ::recordEvent) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** Observe actual GPU draws, rather than sampling the same buffer on a timer. */
+    private val drawListener = ViewTreeObserver.OnPreDrawListener {
+        if (!destroyed.get()) {
+            // Register for every draw. A previous commit may arrive after the
+            // next pre-draw; gating registration on it silently halves cadence.
+            val committed = Runnable {
+                val acceptCommit = Runnable {
+                    if (!destroyed.get()) {
+                        committedDraw++
+                        firstDraw.complete(Unit)
+                        captureStreamFrame()
+                    }
+                }
+                if (Looper.myLooper() == Looper.getMainLooper()) acceptCommit.run() else main.post(acceptCommit)
+            }
+            if (Build.VERSION.SDK_INT >= 29 && preview.isHardwareAccelerated) preview.viewTreeObserver.registerFrameCommitCallback(committed)
+            // On older Android, posting from onPreDraw still runs after the
+            // Choreographer traversal; PixelCopy checks the submitted buffer.
+            else main.post(committed)
+        }
+        true
     }
 
     private fun requireConfigured(): Configuration = checkNotNull(configuration) { "Configure the native session first." }
@@ -334,7 +367,7 @@ class LivePreviewActivity : ComponentActivity() {
         require(request.has("text") && request.get("text") is String) { "Text input requires a string." }
         val text = request.getString("text")
         require(text.length <= 4096) { "Text input exceeds 4096 characters." }
-        val focused = currentFocus ?: return "No native text editor is focused."
+        val focused = preview.findFocus() ?: return "No native text editor is focused."
         val connection = focused.onCreateInputConnection(EditorInfo()) ?: return "The focused native control is not a text editor."
         connection.beginBatchEdit()
         try { connection.commitText(text, 1) } finally { connection.endBatchEdit() }
@@ -354,16 +387,16 @@ class LivePreviewActivity : ComponentActivity() {
             else -> throw IllegalArgumentException("Unsupported key modifier.")
         }
         val now = SystemClock.uptimeMillis()
-        val target = currentFocus ?: preview
+        val target = preview.findFocus() ?: preview
         target.dispatchKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, code, 0, meta))
         target.dispatchKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_UP, code, 0, meta))
         return null
     }
 
-    private data class Captured(val bitmap: Bitmap, val metadata: JSONObject, val captureMs: Double)
+    private data class Captured(val bitmap: Bitmap, val metadata: JSONObject)
 
     /** PixelCopy captures the actual Compose window surface, including animation frames. */
-    private fun capture(callback: (Result<Captured>) -> Unit) {
+    private fun capture(stillCurrent: () -> Boolean = { true }, callback: (Result<Captured>) -> Unit) {
         if (destroyed.get()) { callback(Result.failure(IllegalStateException("Preview activity closed."))); return }
         try {
             val captureStarted = SystemClock.elapsedRealtimeNanos()
@@ -373,16 +406,25 @@ class LivePreviewActivity : ComponentActivity() {
             val width = preview.width
             val height = preview.height.coerceAtMost(container.height)
             check(width > 0 && height > 0) { "Native preview has no rendered layout yet." }
-            check(width.toLong() * height <= 8_000_000) { "Native surface exceeds the bounded capture size." }
+            check(width.toLong() * height <= LivePreviewSurface.MAX_PIXELS) { "Native surface exceeds the bounded capture size." }
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val rect = Rect(position[0], position[1], position[0] + width, position[1] + height)
-            PixelCopy.request(window, rect, bitmap, { result ->
-                if (result == PixelCopy.SUCCESS) {
+            val draw = committedDraw
+            PixelCopy.request(checkNotNull(surface).window, rect, bitmap, { result ->
+                if (destroyed.get() || !stillCurrent()) {
+                    bitmap.recycle()
+                    callback(Result.failure(IllegalStateException("Native capture was superseded.")))
+                } else if (result == PixelCopy.SUCCESS) {
+                    capturedDraw = maxOf(capturedDraw, draw)
+                    captureSequence++
+                    val now = SystemClock.elapsedRealtimeNanos()
                     callback(Result.success(Captured(bitmap, JSONObject().put("platform", "android").put("renderer", "Jetpack Compose")
                         .put("tag", config.tag).put("width", width).put("height", height)
                         .put("logicalWidth", width / previewDensity.toDouble()).put("logicalHeight", height / previewDensity.toDouble())
-                        .put("events", drainEvents()),
-                        (SystemClock.elapsedRealtimeNanos() - captureStarted) / 1_000_000.0)))
+                        .put("events", drainEvents()).put("diagnostics", JSONObject()
+                            .put("captureSequence", captureSequence).put("capturedAtMs", now / 1_000_000.0)
+                            .put("captureMs", (now - captureStarted) / 1_000_000.0)
+                            .put("captureScale", previewDensity.toDouble()).put("droppedCaptures", droppedCaptures)))))
                 } else {
                     bitmap.recycle()
                     callback(Result.failure(IllegalStateException("Native PixelCopy failed with code $result.")))
@@ -397,8 +439,10 @@ class LivePreviewActivity : ComponentActivity() {
             val bytes = ByteArrayOutputStream()
             check(captured.bitmap.compress(Bitmap.CompressFormat.PNG, 100, bytes)) { "Native lossless PNG encoding failed." }
             val result = captured.metadata.put("png", Base64.encodeToString(bytes.toByteArray(), Base64.NO_WRAP))
+            val encodeMs = (SystemClock.elapsedRealtimeNanos() - started) / 1_000_000.0
+            result.getJSONObject("diagnostics").put("encodeMs", encodeMs)
             if (intent.getBooleanExtra("profile", false)) {
-                Log.d("AWCNativePerf", "captureMs=${captured.captureMs} encodeMs=${(SystemClock.elapsedRealtimeNanos() - started) / 1_000_000.0} bytes=${bytes.size()}")
+                Log.d("AWCNativePerf", "captureMs=${result.getJSONObject("diagnostics").getDouble("captureMs")} encodeMs=$encodeMs bytes=${bytes.size()}")
             }
             return result
         } finally { captured.bitmap.recycle() }
@@ -407,58 +451,83 @@ class LivePreviewActivity : ComponentActivity() {
     private fun frame(): JSONObject {
         val captured = CompletableFuture<Captured>()
         main.post { capture { it.fold(captured::complete, captured::completeExceptionally) } }
-        return encode(captured.get(5, TimeUnit.SECONDS))
+        return encode(captured.get(5, TimeUnit.SECONDS)).also { result -> onMain { rememberFrame(result) } }
+    }
+
+    private fun rememberFrame(frame: JSONObject) {
+        val previous = cachedFrame?.getJSONObject("diagnostics")?.getLong("captureSequence") ?: -1
+        if (frame.getJSONObject("diagnostics").getLong("captureSequence") >= previous) {
+            cachedFrame = JSONObject(frame, frame.keys().asSequence().toList().toTypedArray()).put("events", JSONArray())
+        }
     }
 
     private fun openStream(writer: LivePreviewServer.Stream) {
         onMain {
             requireConfigured()
-            check(stream == null) { "This native session already has a frame stream." }
+            // A browser may reconnect before the old idle socket notices EOF.
+            // Both writers passed this token's authentication; replace only its
+            // prior writer and force a fresh frame for the new subscriber.
+            stopStream()
             stream = writer
-            nextFrameNanos = SystemClock.elapsedRealtimeNanos()
-            main.post(frameTick)
+            capturedDraw = -1L
+            main.post(heartbeat)
+            captureStreamFrame()
         }
     }
 
-    private val frameTick = object : Runnable {
+    // Keep the authenticated stream alive without repeatedly copying or encoding
+    // an idle surface. Cached responses deliberately retain captureSequence.
+    private val heartbeat = object : Runnable {
         override fun run() {
             val target = stream ?: return
             if (!target.isOpen) { stopStream(); return }
-            val now = SystemClock.elapsedRealtimeNanos()
-            if (now >= nextFrameNanos && captureInFlight.compareAndSet(false, true)) {
-                val missed = ((now - nextFrameNanos) / frameIntervalNanos).coerceAtLeast(0)
-                nextFrameNanos += (missed + 1) * frameIntervalNanos
-                capture { result ->
-                    captureInFlight.set(false)
-                    if (result.isFailure) {
-                        target.fail(result.exceptionOrNull()?.message ?: "Native capture failed.")
-                        if (stream === target) stopStream()
-                    } else {
-                        val captured = result.getOrThrow()
-                        if (destroyed.get() || stream !== target || !target.isOpen) {
-                            captured.bitmap.recycle()
-                            restoreEvents(captured)
-                        } else if (encodingInFlight) {
-                            // At most one newest bitmap waits behind the encoder. A
-                            // superseded picture contributes its events to its successor.
-                            val previous = pendingCapture?.second
-                            if (previous != null) {
-                                if (!prependEvents(previous, captured)) {
-                                    captured.bitmap.recycle()
-                                    stopStream(); server?.close(); finish()
-                                    return@capture
-                                }
-                                previous.bitmap.recycle()
-                            }
-                            pendingCapture = target to captured
-                        } else {
-                            startEncoding(target, captured)
-                        }
+            if (committedDraw <= capturedDraw && !captureInFlight.get() && !encodingInFlight && pendingCapture == null) {
+                cachedFrame?.takeIf { it.getJSONObject("diagnostics").getLong("captureSequence") == captureSequence }?.let {
+                    val values = drainEvents()
+                    if (!target.offer(JSONObject(it, it.keys().asSequence().toList().toTypedArray()).put("kind", "frame").put("events", values))) {
+                        for (i in values.length() - 1 downTo 0) events.addFirst(values.getJSONObject(i))
                     }
                 }
             }
-            val delay = ((nextFrameNanos - SystemClock.elapsedRealtimeNanos()) / 1_000_000).coerceIn(1, 16)
-            main.postDelayed(this, delay)
+            main.postDelayed(this, 1000)
+        }
+    }
+
+    private fun captureStreamFrame() {
+        val target = stream ?: return
+        if (!target.isOpen) { stopStream(); return }
+        if (committedDraw <= capturedDraw || !captureInFlight.compareAndSet(false, true)) return
+        capture(stillCurrent = { stream === target && target.isOpen }) { result ->
+            captureInFlight.set(false)
+            if (result.isFailure) {
+                if (stream === target) Log.w("AWCNativeHost", "Native stream capture failed.", result.exceptionOrNull())
+                target.fail(result.exceptionOrNull()?.message ?: "Native capture failed.")
+                if (stream === target) stopStream()
+                else if (stream != null) main.post { captureStreamFrame() }
+            } else {
+                val captured = result.getOrThrow()
+                if (destroyed.get() || stream !== target || !target.isOpen) {
+                    captured.bitmap.recycle()
+                    restoreEvents(captured)
+                } else if (encodingInFlight) {
+                    // At most one newest bitmap waits behind the encoder.
+                    val previous = pendingCapture?.second
+                    if (previous != null) {
+                        droppedCaptures++
+                        if (!prependEvents(previous, captured)) {
+                            previous.bitmap.recycle()
+                            captured.bitmap.recycle()
+                            pendingCapture = null
+                            stopStream(); server?.close(); finish()
+                            return@capture
+                        }
+                        previous.bitmap.recycle()
+                    }
+                    pendingCapture = target to captured
+                } else startEncoding(target, captured)
+                // A newer GPU draw may have committed while PixelCopy was busy.
+                if (committedDraw > capturedDraw) main.post { captureStreamFrame() }
+            }
         }
     }
 
@@ -466,13 +535,19 @@ class LivePreviewActivity : ComponentActivity() {
         encodingInFlight = true
         val accepted = target.encode {
             var delivered = false
+            var encoded: JSONObject? = null
             try {
-                if (target.isOpen && !destroyed.get()) delivered = target.offer(encode(captured).put("kind", "frame"))
+                if (target.isOpen && !destroyed.get()) {
+                    encoded = encode(captured).put("kind", "frame")
+                    delivered = target.offer(encoded)
+                }
                 else captured.bitmap.recycle()
-            } catch (_: Exception) {
+            } catch (error: Exception) {
+                Log.w("AWCNativeHost", "Native stream encoding failed.", error)
                 target.close()
             } finally {
                 main.post {
+                    if (stream === target) encoded?.let { rememberFrame(it) }
                     if (!delivered) {
                         val waiting = pendingCapture?.second
                         if (waiting == null) restoreEvents(captured)
@@ -517,7 +592,7 @@ class LivePreviewActivity : ComponentActivity() {
     }
 
     private fun stopStream() {
-        main.removeCallbacks(frameTick)
+        main.removeCallbacks(heartbeat)
         stream?.close()
         stream = null
         pendingCapture?.second?.let { it.bitmap.recycle(); restoreEvents(it) }

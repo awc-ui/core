@@ -206,7 +206,7 @@ function renderNativePreview() {
   const component = state.selected;
   const target = nativePreviewTarget(state.platform);
   const support = component.support?.[state.platform];
-  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><span class="native-live-badge">Live</span><md-button variant="text" size="xs" id="native-render-button" icon="refresh">Reconnect</md-button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div><p class="snapshot-status" id="native-render-status" role="status" aria-live="polite"></p><p class="snapshot-note" id="native-preview-note"></p><md-accordion-item class="snapshot-details" headline="Fixture &amp; native playground" heading-level="4" region-role="group" density="-3"><p>The native example uses this component’s root properties. Its child content and text may differ from the web reference.</p><p>Live pixels preserve native state. Native accessibility remains in the running ${state.platform === 'android' ? 'Android' : 'macOS'} app; this image does not expose its control tree to the browser.</p>${state.platform === 'android' ? '<p>Live rendering requires the Android emulator and native playground. One Android preview can use the emulator at a time. Capture covers the visible Activity surface; separate Popup/Dialog windows and off-screen content are outside this preview.</p>' : ''}<p>${support ? `${support.unsupportedProperties?.length || 0} unsupported properties · ${support.unsupportedEvents?.length || 0} unsupported events. Use the property info controls to inspect member support.` : 'Adapter coverage has not been reported.'}</p><code>${escape(target.playground)}</code></md-accordion-item></section>`;
+  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><span class="native-live-badge">Live</span><md-button variant="text" size="xs" id="native-render-button" icon="refresh">Reconnect</md-button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div><p class="snapshot-status" id="native-render-status" role="status" aria-live="polite"></p><p class="snapshot-note" id="native-preview-note"></p><md-accordion-item class="snapshot-details" headline="Fixture &amp; native playground" heading-level="4" region-role="group" density="-3"><p>The native example uses this component’s root properties. Its child content and text may differ from the web reference.</p><p>Live pixels preserve native state. Native accessibility remains in the running ${state.platform === 'android' ? 'Android' : 'macOS'} app; this image does not expose its control tree to the browser.</p>${state.platform === 'android' ? '<p>Live rendering requires the Android emulator and native playground. One Android preview can use the emulator at a time. Capture uses the component’s native window at 2× resolution; separate Popup/Dialog windows and content beyond the capture bounds are outside this preview.</p>' : ''}<p>${support ? `${support.unsupportedProperties?.length || 0} unsupported properties · ${support.unsupportedEvents?.length || 0} unsupported events. Use the property info controls to inspect member support.` : 'Adapter coverage has not been reported.'}</p><code>${escape(target.playground)}</code></md-accordion-item></section>`;
   studioUI.applyCanvas();
   $('#native-render-button').addEventListener('mdClick', () => scheduleNativeRender(0));
   configureNativeLivePreview();
@@ -251,10 +251,13 @@ function scheduleNativeRender(delay = 300) {
   const request = nativeRequests.start();
   const payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark', { ...studioUI.nativeOptions(), text: state.docSlotValues?.[''] });
   if (state.selected.tag === 'md-button' && state.nativeScenario) payload.scenario = state.nativeScenario;
-  // Render at the available logical width instead of shrinking a 640pt image
-  // (which also shrinks the native button and font in a narrow browser pane).
+  // Fixed presets retain their native logical viewport when the image fits a
+  // narrower card. Responsive mode uses the available width at native scale.
   const frame = $('#native-render-frame'), frameStyle = getComputedStyle(frame);
-  payload.width = nativeViewportWidth(frame.clientWidth, frameStyle);
+  const fixedWidth = Number(state.layout?.width);
+  payload.width = Number.isFinite(fixedWidth) && fixedWidth > 0
+    ? nativeViewportWidth(fixedWidth)
+    : nativeViewportWidth(frame.clientWidth, frameStyle);
   nativeRenderState('loading', delay ? 'Waiting for property changes…' : 'Checking the native renderer…');
   const platform = state.platform;
   state.nativeRenderTimer = setTimeout(() => chooseNativePreview(payload, request, platform), delay);
@@ -350,8 +353,15 @@ function showNativeLiveFrame(result, platform) {
   const target = nativePreviewTarget(platform);
   if (result.platform !== target.platform || result.renderer !== target.renderer || !/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(result.imageUrl || '') || ![result.logicalWidth, result.logicalHeight].every(size => Number.isFinite(size) && size > 0)) throw new Error('The live host returned an invalid native frame.');
   const now = performance.now();
-  if (state.nativePerf?.sessionId !== result.sessionId) state.nativePerf = { sessionId: result.sessionId, since: now, received: 0, presented: 0, windowFrames: 0, fps: 0, decodeMs: 0 };
+  if (state.nativePerf?.sessionId !== result.sessionId) state.nativePerf = { sessionId: result.sessionId, since: now, received: 0, presented: 0, fresh: 0, changed: 0, windowFrames: 0, windowFresh: 0, fps: 0, freshFps: 0, decodeMs: 0 };
   state.nativePerf.received++;
+  // Android may repeat an idle frame as a heartbeat. It is transport traffic,
+  // not a new native capture or an animation frame.
+  const sequence = result.diagnostics?.captureSequence;
+  if (sequence === undefined || sequence !== state.nativePerf.captureSequence) {
+    state.nativePerf.fresh++; state.nativePerf.windowFresh++;
+    state.nativePerf.captureSequence = sequence;
+  }
   const imageVersion = state.liveImageVersion;
   const queue = image => {
     if (imageVersion !== state.liveImageVersion || state.platform !== platform || result.revision < state.liveDisplayedRevision) return;
@@ -390,13 +400,17 @@ function presentNativeLiveFrame(image, result, platform) {
   } else if (image) surface.querySelector('img').replaceWith(image);
   const perf = state.nativePerf;
   perf.presented++; perf.windowFrames++;
+  if (image) perf.changed++;
   const now = performance.now();
   if (now - perf.since >= 1000) {
     perf.fps = Math.round(perf.windowFrames * 1000 / (now - perf.since));
-    perf.windowFrames = 0; perf.since = now;
-    // Read-only QA measurements also distinguish arrival rate from actual paints.
-    surface.dataset.frameMetrics = JSON.stringify({ received: perf.received, presented: perf.presented, fps: perf.fps, decodeMs: +perf.decodeMs.toFixed(2) });
+    perf.freshFps = Math.round(perf.windowFresh * 1000 / (now - perf.since));
+    perf.windowFrames = 0; perf.windowFresh = 0; perf.since = now;
   }
+  // Read-only diagnostics keep heartbeat delivery separate from fresh captures.
+  surface.dataset.frameMetrics = JSON.stringify({ received: perf.received, presented: perf.presented, fresh: perf.fresh, changed: perf.changed,
+    fps: perf.fps, freshFps: perf.freshFps, decodeMs: +perf.decodeMs.toFixed(2), pixelWidth: result.width, pixelHeight: result.height,
+    pixelScale: +(result.width / result.logicalWidth).toFixed(2), ...(result.diagnostics ? { capture: result.diagnostics } : {}) });
   updateNativeLiveFrameMetadata(result, target);
   if (firstFrame) studioUI.applyCanvas();
 }
@@ -405,7 +419,8 @@ function updateNativeLiveFrameMetadata(result, target) {
   state.liveDisplayedRevision = result.revision; state.liveFrame = result;
   if ($('#preview-runtime').textContent !== target.badge) text('#preview-runtime', target.badge);
   // Do not announce every poll to screen readers or replace an unchanged image.
-  const status = `Live stream${state.nativePerf?.fps ? ` · ${state.nativePerf.fps} fps` : ''} · ${Math.round(result.logicalWidth * 100) / 100} × ${Math.round(result.logicalHeight * 100) / 100} ${target.unit} · ${state.selected.tag}`;
+  const scale = Math.round(result.width / result.logicalWidth * 100) / 100;
+  const status = `Live stream · ${scale}× resolution · ${Math.round(result.logicalWidth * 100) / 100} × ${Math.round(result.logicalHeight * 100) / 100} ${target.unit} · ${state.selected.tag}`;
   if ($('#native-render-status').textContent !== status) text('#native-render-status', status);
 }
 

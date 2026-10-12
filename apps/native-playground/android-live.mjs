@@ -22,6 +22,33 @@ function events(values = []) {
   });
 }
 
+function frameDiagnostics(value) {
+  if (value === undefined) return {};
+  const invalid = () => { throw fail(502, 'INVALID_LIVE_FRAME', 'Invalid Android capture diagnostics.'); };
+  if (!value || typeof value !== 'object' || Array.isArray(value)) invalid();
+  const diagnostics = {};
+  for (const key of ['captureSequence', 'droppedCaptures']) {
+    if (!Object.hasOwn(value, key)) continue;
+    if (!Number.isSafeInteger(value[key]) || value[key] < 0) invalid();
+    diagnostics[key] = value[key];
+  }
+  // The timestamp uses Android elapsed realtime, not the server/browser clock.
+  if (Object.hasOwn(value, 'capturedAtMs')) {
+    if (!Number.isFinite(value.capturedAtMs) || value.capturedAtMs < 0 || value.capturedAtMs > Number.MAX_SAFE_INTEGER) invalid();
+    diagnostics.capturedAtMs = value.capturedAtMs;
+  }
+  for (const key of ['captureMs', 'encodeMs']) {
+    if (!Object.hasOwn(value, key)) continue;
+    if (!Number.isFinite(value[key]) || value[key] < 0 || value[key] > 60000) invalid();
+    diagnostics[key] = value[key];
+  }
+  if (Object.hasOwn(value, 'captureScale')) {
+    if (!Number.isFinite(value.captureScale) || value.captureScale <= 0 || value.captureScale > 16) invalid();
+    diagnostics.captureScale = value.captureScale;
+  }
+  return Object.keys(diagnostics).length ? { diagnostics } : {};
+}
+
 function frameResult(session, value) {
   if (['width', 'height'].some(key => !Number.isSafeInteger(value[key]) || value[key] <= 0 || value[key] > 16384)
     || value.width * value.height > 32 * 1024 * 1024
@@ -32,10 +59,11 @@ function frameResult(session, value) {
   const png = Buffer.from(value.png, 'base64');
   if (png.length < 24 || !png.subarray(0, 8).equals(pngSignature) || png.toString('ascii', 12, 16) !== 'IHDR'
     || png.readUInt32BE(16) !== value.width || png.readUInt32BE(20) !== value.height) throw fail(502, 'INVALID_LIVE_FRAME', 'Invalid Android PNG.');
+  const diagnostics = frameDiagnostics(value.diagnostics);
   session.logicalWidth = value.logicalWidth; session.logicalHeight = value.logicalHeight;
   return { sessionId: session.id, platform: 'android', renderer: 'Jetpack Compose', tag: session.tag,
     imageUrl: `data:image/png;base64,${value.png}`, width: value.width, height: value.height,
-    logicalWidth: value.logicalWidth, logicalHeight: value.logicalHeight, revision: ++session.revision, events: events(value.events) };
+    logicalWidth: value.logicalWidth, logicalHeight: value.logicalHeight, revision: ++session.revision, events: events(value.events), ...diagnostics };
 }
 
 /** One dedicated emulator Activity. Input stays inside that Activity; ADB never injects global input. */

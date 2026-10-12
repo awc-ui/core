@@ -70,7 +70,12 @@ export function createCanvasTools({ getState, onLayoutChange, createInspector = 
     if (doc) { doc.documentElement.dir = layout.direction; doc.documentElement.dataset.grid = String(grid); }
     rulers(doc, grid);
     const native = $('#preview-content > .native-snapshot');
-    if (native && native.style.width !== width) native.style.width = width;
+    if (native) {
+      if (native.style.width !== width) native.style.width = width;
+      // Constrain the surrounding controls, while the image retains the
+      // native host's logical width and scales through its own max-width.
+      native.style.maxWidth = '100%';
+    }
     const nativeSurface = $('#native-live-surface');
     const viewport = frame || nativeSurface || native;
     if (viewport !== observedViewport && observer) {

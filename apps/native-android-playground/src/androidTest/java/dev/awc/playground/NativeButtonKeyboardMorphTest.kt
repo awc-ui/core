@@ -50,11 +50,11 @@ class NativeButtonKeyboardMorphTest {
         for (y in 0 until expected.height) for (x in 0 until expected.width) if(difference(first[x, y], second[x, y]) > 1.1f / 255f) changed++
         assertEquals("Keyboard pulse must settle back to the same focused appearance", 0, changed)
     }
-    private fun show(state: AWCButtonFocusState, morph: Boolean = true, clicked: () -> Unit) {
+    private fun show(state: AWCButtonFocusState, morph: Boolean = true, ripple: Boolean = false, clicked: () -> Unit) {
         compose.setContent { AWCTheme(darkTheme = false) {
             Box(Modifier.testTag("morph-surface").background(Color.White).padding(24.dp)) {
                 AWCButtonFocusScope(state) {
-                    AWCComponent("md-button", mapOf("label" to "Continue", "size" to "md", "variant" to "filled", "shapeMorph" to morph, "ripple" to false),
+                    AWCComponent("md-button", mapOf("label" to "Continue", "size" to "md", "variant" to "filled", "shapeMorph" to morph, "ripple" to ripple),
                         onEvent = { name, _ -> if(name == "mdClick") clicked() })
                 }
             }
@@ -123,6 +123,59 @@ class NativeButtonKeyboardMorphTest {
         assertTrue(cornerCoverage(capture(), rect) > restingCoverage + 20)
         compose.runOnIdle { assertEquals(2, clicks); assertTrue(state.isFocused) }
         advance(1000); assertRestored(baseline, capture())
+        compose.runOnIdle { assertEquals(2, clicks); assertTrue(state.isFocusVisible) }
+    }
+
+    @Test fun keyboardRippleStartsWithoutAnExtraCompositionFrameAndSettlesOnTheTestClock() {
+        val state = AWCButtonFocusState(); var clicks = 0
+        // Focus keeps the state layer at the same opacity, and shapeMorph=false
+        // fixes the geometry, so changed pixels can only come from the ripple.
+        show(state, morph = false, ripple = true) { clicks++ }
+        val baseline = capture(); val rect = bounds("Continue")
+        compose.onNodeWithText("Continue").performKeyInput { pressKey(Key.Enter) }
+        advance(32)
+        val before = baseline.toPixelMap(); val after = capture().toPixelMap()
+        var changed = 0
+        for(y in rect.top.roundToInt() until rect.bottom.roundToInt()) {
+            for(x in rect.left.roundToInt() until rect.right.roundToInt()) {
+                if(difference(before[x, y], after[x, y]) > 1.1f / 255f) changed++
+            }
+        }
+        assertTrue("The centered ripple must be visible by its second Compose frame", changed > 0)
+        compose.runOnIdle { assertEquals(1, clicks) }
+        advance(1000)
+        assertRestored(baseline, capture())
+        compose.runOnIdle { assertEquals(1, clicks); assertTrue(state.isFocusVisible) }
+    }
+
+    @Test fun rapidToggleKeyDownsKeepThePressShapeAndCommitExactlyOncePerKey() {
+        val state = AWCButtonFocusState(); var clicks = 0
+        val changes = mutableListOf<Boolean>()
+        compose.setContent { AWCTheme(darkTheme = false) {
+            Box(Modifier.testTag("morph-surface").background(Color.White).padding(24.dp)) {
+                AWCButtonFocusScope(state) {
+                    AWCComponent("md-button", mapOf("label" to "Toggle", "size" to "md", "toggle" to true, "ripple" to false),
+                        onEvent = { name, detail ->
+                            if(name == "mdClick") clicks++
+                            if(name == "mdChange") changes += (detail as Map<*, *>)["selected"] as Boolean
+                        })
+                }
+            }
+        } }
+        advance(1000); compose.runOnIdle { assertTrue(state.requestFocus()) }; advance(1000)
+        val baseline = capture(); val rect = bounds("Toggle"); val restingCoverage = cornerCoverage(baseline, rect)
+        compose.onNodeWithText("Toggle").performKeyInput { keyDown(Key.Enter) }
+        compose.runOnIdle { assertEquals(1, clicks); assertEquals(listOf(true), changes) }
+        advance(64)
+        assertTrue(cornerCoverage(capture(), rect) > restingCoverage + 20)
+        compose.onNodeWithText("Toggle").assertIsSelected()
+        compose.onNodeWithText("Toggle").performKeyInput { keyUp(Key.Enter); pressKey(Key.Spacebar) }
+        compose.runOnIdle { assertEquals(2, clicks); assertEquals(listOf(true, false), changes) }
+        advance(96)
+        assertTrue("Canceling the first pulse must not release the newer press", cornerCoverage(capture(), rect) > restingCoverage + 20)
+        compose.onNodeWithText("Toggle").assertIsNotSelected()
+        advance(1000)
+        assertRestored(baseline, capture())
         compose.runOnIdle { assertEquals(2, clicks); assertTrue(state.isFocusVisible) }
     }
 

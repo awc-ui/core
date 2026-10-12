@@ -31,8 +31,11 @@ Android tab. After installing it on a dedicated emulator, run the browser server
 with `ANDROID_HOME` and optionally `AWC_ANDROID_SERIAL=emulator-5554`, then open
 <http://127.0.0.1:4177/?platform=android&preview=live#md-button>.
 
-The Activity hosts the same native AWC fixtures, captures its window with
-PixelCopy, encodes lossless PNGs off the UI thread, and streams at a target 60 fps.
+The Activity owns a private Presentation that renders the same native AWC
+fixtures at 2× resolution, independently of the emulator's screen width.
+PixelCopy captures its GPU window after committed draws; lossless PNG encoding
+runs off the UI thread. Idle heartbeats reuse the last capture, while animation
+frames follow native drawing. The emulator's global display settings stay unchanged.
 Clicks, held button presses, hover, text and keys are dispatched only to its
 own view. Its loopback HTTP server requires a random session token for every
 request and is exposed to the host through a temporary ADB forward. The Activity
@@ -40,7 +43,8 @@ and server are debug-only and absent from release builds.
 
 One Android session runs at a time. Separate popup/dialog windows and off-screen
 content are outside this capture. Frame rate depends on emulator performance,
-component size and browser visibility; the browser displays its measured rate.
+component size and browser visibility. The browser displays source resolution
+and exposes fresh capture/encoding measurements in `data-frame-metrics`.
 
 After installing the APK, verify the live transport with:
 

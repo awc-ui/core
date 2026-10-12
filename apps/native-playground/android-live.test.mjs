@@ -9,6 +9,7 @@ import { handleNativeLiveRequest } from './server.mjs';
 const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j8l8AAAAASUVORK5CYII=';
 const config = { tag: 'md-button', properties: { toggle: true }, dark: false, width: 640 };
 const image = changes => ({ png: PNG, width: 1, height: 1, logicalWidth: 640, logicalHeight: 200, events: [], ...changes });
+const diagnostics = changes => ({ captureSequence: 1, capturedAtMs: 12345.5, captureMs: 2.75, encodeMs: 3.25, captureScale: 2, droppedCaptures: 0, ...changes });
 const record = id => ({ id, name: 'mdClick', tag: 'md-button', nodeID: 'component', detail: { selected: true } });
 const errorCode = code => error => error.code === code;
 const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; };
@@ -106,6 +107,61 @@ test('Android setup reserves the emulator before discovery finishes', async t =>
   assert.equal(result.imageUrl, `data:image/png;base64,${PNG}`);
   assert.equal(result.logicalWidth, 640);
   assert.equal(result.revision, 1);
+  assert.equal(Object.hasOwn(result, 'diagnostics'), false, 'Older native hosts remain compatible without capture telemetry');
+});
+
+test('Android configure and manual frames preserve only validated native capture diagnostics', async t => {
+  const { renderer, mock } = fixture(t);
+  mock.command = () => image({ diagnostics: { ...diagnostics(), privateHostValue: 'not forwarded' } });
+  const initial = await renderer.create(config);
+  assert.deepEqual(initial.diagnostics, diagnostics());
+  mock.command = () => image({ diagnostics: diagnostics({ captureSequence: 2, capturedAtMs: 12362.25, droppedCaptures: 3 }) });
+  const next = await renderer.frame(initial.sessionId);
+  assert.deepEqual(next.diagnostics, diagnostics({ captureSequence: 2, capturedAtMs: 12362.25, droppedCaptures: 3 }));
+  assert.equal(next.imageUrl, initial.imageUrl, 'Capture freshness is metadata; unchanged pixels must not rewrite it');
+});
+
+test('Android stream preserves cached heartbeat sequence and fresh capture timing independently of revisions', async t => {
+  const { renderer, streams } = fixture(t);
+  const initial = await renderer.create(config), frames = [], errors = [];
+  const unsubscribe = renderer.subscribe(initial.sessionId, frame => frames.push(frame), error => errors.push(error));
+  await nextTurn();
+  const capture = diagnostics({ captureSequence: 7, capturedAtMs: 15000 });
+  const fresh = diagnostics({ captureSequence: 8, capturedAtMs: 15016.75, captureMs: 1.5, encodeMs: 4, droppedCaptures: 2 });
+  streams[0].push([capture, capture, fresh].map(value => `${JSON.stringify(image({ kind: 'frame', diagnostics: value }))}\n`).join(''));
+  await nextTurn();
+  assert.deepEqual(frames.map(frame => frame.revision), [2, 3, 4]);
+  assert.deepEqual(frames.map(frame => frame.diagnostics), [capture, capture, fresh]);
+  assert.equal(new Set(frames.map(frame => frame.imageUrl)).size, 1);
+  assert.deepEqual(errors, []);
+  unsubscribe();
+});
+
+test('Android rejects malformed or unbounded native capture diagnostics', async t => {
+  const invalid = [null, [], 'capture',
+    { captureSequence: -1 }, { captureSequence: 0.5 }, { captureSequence: Number.MAX_SAFE_INTEGER + 1 },
+    { droppedCaptures: -1 }, { droppedCaptures: '1' },
+    { capturedAtMs: -1 }, { capturedAtMs: null }, { capturedAtMs: Number.MAX_SAFE_INTEGER + 1 },
+    { captureMs: -1 }, { captureMs: 60001 }, { captureMs: '2' },
+    { encodeMs: false }, { encodeMs: 60001 },
+    { captureScale: 0 }, { captureScale: -2 }, { captureScale: 17 }, { captureScale: '2' }];
+  for (const value of invalid) {
+    const { renderer, mock, adbCalls } = fixture(t);
+    mock.command = () => image({ diagnostics: value });
+    await assert.rejects(renderer.create(config), errorCode('INVALID_LIVE_FRAME'), JSON.stringify(value));
+    assert.ok(adbCalls.some(args => args.includes('--remove')), 'Invalid telemetry must clean up the native host');
+  }
+});
+
+test('malformed Android stream capture diagnostics never reach the browser', async t => {
+  const { renderer, streams } = fixture(t);
+  const initial = await renderer.create(config), errors = [];
+  renderer.subscribe(initial.sessionId, () => assert.fail('Invalid telemetry must not reach the browser'), error => errors.push(error));
+  await nextTurn();
+  streams[0].push(`${JSON.stringify(image({ kind: 'frame', diagnostics: diagnostics({ encodeMs: 'fast' }) }))}\n`);
+  await nextTurn(); await nextTurn();
+  assert.equal(errors[0]?.code, 'INVALID_LIVE_FRAME');
+  assert.equal(streams[0].aborted, true);
 });
 
 test('Android requests use one random bearer token and only the scoped emulator forward is removed', async t => {

@@ -54,10 +54,9 @@ look identical in both directions.
 
 Expanded studio keeps the canvas and editable Properties panel together, with
 an explicit exit control and Escape support. When browser fullscreen is
-unavailable, the same workspace expands inside the page. Native previews get
-RTL and a grid measured in displayed CSS pixels. Their internal element spacing
-and typography are unavailable from image streams; the inspector states this
-explicitly. Native pt/dp dimensions remain in the live-stream status.
+unavailable, the same workspace expands inside the page. Native previews support
+RTL; grid and measurement controls are enabled only in Web mode. Native pt/dp
+dimensions and source resolution remain in the live-stream status.
 
 **Usage & API**, below the preview, has copyable HTML, React, Angular, Vue, Svelte,
 SwiftUI and Android examples. Selecting a code language is independent of the
@@ -161,12 +160,19 @@ Open <http://127.0.0.1:4177/?platform=android#md-button>.
 physical devices, download SDKs, start emulators or install APKs. Hardware
 emulator graphics (`-gpu host`) can improve animation performance.
 
-Compose renders into the actual Activity window, captured with PixelCopy. Both
-platforms send lossless native frames over a bounded NDJSON stream, targeting
-60 fps; the browser presents decoded frames with `requestAnimationFrame` and
-reports the measured presentation rate. Achievable speed depends on the host,
-component size and tab visibility. SwiftUI Retina output is converted to sRGB;
-Android fits the requested logical width to the available emulator surface.
+Compose renders into an app-owned private Presentation at two physical pixels
+per logical dp, independent of the emulator screen width. PixelCopy captures
+that native GPU window after committed draws. Both platforms send lossless PNG
+frames over a bounded NDJSON stream; the browser presents decoded frames with
+`requestAnimationFrame` and reports the source resolution. Android sends cached
+heartbeats while idle, without recapturing or re-encoding the same surface.
+Achievable animation speed depends on the host, component size and tab visibility.
+SwiftUI Retina output is converted to sRGB.
+
+Read-only `data-frame-metrics` on the native preview separates received frames,
+fresh captures and image replacements. Android capture diagnostics include the
+sequence, capture/encoding durations, source scale and dropped captures. Its
+timestamp uses Android's monotonic clock, not the browser clock.
 
 Clicks, text and supported keys operate the native view. Button press, release,
 cancel and hover forwarding expose actual native press animations, including
@@ -174,7 +180,7 @@ keyboard activation. The Events inspector receives native adapter events;
 JavaScript does not simulate component selection or text state. Focus the preview
 to send keys; Escape returns keyboard control to the browser.
 
-Changing initial props, theme, direction or viewport width starts a new native session. Grid and bounds overlays preserve native state. Navigation
+Changing initial props, theme, direction or viewport width starts a new native session. Grid and bounds inspection are available in Web mode. Navigation
 closes the previous session, hidden tabs close their frame stream, and idle
 sessions expire after 60 seconds. SwiftUI allows at most two sessions; Android
 uses one per emulator. Reconnect creates a fresh view after expiry or an error.

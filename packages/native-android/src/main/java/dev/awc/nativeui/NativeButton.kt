@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import dev.awc.nativeui.generated.AWCGeneratedTokens
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -116,11 +117,17 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     val enabled = p.enabled() && !p.bool("loading")
     val interactions = remember { MutableInteractionSource() }
     val interactionPressed by interactions.collectIsPressedAsState()
-    val pressed = enabled && interactionPressed
+    var keyboardPressed by remember { mutableStateOf(false) }
+    var keyboardPulse by remember { mutableIntStateOf(0) }
+    val pressed = enabled && (interactionPressed || keyboardPressed)
     val keyboardScope = rememberCoroutineScope()
     var keyboardPressJob by remember { mutableStateOf<Job?>(null) }
     DisposableEffect(enabled) {
-        onDispose { keyboardPressJob?.cancel(); keyboardPressJob = null }
+        onDispose {
+            keyboardPulse++
+            keyboardPressed = false
+            keyboardPressJob?.cancel(); keyboardPressJob = null
+        }
     }
     val hovered by interactions.collectIsHoveredAsState()
     val nativeFocus = nativeButtonFocusModifier(p, identity, group?.focus, selected)
@@ -128,28 +135,39 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     val reduceMotion = !ValueAnimator.areAnimatorsEnabled()
     val waves = remember { mutableStateListOf<NativeWave>() }
     var frameTime by remember { mutableLongStateOf(0L) }
-    LaunchedEffect(interactions, enabled, p.bool("ripple", true)) {
+    LaunchedEffect(interactions, enabled, p.bool("ripple", true), reduceMotion) {
         if(!enabled || !p.bool("ripple", true)) waves.clear()
+        var waveFrames: Job? = null
+        fun animateWaves() {
+            if(waveFrames?.isActive == true || waves.isEmpty()) return
+            // Subscribe to the next frame at interaction time. Starting this in
+            // an effect keyed by waves.isNotEmpty() waits for another composition
+            // before subscribing, leaving an extra blank frame at ripple onset.
+            waveFrames = launch(start = CoroutineStart.UNDISPATCHED) {
+                while(isActive && waves.isNotEmpty()) {
+                    frameTime = withFrameNanos { it }
+                    // Keep start, release and drawing on the same Compose clock,
+                    // including virtual test clocks; no wall-clock conversion.
+                    waves.indices.forEach { index ->
+                        val wave = waves[index]
+                        if (wave.start == null || (wave.released && wave.release == null)) {
+                            waves[index] = wave.copy(start = wave.start ?: frameTime, release = if (wave.released) wave.release ?: frameTime else null)
+                        }
+                    }
+                    waves.removeAll { wave -> wave.release?.let { end -> reduceMotion || frameTime > max((wave.start ?: frameTime) + 450_000_000L, end) + 150_000_000L } ?: false }
+                }
+            }
+        }
+        animateWaves()
         interactions.interactions.collect { interaction ->
             if(enabled && p.bool("ripple", true)) when(interaction) {
-                is PressInteraction.Press -> { waves.add(NativeWave(interaction)); if(waves.size > 4) waves.removeAt(0) }
+                is PressInteraction.Press -> {
+                    waves.add(NativeWave(interaction)); if(waves.size > 4) waves.removeAt(0)
+                    animateWaves()
+                }
                 is PressInteraction.Release -> { val index = waves.indexOfFirst { it.press == interaction.press }; if(index >= 0) waves[index] = waves[index].copy(released = true) }
                 is PressInteraction.Cancel -> { val index = waves.indexOfFirst { it.press == interaction.press }; if(index >= 0) waves[index] = waves[index].copy(released = true) }
             }
-        }
-    }
-    LaunchedEffect(waves.isNotEmpty(), reduceMotion) {
-        while(isActive && waves.isNotEmpty()) {
-            frameTime = withFrameNanos { it }
-            // Every timestamp uses Compose's frame clock, including virtual test
-            // clocks. Mixing System.nanoTime with it can keep a wave alive forever.
-            waves.indices.forEach { index ->
-                val wave = waves[index]
-                if (wave.start == null || (wave.released && wave.release == null)) {
-                    waves[index] = wave.copy(start = wave.start ?: frameTime, release = if (wave.released) wave.release ?: frameTime else null)
-                }
-            }
-            waves.removeAll { wave -> wave.release?.let { end -> reduceMotion || frameTime > max((wave.start ?: frameTime) + 450_000_000L, end) + 150_000_000L } ?: false }
         }
     }
     val metrics = remember(p.str("size"), p.num("density"), p.str("variant")) { NativeButtonMetrics(p.str("size","sm"), p.num("density"), p.str("variant","filled")) }
@@ -226,8 +244,13 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
                         // Share pointer press/ripple rendering without letting
                         // clickable dispatch a second activation on keyup.
                         if(event.type == KeyEventType.KeyDown && enabled) {
+                            val pulse = ++keyboardPulse
+                            // Commit press and toggle in the same snapshot. An
+                            // asynchronous interaction collector must not show
+                            // the selected/resting shape before the pressed shape.
+                            keyboardPressed = true
                             keyboardPressJob?.cancel()
-                            keyboardPressJob = keyboardScope.launch {
+                            keyboardPressJob = keyboardScope.launch(start = CoroutineStart.UNDISPATCHED) {
                                 val press = PressInteraction.Press(Offset.Unspecified)
                                 try {
                                     interactions.emit(press)
@@ -236,6 +259,7 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
                                     while(now - start < 150_000_000L) { now = withFrameNanos { it } }
                                 } finally {
                                     interactions.tryEmit(PressInteraction.Release(press))
+                                    if(keyboardPulse == pulse) keyboardPressed = false
                                 }
                             }
                             click()

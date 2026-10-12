@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { canvasViewportFit, createCanvasTools } from './canvas-tools.js';
+import { nativeImagePoint } from './contracts.js';
 
 // Controller boundaries only: real CSS geometry and fullscreen rendering are
 // verified in the browser. The inspector has its own measurement tests.
@@ -174,6 +175,33 @@ test('actual surface resizing refreshes dimensions and rulers after a width tran
   assert.equal(nodes.get('#canvas-dimensions').textContent, '426 × 180 px', 'native measurements exclude fixture headings, status and documentation');
   assert.equal(nodes.get('#canvas-help').hidden, true);
   assert.equal(nativeSurface.children.length, 0, 'native surfaces never receive Web rulers');
+});
+
+for (const platform of ['ios', 'android']) test(`${platform} Desktop panel fits its card without changing native image coordinates or requested width`, async t => {
+  const { ui, state, nodes, changes } = fixture(t, { platform, previewDocument: null });
+  nodes.delete('#component-frame');
+  const panel = new ElementStub(), surface = new ElementStub(), image = new ElementStub();
+  nodes.set('#preview-content > .native-snapshot', panel); nodes.set('#native-live-surface', surface);
+  nodes.get('#preview-content').clientWidth = 622;
+  image.style.width = '1024px'; image.naturalWidth = 2048; image.naturalHeight = 200;
+  surface.append(image); panel.append(surface);
+  state.layout.width = 1024;
+  state.liveFrame = { width: 2048, height: 200, logicalWidth: 1024, logicalHeight: 100 };
+  ui.init();
+  assert.equal(panel.style.width, '1024px');
+  assert.equal(panel.style.maxWidth, '100%', 'The complete panel, including heading and reconnect controls, must fit the parent card');
+  assert.equal(image.style.width, '1024px', 'CSS may shrink the displayed image without rewriting its native logical width');
+  assert.equal(state.layout.width, 1024); assert.equal(state.liveFrame.logicalWidth, 1024);
+  assert.deepEqual(changes, [], 'Presentation containment must not restart or reconfigure the native session');
+  for (const displayedWidth of [622, 400, 1024]) {
+    nodes.get('#preview-content').clientWidth = displayedWidth; ui.update();
+    const rect = { left: 20, top: 30, width: displayedWidth, height: displayedWidth * 100 / 1024 };
+    assert.deepEqual(nativeImagePoint(rect, image.naturalWidth, image.naturalHeight, 1024, 100,
+      rect.left + rect.width / 2, rect.top + rect.height / 2), { x: 512, y: 50 });
+    assert.equal(image.style.width, '1024px'); assert.equal(state.layout.width, 1024);
+  }
+  await nodes.get('#canvas-width').emit('mdChange', { detail: 'fit' });
+  assert.equal(panel.style.width, '100%'); assert.equal(panel.style.maxWidth, '100%');
 });
 
 for (const platform of ['ios', 'android']) test(`${platform} disables Web inspection controls and preserves preferences for return to Web`, async t => {
