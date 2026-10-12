@@ -32,6 +32,9 @@ body.component-canvas{margin:0;padding:0;background:var(--md-sys-color-surface,v
 
 @media(max-width:640px){#preview-platform-buttons{--md-button-group-gap:6px}#preview-platform-buttons md-button{padding-inline:12px;font-size:12px}}
 
+/* Paint the card's existing outline above the opaque tab header. */
+.studio-documentation > .studio-card::part(outline) { z-index: 2; }
+
 /* Keep API topics and their code visible, with AWC cards owning the surfaces. */
 #usage-docs md-card.usage-section {
   --md-card-padding: 14px 16px;
