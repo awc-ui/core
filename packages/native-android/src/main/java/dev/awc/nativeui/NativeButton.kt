@@ -15,6 +15,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -27,6 +28,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import dev.awc.nativeui.generated.AWCGeneratedTokens
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlin.math.*
 
 /** Source md-button.css metrics; independent of Compose measurement for regression checks. */
@@ -109,7 +112,13 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     val slots = LocalAWCSlots.current
     val enabled = p.enabled() && !p.bool("loading")
     val interactions = remember { MutableInteractionSource() }
-    val pressed by interactions.collectIsPressedAsState()
+    val interactionPressed by interactions.collectIsPressedAsState()
+    val pressed = enabled && interactionPressed
+    val keyboardScope = rememberCoroutineScope()
+    var keyboardPressJob by remember { mutableStateOf<Job?>(null) }
+    DisposableEffect(enabled) {
+        onDispose { keyboardPressJob?.cancel(); keyboardPressJob = null }
+    }
     val hovered by interactions.collectIsHoveredAsState()
     val nativeFocus = nativeButtonFocusModifier(p, identity, group?.focus, selected)
     val focused = nativeFocus.isFocusVisible
@@ -206,6 +215,31 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
                 }
                 .then(if(p.str("variant") == "outlined") Modifier.border(1.dp,outline,shape) else Modifier)
                 .then(nativeFocus.modifier)
+                .onPreviewKeyEvent { event ->
+                    if(event.key !in listOf(Key.Enter, Key.NumPadEnter, Key.Spacebar)) false
+                    else {
+                        // Source md-button activates on keydown, with a 150ms
+                        // visual pulse even when keyup arrives in the same frame.
+                        // Share pointer press/ripple rendering without letting
+                        // clickable dispatch a second activation on keyup.
+                        if(event.type == KeyEventType.KeyDown && enabled) {
+                            keyboardPressJob?.cancel()
+                            keyboardPressJob = keyboardScope.launch {
+                                val press = PressInteraction.Press(Offset.Unspecified)
+                                try {
+                                    interactions.emit(press)
+                                    val start = withFrameNanos { it }
+                                    var now = start
+                                    while(now - start < 150_000_000L) { now = withFrameNanos { it } }
+                                } finally {
+                                    interactions.tryEmit(PressInteraction.Release(press))
+                                }
+                            }
+                            click()
+                        }
+                        true
+                    }
+                }
                 .clickable(interactionSource=interactions, indication=null, enabled=!p.bool("disabled"), role=if(role == "gridcell") null else Role.Button, onClick=click)
                 .semantics {
                     if(!enabled) disabled()

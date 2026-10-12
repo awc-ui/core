@@ -210,6 +210,12 @@ indicator; `isFocusVisible` reports that distinction. The keyboard ring matches
 the source's 3dp width and 2dp gap, including connected corners. Pointer input
 clears the ring and focus tint even when the button was already focused.
 
+Enter/Space activation uses the source's 150ms press pulse, so even a quick
+keydown/keyup visibly morphs the shape and starts a centered ripple. Activation
+runs once on keydown; keyup does not emit another click. The pulse shares the
+pointer interaction renderer and Compose frame clock, respects `shapeMorph`
+and `ripple`, and is blocked for disabled, soft-disabled and loading controls.
+
 ```kotlin
 val focus = remember { AWCButtonFocusState() }
 AWCButtonFocusScope(focus, onFocusChanged = { focused -> /* observe native focus */ }) {
