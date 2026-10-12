@@ -39,6 +39,72 @@ struct FocusFixture: View {
         }
     }
     static func descendants(_ view: NSView) -> [NSView] { [view] + view.subviews.flatMap(descendants) }
+    /// Capture actual native view pixels with a fixed color space/format. No
+    /// implementation state is read: the assertions cover the rendered result.
+    static func pixels(_ host: NSView) -> [UInt8] {
+        host.layoutSubtreeIfNeeded(); host.displayIfNeeded()
+        guard let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { fatalError("Native bitmap allocation failed") }
+        host.cacheDisplay(in: host.bounds, to: bitmap)
+        guard let image = bitmap.cgImage, let space = CGColorSpace(name: CGColorSpace.sRGB) else { fatalError("Native bitmap capture failed") }
+        var bytes = [UInt8](repeating: 0, count: image.width * image.height * 4)
+        bytes.withUnsafeMutableBytes { buffer in
+            guard let context = CGContext(data: buffer.baseAddress, width: image.width, height: image.height, bitsPerComponent: 8,
+                bytesPerRow: image.width * 4, space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { fatalError("Native RGBA conversion failed") }
+            context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        }
+        return bytes
+    }
+    static func checkPointerFocusModality() {
+        let state = FocusModalityFixtureState()
+        let host = NSHostingView(rootView: FocusModalityFixture(state: state))
+        let window = NSWindow(contentRect: .init(x: -20000, y: -20000, width: 320, height: 140), styleMask: [.borderless], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false; window.colorSpace = .sRGB
+        window.contentView = host; window.orderFrontRegardless(); host.layoutSubtreeIfNeeded(); pump(0.35)
+        guard let target = descendants(host).first(where: {
+            String(describing: type(of: $0)).contains("AWCNativeButtonFocusView") && $0.accessibilityIdentifier() == "modality-target"
+        }) else { fatalError("Missing real pointer-focus target") }
+        var eventNumber = 100
+        func pointerClick() {
+            let local = NSPoint(x: target.bounds.midX, y: target.bounds.midY)
+            let windowPoint = target.convert(local, to: nil)
+            let hostPoint = target.convert(local, to: host)
+            let logical = CGPoint(x: hostPoint.x, y: host.isFlipped ? hostPoint.y : host.bounds.height - hostPoint.y)
+            let time = ProcessInfo.processInfo.systemUptime
+            let down = NSEvent.mouseEvent(with: .leftMouseDown, location: windowPoint, modifierFlags: [], timestamp: time,
+                windowNumber: window.windowNumber, context: nil, eventNumber: eventNumber, clickCount: 1, pressure: 1)!
+            let up = NSEvent.mouseEvent(with: .leftMouseUp, location: windowPoint, modifierFlags: [], timestamp: time + 0.01,
+                windowNumber: window.windowNumber, context: nil, eventNumber: eventNumber + 1, clickCount: 1, pressure: 0)!
+            eventNumber += 2
+            // Geometry accompanies real scoped events, exactly as in the native
+            // preview host; it never activates the button or mutates its focus.
+            state.pointer.update(phase: .down, location: logical)
+            window.sendEvent(down); pump(0.03); window.sendEvent(up)
+            state.pointer.update(phase: .up, location: logical)
+            state.pointer.update(phase: .leave); pump(0.65)
+        }
+        _ = window.makeFirstResponder(nil); state.pointer.update(phase: .leave); pump()
+        let baseline = pixels(host)
+        pointerClick()
+        check(state.clicks == 1, "A real pointer down/up activates the visual SwiftUI button once")
+        check(window.firstResponder === target, "Pointer activation retains the actual native first responder")
+        check(pixels(host) == baseline, "After pointer release/leave the button pixels return to baseline without retained focus ring or tint")
+        _ = window.makeFirstResponder(nil); _ = window.makeFirstResponder(target); pump()
+        let programmatic = pixels(host)
+        let programmaticDifference = zip(programmatic, baseline).filter { $0 != $1 }.count
+        check(window.firstResponder === target && programmaticDifference > 100, "Programmatic native focus visibly restores the ring/state layer")
+        pointerClick()
+        check(state.clicks == 2 && window.firstResponder === target, "Pointer activation of an already focused button preserves focus and fires once")
+        check(pixels(host) == baseline, "Pointer activation clears previous keyboard/programmatic focus visuals even when first responder is unchanged")
+        _ = window.makeFirstResponder(nil); window.selectNextKeyView(nil); pump()
+        check(window.firstResponder === target && pixels(host) != baseline, "Actual native Tab traversal restores visible keyboard focus")
+        pointerClick()
+        let enter = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+            windowNumber: window.windowNumber, context: nil, characters: "\r", charactersIgnoringModifiers: "\r", isARepeat: false, keyCode: 36)!
+        window.sendEvent(enter); pump()
+        check(state.clicks == 4 && window.firstResponder === target, "Native Enter activates after pointer focus without losing the responder")
+        check(pixels(host) != baseline, "Keyboard use on a pointer-focused button restores visible focus")
+        window.close(); pump()
+    }
     static func main() {
         setbuf(stdout, nil)
         let app = NSApplication.shared; app.setActivationPolicy(.accessory)
@@ -95,6 +161,26 @@ struct FocusFixture: View {
         check(view("cell").accessibilityPerformPress() && state.events.contains { $0.nodeID == "cell" && $0.name == "mdClick" }, "Minus-one gridcell retains actual accessibility activation")
         _ = window.makeFirstResponder(view("z")); pump(); state.disableLast = true; pump()
         check(!view("z").canBecomeKeyView && view("a").canBecomeKeyView, "Mounted hard-disable recomputes group entry")
-        window.close(); print("Passed \(count) real native keyboard and accessibility integration checks.")
+        window.close(); pump()
+        checkPointerFocusModality()
+        print("Passed \(count) real native keyboard, focus-visual and accessibility integration checks.")
+    }
+}
+
+@Observable final class FocusModalityFixtureState {
+    let pointer = AWCNativePointerState()
+    var clicks = 0
+}
+struct FocusModalityFixture: View {
+    let state: FocusModalityFixtureState
+    var body: some View {
+        AWCNativeView(node: .init(id: "modality-target", tag: "md-button",
+            properties: ["variant": "filled", "size": "md", "ripple": false], children: [.text("Continue")]), onEvent: { event in
+                if event.name == "mdClick" { state.clicks += 1 }
+            })
+            .padding(24).frame(width: 320, height: 140, alignment: .topLeading).background(Color.white)
+            .environment(\.awcNativePointerState, state.pointer)
+            .environment(\.colorScheme, .light)
+            .coordinateSpace(name: "awc-native-preview")
     }
 }

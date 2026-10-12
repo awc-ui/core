@@ -77,5 +77,8 @@ public struct AWCGridCellContext: Equatable, Sendable {
 
 @Observable final class AWCButtonFocusHandle {
     var isFocused = false
+    var showFocus = true
+    var isFocusVisible: Bool { isFocused && showFocus }
     @ObservationIgnored var requestFocus: (() -> Bool)?
+    @ObservationIgnored var requestPointerFocus: (() -> Bool)?
 }

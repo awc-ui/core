@@ -28,12 +28,21 @@ import AppKit
 /// Native first-responder and accessibility surface; pointer hits reach the visible SwiftUI Button.
 final class AWCNativeButtonFocusView: NSView {
     var configuration: AWCNativeFocusConfiguration?
+    private var requestedFocusIndicator: Bool?
     override var acceptsFirstResponder: Bool { configuration?.policy.programmaticallyFocusable == true }
     override var canBecomeKeyView: Bool { configuration?.sequential == true && window != nil && !isHidden }
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
+    func requestNativeFocus(showIndicator: Bool = true) -> Bool {
+        guard acceptsFirstResponder, let window else { return false }
+        requestedFocusIndicator = showIndicator
+        defer { requestedFocusIndicator = nil }
+        configuration?.handle.showFocus = showIndicator
+        return window.makeFirstResponder(self)
+    }
     override func becomeFirstResponder() -> Bool {
         guard acceptsFirstResponder else { return false }
         if window?.firstResponder === self && configuration?.handle.isFocused == true { return true }
+        configuration?.handle.showFocus = requestedFocusIndicator ?? true
         configuration?.handle.isFocused = true
         if let c = configuration { c.group?.didFocus(id: c.id); c.focusChanged(true) }
         return true
@@ -43,6 +52,7 @@ final class AWCNativeButtonFocusView: NSView {
     }
     override func keyDown(with event: NSEvent) {
         guard let c = configuration else { return }
+        c.handle.showFocus = true
         let key: String
         switch event.keyCode {
         case 123: key = "ArrowLeft"; case 124: key = "ArrowRight"; case 115: key = "Home"; case 119: key = "End"
@@ -62,7 +72,7 @@ final class AWCNativeButtonFocusView: NSView {
     override func isAccessibilityEnabled() -> Bool { configuration?.policy.activationBlocked == false }
     override func isAccessibilitySelected() -> Bool { configuration?.policy.selected == true }
     override func isAccessibilityFocused() -> Bool { window?.firstResponder === self }
-    override func setAccessibilityFocused(_ value: Bool) { if value { _ = window?.makeFirstResponder(self) } }
+    override func setAccessibilityFocused(_ value: Bool) { if value { _ = requestNativeFocus() } }
     override func accessibilityValue() -> Any? { configuration?.policy.selected == true ? "Selected" : nil }
     override func accessibilityRowIndexRange() -> NSRange { configuration?.cell?.rowRange ?? NSRange(location: NSNotFound, length: 0) }
     override func accessibilityColumnIndexRange() -> NSRange { configuration?.cell?.columnRange ?? NSRange(location: NSNotFound, length: 0) }
@@ -77,12 +87,14 @@ struct AWCNativeButtonFocusBridge: NSViewRepresentable {
     func updateNSView(_ view: AWCNativeButtonFocusView, context: Context) {
         if let previous = view.configuration, previous.group !== configuration.group || previous.id != configuration.id { previous.group?.unregister(id: previous.id) }
         view.configuration = configuration
-        let focus = { [weak view] in guard let view else { return false }; return view.window?.makeFirstResponder(view) ?? false }
+        let focus = { [weak view] in view?.requestNativeFocus() ?? false }
         configuration.handle.requestFocus = focus; configuration.group?.register(id: configuration.id, requestFocus: focus)
+        configuration.handle.requestPointerFocus = { [weak view] in view?.requestNativeFocus(showIndicator: false) ?? false }
         if configuration.policy.hardDisabled && view.window?.firstResponder === view { _ = view.window?.makeFirstResponder(nil) }
     }
     static func dismantleNSView(_ view: AWCNativeButtonFocusView, coordinator: ()) {
         view.configuration?.group?.unregister(id: view.configuration?.id ?? ""); view.configuration?.handle.requestFocus = nil
+        view.configuration?.handle.requestPointerFocus = nil
     }
 }
 #elseif canImport(UIKit)
@@ -94,14 +106,18 @@ final class AWCNativeButtonFocusView: UIView, UIAccessibilityContainerDataTableC
     var configuration: AWCNativeFocusConfiguration?
     override var canBecomeFirstResponder: Bool { configuration?.policy.programmaticallyFocusable == true }
     private var requestingExplicitFocus = false
+    private var requestedFocusIndicator: Bool?
     override var canBecomeFocused: Bool { configuration?.policy.programmaticallyFocusable == true && (requestingExplicitFocus || configuration?.sequential == true) }
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         super.didUpdateFocus(in: context, with: coordinator)
         if context.nextFocusedItem === self { _ = becomeFirstResponder() }
         else if context.previouslyFocusedItem === self { _ = resignFirstResponder() }
     }
-    func requestNativeFocus() -> Bool {
+    func requestNativeFocus(showIndicator: Bool = true) -> Bool {
         guard canBecomeFirstResponder else { return false }
+        requestedFocusIndicator = showIndicator
+        defer { requestedFocusIndicator = nil }
+        configuration?.handle.showFocus = showIndicator
         requestingExplicitFocus = true
         if let system = UIFocusSystem.focusSystem(for: self) {
             system.requestFocusUpdate(to: self); system.updateFocusIfNeeded()
@@ -114,6 +130,7 @@ final class AWCNativeButtonFocusView: UIView, UIAccessibilityContainerDataTableC
     override func becomeFirstResponder() -> Bool {
         if isFirstResponder { return true }
         guard super.becomeFirstResponder() else { return false }
+        configuration?.handle.showFocus = requestedFocusIndicator ?? true
         configuration?.handle.isFocused = true
         if let c = configuration { c.group?.didFocus(id: c.id); c.focusChanged(true) }; return true
     }
@@ -130,8 +147,13 @@ final class AWCNativeButtonFocusView: UIView, UIAccessibilityContainerDataTableC
             command.wantsPriorityOverSystemBehavior = true; return command
         }
     }
+    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        if presses.contains(where: { $0.key != nil }) { configuration?.handle.showFocus = true }
+        super.pressesBegan(presses, with: event)
+    }
     @objc private func handleKey(_ command: UIKeyCommand) {
         guard let c = configuration else { return }
+        c.handle.showFocus = true
         let key = command.input ?? ""
         if key == "\r" || key == " " { if !c.policy.activationBlocked { c.activate() }; return }
         let names = [UIKeyCommand.inputLeftArrow: "ArrowLeft", UIKeyCommand.inputRightArrow: "ArrowRight", UIKeyCommand.inputHome: "Home", UIKeyCommand.inputEnd: "End"]
@@ -156,10 +178,12 @@ struct AWCNativeButtonFocusBridge: UIViewRepresentable {
         view.accessibilityHint = configuration.policy.role == .gridcell ? "Grid cell" : nil
         let focus = { [weak view] in view?.requestNativeFocus() ?? false }
         configuration.handle.requestFocus = focus; configuration.group?.register(id: configuration.id, requestFocus: focus)
+        configuration.handle.requestPointerFocus = { [weak view] in view?.requestNativeFocus(showIndicator: false) ?? false }
         if configuration.policy.hardDisabled && view.isFirstResponder { _ = view.resignFirstResponder() }
     }
     static func dismantleUIView(_ view: AWCNativeButtonFocusView, coordinator: ()) {
         view.configuration?.group?.unregister(id: view.configuration?.id ?? ""); view.configuration?.handle.requestFocus = nil
+        view.configuration?.handle.requestPointerFocus = nil
     }
 }
 #endif

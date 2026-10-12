@@ -4,7 +4,7 @@ extension AWCNativeView {
     var isFilledButton: Bool { ["filled", "primary", "secondary", "tertiary"].contains(s("variant", "filled")) }
     var actionButton: some View {
         Button {
-            _ = iconFocusHandle.requestFocus?()
+            _ = iconFocusHandle.requestPointerFocus?()
             if b("toggle") { set("selected", .bool(!b("selected"))) }
             if node.tag == "md-icon-button" { emit("mdClick", ["selected": .bool(b("selected"))]) }
             else { emit("mdClick") }

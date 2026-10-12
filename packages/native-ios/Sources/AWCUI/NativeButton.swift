@@ -182,12 +182,14 @@ private struct AWCNativeButtonStyle: ButtonStyle {
     let focused: Bool
     let connectedLeft: Bool
     let connectedRight: Bool
+    var pointerPressed: () -> Void = {}
     func makeBody(configuration: Configuration) -> some View {
         AWCNativeButtonStyleBody(metrics: metrics, palette: palette, theme: theme,
                                  variant: variant, shape: shape, shapeMorph: shapeMorph,
                                  selected: selected, ripple: ripple, blocked: blocked,
                                  loading: loading, fullWidth: fullWidth, focused: focused,
                                  connectedLeft: connectedLeft, connectedRight: connectedRight,
+                                 pointerPressed: pointerPressed,
                                  configuration: configuration)
     }
 }
@@ -207,6 +209,7 @@ private struct AWCNativeButtonStyleBody: View {
     let focused: Bool
     let connectedLeft: Bool
     let connectedRight: Bool
+    let pointerPressed: () -> Void
     let configuration: ButtonStyleConfiguration
     @State private var hovered = false
     @State private var frame = CGRect.zero
@@ -317,6 +320,9 @@ private struct AWCNativeButtonStyleBody: View {
                 localPointerDown = true; localOrigin = value.startLocation
             }.onEnded { _ in localPointerDown = false }, including: pointer == nil ? .all : .none)
             .onHover { hovered = $0 }
+            .onChange(of: pressed) { _, isPressed in
+                if isPressed { pointerPressed() }
+            }
     }
 }
 
@@ -336,13 +342,15 @@ private struct AWCNativeButtonControl<Label: View>: View {
     @Environment(\.awcGridCellContext) private var cell
     @Environment(\.awcNativeFocusChanged) private var focusChanged
     private func activate() { _ = focusHandle.requestFocus?(); action() }
+    private func pointerActivate() { _ = focusHandle.requestPointerFocus?(); action() }
     var body: some View {
-        Button(action: activate, label: label)
+        Button(action: pointerActivate, label: label)
             .buttonStyle(AWCNativeButtonStyle(metrics: style.metrics, palette: style.palette, theme: style.theme,
                                               variant: style.variant, shape: style.shape, shapeMorph: style.shapeMorph,
                                               selected: style.selected, ripple: style.ripple, blocked: style.blocked, loading: style.loading,
-                                              fullWidth: style.fullWidth, focused: focusHandle.isFocused,
-                                              connectedLeft: style.connectedLeft, connectedRight: style.connectedRight))
+                                              fullWidth: style.fullWidth, focused: focusHandle.isFocusVisible,
+                                              connectedLeft: style.connectedLeft, connectedRight: style.connectedRight,
+                                              pointerPressed: { _ = focusHandle.requestPointerFocus?() }))
             .focusable(false)
             .disabled(policy.activationBlocked)
             .accessibilityHidden(true)
