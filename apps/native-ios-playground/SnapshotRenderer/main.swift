@@ -17,6 +17,7 @@ struct SnapshotRenderer {
         let properties: [String: AWCValue]
         let dark: Bool
         let width: Double?
+        let text: String?
     }
     private struct RenderMetadata: Encodable {
         let platform = "macos"
@@ -64,6 +65,11 @@ struct SnapshotRenderer {
         let width = min(1200, max(320, requestedWidth)).rounded()
         var node = AWCExamples.node(for: request.tag)
         node.properties.merge(request.properties) { _, supplied in supplied }
+        if let text = request.text {
+            guard request.tag == "md-button", text.utf8.count <= 4096 else { throw RenderFailure(message: "Button text must be at most 4096 UTF-8 bytes.") }
+            node.children.removeAll { ($0.slot ?? "").isEmpty }
+            node.children.append(.text(text))
+        }
         let view = AWCNativeView(node: node)
             .padding(24).frame(width: width, alignment: .leading)
             .frame(minHeight: 100, alignment: .topLeading)

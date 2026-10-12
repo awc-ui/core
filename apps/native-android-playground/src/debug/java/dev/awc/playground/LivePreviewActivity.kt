@@ -28,6 +28,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -62,7 +64,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * input is dispatched to this activity's views, never to the Android system.
  */
 class LivePreviewActivity : ComponentActivity() {
-    private data class Configuration(val tag: String, val properties: Map<String, AWCValue>, val dark: Boolean, val width: Double, val scenario: String, val themeTokens: Map<String, String>, val direction: LayoutDirection)
+    private data class Configuration(val tag: String, val properties: Map<String, AWCValue>, val dark: Boolean, val width: Double, val scenario: String, val themeTokens: Map<String, String>, val direction: LayoutDirection, val text: String?)
     private val main = Handler(Looper.getMainLooper())
     private var configuration by mutableStateOf<Configuration?>(null)
     private var previewDensity by mutableFloatStateOf(1f)
@@ -105,7 +107,7 @@ class LivePreviewActivity : ComponentActivity() {
                             if (config.scenario == "button-behavior") AWCButtonBehaviorDemo(config.properties, ::recordEvent)
                             else if (config.scenario == "navigation-events") AWCButtonNavigationDemo(config.properties, ::recordEvent)
                             else if (config.scenario == "focus-accessibility") AWCButtonAccessibilityDemo(config.properties, ::recordEvent)
-                            else AWCComponent(config.tag, config.properties, onEvent = ::recordEvent) { slot -> SampleSlot(config.tag, slot, ::recordEvent) }
+                            else AWCComponent(config.tag, config.properties, onEvent = ::recordEvent) { slot -> LivePreviewSampleSlot(config.tag, slot, config.scenario, config.text, ::recordEvent) }
                         }
                     }
                 }
@@ -240,6 +242,7 @@ class LivePreviewActivity : ComponentActivity() {
         check(configuration == null) { "A native session can only be configured once." }
         val tag = request.optString("tag")
         require(tag in AWCNativeCatalog.tags) { "Unknown native component tag." }
+        val text = parseLivePreviewButtonText(request, tag)
         val width = request.optDouble("width", 640.0)
         require(width.isFinite() && width in 320.0..1200.0) { "Width must be finite and between 320 and 1200." }
         val supplied = request.optJSONObject("properties") ?: JSONObject()
@@ -259,7 +262,7 @@ class LivePreviewActivity : ComponentActivity() {
             })
         } else emptyMap()
         previewDensity = ((container.width.takeIf { it > 0 } ?: resources.displayMetrics.widthPixels) / width).toFloat()
-        configuration = Configuration(tag, AWCNativeCatalog.defaults[tag].orEmpty() + fixture(tag) + properties, dark, width, scenario, themeTokens, if(direction == "rtl") LayoutDirection.Rtl else LayoutDirection.Ltr)
+        configuration = Configuration(tag, AWCNativeCatalog.defaults[tag].orEmpty() + fixture(tag) + properties, dark, width, scenario, themeTokens, if(direction == "rtl") LayoutDirection.Rtl else LayoutDirection.Ltr, text)
         container.setBackgroundColor(themeTokens["--md-sys-color-surface"]?.let(Color::parseColor) ?: if (dark) 0xFF141414.toInt() else Color.WHITE)
     }
 
@@ -540,4 +543,20 @@ class LivePreviewActivity : ComponentActivity() {
             "Escape" to KeyEvent.KEYCODE_ESCAPE, "Space" to KeyEvent.KEYCODE_SPACE,
             "PageUp" to KeyEvent.KEYCODE_PAGE_UP, "PageDown" to KeyEvent.KEYCODE_PAGE_DOWN)
     }
+}
+
+/** Null means omitted; the empty string intentionally clears the default button label. */
+internal fun parseLivePreviewButtonText(request: JSONObject, tag: String): String? {
+    if (!request.has("text")) return null
+    require(tag == "md-button") { "Preview text is only supported for md-button." }
+    val text = request.get("text")
+    require(text is String) { "Preview text must be a string." }
+    require(text.toByteArray(Charsets.UTF_8).size <= 4096) { "Preview text exceeds 4096 UTF-8 bytes." }
+    return text
+}
+
+@Composable
+internal fun LivePreviewSampleSlot(tag: String, slot: String, scenario: String, text: String?, onEvent: (String, AWCValue) -> Unit) {
+    if (tag == "md-button" && slot.isEmpty() && scenario.isEmpty() && text != null) Text(text)
+    else SampleSlot(tag, slot, onEvent)
 }

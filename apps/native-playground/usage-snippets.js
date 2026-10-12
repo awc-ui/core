@@ -99,8 +99,10 @@ function recipeTree(tag, html, text) {
   if (!selected) { selected = { tag, attrs: {}, children: [] }; nodes.push(selected); }
   selected.selected = true;
   if (text !== undefined) {
-    selected.children = selected.children.filter(child => child.attrs?.slot != null);
-    if (text !== null && String(text)) selected.children.push({ text: String(text) });
+    selected.children = selected.children.filter(child => typeof child.attrs?.slot === 'string' && child.attrs.slot !== '');
+    // An explicitly cleared label is still supplied native content. Preserve it
+    // (and whitespace) instead of allowing a native component's fallback label.
+    if (text !== null) selected.children.push({ text: String(text), explicitText: true });
   }
   return { nodes, selected };
 }
@@ -140,7 +142,9 @@ function frameworkSnippet(tag, values, events, tree, platform) {
   const tags = [...new Set(walk(tree.nodes).filter(custom).map(node => node.tag))].sort();
   const usedStyle = platform === 'react' && walk(tree.nodes).some(node => node.attrs?.style);
   const render = node => {
-    if (node.text !== undefined) return frameworkText(node.text);
+    // Angular decodes character entities before parsing interpolation, so
+    // escaping braces alone still evaluates a label such as {{ action() }}.
+    if (node.text !== undefined) return platform === 'angular' ? `{{ ${jsLiteral(node.text)} }}` : frameworkText(node.text);
     const name = custom(node) && ['react', 'vue'].includes(platform) ? pascal(node.tag) : node.tag;
     const attributes = Object.entries(node.attrs).filter(([raw]) => !(node.selected && Object.hasOwn(values, camel(raw)))).map(([raw, value]) => {
       let key = raw.startsWith('aria-') || raw.startsWith('data-') ? raw : custom(node) ? camel(raw) : raw;
@@ -237,7 +241,7 @@ function swiftValue(value) {
 function nativeNodes(nodes, slot = null) {
   return nodes.flatMap(node => {
     const assignedSlot = node.attrs?.slot ?? slot;
-    if (node.text !== undefined) return node.text.trim() ? [{ text: node.text, slot: assignedSlot }] : [];
+    if (node.text !== undefined) return node.explicitText || node.text.trim() ? [{ text: node.text, slot: assignedSlot }] : [];
     if (!custom(node)) return nativeNodes(node.children, assignedSlot);
     return [{ ...node, slot: assignedSlot, children: nativeNodes(node.children) }];
   });

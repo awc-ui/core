@@ -20,7 +20,7 @@ export function snippetProperties(state) {
   }));
 }
 
-export function createDocumentationUI({ getState, watchEvents, notify, afterInteraction }) {
+export function createDocumentationUI({ getState, watchEvents, notify, afterInteraction, onContentChange }) {
   let activeTooltip, sequence = 0, renderedTag, renderGeneration = 0, snippetLanguage = 'html';
   const listeners = [];
   const listen = (target, name, callback, options) => {
@@ -96,6 +96,34 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
   function updateSnippet() {
     const code = document.querySelector('#usage-snippet');
     if (code) renderCode(code, snippet(), snippetLanguages.find(language => language.id === snippetLanguage)?.language || snippetLanguage);
+  }
+  function slotValue(name) {
+    const state = getState();
+    return state.docSlotValues?.[name] ?? (name === '' ? recipeFor(state.selected.tag).text : undefined) ?? '';
+  }
+  function setSlotValue(name, value) {
+    const state = getState();
+    state.docSlotValues ||= {};
+    state.docSlotValues[name] = value;
+    if (state.platform === 'web') applyOverrides();
+    const textInput = document.querySelector('#component-text');
+    if (name === '' && textInput && textInput.value !== value) textInput.value = value;
+    document.querySelector('#usage-docs')?.querySelectorAll('[data-slot-index]').forEach(input => {
+      if (state.selected.slots[Number(input.dataset.slotIndex)].name === name && input.value !== value) input.value = value;
+    });
+    updateSnippet();
+    onContentChange?.(name, value);
+  }
+  function textControl() {
+    const state = getState();
+    if (recipeFor(state.selected.tag).text === undefined) return '';
+    return `<div class="prop-control text" data-search="text label content default slot string"><div class="prop-heading"><label class="prop-label" for="component-text"><code>Text</code></label>${infoButton('slot', { name: '' })}<span class="prop-type">content</span></div><md-text-field id="component-text" aria-label="Text" aria-describedby="component-text-note" variant="outlined" density="-3" value="${escape(slotValue(''))}"></md-text-field><p class="prop-note" id="component-text-note">Visible button label. Updates the preview and usage examples.</p></div>`;
+  }
+  function bindTextControl() {
+    const input = document.querySelector('#component-text');
+    input?.addEventListener('mdInput', event => {
+      if (event.target === input) setSlotValue('', typeof event.detail === 'string' ? event.detail : input.value);
+    });
   }
   function applyOverrides(target = getState().target) {
     const state = getState();
@@ -177,7 +205,7 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
       <div class="api-reference">${section('Events', events, `<md-button type="button" id="watch-usage-events" class="usage-action" variant="text" size="xs">Watch live events</md-button>${events.map((event, index) => {
         return memberRow('event', event, eventPayload(event, index, openPayloads.get(event.name)));
       }).join('')}`)}
-      ${section('Slots', slots, `<p class="usage-empty">Edit plain slot text in the examples${web ? ' and Web preview' : ''}. Reset props restores the fixture.</p>${slots.map((slot, index) => memberRow('slot', slot, `<md-text-field id="slot-${index}" data-slot-index="${index}" label="${escape(slot.name || 'Default')} slot text" aria-label="${escape(slot.name || 'Default')} slot text" placeholder="Use fixture content" value="${escape(state.docSlotValues?.[slot.name] ?? '')}" density="-2" variant="outlined"></md-text-field>`)).join('')}`)}
+      ${section('Slots', slots, `<p class="usage-empty">Edit plain slot text in the examples${web ? ' and Web preview' : ''}. ${component.tag === 'md-button' ? 'The default slot is also editable as Text in Properties and updates native previews. ' : ''}Reset props restores the fixture.</p>${slots.map((slot, index) => memberRow('slot', slot, `<md-text-field id="slot-${index}" data-slot-index="${index}" label="${escape(slot.name || 'Default')} slot text" aria-label="${escape(slot.name || 'Default')} slot text" placeholder="Use fixture content" value="${escape(slotValue(slot.name))}" density="-2" variant="outlined"></md-text-field>`)).join('')}`)}
       ${section('Methods', methods, `<p class="usage-empty">${web ? 'Arguments use a JSON array, for example ["Message"].' : 'Methods are documented here; browser invocation is available in the Web reference.'}</p>${methods.map((method, index) => {
         const doc = memberDocumentation(component, 'method', method, state.platform);
         const signature = method.signature || `${method.name}(${method.params || (method.parameters || []).map(p => `${p.name}: ${p.type?.text || p.type || 'unknown'}`).join(', ')})`;
@@ -205,7 +233,7 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
     root.querySelector('#copy-usage').addEventListener('mdClick', async () => { try { await navigator.clipboard.writeText(snippet()); notify('Usage example copied'); } catch { notify('Clipboard unavailable'); } });
     root.querySelector('#watch-usage-events')?.addEventListener('mdClick', watchEvents);
     const valueFor = (event, input) => typeof event.detail === 'string' ? event.detail : input.value;
-    root.querySelectorAll('[data-slot-index]').forEach(input => input.addEventListener('mdInput', event => { state.docSlotValues ||= {}; state.docSlotValues[slots[Number(input.dataset.slotIndex)].name] = valueFor(event, input); if (state.platform === 'web') applyOverrides(); updateSnippet(); }));
+    root.querySelectorAll('[data-slot-index]').forEach(input => input.addEventListener('mdInput', event => { if (event.target === input) setSlotValue(slots[Number(input.dataset.slotIndex)].name, valueFor(event, input)); }));
     root.querySelectorAll('[data-run-method]').forEach(button => button.addEventListener('mdClick', async () => {
       const index = Number(button.dataset.runMethod), output = root.querySelector(`#method-result-${index}`), target = state.target;
       button.disabled = true;
@@ -222,5 +250,5 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
       finally { button.disabled = false; }
     }));
   }
-  return { infoButton, renderUsage, updateSnippet, applyOverrides, filterProperties, beginRender() { hide(); }, dispose() { hide(); ++renderGeneration; listeners.splice(0).forEach(remove => remove()); } };
+  return { infoButton, renderUsage, updateSnippet, applyOverrides, textControl, bindTextControl, filterProperties, beginRender() { hide(); }, dispose() { hide(); ++renderGeneration; listeners.splice(0).forEach(remove => remove()); } };
 }

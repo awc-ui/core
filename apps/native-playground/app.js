@@ -7,7 +7,7 @@ import { createStudioUI, createCoverageUI } from './studio-ui.js';
 
 const $ = selector => document.querySelector(selector);
 const state = { components: [], selected: null, platform: 'web', docSection: 'usage', snippetLanguage: 'html', filter: 'all', props: {}, events: [], catalog: null, ready: false, target: null };
-const documentationUI = createDocumentationUI({ getState: () => state, notify: toast, afterInteraction: syncReferenceState, watchEvents: () => { selectStudioSection('events'); $('.inspector-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
+const documentationUI = createDocumentationUI({ getState: () => state, notify: toast, afterInteraction: syncReferenceState, onContentChange: name => { if (state.selected.tag === 'md-button' && name === '') scheduleNativeRender(); }, watchEvents: () => { selectStudioSection('events'); $('.inspector-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
 const studioUI = createStudioUI({ getState: () => state, notify: toast, onLayoutChange: patch => { if ('direction' in patch || 'width' in patch) scheduleNativeRender(); }, onThemeChange: () => scheduleNativeRender(400) });
 const coverageUI = createCoverageUI({ getState: () => state, notify: toast });
 const documentationRequests = new Map();
@@ -246,7 +246,7 @@ function scheduleNativeRender(delay = 300) {
   clearTimeout(state.nativeRenderTimer);
   disposeNativePointer(); nativeLive.stop(); state.liveFrame = null; state.liveDisplayedRevision = -1; state.liveImageVersion = (state.liveImageVersion || 0) + 1;
   const request = nativeRequests.start();
-  const payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark', studioUI.nativeOptions());
+  const payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark', { ...studioUI.nativeOptions(), text: state.docSlotValues?.[''] });
   if (state.selected.tag === 'md-button' && state.nativeScenario) payload.scenario = state.nativeScenario;
   // Render at the available logical width instead of shrinking a 640pt image
   // (which also shrinks the native button and font in a narrow browser pane).
@@ -511,7 +511,7 @@ function renderProperties() {
   const preferred = ['label', 'headline', 'variant', 'size', 'shape', 'value', 'selected', 'checked', 'disabled', 'loading', 'icon', 'supportingText', 'options', 'series', 'data', 'nodes'];
   const sorted = [...fields].sort((a, b) => { const ai = preferred.indexOf(a.name), bi = preferred.indexOf(b.name); return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi); });
   const editors = new Map();
-  $('#props-controls').innerHTML = sorted.map(prop => {
+  $('#props-controls').innerHTML = documentationUI.textControl() + (sorted.map(prop => {
     const value = state.props[prop.name], id = `prop-${prop.name}`, type = prop.type || '';
     const editor = propertyEditor(state.selected, prop, value); editors.set(prop.name, editor);
     const doc = memberDocumentation(state.selected, 'property', prop, state.platform);
@@ -531,7 +531,8 @@ function renderProperties() {
     const note = unsupported ? 'Not available in this native adapter. Try it in the Web reference.' : editor.note;
     const unset = editor.optional && ['text', 'boolean'].includes(editor.kind) ? `<md-button variant="text" size="xs" class="prop-unset" data-unset-prop="${escape(prop.name)}" aria-label="Unset ${escape(prop.name)}" ${unsupported ? 'disabled' : ''}>${value === undefined ? 'Unset · using default' : 'Unset'}</md-button>` : '';
     return `<div class="prop-control ${editor.kind}" data-search="${escape(`${prop.name} ${type} ${doc.description}`.toLowerCase())}">${header}${input}${note ? `<p class="prop-note" id="${id}-note">${escape(note)}</p>` : ''}${unset}<span class="prop-error" id="${id}-error" role="status" hidden></span></div>`;
-  }).join('') || '<p class="prop-note">This structural component has no public properties. Explore it through its parent composition.</p>';
+  }).join('') || '<p class="prop-note">This structural component has no public properties. Explore it through its parent composition.</p>');
+  documentationUI.bindTextControl();
   const applyValue = (name, value) => {
     if (value === undefined) delete state.props[name]; else state.props[name] = value;
     if (state.editedTag !== state.selected.tag) { state.editedTag = state.selected.tag; state.editedProps = {}; }

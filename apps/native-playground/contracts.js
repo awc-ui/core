@@ -69,7 +69,7 @@ export function createLatestRequest() {
 }
 
 export function nativeRenderRequest(tag, properties, dark, options = {}) {
-  return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640, ...nativeThemeOptions(options) };
+  return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640, ...nativeThemeOptions(options), ...(tag === 'md-button' && typeof options.text === 'string' ? { text: options.text } : {}) };
 }
 
 /** A native request must remain valid before the preview's CSS/layout is ready. */

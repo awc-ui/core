@@ -25,7 +25,7 @@ const segmentMarkup = `<md-segmented-button-set><md-segmented-button label="Day"
 const menuMarkup = `<md-menu anchor="demo-menu-trigger"><md-menu-item-group label="Workspace"><md-menu-item headline="New project" supporting-text="Start something new"></md-menu-item><md-menu-item headline="Duplicate" trailing-text="⌘D"></md-menu-item><md-sub-menu-item headline="Export"><md-menu slot="submenu"><md-menu-item headline="SwiftUI"></md-menu-item><md-menu-item headline="Compose"></md-menu-item></md-menu></md-sub-menu-item></md-menu-item-group></md-menu>`;
 
 export function recipeFor(tag) {
-  let html = '', props = {}, mode = '', note = 'Interactive reference', setup = null;
+  let html = '', props = {}, mode = '', note = 'Interactive reference', setup = null, text;
   const bare = tag.slice(3);
   if (tag.startsWith('md-table')) { html = tableMarkup; mode = 'wide'; note = tag === 'md-table' ? 'Composed table reference' : 'Shown inside its table context'; }
   else if (['md-tabs', 'md-tab', 'md-tab-panel', 'md-tab-panels'].includes(tag)) { html = tabsMarkup; mode = 'wide'; note = 'Composed tabs reference'; }
@@ -44,7 +44,7 @@ export function recipeFor(tag) {
     setup = root => root.querySelector('md-fab').addEventListener('click', () => { const menu = root.querySelector('md-fab-menu'); menu.open = !menu.open; }); note = 'Open to inspect actions';
   } else {
     switch (tag) {
-      case 'md-button': html = '<md-button>Continue</md-button>'; props = { variant: 'filled', size: 'md' }; break;
+      case 'md-button': text = 'Continue'; html = `<md-button>${text}</md-button>`; props = { variant: 'filled', size: 'md' }; break;
       case 'md-button-group': html = '<md-button-group><md-button value="day" selected>Day</md-button><md-button value="week">Week</md-button><md-button value="month">Month</md-button></md-button-group>'; break;
       case 'md-icon-button': html = '<md-icon-button aria-label="Save to favorites"></md-icon-button>'; props = { icon: 'favorite', variant: 'tonal', toggle: true, size: 'lg' }; break;
       case 'md-fab': html = '<md-fab></md-fab>'; props = { icon: 'add', label: 'Create', extended: true }; break;
@@ -91,5 +91,5 @@ export function recipeFor(tag) {
       default: html = `<${tag}>${displayName(tag)}</${tag}>`; note = 'Source component reference';
     }
   }
-  return { html, props, mode, note, setup };
+  return { html, props, mode, note, setup, text };
 }

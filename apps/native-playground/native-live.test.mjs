@@ -113,6 +113,16 @@ test('SwiftUI configure receives validated theme colors and direction separately
   assert.deepEqual(children[0].commands[0].properties, request.properties);
 });
 
+for (const text of [undefined, '', 'Continuă 👋 <b>literal</b>']) test(`SwiftUI configure preserves ${text === undefined ? 'absent' : text === '' ? 'empty' : 'literal Unicode'} button text`, async t => {
+  const { renderer, children } = fixture(t);
+  const properties = { icon: 'add', trailingIcon: 'arrow_forward', selected: false };
+  await renderer.create({ ...request, tag: 'md-button', properties, ...(text !== undefined ? { text } : {}) });
+  const command = children[0].commands[0];
+  assert.equal(Object.hasOwn(command, 'text'), text !== undefined);
+  assert.equal(command.text, text);
+  assert.deepEqual(command.properties, properties);
+});
+
 test('live input accepts only bounded view-local coordinates, Unicode text, and known keys', () => {
   assert.deepEqual(validateLiveInput({ command: 'click', x: 0, y: 199.5 }, bounds), { command: 'click', x: 0, y: 199.5 });
   assert.deepEqual(validateLiveInput({ command: 'text', text: 'Salut, România 👋' }, bounds), { command: 'text', text: 'Salut, România 👋' });

@@ -62,6 +62,16 @@ test('Android configure forwards generated theme colors and direction outside co
   assert.deepEqual(configure.properties, config.properties);
 });
 
+for (const text of [undefined, '', 'Continuă 👋 <b>literal</b>']) test(`Android configure preserves ${text === undefined ? 'absent' : text === '' ? 'empty' : 'literal Unicode'} button text`, async t => {
+  const { renderer, requests } = fixture(t);
+  const properties = { icon: 'add', trailingIcon: 'arrow_forward', selected: false };
+  await renderer.create({ ...config, properties, ...(text !== undefined ? { text } : {}) });
+  const command = requests.find(request => request.body?.command === 'configure').body;
+  assert.equal(Object.hasOwn(command, 'text'), text !== undefined);
+  assert.equal(command.text, text);
+  assert.deepEqual(command.properties, properties);
+});
+
 test('Android discovery rejects physical, offline and ambiguous devices and accepts an explicit emulator', async t => {
   for (const devices of ['phone-123 device\n', 'emulator-5554 offline\n', 'emulator-5554 device\nemulator-5556 device\n', '']) {
     const { renderer, mock, adbCalls } = fixture(t);

@@ -24,6 +24,7 @@ export function validateRenderRequest(value, tags) {
   if (value.dark !== undefined && typeof value.dark !== 'boolean') throw new RenderError(400,'INVALID_THEME','dark must be a boolean.');
   if (value.width !== undefined && (typeof value.width !== 'number' || !Number.isFinite(value.width))) throw new RenderError(400,'INVALID_WIDTH','width must be a finite number.');
   if (value.scenario !== undefined && (!['button-behavior', 'navigation-events', 'focus-accessibility'].includes(value.scenario) || value.tag !== 'md-button')) throw new RenderError(400,'INVALID_SCENARIO','Choose a supported native example for md-button.');
+  if (value.text !== undefined && (value.tag !== 'md-button' || typeof value.text !== 'string' || Buffer.byteLength(value.text, 'utf8') > 4096)) throw new RenderError(400,'INVALID_TEXT','Button text must be a string of at most 4096 UTF-8 bytes.');
   function depth(v, level=0) {
     if (level>32) throw new RenderError(400,'INVALID_PROPERTIES','Property nesting is too deep.');
     if (v && typeof v==='object') for(const child of Object.values(v))depth(child,level+1);
@@ -32,7 +33,7 @@ export function validateRenderRequest(value, tags) {
   let themeOptions;
   try { themeOptions = nativeThemeOptions(value); }
   catch (error) { throw new RenderError(400, error.code || 'INVALID_THEME', error.message); }
-  return {tag:value.tag,properties:canonical(props),dark:value.dark??false,width:Math.round(Math.min(1200,Math.max(320,value.width??640))),...(value.scenario ? {scenario:value.scenario} : {}),...themeOptions};
+  return {tag:value.tag,properties:canonical(props),dark:value.dark??false,width:Math.round(Math.min(1200,Math.max(320,value.width??640))),...(value.scenario ? {scenario:value.scenario} : {}),...(value.text !== undefined ? {text:value.text} : {}),...themeOptions};
 }
 
 export async function readLocalJSONRequest(req) {

@@ -9,6 +9,21 @@ import { resolveAsset } from './server.mjs';
 
 const tags = new Set(['md-chip']);
 const request = properties => validateRenderRequest({tag:'md-chip',properties,dark:false,width:640},tags);
+test('button text preserves empty, Unicode and literal markup without becoming a component property', () => {
+  const tags = new Set(['md-button', 'md-chip']);
+  const base = { tag: 'md-button', properties: { icon: 'add', trailingIcon: 'arrow_forward', selected: false } };
+  assert.equal(Object.hasOwn(validateRenderRequest(base, tags), 'text'), false);
+  for (const text of ['', 'Continuă 👋', '<b>Literal</b> & "quotes"\nnext line', 'ă'.repeat(2048)]) {
+    const normalized = validateRenderRequest({ ...base, text }, tags);
+    assert.equal(normalized.text, text);
+    assert.deepEqual(normalized.properties, base.properties);
+  }
+  for (const text of [null, 0, false, {}, [], 'a'.repeat(4097), 'ă'.repeat(2049)]) {
+    assert.throws(() => validateRenderRequest({ ...base, text }, tags), error => error.status === 400 && error.code === 'INVALID_TEXT');
+  }
+  assert.throws(() => validateRenderRequest({ tag: 'md-chip', text: 'Not a button' }, tags), error => error.code === 'INVALID_TEXT');
+  assert.equal(validateRenderRequest({ ...base, scenario: 'button-behavior', text: '' }, tags).scenario, 'button-behavior');
+});
 for (const scenario of ['button-behavior', 'navigation-events', 'focus-accessibility']) test(`${scenario} is explicit, live-only and restricted to the button`, async () => {
   const tags = new Set(['md-button', 'md-chip']);
   const value = {tag:'md-button', scenario};

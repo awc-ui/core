@@ -29,6 +29,17 @@ test('unavailable native layout falls back to a finite request width that surviv
   }
 });
 
+test('native button requests carry default-slot text separately from public properties', () => {
+  for (const text of ['Salvează', '', '<b>literal & "text"</b>']) {
+    const request = nativeRenderRequest('md-button', { variant: 'filled' }, false, { text });
+    assert.equal(request.text, text);
+    assert.deepEqual(request.properties, { variant: 'filled' });
+    assert.equal(JSON.parse(JSON.stringify(request)).text, text);
+  }
+  assert.equal(Object.hasOwn(nativeRenderRequest('md-button', {}, false), 'text'), false);
+  assert.equal(Object.hasOwn(nativeRenderRequest('md-chip', {}, false, { text: 'Ignored' }), 'text'), false);
+});
+
 const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; };
 const frame = (sessionId, platform) => ({ sessionId, revision: 1, events: [], imageUrl: 'data:image/png;base64,aA==', platform: platform === 'ios' ? 'macos' : 'android', renderer: platform === 'ios' ? 'SwiftUI' : 'Jetpack Compose', logicalWidth: 640, logicalHeight: 200 });
 

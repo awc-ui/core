@@ -127,6 +127,41 @@ test('complex recipes retain native children and named slots along with supplied
   assert.ok(usageSnippet(button, {}, 'web', { html }).includes(html));
 });
 
+const editableButton = '<md-button><span slot="leading-icon">add</span>Old label<span slot="">Old default</span><b>Old markup</b><span slot="trailing-icon">arrow_forward</span></md-button>';
+
+test('edited button text replaces all default content and preserves named icons in every language', () => {
+  for (const { id } of snippetLanguages) {
+    const snippet = usageSnippet(button, {}, id, { html: editableButton, text: 'Salvează „Știință” 😀' });
+    assert.ok(snippet.includes('Salvează „Știință” 😀'), id);
+    assert.ok(snippet.includes('leading-icon') && snippet.includes('add'), id);
+    assert.ok(snippet.includes('trailing-icon') && snippet.includes('arrow_forward'), id);
+    for (const stale of ['Old label', 'Old default', 'Old markup']) assert.equal(snippet.includes(stale), false, `${id}: ${stale}`);
+    assert.ok(usageSnippet(button, {}, id, { html: editableButton }).includes('Old label'), `${id}: omitted text preserves fixture`);
+  }
+});
+
+test('cleared and whitespace-only button text stay explicit in native examples and remove old web content', () => {
+  for (const text of ['', '   ']) {
+    for (const { id } of snippetLanguages) {
+      const snippet = usageSnippet(button, {}, id, { html: editableButton, text });
+      assert.equal(snippet.includes('Old'), false, id);
+      assert.ok(snippet.includes('leading-icon') && snippet.includes('trailing-icon'), id);
+      if (id === 'swift') assert.ok(snippet.includes(`.text("${text}")`), id);
+      if (id === 'android') assert.ok(snippet.includes(`if (slot == "") Text("${text}")`), id);
+    }
+  }
+});
+
+test('text override only edits the selected button in a larger recipe', () => {
+  const html = '<md-button-group><md-button>Old first</md-button><md-button>Keep second</md-button></md-button-group>';
+  for (const { id } of snippetLanguages) {
+    const snippet = usageSnippet(button, {}, id, { html, text: 'Edited first' });
+    assert.ok(snippet.includes('Edited first') && snippet.includes('Keep second'), id);
+    assert.equal(snippet.includes('Old first'), false, id);
+    assert.equal(snippet.split('Edited first').length - 1, 1, id);
+  }
+});
+
 test('events are source-declared, deduplicated and omitted for structural components', async () => {
   const { listeners } = await runWebSnippet(usageSnippet({ ...button, events: ['mdClick', { name: 'mdClick' }] }, {}, 'web'));
   assert.deepEqual(listeners.map(item => item.name), ['mdClick']);
@@ -217,6 +252,62 @@ async function compilerPackage(name, entry) {
   return loaded.default ?? loaded;
 }
 
+test('edited markup and interpolation syntax compile as literal label text in all seven languages', async () => {
+  const text = 'Știință 😀 "quoted" \'single\' & <b>markup</b> </script><script>danger()</script> {{danger()}} {danger()} @if (true) ${danger()} ` \\(danger)';
+  const snippets = Object.fromEntries(snippetLanguages.map(({ id }) => [id, usageSnippet(button, {}, id, { html: editableButton, text })]));
+  const [ts, angular, vue, svelte, dom] = await Promise.all([
+    import('typescript').then(module => module.default),
+    compilerPackage('@angular/compiler', 'fesm2022/compiler.mjs'),
+    compilerPackage('@vue/compiler-sfc', 'dist/compiler-sfc.cjs.js'),
+    compilerPackage('svelte', 'compiler/index.js'),
+    compilerPackage('@stencil/core', 'mock-doc/index.cjs'),
+  ]);
+
+  const document = dom.createDocument(snippets.html);
+  const selected = document.querySelector('md-button');
+  assert.equal([...selected.childNodes].filter(node => node.nodeType === 3).map(node => node.textContent).join(''), text);
+  assert.equal(document.querySelectorAll('script').length, 1, 'HTML label cannot introduce a script element');
+  await runWebSnippet(snippets.html);
+
+  const react = ts.transpileModule(snippets.react, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX }, reportDiagnostics: true });
+  assert.deepEqual(react.diagnostics ?? [], []);
+  const element = (type, props) => ({ type, props });
+  const context = vm.createContext({ exports: {}, require: name => name === 'react' ? { useState: value => [value] } : name === 'react/jsx-runtime' ? { jsx: element, jsxs: element, Fragment: 'Fragment' } : new Proxy({}, { get: (_, key) => key }) });
+  new vm.Script(react.outputText).runInContext(context, { timeout: 1000 });
+  const reactButton = context.exports.ComponentExample().props.children;
+  assert.equal(reactButton.type, 'MdButton');
+  assert.equal(reactButton.props.children.filter(child => typeof child === 'string').join(''), text);
+
+  const angularFile = ts.createSourceFile('Example.ts', snippets.angular, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  assert.deepEqual(angularFile.parseDiagnostics, []);
+  let template;
+  function visit(node) { if (ts.isPropertyAssignment(node) && node.name.getText(angularFile) === 'template') template = node.initializer.text; ts.forEachChild(node, visit); }
+  visit(angularFile);
+  const angularTree = angular.parseTemplate(template, 'Example.html');
+  assert.deepEqual(angularTree.errors ?? [], []);
+  const angularText = angularTree.nodes[0].children.find(node => node.value?.ast?.expressions);
+  assert.deepEqual(angularText.value.ast.strings, ['', '']);
+  assert.equal(angularText.value.ast.expressions.length, 1);
+  assert.equal(angularText.value.ast.expressions[0].value, text, 'Angular must bind a string literal, not execute label interpolation');
+
+  const vueFile = vue.parse(snippets.vue, { filename: 'Example.vue' });
+  assert.deepEqual(vueFile.errors, []);
+  vue.compileScript(vueFile.descriptor, { id: 'example' });
+  const vueTree = vue.compileTemplate({ source: vueFile.descriptor.template.content, filename: 'Example.vue', id: 'example' });
+  assert.deepEqual(vueTree.errors, []);
+  const vueChildren = vueTree.ast.children[0].children.map(node => node.type === 12 ? node.content : node);
+  assert.equal(vueChildren.filter(node => node.type === 2).map(node => node.content).join(''), text);
+
+  assert.doesNotThrow(() => svelte.compile(snippets.svelte, { filename: 'Example.svelte', generate: 'client' }));
+  const svelteButton = svelte.parse(snippets.svelte).html.children.find(node => node.name === 'md-button');
+  assert.equal(svelteButton.children.filter(node => node.type === 'Text').map(node => node.data).join(''), text);
+
+  const swiftText = text.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
+  assert.ok(snippets.swift.includes(`.text("${swiftText}")`));
+  const kotlinText = swiftText.replaceAll('$', '\\$');
+  assert.ok(snippets.android.includes(`if (slot == "") Text("${kotlinText}")`));
+});
+
 test('real TSX, Angular, Vue and Svelte compilers accept all 81 composed examples', async () => {
   const ts = (await import('typescript')).default;
   const angular = await compilerPackage('@angular/compiler', 'fesm2022/compiler.mjs');
@@ -278,8 +369,8 @@ test('all 81 selected fixture prop objects typecheck against the actual public c
 test('plain recipe text tolerates quoted angle brackets, entities and explicit empty content', () => {
   const html = '<md-button data-note="a > b" title="x < y">A &#x1f600; &amp; B</md-button>';
   assert.ok(usageSnippet(button, {}, 'ios', { html }).includes('children: [.text("A 😀 & B")]'));
-  assert.ok(usageSnippet(button, {}, 'ios', { html, text: '' }).includes('children: []'));
-  assert.equal(usageSnippet(button, {}, 'android', { html, text: '' }).includes('Text('), false);
+  assert.ok(usageSnippet(button, {}, 'ios', { html, text: '' }).includes('children: [.text("")]'));
+  assert.ok(usageSnippet(button, {}, 'android', { html, text: '' }).includes('if (slot == "") Text("")'));
   const values = Object.freeze({ selected: false, payload: Object.freeze({ list: Object.freeze([1, null]) }) });
   for (const platform of ['web', 'ios', 'android']) assert.ok(usageSnippet(button, values, platform).includes('md-button'));
   assert.deepEqual(values.payload.list, [1, null]);

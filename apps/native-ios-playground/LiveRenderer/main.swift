@@ -261,6 +261,13 @@ private final class NativeSession {
         guard request.direction == nil || ["ltr", "rtl"].contains(request.direction ?? "") else { throw PreviewFailure("Direction must be ltr or rtl.") }
         var node = AWCExamples.node(for: requestedTag)
         node.properties.merge(request.properties ?? [:]) { _, supplied in supplied }
+        if let text = request.text {
+            guard requestedTag == "md-button", text.utf8.count <= 4096 else { throw PreviewFailure("Button text must be at most 4096 UTF-8 bytes.") }
+            if request.scenario == nil {
+                node.children.removeAll { ($0.slot ?? "").isEmpty }
+                node.children.append(.text(text))
+            }
+        }
         tag = requestedTag
         let newHost = NSHostingView(rootView: PreviewRoot(node: node, width: logicalWidth, dark: request.dark ?? false, onEvent: events.append, pointerState: pointerState, scenario: request.scenario, themeTokens: request.themeTokens ?? [:], direction: request.direction ?? "ltr"))
         // The window is realized outside every display, never activated, and never made key.

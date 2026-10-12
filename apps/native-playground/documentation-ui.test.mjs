@@ -40,7 +40,7 @@ class ElementStub {
   get innerHTML() { return this.html || ''; }
 }
 function fixture(t, extra = {}) {
-  const root = new ElementStub(), search = new ElementStub(), doc = new ElementStub();
+  const root = new ElementStub(), propsRoot = new ElementStub(), search = new ElementStub(), doc = new ElementStub();
   const cssRoot = new ElementStub(), cssSection = new ElementStub(), cssCount = new ElementStub(), cssNote = new ElementStub();
   const surfaces = { '#usage-docs': root, '#props-search': search, '#css-controls': cssRoot, '#css-variables-section': cssSection, '#css-variables-count': cssCount, '#css-variables-note': cssNote };
   doc.activeElement = null; doc.body = { append() {} }; doc.createElement = name => {
@@ -48,7 +48,7 @@ function fixture(t, extra = {}) {
     if (name === 'template') element.content = { querySelector: () => null };
     return element;
   };
-  doc.querySelector = selector => surfaces[selector] || root.querySelector(selector) || cssRoot.querySelector(selector);
+  doc.querySelector = selector => surfaces[selector] || root.querySelector(selector) || cssRoot.querySelector(selector) || propsRoot.querySelector(selector);
   doc.querySelectorAll = () => []; doc.getElementById = id => doc.querySelector(`#${id}`);
   for (const [key, value] of Object.entries({ document: doc, window: new ElementStub(), Element: ElementStub, innerWidth: 1200, innerHeight: 800 })) {
     const descriptor = Object.getOwnPropertyDescriptor(globalThis, key);
@@ -58,9 +58,48 @@ function fixture(t, extra = {}) {
   const component = { tag: 'md-text-field', properties: [], methods: [{ name: 'setCustomValidity', parameters: [{ name: 'message', type: 'string' }], returnType: 'inferred' }], ...extra };
   const state = { selected: component, platform: 'web', props: {}, target: { outerHTML: '<md-text-field></md-text-field>' } };
   let interactions = 0;
-  const ui = createDocumentationUI({ getState: () => state, notify() {}, watchEvents() {}, afterInteraction() { interactions++; } });
-  return { ui, root, cssRoot, cssSection, cssCount, cssNote, state, doc, search, interactions: () => interactions };
+  const contentChanges = [];
+  const ui = createDocumentationUI({ getState: () => state, notify() {}, watchEvents() {}, afterInteraction() { interactions++; }, onContentChange: (...args) => contentChanges.push(args) });
+  return { ui, root, propsRoot, cssRoot, cssSection, cssCount, cssNote, state, doc, search, contentChanges, interactions: () => interactions };
 }
+
+test('Text editor shares default-slot state with usage, preserves empty labels, and resets to the fixture', async t => {
+  const { ui, root, propsRoot, state, contentChanges } = fixture(t, { tag: 'md-button', slots: [{ name: '' }] });
+  state.platform = 'ios';
+  propsRoot.innerHTML = ui.textControl(); ui.bindTextControl(); ui.renderUsage();
+  assert.match(propsRoot.innerHTML, /<md-text-field[^>]+aria-label="Text"/);
+  const input = propsRoot.querySelector('#component-text');
+  assert.equal(input.value, 'Continue');
+  assert.equal(root.querySelector('[data-slot-index="0"]').value, 'Continue');
+  await input.emit('mdInput', { detail: 'Salvează <draft> & "preview"' });
+  assert.equal(state.docSlotValues[''], 'Salvează <draft> & "preview"');
+  assert.equal(root.querySelector('[data-slot-index="0"]').value, state.docSlotValues['']);
+  assert.match(root.querySelector('#usage-snippet').textContent, /Salvează &lt;draft&gt; &amp; &quot;preview&quot;/);
+  assert.deepEqual(contentChanges, [['', state.docSlotValues['']]]);
+  await root.querySelector('[data-slot-index="0"]').emit('mdInput', { detail: '' });
+  assert.equal(input.value, '');
+  assert.equal(state.docSlotValues[''], '');
+  state.platform = 'android'; ui.renderUsage(); propsRoot.innerHTML = ui.textControl();
+  assert.equal(propsRoot.querySelector('#component-text').value, '');
+  assert.doesNotMatch(root.querySelector('#usage-snippet').textContent, /Continue/);
+  state.docSlotValues = {}; propsRoot.innerHTML = ui.textControl(); ui.renderUsage();
+  assert.equal(propsRoot.querySelector('#component-text').value, 'Continue');
+  assert.equal(root.querySelector('[data-slot-index="0"]').value, 'Continue');
+  assert.deepEqual(state.props, {}, 'Text must not create a fake public property');
+  state.selected = { tag: 'md-chip', properties: [{ name: 'label' }] };
+  assert.equal(ui.textControl(), '', 'components with a label property keep their own editor');
+});
+
+test('Text input immediately applies safe plain content to the Web preview', async t => {
+  const { ui, propsRoot, state } = fixture(t, { tag: 'md-button', slots: [{ name: '' }] });
+  const appended = [], removed = [];
+  state.target = { childNodes: [{ nodeType: 3, remove: () => removed.push('old text') }, { nodeType: 1, getAttribute: () => 'leading-icon', remove: () => removed.push('icon') }], append: node => appended.push(node) };
+  propsRoot.innerHTML = ui.textControl(); ui.bindTextControl();
+  await propsRoot.querySelector('#component-text').emit('mdInput', { detail: '<img src=x>Save' });
+  assert.deepEqual(removed, ['old text']);
+  assert.equal(appended[0].textContent, '<img src=x>Save');
+  assert.equal(appended[0].innerHTML, '');
+});
 
 test('same-component docs enrichment and platform switches retain open sections, method args and caret', t => {
   const { ui, root, state } = fixture(t);
