@@ -204,6 +204,12 @@ focus, then requests real Compose focus after recomposition; it is not left
 permanently unfocusable. Direct arbitrary `FocusRequester` access to the internal
 button target is not exposed. Positive browser tabindex ordering is not emulated.
 
+Pointer presses keep real focus and group ownership without showing keyboard
+focus styling. Keyboard navigation and explicit `requestFocus()` show the focus
+indicator; `isFocusVisible` reports that distinction. The keyboard ring matches
+the source's 3dp width and 2dp gap, including connected corners. Pointer input
+clears the ring and focus tint even when the button was already focused.
+
 ```kotlin
 val focus = remember { AWCButtonFocusState() }
 AWCButtonFocusScope(focus, onFocusChanged = { focused -> /* observe native focus */ }) {

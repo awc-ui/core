@@ -19,12 +19,17 @@ import androidx.compose.ui.unit.LayoutDirection
 class AWCButtonFocusState {
     var isFocused: Boolean by mutableStateOf(false)
         internal set
+    internal var showFocus by mutableStateOf(true)
+    val isFocusVisible: Boolean get() = isFocused && showFocus
     internal var pending by mutableStateOf(false)
     internal var revision by mutableIntStateOf(0)
     internal var attached = false
     internal var enabled = true
-    fun requestFocus(): Boolean {
+    fun requestFocus(): Boolean = requestFocus(showIndicator = true)
+    internal fun requestPointerFocus(): Boolean = requestFocus(showIndicator = false)
+    private fun requestFocus(showIndicator: Boolean): Boolean {
         if (!attached || !enabled) return false
+        showFocus = showIndicator
         pending = true; revision++
         return true
     }
@@ -95,8 +100,10 @@ internal fun nativeButtonTabIndex(p: Props, group: ButtonFocusGroup?, id: Any): 
 }
 internal fun nativeButtonRole(p: Props): String = if (p.str("roleOverride").lowercase() == "gridcell") "gridcell" else "button"
 
+internal data class NativeButtonFocus(val modifier: Modifier, val isFocusVisible: Boolean)
+
 @Composable
-internal fun nativeButtonFocusModifier(p: Props, id: Any, group: ButtonFocusGroup?, selected: Boolean): Modifier {
+internal fun nativeButtonFocusModifier(p: Props, id: Any, group: ButtonFocusGroup?, selected: Boolean): NativeButtonFocus {
     val binding = LocalButtonFocusBinding.current
     val ownState = remember { AWCButtonFocusState() }
     val state = binding?.state ?: ownState
@@ -115,17 +122,21 @@ internal fun nativeButtonFocusModifier(p: Props, id: Any, group: ButtonFocusGrou
             state.pending = false
         }
     }
-    return Modifier
+    val modifier = Modifier
         .focusRequester(requester)
         .focusProperties { canFocus = hardEnabled && (tabIndex == 0 || state.isFocused || state.pending) }
         .onFocusChanged {
             if (state.isFocused != it.isFocused) {
                 state.isFocused = it.isFocused
+                // Native traversal brings its own focus request. A pending pointer
+                // request keeps focus useful without showing keyboard-only visuals.
+                if (it.isFocused && !state.pending) state.showFocus = true
                 if (it.isFocused) group?.focused(id)
                 binding?.changed?.invoke(it.isFocused)
             }
         }
         .onPreviewKeyEvent { event ->
+            if (event.type == KeyEventType.KeyDown) state.showFocus = true
             if (event.type != KeyEventType.KeyDown || group == null) false
             else group.move(id, when (event.key) {
                 Key.DirectionLeft -> "ArrowLeft"; Key.DirectionRight -> "ArrowRight"; Key.MoveHome -> "Home"; Key.MoveEnd -> "End"; else -> ""
@@ -134,10 +145,11 @@ internal fun nativeButtonFocusModifier(p: Props, id: Any, group: ButtonFocusGrou
         .pointerInput(state, hardEnabled) {
             awaitEachGesture {
                 awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                if (hardEnabled) state.requestFocus()
+                if (hardEnabled) state.requestPointerFocus()
                 waitForUpOrCancellation()
             }
         }
+    return NativeButtonFocus(modifier, state.isFocusVisible)
 }
 
 data class AWCGridCell(val row: Int, val column: Int, val rowSpan: Int = 1, val columnSpan: Int = 1) {

@@ -206,7 +206,7 @@ fun AWCComponent(
         if (p.str("trailingIcon").isNotBlank()) Glyph(p.str("trailingIcon"))
         slot?.invoke("trailing-icon")
     }
-    val iconFocus = if (tag == "md-icon-button") nativeButtonFocusModifier(p, identity, group?.takeIf { it.tag == "md-button-group" }?.focus, selected) else Modifier
+    val iconFocus = if (tag == "md-icon-button") nativeButtonFocusModifier(p, identity, group?.takeIf { it.tag == "md-button-group" }?.focus, selected).modifier else Modifier
     val modifier = (if (p.bool("fullWidth")) Modifier.fillMaxWidth() else Modifier).then(iconFocus).semantics { if(p.bool("toggle") || group != null) this.selected = selected; if(!enabled) disabled() }
     when(tag) {
         "md-icon-button" -> IconToggleButton(checked = selected, onCheckedChange = { if(enabled) click() }, enabled = !p.bool("disabled"), modifier = modifier) { Glyph(p.str("icon", "favorite"), p.label(p.str("icon"))) }

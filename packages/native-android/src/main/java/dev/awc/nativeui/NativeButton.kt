@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.layout.Layout
@@ -110,7 +111,8 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     val interactions = remember { MutableInteractionSource() }
     val pressed by interactions.collectIsPressedAsState()
     val hovered by interactions.collectIsHoveredAsState()
-    val focused by interactions.collectIsFocusedAsState()
+    val nativeFocus = nativeButtonFocusModifier(p, identity, group?.focus, selected)
+    val focused = nativeFocus.isFocusVisible
     val reduceMotion = !ValueAnimator.areAnimatorsEnabled()
     val waves = remember { mutableStateListOf<NativeWave>() }
     var frameTime by remember { mutableLongStateOf(0L) }
@@ -154,7 +156,6 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     val stateColor = roleColor(palette.label)
     val elevation by animateDpAsState((if(enabled && hovered && !pressed && !focused) palette.hoverElevation else palette.elevation).dp, tween(colorDuration, easing=Standard), label="source button elevation")
     val focusColor = MaterialTheme.colorScheme.secondary
-    val nativeFocus = nativeButtonFocusModifier(p, identity, group?.focus, selected)
     val role = nativeButtonRole(p)
     val gridCell = LocalAWCGridCell.current
     val click: () -> Unit = {
@@ -174,8 +175,20 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     CompositionLocalProvider(LocalContentColor provides label) {
         ProvideTextStyle(textStyle) {
             Box((if(p.bool("fullWidth")) Modifier.fillMaxWidth() else Modifier)
+                .zIndex(if(focused) 1f else 0f)
                 .shadow(elevation, shape, clip=false)
-                .drawBehind { if(focused && !p.bool("disabled")) { val focusPath = shape.createOutline(size,layoutDirection,this); drawOutline(focusPath,focusColor,style=Stroke(7.dp.toPx())) } }
+                .drawBehind {
+                    if(focused && !p.bool("disabled")) {
+                        // Web outline: 3px stroke outside a 2px gap. Expand both
+                        // bounds and corner radii so connected corners stay aligned.
+                        val outset = 3.5.dp
+                        val offset = outset.toPx()
+                        val ringShape = RoundedCornerShape(topStart = leading.dp + outset, topEnd = trailing.dp + outset,
+                            bottomEnd = trailing.dp + outset, bottomStart = leading.dp + outset)
+                        val ring = ringShape.createOutline(Size(size.width + 2 * offset, size.height + 2 * offset), layoutDirection, this)
+                        translate(-offset, -offset) { drawOutline(ring, focusColor, style = Stroke(3.dp.toPx())) }
+                    }
+                }
                 .clip(shape).background(container)
                 .drawWithContent {
                     drawRect(stateColor.copy(alpha=opacity))
@@ -192,7 +205,7 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
                     drawContent()
                 }
                 .then(if(p.str("variant") == "outlined") Modifier.border(1.dp,outline,shape) else Modifier)
-                .then(nativeFocus)
+                .then(nativeFocus.modifier)
                 .clickable(interactionSource=interactions, indication=null, enabled=!p.bool("disabled"), role=if(role == "gridcell") null else Role.Button, onClick=click)
                 .semantics {
                     if(!enabled) disabled()
