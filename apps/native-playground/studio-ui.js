@@ -17,13 +17,17 @@ export function createStudioUI({ getState, onLayoutChange, onThemeChange, notify
     const { config, roles, swatches } = state.studioTheme;
     for (const role of ['primary', 'secondary', 'tertiary']) {
       const value = config[`${role}Hex`] || swatches[role];
-      $(`#theme-${role}`).value = value;
-      $(`#theme-${role}-hex`).value = value;
+      const picker = $(`#theme-${role}`), trigger = $(`#theme-${role}-trigger`);
+      picker.value = value;
+      trigger.querySelector('.theme-seed-value').textContent = value;
+      trigger.querySelector('.theme-seed-swatch').style.backgroundColor = value;
+      trigger.setAttribute('aria-label', `Choose ${role} seed color, ${value}`);
       if (role !== 'primary') {
         const auto = config[`${role}Hex`] === null;
         $(`#theme-${role}-auto`).selected = auto;
-        $(`#theme-${role}`).disabled = auto;
-        $(`#theme-${role}-hex`).disabled = auto;
+        picker.disabled = auto;
+        trigger.disabled = auto;
+        if (auto) picker.open = false;
       }
     }
     $('#theme-contrast').value = String(config.contrastLevel);
@@ -31,10 +35,11 @@ export function createStudioUI({ getState, onLayoutChange, onThemeChange, notify
     $('#theme-swatches').innerHTML = ['primary', 'secondary', 'tertiary', 'surface', 'surfaceContainer', 'outline'].map(role => `<div class="theme-swatch"><span style="background:${roles[config.mode][role]}"></span><strong>${role.replace(/([A-Z])/g, ' $1')}</strong><code>${roles[config.mode][role]}</code></div>`).join('');
     $('#theme-code').textContent = `import { computeTheme, applyThemeStylesheet } from '@awc-ui/theme';\n\nconst theme = computeTheme(${JSON.stringify({ primaryHex: config.primaryHex, ...(config.secondaryHex ? { secondaryHex: config.secondaryHex } : {}), ...(config.tertiaryHex ? { tertiaryHex: config.tertiaryHex } : {}), contrastLevel: config.contrastLevel }, null, 2)});\n\napplyThemeStylesheet(theme);\ndocument.documentElement.dataset.theme = '${config.mode}';`;
   }
-  function changeTheme(patch) {
+  function changeTheme(patch, persist = true) {
     try {
       state.studioTheme = computeStudioTheme({ ...state.studioTheme.config, ...patch });
-      $('#theme-error').hidden = true; saveStudioTheme(state.studioTheme.config);
+      $('#theme-error').hidden = true;
+      if (persist) saveStudioTheme(state.studioTheme.config);
       applyTheme(); renderThemeControls(); onThemeChange();
     } catch (error) { $('#theme-error').textContent = error.message; $('#theme-error').hidden = false; }
   }
@@ -58,11 +63,26 @@ export function createStudioUI({ getState, onLayoutChange, onThemeChange, notify
     $('#open-theme').addEventListener('click', () => { $('#theme-sheet').open = true; });
     $('#theme-toggle').addEventListener('click', () => changeTheme({ mode: state.studioTheme.config.mode === 'dark' ? 'light' : 'dark' }));
     for (const role of ['primary', 'secondary', 'tertiary']) {
-      $(`#theme-${role}`).addEventListener('input', event => changeTheme({ [`${role}Hex`]: event.target.value }));
-      $(`#theme-${role}-hex`).addEventListener('mdInput', event => { if (event.target === $(`#theme-${role}-hex`) && /^#?[0-9a-f]{6}$/i.test(event.detail.trim())) changeTheme({ [`${role}Hex`]: event.detail }); });
-      $(`#theme-${role}-hex`).addEventListener('mdChange', event => { if (event.target === $(`#theme-${role}-hex`)) changeTheme({ [`${role}Hex`]: event.detail }); });
+      const picker = $(`#theme-${role}`);
+      picker.addEventListener('mdInput', event => { if (event.target === picker) changeTheme({ [`${role}Hex`]: event.detail.value }, false); });
+      picker.addEventListener('mdChange', event => { if (event.target === picker) changeTheme({ [`${role}Hex`]: event.detail.value }); });
+      picker.addEventListener('mdOpenChange', event => {
+        if (event.target !== picker || !event.detail.open) return;
+        document.querySelectorAll('.theme-color-field md-color-picker').forEach(other => { if (other !== picker) other.open = false; });
+      });
       if (role !== 'primary') $(`#theme-${role}-auto`).addEventListener('mdChange', event => changeTheme({ [`${role}Hex`]: event.detail.selected ? null : state.studioTheme.swatches[role] }));
     }
+    $('#theme-sheet').addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      const picker = document.querySelector('.theme-color-field md-color-picker[open]');
+      if (!picker) return;
+      event.preventDefault(); event.stopPropagation();
+      picker.open = false;
+      picker.querySelector('[slot="trigger"]').focus();
+    });
+    $('#theme-sheet').addEventListener('mdClose', event => {
+      if (event.target === $('#theme-sheet')) document.querySelectorAll('.theme-color-field md-color-picker').forEach(picker => { picker.open = false; });
+    });
     $('#theme-contrast').addEventListener('mdChange', event => { if (event.target === $('#theme-contrast')) changeTheme({ contrastLevel: Number(event.detail) }); });
     $('#theme-reset').addEventListener('click', () => changeTheme({ ...DEFAULT_STUDIO_THEME, mode: state.studioTheme.config.mode }));
     $('#theme-copy-css').addEventListener('click', async () => { try { await navigator.clipboard.writeText(exportStudioTheme(state.studioTheme)); notify('Theme CSS copied'); } catch { notify('Clipboard unavailable'); } });

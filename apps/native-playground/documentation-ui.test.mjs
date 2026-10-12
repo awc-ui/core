@@ -14,6 +14,7 @@ class ElementStub {
     for (const [name, value] of Object.entries(attributes)) if (name.startsWith('data-')) this.dataset[name.slice(5).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())] = value;
   }
   addEventListener(name, listener) { (this.listeners[name] ||= []).push(listener); }
+  removeEventListener(name, listener) { this.listeners[name] = (this.listeners[name] || []).filter(candidate => candidate !== listener); }
   async emit(name, event = {}) { for (const listener of this.listeners[name] || []) await listener({ target: this, ...event }); }
   setAttribute(name, value) { this.attributes[name] = value; }
   removeAttribute(name) { delete this.attributes[name]; }
@@ -39,13 +40,15 @@ class ElementStub {
 }
 function fixture(t, extra = {}) {
   const root = new ElementStub(), search = new ElementStub(), doc = new ElementStub();
+  const cssRoot = new ElementStub(), cssSection = new ElementStub(), cssCount = new ElementStub(), cssNote = new ElementStub();
+  const surfaces = { '#usage-docs': root, '#props-search': search, '#css-controls': cssRoot, '#css-variables-section': cssSection, '#css-variables-count': cssCount, '#css-variables-note': cssNote };
   doc.activeElement = null; doc.body = { append() {} }; doc.createElement = name => {
     const element = new ElementStub();
     if (name === 'template') element.content = { querySelector: () => null };
     return element;
   };
-  doc.querySelector = selector => selector === '#usage-docs' ? root : selector === '#props-search' ? search : root.querySelector(selector);
-  doc.querySelectorAll = () => []; doc.getElementById = id => root.querySelector(`#${id}`);
+  doc.querySelector = selector => surfaces[selector] || root.querySelector(selector) || cssRoot.querySelector(selector);
+  doc.querySelectorAll = () => []; doc.getElementById = id => doc.querySelector(`#${id}`);
   for (const [key, value] of Object.entries({ document: doc, window: new ElementStub(), Element: ElementStub, innerWidth: 1200, innerHeight: 800 })) {
     const descriptor = Object.getOwnPropertyDescriptor(globalThis, key);
     Object.defineProperty(globalThis, key, { value, configurable: true });
@@ -55,7 +58,7 @@ function fixture(t, extra = {}) {
   const state = { selected: component, platform: 'web', props: {}, target: { outerHTML: '<md-text-field></md-text-field>' } };
   let interactions = 0;
   const ui = createDocumentationUI({ getState: () => state, notify() {}, watchEvents() {}, afterInteraction() { interactions++; } });
-  return { ui, root, state, doc, search, interactions: () => interactions };
+  return { ui, root, cssRoot, cssSection, cssCount, cssNote, state, doc, search, interactions: () => interactions };
 }
 
 test('same-component docs enrichment and platform switches retain open sections, method args and caret', t => {
@@ -89,10 +92,55 @@ test('data/callback types have accessible help and escaped source content', asyn
   assert.doesNotMatch(root.innerHTML, /<img|<script>/);
   assert.match(root.innerHTML, /&lt;img/);
   const help = buttons.find(button => button.attributes['aria-label'] === 'About Data');
-  await doc.emit('focusin', { target: help });
-  assert.equal(help.attributes['aria-describedby'], 'documentation-tooltip');
-  await doc.emit('keydown', { key: 'Escape', preventDefault() {} });
-  assert.equal(help.attributes['aria-describedby'], undefined);
+  const tooltip = root.querySelector(`[data-doc-tooltip="${help.dataset.docInfo}"]`);
+  assert.equal(tooltip.attributes.variant, 'rich');
+  assert.equal(tooltip.attributes.position, 'left-start');
+  assert.ok(Number(tooltip.attributes['hide-delay']) > 0, 'AWC owns a grace period to reach the rich popup');
+  assert.match(root.innerHTML, /slot="subhead"/);
+  assert.match(root.innerHTML, /slot="content" class="doc-tooltip-content" tabindex="0"/);
+  assert.match(root.innerHTML, /slot="actions"[^>]*>Full guide<\/md-button>/);
+  assert.equal(doc.listeners.focusin, undefined, 'Hover, focus, descriptions and Escape belong to md-tooltip');
+  assert.equal(doc.listeners.keydown, undefined);
+  assert.equal(help.attributes['aria-describedby'], undefined, 'No cross-shadow custom IDREF is added');
+});
+
+test('AWC rich tooltip lifecycle coordinates one popup and supports tap/outside dismissal', async t => {
+  const { ui, root, doc } = fixture(t, { events: [{ name: 'mdInput', detail: 'string' }] });
+  ui.renderUsage();
+  const buttons = root.querySelectorAll('[data-doc-info]');
+  const firstButton = buttons[0], secondButton = buttons[1];
+  const first = root.querySelector(`[data-doc-tooltip="${firstButton.dataset.docInfo}"]`);
+  const second = root.querySelector(`[data-doc-tooltip="${secondButton.dataset.docInfo}"]`);
+  for (const [button, tooltip] of [[firstButton, first], [secondButton, second]]) {
+    button.closest = selector => selector === '[data-doc-info]' ? button : selector === '[data-doc-tooltip]' ? tooltip : null;
+    tooltip.contains = node => node === button || node === tooltip;
+  }
+  first.open = true; await doc.emit('mdOpen', { target: first });
+  second.open = true; await doc.emit('mdOpen', { target: second });
+  assert.equal(first.open, false); assert.equal(second.open, true);
+  await doc.emit('mdClose', { target: first });
+  await doc.emit('click', { target: secondButton });
+  assert.equal(second.open, true, 'A click inside the native tooltip stays open');
+  await doc.emit('click', { target: new ElementStub() });
+  assert.equal(second.open, false);
+  await doc.emit('mdClick', { target: firstButton });
+  assert.equal(first.open, true, 'Tap reveals using the public open property');
+  ui.beginRender();
+  assert.equal(first.open, false, 'Replacing component properties dismisses the old popup');
+});
+
+test('rich help preserves property metadata, event flags, method parameters and return details', t => {
+  const { ui } = fixture(t);
+  const property = ui.infoButton('property', { name: 'variant', type: "'filled' | 'outlined'", default: "'filled'", attribute: 'variant', options: ['filled', 'outlined'], description: 'A **visual** choice.' });
+  assert.match(property, /<strong>visual<\/strong>/);
+  for (const value of ['Type', 'Default', 'Attribute', 'Values', 'filled', 'outlined']) assert.ok(property.includes(value));
+  const event = ui.infoButton('event', { name: 'mdClick', description: 'Native action', cancelable: true, bubbles: true, composed: false, detail: 'ActionDetail' });
+  assert.match(event, /cancelable: true · bubbles: true · composed: false/);
+  const method = ui.infoButton('method', { name: 'setCustomValidity', parameters: [{ name: 'message', type: 'string', optional: true, description: 'Validation detail.' }], returnType: 'Promise<void>' });
+  assert.match(method, /message\?: string/);
+  assert.match(method, /Validation detail/);
+  assert.match(method, /Returns <code>Promise&lt;void&gt;<\/code>/);
+  assert.match(ui.infoButton('slot', { name: '', description: 'Child content' }), /Default slot/);
 });
 
 test('late async method results cannot synchronize a replacement preview', async t => {
@@ -154,16 +202,17 @@ test('concise props retain explicit defaults, fixture values and changed structu
 });
 
 test('AWC field events edit slot examples and filter properties; browser input events do not duplicate actions', async t => {
-  const { ui, root, state, search, doc } = fixture(t, { slots: [{ name: '' }], cssProperties: [{ name: '--md-color' }] });
+  const { ui, root, cssRoot, state, search, doc } = fixture(t, { slots: [{ name: '' }], cssProperties: [{ name: '--md-color' }] });
   state.platform = 'ios';
   ui.renderUsage();
   assert.match(root.innerHTML, /<md-text-field[^>]+data-slot-index/);
-  assert.match(root.innerHTML, /<md-text-field[^>]+data-css-index/);
+  assert.match(cssRoot.innerHTML, /<md-text-field[^>]+data-css-index/);
+  assert.doesNotMatch(root.innerHTML, /data-css-index|data-usage-section="CSS variables"/);
   assert.match(root.innerHTML, /<md-text-field[^>]+data-method-args/);
   await root.querySelector('[data-slot-index="0"]').emit('mdInput', { detail: 'New label' });
   assert.equal(state.docSlotValues[''], 'New label');
   assert.match(root.querySelector('#usage-snippet').textContent, /New label/);
-  await root.querySelector('[data-css-index="0"]').emit('mdInput', { detail: 'rebeccapurple' });
+  await cssRoot.querySelector('[data-css-index="0"]').emit('mdInput', { detail: 'rebeccapurple' });
   assert.equal(state.docCssValues['--md-color'], 'rebeccapurple');
   const rows = [{ dataset: { search: 'label string' } }, { dataset: { search: 'disabled boolean' } }];
   const empty = {};
@@ -171,6 +220,38 @@ test('AWC field events edit slot examples and filter properties; browser input e
   const query = doc.querySelector; doc.querySelector = selector => selector === '#props-empty' ? empty : query(selector);
   search.value = 'disabled'; await search.emit('mdInput');
   assert.equal(rows[0].hidden, true); assert.equal(rows[1].hidden, false); assert.equal(empty.hidden, true);
+});
+
+test('sidebar CSS editing preserves focus, caret and expansion on refresh and resets for a new component', async t => {
+  const { ui, cssRoot, cssSection, cssCount, cssNote, state, doc } = fixture(t, { cssProperties: [{ name: '--md-color', description: 'Accent color.' }] });
+  state.platform = 'ios';
+  ui.renderUsage();
+  cssSection.expanded = true;
+  const input = cssRoot.querySelector('[data-css-index="0"]');
+  input.value = 'rebeccapurple'; input.focus(); input.setSelectionRange(2, 7);
+  await input.emit('mdInput', { detail: input.value });
+  ui.renderUsage();
+  assert.equal(cssRoot.querySelector('[data-css-index="0"]'), input, 'Ordinary preview refresh keeps the mounted editor');
+  assert.equal(cssSection.expanded, true);
+  assert.equal(doc.activeElement, input);
+  assert.deepEqual([input.selectionStart, input.selectionEnd], [2, 7]);
+  assert.equal(cssCount.textContent, '1');
+  assert.match(cssRoot.innerHTML, /data-doc-tooltip|About --md-color/);
+  state.selected = { ...state.selected, cssProperties: [{ name: '--md-color', description: 'Enriched description.' }] };
+  ui.renderUsage();
+  assert.notEqual(doc.activeElement, input, 'Metadata enrichment refreshes help content');
+  assert.equal(doc.activeElement.value, 'rebeccapurple');
+  assert.deepEqual([doc.activeElement.selectionStart, doc.activeElement.selectionEnd], [2, 7]);
+  assert.equal(cssSection.expanded, true);
+  state.platform = 'android'; ui.renderUsage();
+  assert.equal(cssSection.expanded, true);
+  assert.equal(doc.activeElement.value, 'rebeccapurple');
+  state.selected = { ...state.selected, tag: 'md-button', cssProperties: [] }; state.docCssValues = {};
+  ui.renderUsage();
+  assert.equal(cssSection.expanded, false);
+  assert.equal(cssRoot.querySelectorAll('[data-css-index]').length, 0);
+  assert.equal(cssCount.textContent, '0');
+  assert.equal(cssNote.textContent, 'No public CSS variables declared.');
 });
 
 test('method invocation recognizes iframe Elements by nodeType and ignores plain click', async t => {
@@ -197,4 +278,40 @@ test('slot overrides use the target document and preserve unrelated named slots'
   assert.deepEqual(removed, ['text']); assert.deepEqual(created, ['span']);
   assert.equal(appended[0].textContent, 'New default');
   assert.deepEqual(properties, [['--md-color', 'red']]);
+});
+
+test('rich help prefers vertical placement on mobile, updates mounted hosts on resize and disposes listeners', async t => {
+  const { ui, root, doc, search } = fixture(t);
+  const viewport = window;
+  let width = 390;
+  viewport.matchMedia = query => {
+    assert.equal(query, '(max-width: 640px)');
+    return { matches: width <= 640 };
+  };
+  doc.querySelectorAll = selector => root.querySelectorAll(selector);
+  ui.renderUsage();
+  const tooltip = root.querySelector('[data-doc-tooltip]');
+  assert.equal(tooltip.attributes.position, 'bottom');
+  tooltip.open = true;
+  await doc.emit('mdOpen', { target: tooltip });
+
+  width = 1200;
+  await viewport.emit('resize');
+  assert.equal(tooltip.position, 'left-start');
+  assert.equal(tooltip.open, true, 'placement changes preserve the active help popup');
+  width = 640;
+  await viewport.emit('resize');
+  assert.equal(tooltip.position, 'bottom', 'the breakpoint includes 640 CSS pixels');
+  assert.ok(root.querySelectorAll('[data-doc-tooltip]').every(host => host.position === 'bottom'));
+  assert.match(ui.infoButton('property', { name: 'value', type: 'string' }), /position="bottom"/);
+
+  ui.dispose();
+  assert.equal(tooltip.open, false);
+  assert.equal(viewport.listeners.resize.length, 0);
+  assert.ok(Object.values(doc.listeners).every(listeners => listeners.length === 0));
+  assert.equal(search.listeners.mdInput.length, 0);
+  width = 1200;
+  await viewport.emit('resize');
+  assert.equal(tooltip.position, 'bottom', 'disposed controllers do not update mounted hosts');
+  ui.dispose(); // Cleanup is safe when repeated.
 });

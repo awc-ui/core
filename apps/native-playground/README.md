@@ -37,8 +37,8 @@ The left catalog groups and searches all source tags; `/` focuses search. The
 right properties panel provides typed scalar, boolean, enum and JSON editors,
 reset, and a property search. Mixed literal unions retain their actual types,
 including values such as `false`. Info controls explain source types, defaults,
-usage and native support. Hover or focus for help; click to pin it and Escape to
-dismiss it.
+usage and native support. Hover, focus or tap for help; use Escape or click
+outside to dismiss it.
 
 The web preview runs in a dedicated same-origin iframe. Responsive, 360 px,
 768 px and 1024 px widths change its actual viewport, so media queries respond
@@ -54,8 +54,9 @@ edit supplies them. Web framework examples use the repository's public AWC
 packages; native examples use `AWCNativeView`/`AWCNode` and `AWCComponent`.
 Generated examples use inert recipe markup, never hydrated preview markup.
 
-API sections document events and payloads, slots, methods, CSS variables, CSS
-parts, and data/callback types. Slot text and CSS edits update the relevant
+API sections document events and payloads, slots, methods, CSS parts, and
+data/callback types. CSS variables are editable in the AWC accordion at the bottom
+of the right Properties panel. Slot text and CSS edits update the relevant
 examples and the live Web preview. Public web methods accept JSON argument
 arrays. Native fixtures keep their own children; editing documentation slots does
 not rewrite those fixtures. Native snippets preserve AWC children and slot text,

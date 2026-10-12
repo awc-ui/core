@@ -41,7 +41,7 @@ export async function resolveAsset(rawUrl, options = {}) {
   } else {
     root = app;
     relative = pathname === '/' ? 'index.html' : pathname.slice(1);
-    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'documentation.js', 'documentation-ui.js', 'usage-snippets.js', 'property-controls.js', 'studio.css', 'studio-ui.js', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'].includes(relative)) return null;
+    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'documentation.js', 'documentation-ui.js', 'brand-icons.js', 'usage-snippets.js', 'property-controls.js', 'studio.css', 'studio-ui.js', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'].includes(relative)) return null;
   }
   const absolute = path.resolve(root, relative);
   if (!within(path.resolve(root), absolute)) return null;

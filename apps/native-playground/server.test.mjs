@@ -35,7 +35,7 @@ test('an explicitly configured web build can live outside the checkout', async (
 test('browser documentation modules are served without opening nearby internal modules', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'awc-native-doc-modules-'));
   try {
-    const allowed = ['documentation.js', 'documentation-ui.js', 'usage-snippets.js', 'property-controls.js', 'studio.css', 'studio-ui.js', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'];
+    const allowed = ['documentation.js', 'documentation-ui.js', 'brand-icons.js', 'usage-snippets.js', 'property-controls.js', 'studio.css', 'studio-ui.js', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'];
     const denied = ['documentation.test.mjs', 'documentation-ui.test.js', 'usage-snippets.mjs', 'server.mjs', 'native-live.mjs', 'coverage.mjs', 'theme-vendor/private.js', 'theme-vendor/awc-theme.js.map', 'build-studio-theme.mjs'];
     for (const file of [...allowed, ...denied]) { await mkdir(path.dirname(path.join(root, file)), { recursive: true }); await writeFile(path.join(root, file), 'export {};'); }
     for (const file of allowed) assert.equal(await resolveAsset(`/${file}`, { appRoot: root }), await realpath(path.join(root, file)), file);

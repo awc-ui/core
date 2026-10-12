@@ -164,8 +164,8 @@ private struct PreviewRoot: View {
     var body: some View {
         example
             .padding(24)
-            .frame(width: width, alignment: .leading)
-            .frame(minHeight: 100, alignment: .topLeading)
+            .frame(width: width, alignment: .center)
+            .frame(minHeight: 100, alignment: .center)
             .background(themeTokens.isEmpty ? (dark ? Color(white: 0.08) : .white) : theme.background)
             .environment(\.colorScheme, dark ? .dark : .light)
             .environment(\.layoutDirection, direction == "rtl" ? .rightToLeft : .leftToRight)

@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
@@ -100,7 +101,7 @@ class LivePreviewActivity : ComponentActivity() {
                     AWCTheme(darkTheme = config.dark, tokenOverrides = config.themeTokens) {
                         Box(Modifier.fillMaxWidth().heightIn(min = 100.dp, max = 2000.dp)
                             .background(if (config.themeTokens.isEmpty()) androidx.compose.ui.graphics.Color(if (config.dark) 0xFF141414 else 0xFFFFFFFF) else androidx.compose.material3.MaterialTheme.colorScheme.surface)
-                            .padding(24.dp)) {
+                            .padding(24.dp), contentAlignment = Alignment.Center) {
                             if (config.scenario == "button-behavior") AWCButtonBehaviorDemo(config.properties, ::recordEvent)
                             else if (config.scenario == "navigation-events") AWCButtonNavigationDemo(config.properties, ::recordEvent)
                             else if (config.scenario == "focus-accessibility") AWCButtonAccessibilityDemo(config.properties, ::recordEvent)

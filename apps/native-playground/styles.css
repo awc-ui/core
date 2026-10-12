@@ -41,20 +41,22 @@ main{padding:32px 37px;min-width:0;max-width:1600px;width:100%;margin:0 auto}.in
 .prop-error{font-size:10px;line-height:1.5}
 .prop-unset{justify-self:start;padding:0;font-size:9px}
 #props-empty{padding:0 17px 20px}
-.doc-info{display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;width:22px;height:22px;border:0;border-radius:50%;background:transparent;color:var(--muted);padding:3px;cursor:help}
-.doc-info span{display:grid;place-items:center;width:14px;height:14px;border:1px solid currentColor;border-radius:50%;font-family:Georgia,serif;font-weight:700;font-size:10px;line-height:1}
-.doc-info:hover,.doc-info:focus-visible{color:var(--primary);background:var(--primary-soft)}
-.doc-info:focus-visible,.documentation-tabs button:focus-visible,.usage-action:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
-.documentation-tooltip{position:fixed;z-index:1000;width:min(355px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;padding:17px 19px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--ink);box-shadow:0 10px 40px #102d2b25;font-size:12px;line-height:1.65;overflow-wrap:anywhere}
-.doc-tooltip-title{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;margin-bottom:8px}
-.doc-tooltip-label{font-size:11px;font-weight:500}
-.documentation-tooltip p{margin:8px 0;color:var(--muted)}
-.documentation-tooltip code{font-size:11px;color:var(--ink);white-space:pre-wrap}
-.documentation-tooltip dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;margin:12px 0;padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.documentation-tooltip dl:empty{display:none}
-.documentation-tooltip dt{color:var(--muted);font-size:11px}
-.documentation-tooltip dd{margin:0}
-.documentation-tooltip .doc-support{font-size:10px;color:var(--primary);margin-bottom:0}
+.doc-info{flex-shrink:0;cursor:help}
+.documentation-tabs button:focus-visible,.usage-action:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.documentation-tooltip{flex-shrink:0;--md-tooltip-rich-max-inline-size:355px;--md-tooltip-rich-min-inline-size:min(280px,calc(100vw - 16px))}
+.documentation-tooltip::part(popup){max-block-size:min(540px,calc(100dvh - 24px));overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+@media(max-width:640px){.documentation-tooltip::part(popup){max-block-size:min(340px,calc(50dvh - 48px))}}
+.doc-tooltip-title{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+.doc-tooltip-label{font-size:12px;font-weight:500}
+.doc-tooltip-content{overflow-wrap:anywhere}
+.doc-tooltip-content:focus-visible{outline:2px solid var(--md-sys-color-primary);outline-offset:3px;border-radius:2px}
+.doc-tooltip-content p{margin:8px 0}
+.doc-tooltip-content code{font-size:12px;white-space:pre-wrap}
+.doc-tooltip-content dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;margin:12px 0;padding:10px 0;border-top:1px solid var(--md-sys-color-outline-variant);border-bottom:1px solid var(--md-sys-color-outline-variant)}
+.doc-tooltip-content dl:empty{display:none}
+.doc-tooltip-content dt{font-size:12px}
+.doc-tooltip-content dd{margin:0}
+.doc-tooltip-content .doc-support{font-size:12px;color:var(--md-sys-color-primary);margin-bottom:0}
 #usage-docs{max-height:460px;overflow:auto;padding:0 17px 17px;scrollbar-width:thin;scrollbar-gutter:stable}
 .usage-intro{font-size:10px;line-height:1.7;color:var(--muted);padding:8px 0 12px}
 .usage-intro p{margin:3px 0 8px}
