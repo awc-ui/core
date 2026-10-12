@@ -195,7 +195,10 @@ function renderPreview() {
       renderProperties(); studioUI.applyCanvas();
     } catch (error) { if (generation === state.previewGeneration) { root.innerHTML = `<p class="load-error">${escape(error.message)}</p>`; } }
   });
-  root.append(frame); studioUI.applyCanvas();
+  // Wrap before insertion: moving a mounted iframe would reload its component.
+  const viewportShell = document.createElement('div'); viewportShell.className = 'canvas-viewport-shell';
+  const viewportScene = document.createElement('div'); viewportScene.className = 'canvas-viewport-scale';
+  viewportScene.append(frame); viewportShell.append(viewportScene); root.append(viewportShell); studioUI.applyCanvas();
   text('#preview-caption', 'AWC web component · live browser rendering'); text('#recipe-status', recipe.note);
 }
 

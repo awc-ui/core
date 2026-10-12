@@ -2,6 +2,16 @@ import { createCanvasInspector } from './canvas-inspector.js';
 
 const $ = selector => document.querySelector(selector);
 
+/** Presentation scale never changes the iframe's logical CSS viewport. */
+export function canvasViewportFit({ availableWidth, viewportWidth = 'fit', viewportHeight = 310, expandedHeight } = {}) {
+  const positive = value => Number.isFinite(value) && value > 0;
+  const available = positive(availableWidth) ? availableWidth : positive(viewportWidth) ? viewportWidth : 1;
+  const logicalWidth = positive(viewportWidth) ? viewportWidth : available;
+  const scale = Math.min(1, available / logicalWidth);
+  const logicalHeight = positive(expandedHeight) ? Math.max(240, expandedHeight / scale) : positive(viewportHeight) ? viewportHeight : 310;
+  return { logicalWidth, logicalHeight, scale, width: logicalWidth * scale, height: logicalHeight * scale };
+}
+
 /** Coordinates the real preview viewport, rulers and expanded editing workspace. */
 export function createCanvasTools({ getState, onLayoutChange, createInspector = createCanvasInspector }) {
   const inspector = createInspector({ getState });
@@ -45,6 +55,18 @@ export function createCanvasTools({ getState, onLayoutChange, createInspector = 
     const frame = $('#component-frame'), doc = state.previewDocument;
     const width = layout.width === 'fit' ? '100%' : `${layout.width}px`;
     if (frame && frame.style.width !== width) frame.style.width = width;
+    let fitted;
+    const shell = $('.canvas-viewport-shell'), scene = $('.canvas-viewport-scale'), content = $('#preview-content');
+    if (web && frame && shell && scene && content) {
+      fitted = canvasViewportFit({ availableWidth: content.clientWidth, viewportWidth: layout.width,
+        viewportHeight: Number.parseFloat(frame.style.height) || frame.offsetHeight || frame.clientHeight,
+        expandedHeight: layout.expanded ? content.clientHeight : undefined });
+      const assign = (element, name, value) => { if (element.style[name] !== value) element.style[name] = value; };
+      assign(shell, 'width', `${fitted.width}px`); assign(shell, 'height', `${fitted.height}px`);
+      assign(scene, 'width', `${fitted.logicalWidth}px`); assign(scene, 'height', `${fitted.logicalHeight}px`);
+      assign(scene, 'transform', `scale(${fitted.scale})`);
+      shell.dataset.scale = String(fitted.scale);
+    }
     if (doc) { doc.documentElement.dir = layout.direction; doc.documentElement.dataset.grid = String(grid); }
     rulers(doc, grid);
     const native = $('#preview-content > .native-snapshot');
@@ -57,7 +79,8 @@ export function createCanvasTools({ getState, onLayoutChange, createInspector = 
       if (viewport) observer.observe(viewport);
     }
     const measured = viewport?.clientWidth;
-    $('#canvas-dimensions').textContent = measured ? `${Math.round(measured)} × ${Math.round(viewport?.clientHeight || 0)} px` : 'Responsive';
+    const scaleLabel = fitted?.scale < 1 ? ` · ${Math.round(fitted.scale * 100)}%` : '';
+    $('#canvas-dimensions').textContent = measured ? `${Math.round(measured)} × ${Math.round(viewport?.clientHeight || 0)} px${scaleLabel}` : 'Responsive';
     $('#canvas-direction').textContent = layout.direction === 'rtl' ? 'RTL ←' : 'LTR →';
     $('#canvas-rtl').selected = layout.direction === 'rtl';
     $('#canvas-rtl').icon = layout.direction === 'rtl' ? 'format_textdirection_r_to_l' : 'format_textdirection_l_to_r';
@@ -73,6 +96,7 @@ export function createCanvasTools({ getState, onLayoutChange, createInspector = 
       if (tooltip) tooltip.text = web ? description : 'Available in Web preview only';
     }
     const notes = [];
+    if (fitted?.scale < 1) notes.push(`Shown at ${Math.round(fitted.scale * 100)}% to fit. The Web viewport remains ${Math.round(fitted.logicalWidth)} CSS px wide; grid and measurements use its actual CSS pixels.`);
     if (layout.direction === 'rtl') notes.push('RTL is active. Start/end layout and leading/trailing content swap sides. A centered text-only button can look unchanged; add an icon in Properties to compare.');
     if (grid) notes.push('Grid: 8 CSS px · major lines and rulers: 64 px.');
     $('#canvas-help').textContent = notes.join(' '); $('#canvas-help').hidden = notes.length === 0;

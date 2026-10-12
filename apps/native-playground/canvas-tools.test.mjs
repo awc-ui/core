@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createCanvasTools } from './canvas-tools.js';
+import { canvasViewportFit, createCanvasTools } from './canvas-tools.js';
 
 // Controller boundaries only: real CSS geometry and fullscreen rendering are
 // verified in the browser. The inspector has its own measurement tests.
@@ -37,12 +37,13 @@ function frameDocument(width = 384, height = 256) {
 }
 
 function fixture(t, options = {}) {
-  const selectors = ['.workspace-grid', '#preview-stage', '#component-frame', '#canvas-dimensions', '#canvas-direction', '#canvas-help', '#canvas-rtl', '#canvas-grid', '#canvas-bounds', '#canvas-fullscreen', '#canvas-expand-tooltip', '#canvas-expanded-label', '#canvas-width'];
+  const selectors = ['.workspace-grid', '#preview-stage', '#preview-content', '.canvas-viewport-shell', '.canvas-viewport-scale', '#component-frame', '#canvas-dimensions', '#canvas-direction', '#canvas-help', '#canvas-rtl', '#canvas-grid', '#canvas-bounds', '#canvas-fullscreen', '#canvas-expand-tooltip', '#canvas-expanded-label', '#canvas-width'];
   const nodes = new Map(selectors.map(selector => [selector, new ElementStub()]));
   for (const selector of ['#canvas-grid', '#canvas-bounds']) nodes.get(selector).tooltip = new ElementStub();
   const doc = frameDocument(), frame = nodes.get('#component-frame'), workspace = nodes.get('.workspace-grid');
   const preview = frameDocument();
   frame.clientWidth = preview.documentElement.clientWidth; frame.clientHeight = preview.documentElement.clientHeight;
+  Object.assign(nodes.get('#preview-content'), { clientWidth: frame.clientWidth, clientHeight: frame.clientHeight });
   frame.contentDocument = preview;
   const outside = [new ElementStub(), new ElementStub()]; outside[1].inert = true;
   doc.body.style.overflow = 'clip';
@@ -71,6 +72,45 @@ function fixture(t, options = {}) {
   const flush = () => { const callbacks = [...pending.values()]; pending.clear(); callbacks.forEach(callback => callback()); };
   return { ui, state, doc, preview, nodes, frame, workspace, outside, changes, inspector, observers, pending, flush };
 }
+
+test('fixed viewports scale to available space while logical responsive dimensions remain unchanged', () => {
+  const desktop = canvasViewportFit({ availableWidth: 614, viewportWidth: 1024, viewportHeight: 310 });
+  assert.equal(desktop.logicalWidth, 1024);
+  assert.equal(desktop.scale, 614 / 1024);
+  assert.equal(desktop.width, 614);
+  assert.equal(desktop.height, 310 * 614 / 1024);
+  assert.equal(canvasViewportFit({ availableWidth: 1400, viewportWidth: 1024 }).scale, 1, 'large cards do not upscale components');
+  assert.equal(canvasViewportFit({ availableWidth: 614, viewportWidth: 'fit' }).logicalWidth, 614);
+  const expanded = canvasViewportFit({ availableWidth: 512, viewportWidth: 1024, viewportHeight: 310, expandedHeight: 400 });
+  assert.equal(expanded.logicalHeight, 800);
+  assert.equal(expanded.height, 400, 'expanded mode fills the available height after scaling');
+});
+
+test('desktop fit reserves only painted space, keeps CSS rulers truthful, and returns to responsive without replacing the iframe', async t => {
+  const { ui, state, frame, preview, nodes, observers, flush } = fixture(t);
+  const content = nodes.get('#preview-content'), shell = nodes.get('.canvas-viewport-shell'), scene = nodes.get('.canvas-viewport-scale');
+  content.clientWidth = 614; frame.clientWidth = 1024; preview.documentElement.clientWidth = 1024;
+  frame.style.height = '310px'; frame.clientHeight = 310;
+  state.layout.width = 1024; state.layout.grid = true; ui.init();
+  assert.equal(frame.style.width, '1024px');
+  assert.equal(scene.style.width, '1024px');
+  assert.equal(scene.style.transform, `scale(${614 / 1024})`);
+  assert.equal(shell.style.width, '614px');
+  assert.equal(shell.style.height, `${310 * 614 / 1024}px`);
+  assert.equal(nodes.get('#canvas-dimensions').textContent, '1024 × 310 px · 60%');
+  assert.match(nodes.get('#canvas-help').textContent, /viewport remains 1024 CSS px/);
+  assert.equal(preview.body.children[0].children[0].children.at(-1).textContent, '960');
+  content.clientWidth = 1200;
+  for (const observer of observers) observer.callback([{ target: nodes.get('#preview-stage') }]);
+  flush();
+  assert.equal(scene.style.transform, 'scale(1)'); assert.equal(shell.style.width, '1024px');
+  assert.equal(nodes.get('#canvas-dimensions').textContent, '1024 × 310 px');
+  frame.clientWidth = 1200; preview.documentElement.clientWidth = 1200;
+  await nodes.get('#canvas-width').emit('mdChange', { detail: 'fit' });
+  assert.equal(frame.style.width, '100%'); assert.equal(scene.style.width, '1200px');
+  assert.equal(nodes.get('#component-frame'), frame, 'scaling must not replace or reparent a mounted iframe');
+  assert.equal(state.previewDocument, preview);
+});
 
 test('direction and viewport controls update the preview without rewriting component props', async t => {
   const { ui, state, preview, nodes, changes, frame } = fixture(t);

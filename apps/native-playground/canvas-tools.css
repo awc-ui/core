@@ -1,4 +1,8 @@
 /* Canvas aids are viewport measurements, never component style overrides. */
+.preview-stage>#preview-content:has(>.canvas-viewport-shell){min-width:0;justify-content:center;align-items:center}
+.canvas-viewport-shell{position:relative;flex:none;min-width:0;max-width:100%;overflow:hidden;border-radius:9px;outline:1px solid var(--border)}
+.canvas-viewport-scale{position:absolute;inset:0 auto auto 0;transform-origin:top left}
+.canvas-viewport-scale>#component-frame{min-width:0;max-width:none;margin:0;box-shadow:none;transition:none}
 .canvas-toggles{align-items:center;gap:2px}.canvas-toggles md-tooltip{display:inline-flex}
 #canvas-direction{font:500 10px/1 ui-monospace,monospace;color:var(--primary);padding:5px 6px;background:var(--primary-soft);border-radius:4px;white-space:nowrap}
 #canvas-help{margin:0;padding:9px 18px;color:var(--muted);background:var(--panel);border-bottom:1px solid var(--border);font-size:11px;line-height:1.5}
