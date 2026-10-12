@@ -37,4 +37,9 @@ pnpm native:build
 swift build --package-path packages/native-ios
 ```
 
+The button's M3 Expressive typography, square/pressed corners, size-specific
+outline widths and density-adjusted insets have a focused contract check runnable
+with macOS Command Line Tools: `sh packages/native-ios/scripts/test-native-button.sh`.
+The same cases run in XCTest when the full Xcode test SDK is available.
+
 See `apps/native-ios-playground` for iPhone/iPad, macOS and offscreen visual render targets. Production rendering never inserts example data; fixtures live separately in `AWCExamples`.

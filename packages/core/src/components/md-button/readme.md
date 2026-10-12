@@ -55,13 +55,29 @@ Pick `variant` by emphasis, highest first. M3: use the strongest style **sparing
 
 Pick `size` by context (**default is `sm`, not `md`**):
 
-| `size` | Min block-size | Icon | Typical use |
-|---|---|---|---|
-| `xs` | 32px | 20px | Dense tables, toolbars, inline row actions |
-| `sm` | 40px | 20px | **Default.** Standard UI density |
-| `md` | 56px | 24px | Comfortable / touch-first forms |
-| `lg` | 96px | 32px | Primary CTA on a landing surface |
-| `xl` | 136px | 40px | Hero / marketing CTA |
+| `size` | Min block-size | Icon | Font / line height | Typical use |
+|---|---|---|---|---|
+| `xs` | 32px | 20px | 14px / 20px | Dense tables, toolbars, inline row actions |
+| `sm` | 40px | 20px | 14px / 20px | **Default.** Standard UI density |
+| `md` | 56px | 24px | 16px / 24px | Comfortable / touch-first forms |
+| `lg` | 96px | 32px | 24px / 32px | Primary CTA on a landing surface |
+| `xl` | 136px | 40px | 32px / 40px | Hero / marketing CTA |
+
+Baseline dimensions follow the [M3 Expressive button specification](https://m3.material.io/components/buttons/specs)
+at density 0. Text uses weight 500 for `xs`–`md` and 400 for `lg`–`xl`.
+
+| `size` | Outer-edge horizontal inset | Icon–label gap | Outline width | Square radius | Pressed radius |
+|---|---|---|---|---|---|
+| `xs` | 12px | 4px | 1px | 12px | 8px |
+| `sm` | 16px | 8px | 1px | 12px | 8px |
+| `md` | 24px | 8px | 1px | 16px | 12px |
+| `lg` | 48px | 12px | 2px | 28px | 16px |
+| `xl` | 64px | 16px | 3px | 28px | 16px |
+
+Outlined buttons subtract the border width from their CSS padding to preserve
+the same outer-edge inset as filled buttons. Vertical padding is zero; flex
+alignment centers the content inside the minimum height. Negative density
+values are AWC compact-layout adjustments to this baseline.
 
 Heights are `min-block-size` floors, not fixed heights, and each size also
 carries a `min-inline-size`. The label is `white-space: nowrap`, so a long
@@ -275,7 +291,7 @@ swing wildly in length between states.
 | `--md-button-icon-size` | Icon box | 20px (`xs`/`sm`) → 40px (`xl`) |
 | `--md-button-container-shape` | Border radius | Per shape/size |
 | `--md-button-outline-color` | `outlined` border color | `--md-sys-color-outline` |
-| `--md-button-outline-width` | `outlined` border width | `1px` |
+| `--md-button-outline-width` | `outlined` border width | `1px` (`xs`–`md`), `2px` (`lg`), `3px` (`xl`) |
 | `--md-button-width` | Fixed inline-size | `auto` (`100%` when `full-width`) |
 | `--md-button-min-width` / `--md-button-max-width` | Inline-size bounds | Touch target / `none` |
 | `--md-button-height` / `--md-button-min-height` | Block-size bounds | `auto` / touch target |

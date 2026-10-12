@@ -6,6 +6,7 @@ struct AWCNativeButtonMetrics {
     let minimumHeight: CGFloat
     let minimumWidth: CGFloat
     let horizontalPadding: CGFloat
+    let outlineWidth: CGFloat
     let gap: CGFloat
     let iconSize: CGFloat
     let loadingSize: CGFloat
@@ -29,21 +30,25 @@ struct AWCNativeButtonMetrics {
         }
         minimumHeight = CGFloat(max(24, [32.0, 40, 56, 96, 136][index] + density * 4))
         minimumWidth = CGFloat(max(40, [48.0, 58, 72, 88, 120][index] + density * 4))
-        let insets = variant == "outlined" ? [11.0, 23, 27, 31, 47] : [12.0, 16, 24, 48, 64]
-        horizontalPadding = CGFloat(max(insets[index] / 2, insets[index] + density * insets[index] / 16))
+        let inset = [12.0, 16, 24, 48, 64][index]
+        let outerInset = CGFloat(max(inset / 2, inset + density * inset / 16))
+        outlineWidth = variant == "outlined" ? CGFloat([1.0, 1, 1, 2, 3][index]) : 0
+        // CSS padding excludes its border. Keep the total inset identical across
+        // variants while larger tiers draw their wider M3 Expressive outline.
+        horizontalPadding = max(0, outerInset - outlineWidth)
         gap = tapered([4, 8, 8, 12, 16], [0.5, 1, 1, 1.5, 2], [2, 4, 4, 6, 8])
         iconSize = tapered([20, 20, 24, 32, 40], [2.5, 2.5, 3, 4, 5], [10, 10, 12, 16, 20])
         loadingSize = max(10, iconSize * 0.7)
-        fontSize = tapered([12, 14, 14, 16, 24], [0.5, 0.5, 0.5, 0.5, 1], [10, 12, 12, 13, 18])
-        lineHeight = tapered([16, 20, 20, 24, 32], [0.5, 1, 1, 1, 2], [14, 16, 16, 18, 24])
-        let typeRole = ["label-medium", "label-large", "title-small", "title-medium", "headline-small"][index]
-        letterSpacing = CGFloat(awcButtonNumber(tokens["--md-sys-typescale-\(typeRole)-letter-spacing"], [0.5, 0.1, 0.1, 0.15, 0][index]))
-        fontWeight = awcButtonNumber(tokens["--md-sys-typescale-\(typeRole)-font-weight"], index == 4 ? 400 : 500)
+        fontSize = tapered([14, 14, 16, 24, 32], [0.5, 0.5, 0.5, 1, 2], [12, 12, 13, 18, 24])
+        lineHeight = tapered([20, 20, 24, 32, 40], [1, 1, 1, 2, 2], [16, 16, 18, 24, 32])
+        let typeRole = ["label-large", "label-large", "title-medium", "headline-small", "headline-large"][index]
+        letterSpacing = CGFloat(awcButtonNumber(tokens["--md-sys-typescale-\(typeRole)-letter-spacing"], [0.1, 0.1, 0.15, 0, 0][index]))
+        fontWeight = awcButtonNumber(tokens["--md-sys-typescale-\(typeRole)-font-weight"], index >= 3 ? 400 : 500)
         roundRadius = CGFloat([16.0, 20, 28, 48, 68][index])
-        let squareToken = ["small", "medium", "medium", "large", "extra-large"][index]
-        squareRadius = CGFloat(awcButtonNumber(tokens["--md-sys-shape-corner-\(squareToken)"], [8, 12, 12, 16, 28][index]))
-        let pressToken = ["extra-small", "small", "small", "medium", "large"][index]
-        pressedRadius = CGFloat(awcButtonNumber(tokens["--md-sys-shape-corner-\(pressToken)"], [4, 8, 8, 12, 16][index]))
+        let squareToken = ["medium", "medium", "large", "extra-large", "extra-large"][index]
+        squareRadius = CGFloat(awcButtonNumber(tokens["--md-sys-shape-corner-\(squareToken)"], [12, 12, 16, 28, 28][index]))
+        let pressToken = ["small", "small", "medium", "large", "large"][index]
+        pressedRadius = CGFloat(awcButtonNumber(tokens["--md-sys-shape-corner-\(pressToken)"], [8, 8, 12, 16, 16][index]))
         connectedRadius = CGFloat([4.0, 8, 8, 16, 20][index])
     }
 }
@@ -292,7 +297,7 @@ private struct AWCNativeButtonStyleBody: View {
             .tracking(metrics.letterSpacing)
             .lineLimit(1)
             .animation(colorAnimation) { content in content.foregroundStyle(color(palette.labelRole).opacity(contentOpacity)) })
-        let surface = AnyView(label.padding(.horizontal, metrics.horizontalPadding + (variant == "outlined" ? 1 : 0))
+        let surface = AnyView(label.padding(.horizontal, metrics.horizontalPadding + metrics.outlineWidth)
             .frame(minWidth: metrics.minimumWidth, minHeight: metrics.minimumHeight)
             .frame(maxWidth: fullWidth ? .infinity : nil)
             .background {
@@ -311,7 +316,7 @@ private struct AWCNativeButtonStyleBody: View {
                     }
             })
         let bordered = AnyView(surface.overlay {
-                outline.strokeBorder(lineWidth: variant == "outlined" ? 1 : 0)
+                outline.strokeBorder(lineWidth: metrics.outlineWidth)
                     .animation(shapeAnimation, value: corners)
                     .animation(colorAnimation) { content in
                         content.foregroundStyle(borderColor.opacity(disabledPalette ? opacity("disabled-container", 0.12) : palette.outlineOpacity))

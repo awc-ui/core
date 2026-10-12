@@ -3,21 +3,7 @@ import XCTest
 
 final class NativeButtonTests: XCTestCase {
     func testActualSourceSizeRules() {
-        // These are the actual declarations in md-button.css, whose old header
-        // comment still describes a different md/lg/xl ladder.
-        let cases: [(String, CGFloat, CGFloat, CGFloat, CGFloat, CGFloat)] = [
-            ("xs", 32, 48, 12, 20, 12), ("sm", 40, 58, 16, 20, 14),
-            ("md", 56, 72, 24, 24, 14), ("lg", 96, 88, 48, 32, 16),
-            ("xl", 136, 120, 64, 40, 24)
-        ]
-        for (size, height, width, padding, icon, font) in cases {
-            let result = AWCNativeButtonMetrics(size: size, density: 0, variant: "filled")
-            XCTAssertEqual(result.minimumHeight, height, size)
-            XCTAssertEqual(result.minimumWidth, width, size)
-            XCTAssertEqual(result.horizontalPadding, padding, size)
-            XCTAssertEqual(result.iconSize, icon, size)
-            XCTAssertEqual(result.fontSize, font, size)
-        }
+        NativeButtonMetricCases.run { valid, message in XCTAssertTrue(valid, message) }
     }
 
     func testDensityFloorsAndVariantInsets() {
@@ -29,12 +15,13 @@ final class NativeButtonTests: XCTestCase {
         XCTAssertEqual(small.loadingSize, 10)
         XCTAssertEqual(small.gap, 4)
         let outlined = AWCNativeButtonMetrics(size: "sm", density: -4, variant: "outlined")
-        XCTAssertEqual(outlined.horizontalPadding, 17.25)
+        XCTAssertEqual(outlined.horizontalPadding, 11)
+        XCTAssertEqual(outlined.horizontalPadding + outlined.outlineWidth, small.horizontalPadding)
         let extraLarge = AWCNativeButtonMetrics(size: "xl", density: -4, variant: "text")
         XCTAssertEqual(extraLarge.minimumHeight, 120)
         XCTAssertEqual(extraLarge.horizontalPadding, 48)
-        XCTAssertEqual(extraLarge.fontSize, 20)
-        XCTAssertEqual(extraLarge.lineHeight, 24)
+        XCTAssertEqual(extraLarge.fontSize, 24)
+        XCTAssertEqual(extraLarge.lineHeight, 32)
         // Only exact reflected density rungs match a source CSS selector.
         XCTAssertEqual(AWCNativeButtonMetrics(size: "sm", density: -1.5, variant: "filled").minimumHeight, 40)
     }
@@ -82,13 +69,13 @@ final class NativeButtonTests: XCTestCase {
             AWCNativeButtonCorners(metrics: metrics, shape: shape, shapeMorph: morph, selected: selected, pressed: pressed).topLeading
         }
         XCTAssertEqual(radius("round", false, false), 28)
-        XCTAssertEqual(radius("round", true, false), 12)
-        XCTAssertEqual(radius("square", false, false), 12)
+        XCTAssertEqual(radius("round", true, false), 16)
+        XCTAssertEqual(radius("square", false, false), 16)
         XCTAssertEqual(radius("square", true, false), 28)
-        XCTAssertEqual(radius("round", true, true), 8)
-        XCTAssertEqual(radius("square", true, true), 8)
+        XCTAssertEqual(radius("round", true, true), 12)
+        XCTAssertEqual(radius("square", true, true), 12)
         XCTAssertEqual(radius("round", true, true, false), 28)
-        XCTAssertEqual(radius("square", true, true, false), 12)
+        XCTAssertEqual(radius("square", true, true, false), 16)
     }
 
     func testConnectedCornersAndGeneratedTokenOverrides() {
@@ -101,8 +88,8 @@ final class NativeButtonTests: XCTestCase {
                                           selected: false, pressed: false, connectedLeft: true)
         XCTAssertEqual(last.topLeading, 8)
         XCTAssertEqual(last.topTrailing, 28)
-        let tokens = ["--md-sys-shape-corner-medium": "13px", "--md-sys-shape-corner-small": "7px",
-                      "--md-sys-typescale-title-small-font-weight": "400"]
+        let tokens = ["--md-sys-shape-corner-large": "13px", "--md-sys-shape-corner-medium": "7px",
+                      "--md-sys-typescale-title-medium-font-weight": "400"]
         let customized = AWCNativeButtonMetrics(size: "md", density: 0, variant: "filled", tokens: tokens)
         XCTAssertEqual(customized.squareRadius, 13)
         XCTAssertEqual(customized.pressedRadius, 7)

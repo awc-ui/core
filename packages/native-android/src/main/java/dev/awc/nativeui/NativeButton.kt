@@ -39,19 +39,22 @@ internal data class NativeButtonMetrics(val size: String, val density: Float, va
     private fun taper(base: List<Float>, slope: List<Float>, floor: List<Float>) = max(floor[index], base[index] + rung * slope[index])
     val height = max(24f, listOf(32f, 40f, 56f, 96f, 136f)[index] + rung * 4f)
     val minimumWidth = max(40f, listOf(48f, 58f, 72f, 88f, 120f)[index] + rung * 4f)
-    private val inset = (if(variant == "outlined") listOf(11f, 23f, 27f, 31f, 47f) else listOf(12f, 16f, 24f, 48f, 64f))[index]
-    val padding = max(inset / 2f, inset + rung * inset / 16f) + if(variant == "outlined") 1f else 0f
+    private val inset = listOf(12f, 16f, 24f, 48f, 64f)[index]
+    // Compose borders paint inside the measured bounds. This is the full outer
+    // inset, including the outline, so outlined content aligns with other variants.
+    val padding = max(inset / 2f, inset + rung * inset / 16f)
+    val outlineWidth = listOf(1f, 1f, 1f, 2f, 3f)[index]
     val gap = taper(listOf(4f,8f,8f,12f,16f), listOf(.5f,1f,1f,1.5f,2f), listOf(2f,4f,4f,6f,8f))
     val icon = taper(listOf(20f,20f,24f,32f,40f), listOf(2.5f,2.5f,3f,4f,5f), listOf(10f,10f,12f,16f,20f))
     val loading = max(10f, icon * .7f)
-    val fontSize = taper(listOf(12f,14f,14f,16f,24f), listOf(.5f,.5f,.5f,.5f,1f), listOf(10f,12f,12f,13f,18f))
-    val lineHeight = taper(listOf(16f,20f,20f,24f,32f), listOf(.5f,1f,1f,1f,2f), listOf(14f,16f,16f,18f,24f))
-    private val typeRole = listOf("label-medium", "label-large", "title-small", "title-medium", "headline-small")[index]
-    val tracking = token("--md-sys-typescale-$typeRole-letter-spacing", listOf(.5f,.1f,.1f,.15f,0f)[index])
-    val weight = token("--md-sys-typescale-$typeRole-font-weight", if(index == 4) 400f else 500f).toInt()
+    val fontSize = taper(listOf(14f,14f,16f,24f,32f), listOf(.5f,.5f,.5f,1f,2f), listOf(12f,12f,13f,18f,24f))
+    val lineHeight = taper(listOf(20f,20f,24f,32f,40f), listOf(1f,1f,1f,2f,2f), listOf(16f,16f,18f,24f,32f))
+    val typeRole = listOf("label-large", "label-large", "title-medium", "headline-small", "headline-large")[index]
+    val tracking = token("--md-sys-typescale-$typeRole-letter-spacing", listOf(.1f,.1f,.15f,0f,0f)[index])
+    val weight = token("--md-sys-typescale-$typeRole-font-weight", if(index >= 3) 400f else 500f).toInt()
     val roundRadius = listOf(16f,20f,28f,48f,68f)[index]
-    val squareRadius = token("--md-sys-shape-corner-${listOf("small","medium","medium","large","extra-large")[index]}", listOf(8f,12f,12f,16f,28f)[index])
-    val pressedRadius = token("--md-sys-shape-corner-${listOf("extra-small","small","small","medium","large")[index]}", listOf(4f,8f,8f,12f,16f)[index])
+    val squareRadius = token("--md-sys-shape-corner-${listOf("medium","medium","large","extra-large","extra-large")[index]}", listOf(12f,12f,16f,28f,28f)[index])
+    val pressedRadius = token("--md-sys-shape-corner-${listOf("small","small","medium","large","large")[index]}", listOf(8f,8f,12f,16f,16f)[index])
     val connectedRadius = listOf(4f,8f,8f,16f,20f)[index]
     fun radius(square: Boolean, morph: Boolean, selected: Boolean, pressed: Boolean): Float =
         if(!morph) { if(square) squareRadius else roundRadius }
@@ -213,7 +216,7 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
                     }
                     drawContent()
                 }
-                .then(if(p.str("variant") == "outlined") Modifier.border(1.dp,outline,shape) else Modifier)
+                .then(if(p.str("variant") == "outlined") Modifier.border(metrics.outlineWidth.dp,outline,shape) else Modifier)
                 .then(nativeFocus.modifier)
                 .onPreviewKeyEvent { event ->
                     if(event.key !in listOf(Key.Enter, Key.NumPadEnter, Key.Spacebar)) false

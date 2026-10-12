@@ -548,7 +548,7 @@
     "styleUrl": "md-button.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "b86c8e6f21fed53ca722a644b78b67925f15f5c85bb944e7816fcbf280b3f854"
+    "sha256": "ca88f4bd3c908f116d2a8735d824e232090a8ebdbbca3efd2df7be7e5f15b11d"
   },
   "styles": [
     {
@@ -578,6 +578,11 @@
         {
           "property": "--_icon-size",
           "value": "var(--md-button-icon-size, 18px)",
+          "important": false
+        },
+        {
+          "property": "--_outline-width",
+          "value": "var(--md-button-outline-width, var(--_size-outline-width, 1px))",
           "important": false
         },
         {
@@ -742,6 +747,11 @@
           "important": false
         },
         {
+          "property": "--_size-outline-width",
+          "value": "1px",
+          "important": false
+        },
+        {
           "property": "--_size-min-height",
           "value": "32px",
           "important": false
@@ -752,8 +762,13 @@
           "important": false
         },
         {
+          "property": "--_padding-inline",
+          "value": "max(6px, calc(12px + var(--md-sys-density-scale, 0) * 0.75px))",
+          "important": false
+        },
+        {
           "property": "padding",
-          "value": "0 max(6px, calc(12px + var(--md-sys-density-scale, 0) * 0.75px))",
+          "value": "0 var(--_padding-inline)",
           "important": false
         },
         {
@@ -763,27 +778,27 @@
         },
         {
           "property": "font-family",
-          "value": "var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif)",
+          "value": "var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif)",
           "important": false
         },
         {
           "property": "font-size",
-          "value": "max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
           "important": false
         },
         {
           "property": "font-weight",
-          "value": "var(--md-sys-typescale-label-medium-font-weight, 500)",
+          "value": "var(--md-sys-typescale-label-large-font-weight, 500)",
           "important": false
         },
         {
           "property": "letter-spacing",
-          "value": "var(--md-sys-typescale-label-medium-letter-spacing, 0.5px)",
+          "value": "var(--md-sys-typescale-label-large-letter-spacing, 0.1px)",
           "important": false
         },
         {
           "property": "line-height",
-          "value": "max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
           "important": false
         }
       ]
@@ -803,6 +818,11 @@
           "important": false
         },
         {
+          "property": "--_size-outline-width",
+          "value": "1px",
+          "important": false
+        },
+        {
           "property": "--_size-min-height",
           "value": "40px",
           "important": false
@@ -813,8 +833,13 @@
           "important": false
         },
         {
+          "property": "--_padding-inline",
+          "value": "max(8px, calc(16px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
+        },
+        {
           "property": "padding",
-          "value": "0 max(8px, calc(16px + var(--md-sys-density-scale, 0) * 1px))",
+          "value": "0 var(--_padding-inline)",
           "important": false
         },
         {
@@ -864,6 +889,11 @@
           "important": false
         },
         {
+          "property": "--_size-outline-width",
+          "value": "1px",
+          "important": false
+        },
+        {
           "property": "--_size-min-height",
           "value": "56px",
           "important": false
@@ -874,74 +904,18 @@
           "important": false
         },
         {
+          "property": "--_padding-inline",
+          "value": "max(12px, calc(24px + var(--md-sys-density-scale, 0) * 1.5px))",
+          "important": false
+        },
+        {
           "property": "padding",
-          "value": "0 max(12px, calc(24px + var(--md-sys-density-scale, 0) * 1.5px))",
+          "value": "0 var(--_padding-inline)",
           "important": false
         },
         {
           "property": "gap",
           "value": "max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px))",
-          "important": false
-        },
-        {
-          "property": "font-family",
-          "value": "var(--md-sys-typescale-title-small-font-family, Roboto, sans-serif)",
-          "important": false
-        },
-        {
-          "property": "font-size",
-          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
-          "important": false
-        },
-        {
-          "property": "font-weight",
-          "value": "var(--md-sys-typescale-title-small-font-weight, 500)",
-          "important": false
-        },
-        {
-          "property": "letter-spacing",
-          "value": "var(--md-sys-typescale-title-small-letter-spacing, 0.1px)",
-          "important": false
-        },
-        {
-          "property": "line-height",
-          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": ":host(.md-button--lg)",
-      "context": null,
-      "declarations": [
-        {
-          "property": "--_icon-size",
-          "value": "var(--md-button-icon-size, max(16px, calc(32px + var(--md-sys-density-scale, 0) * 4px)))",
-          "important": false
-        },
-        {
-          "property": "--_shape-round",
-          "value": "48px",
-          "important": false
-        },
-        {
-          "property": "--_size-min-height",
-          "value": "96px",
-          "important": false
-        },
-        {
-          "property": "--_size-min-width",
-          "value": "88px",
-          "important": false
-        },
-        {
-          "property": "padding",
-          "value": "0 max(24px, calc(48px + var(--md-sys-density-scale, 0) * 3px))",
-          "important": false
-        },
-        {
-          "property": "gap",
-          "value": "max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px))",
           "important": false
         },
         {
@@ -972,37 +946,47 @@
       ]
     },
     {
-      "selector": ":host(.md-button--xl)",
+      "selector": ":host(.md-button--lg)",
       "context": null,
       "declarations": [
         {
           "property": "--_icon-size",
-          "value": "var(--md-button-icon-size, max(20px, calc(40px + var(--md-sys-density-scale, 0) * 5px)))",
+          "value": "var(--md-button-icon-size, max(16px, calc(32px + var(--md-sys-density-scale, 0) * 4px)))",
           "important": false
         },
         {
           "property": "--_shape-round",
-          "value": "68px",
+          "value": "48px",
+          "important": false
+        },
+        {
+          "property": "--_size-outline-width",
+          "value": "2px",
           "important": false
         },
         {
           "property": "--_size-min-height",
-          "value": "136px",
+          "value": "96px",
           "important": false
         },
         {
           "property": "--_size-min-width",
-          "value": "120px",
+          "value": "88px",
+          "important": false
+        },
+        {
+          "property": "--_padding-inline",
+          "value": "max(24px, calc(48px + var(--md-sys-density-scale, 0) * 3px))",
           "important": false
         },
         {
           "property": "padding",
-          "value": "0 max(32px, calc(64px + var(--md-sys-density-scale, 0) * 4px))",
+          "value": "0 var(--_padding-inline)",
           "important": false
         },
         {
           "property": "gap",
-          "value": "max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px))",
+          "value": "max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px))",
           "important": false
         },
         {
@@ -1028,6 +1012,77 @@
         {
           "property": "line-height",
           "value": "max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-button--xl)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_icon-size",
+          "value": "var(--md-button-icon-size, max(20px, calc(40px + var(--md-sys-density-scale, 0) * 5px)))",
+          "important": false
+        },
+        {
+          "property": "--_shape-round",
+          "value": "68px",
+          "important": false
+        },
+        {
+          "property": "--_size-outline-width",
+          "value": "3px",
+          "important": false
+        },
+        {
+          "property": "--_size-min-height",
+          "value": "136px",
+          "important": false
+        },
+        {
+          "property": "--_size-min-width",
+          "value": "120px",
+          "important": false
+        },
+        {
+          "property": "--_padding-inline",
+          "value": "max(32px, calc(64px + var(--md-sys-density-scale, 0) * 4px))",
+          "important": false
+        },
+        {
+          "property": "padding",
+          "value": "0 var(--_padding-inline)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "font-family",
+          "value": "var(--md-sys-typescale-headline-large-font-family, Roboto, sans-serif)",
+          "important": false
+        },
+        {
+          "property": "font-size",
+          "value": "max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px))",
+          "important": false
+        },
+        {
+          "property": "font-weight",
+          "value": "var(--md-sys-typescale-headline-large-font-weight, 400)",
+          "important": false
+        },
+        {
+          "property": "letter-spacing",
+          "value": "var(--md-sys-typescale-headline-large-letter-spacing, 0px)",
+          "important": false
+        },
+        {
+          "property": "line-height",
+          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 2px))",
           "important": false
         }
       ]
@@ -1070,7 +1125,7 @@
       "declarations": [
         {
           "property": "--_shape-rest",
-          "value": "var(--md-button-container-shape, var(--md-sys-shape-corner-small, 8px))",
+          "value": "var(--md-button-container-shape, var(--md-sys-shape-corner-medium, 12px))",
           "important": false
         },
         {
@@ -1102,7 +1157,7 @@
       "declarations": [
         {
           "property": "--_shape-rest",
-          "value": "var(--md-button-container-shape, var(--md-sys-shape-corner-medium, 12px))",
+          "value": "var(--md-button-container-shape, var(--md-sys-shape-corner-large, 16px))",
           "important": false
         },
         {
@@ -1118,7 +1173,7 @@
       "declarations": [
         {
           "property": "--_shape-rest",
-          "value": "var(--md-button-container-shape, var(--md-sys-shape-corner-large, 16px))",
+          "value": "var(--md-button-container-shape, var(--md-sys-shape-corner-extra-large, 28px))",
           "important": false
         },
         {
@@ -1150,7 +1205,7 @@
       "declarations": [
         {
           "property": "--_morph-to",
-          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "value": "var(--md-sys-shape-corner-medium, 12px)",
           "important": false
         }
       ]
@@ -1172,7 +1227,7 @@
       "declarations": [
         {
           "property": "--_morph-to",
-          "value": "var(--md-sys-shape-corner-medium, 12px)",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
           "important": false
         }
       ]
@@ -1183,7 +1238,7 @@
       "declarations": [
         {
           "property": "--_morph-to",
-          "value": "var(--md-sys-shape-corner-large, 16px)",
+          "value": "var(--md-sys-shape-corner-extra-large, 28px)",
           "important": false
         }
       ]
@@ -1216,7 +1271,7 @@
       "declarations": [
         {
           "property": "--_morph-to",
-          "value": "var(--md-sys-shape-corner-extra-small, 4px)",
+          "value": "var(--md-sys-shape-corner-small, 8px)",
           "important": false
         },
         {
@@ -1258,7 +1313,7 @@
       "declarations": [
         {
           "property": "--_morph-to",
-          "value": "var(--md-sys-shape-corner-small, 8px)",
+          "value": "var(--md-sys-shape-corner-medium, 12px)",
           "important": false
         },
         {
@@ -1279,7 +1334,7 @@
       "declarations": [
         {
           "property": "--_morph-to",
-          "value": "var(--md-sys-shape-corner-medium, 12px)",
+          "value": "var(--md-sys-shape-corner-large, 16px)",
           "important": false
         },
         {
@@ -1519,62 +1574,12 @@
         },
         {
           "property": "border",
-          "value": "var(--md-button-outline-width, 1px) solid var(--md-button-outline-color, var(--md-sys-color-outline))",
+          "value": "var(--_outline-width) solid var(--md-button-outline-color, var(--md-sys-color-outline))",
           "important": false
-        }
-      ]
-    },
-    {
-      "selector": ":host(.md-button--outlined.md-button--xs)",
-      "context": null,
-      "declarations": [
+        },
         {
-          "property": "padding",
-          "value": "0 max(5.5px, calc(11px + var(--md-sys-density-scale, 0) * 0.6875px))",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": ":host(.md-button--outlined.md-button--sm)",
-      "context": null,
-      "declarations": [
-        {
-          "property": "padding",
-          "value": "0 max(11.5px, calc(23px + var(--md-sys-density-scale, 0) * 1.4375px))",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": ":host(.md-button--outlined.md-button--md)",
-      "context": null,
-      "declarations": [
-        {
-          "property": "padding",
-          "value": "0 max(13.5px, calc(27px + var(--md-sys-density-scale, 0) * 1.6875px))",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": ":host(.md-button--outlined.md-button--lg)",
-      "context": null,
-      "declarations": [
-        {
-          "property": "padding",
-          "value": "0 max(15.5px, calc(31px + var(--md-sys-density-scale, 0) * 1.9375px))",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": ":host(.md-button--outlined.md-button--xl)",
-      "context": null,
-      "declarations": [
-        {
-          "property": "padding",
-          "value": "0 max(23.5px, calc(47px + var(--md-sys-density-scale, 0) * 2.9375px))",
+          "property": "padding-inline",
+          "value": "max(0px, calc(var(--_padding-inline) - var(--_outline-width)))",
           "important": false
         }
       ]

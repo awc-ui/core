@@ -43,6 +43,7 @@
   --_state-layer-color: var(--md-sys-color-primary);
   --_container-elevation: var(--md-sys-elevation-0, none);
   --_icon-size: var(--md-button-icon-size, 18px);
+  --_outline-width: var(--md-button-outline-width, var(--_size-outline-width, 1px));
 
   /* Sizing — defaults come from each size class via --_size-* tokens.
      Public --md-button-{width,min-width,max-width,height,min-height}
@@ -103,7 +104,7 @@
 
 /* ==========================================================
    1. SIZE
-   XS (32px) · SM (40px, default) · MD (48px) · LG (56px) · XL (96px)
+   M3 Expressive: XS (32px) · SM (40px, default) · MD (56px) · LG (96px) · XL (136px)
    ========================================================== */
 /* Icon<->label gap tapers with density like the rest of the button: the
    container height and icon already shrink per rung, so a frozen gap made
@@ -112,29 +113,33 @@
 :host(.md-button--xs) {
   --_icon-size: var(--md-button-icon-size, max(10px, calc(20px + var(--md-sys-density-scale, 0) * 2.5px)));
   --_shape-round: 16px;
+  --_size-outline-width: 1px;
   --_size-min-height: 32px;
   --_size-min-width: 48px;
   /* 25% across the density range, floored at half. At 50% the inset shrank
      faster than the button did — a -4 sm button was still 24px tall but had
      only 8px of side padding, which read crammed. */
-  padding: 0 max(6px, calc(12px + var(--md-sys-density-scale, 0) * 0.75px));
+  --_padding-inline: max(6px, calc(12px + var(--md-sys-density-scale, 0) * 0.75px));
+  padding: 0 var(--_padding-inline);
   gap: max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px));
-  font-family: var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif);
-  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
-  font-weight: var(--md-sys-typescale-label-medium-font-weight, 500);
-  letter-spacing: var(--md-sys-typescale-label-medium-letter-spacing, 0.5px);
-  line-height: max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-label-large-font-weight, 500);
+  letter-spacing: var(--md-sys-typescale-label-large-letter-spacing, 0.1px);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
 }
 
 :host(.md-button--sm) {
   --_icon-size: var(--md-button-icon-size, max(10px, calc(20px + var(--md-sys-density-scale, 0) * 2.5px)));
   --_shape-round: 20px;
+  --_size-outline-width: 1px;
   --_size-min-height: 40px;
   --_size-min-width: 58px;
   /* 25% across the density range, floored at half. At 50% the inset shrank
      faster than the button did — a -4 sm button was still 24px tall but had
      only 8px of side padding, which read crammed. */
-  padding: 0 max(8px, calc(16px + var(--md-sys-density-scale, 0) * 1px));
+  --_padding-inline: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 1px));
+  padding: 0 var(--_padding-inline);
   gap: max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px));
   font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
   font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
@@ -146,30 +151,15 @@
 :host(.md-button--md) {
   --_icon-size: var(--md-button-icon-size, max(12px, calc(24px + var(--md-sys-density-scale, 0) * 3px)));
   --_shape-round: 28px;
+  --_size-outline-width: 1px;
   --_size-min-height: 56px;
   --_size-min-width: 72px;
   /* 25% across the density range, floored at half. At 50% the inset shrank
      faster than the button did — a -4 sm button was still 24px tall but had
      only 8px of side padding, which read crammed. */
-  padding: 0 max(12px, calc(24px + var(--md-sys-density-scale, 0) * 1.5px));
+  --_padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 1.5px));
+  padding: 0 var(--_padding-inline);
   gap: max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px));
-  font-family: var(--md-sys-typescale-title-small-font-family, Roboto, sans-serif);
-  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
-  font-weight: var(--md-sys-typescale-title-small-font-weight, 500);
-  letter-spacing: var(--md-sys-typescale-title-small-letter-spacing, 0.1px);
-  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
-}
-
-:host(.md-button--lg) {
-  --_icon-size: var(--md-button-icon-size, max(16px, calc(32px + var(--md-sys-density-scale, 0) * 4px)));
-  --_shape-round: 48px;
-  --_size-min-height: 96px;
-  --_size-min-width: 88px;
-  /* 25% across the density range, floored at half. At 50% the inset shrank
-     faster than the button did — a -4 sm button was still 24px tall but had
-     only 8px of side padding, which read crammed. */
-  padding: 0 max(24px, calc(48px + var(--md-sys-density-scale, 0) * 3px));
-  gap: max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px));
   font-family: var(--md-sys-typescale-title-medium-font-family, Roboto, sans-serif);
   font-size: max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
   font-weight: var(--md-sys-typescale-title-medium-font-weight, 500);
@@ -177,21 +167,42 @@
   line-height: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
 }
 
-:host(.md-button--xl) {
-  --_icon-size: var(--md-button-icon-size, max(20px, calc(40px + var(--md-sys-density-scale, 0) * 5px)));
-  --_shape-round: 68px;
-  --_size-min-height: 136px;
-  --_size-min-width: 120px;
+:host(.md-button--lg) {
+  --_icon-size: var(--md-button-icon-size, max(16px, calc(32px + var(--md-sys-density-scale, 0) * 4px)));
+  --_shape-round: 48px;
+  --_size-outline-width: 2px;
+  --_size-min-height: 96px;
+  --_size-min-width: 88px;
   /* 25% across the density range, floored at half. At 50% the inset shrank
      faster than the button did — a -4 sm button was still 24px tall but had
      only 8px of side padding, which read crammed. */
-  padding: 0 max(32px, calc(64px + var(--md-sys-density-scale, 0) * 4px));
-  gap: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
+  --_padding-inline: max(24px, calc(48px + var(--md-sys-density-scale, 0) * 3px));
+  padding: 0 var(--_padding-inline);
+  gap: max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px));
   font-family: var(--md-sys-typescale-headline-small-font-family, Roboto, sans-serif);
   font-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
   font-weight: var(--md-sys-typescale-headline-small-font-weight, 400);
   letter-spacing: var(--md-sys-typescale-headline-small-letter-spacing, 0px);
   line-height: max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px));
+}
+
+:host(.md-button--xl) {
+  --_icon-size: var(--md-button-icon-size, max(20px, calc(40px + var(--md-sys-density-scale, 0) * 5px)));
+  --_shape-round: 68px;
+  --_size-outline-width: 3px;
+  --_size-min-height: 136px;
+  --_size-min-width: 120px;
+  /* 25% across the density range, floored at half. At 50% the inset shrank
+     faster than the button did — a -4 sm button was still 24px tall but had
+     only 8px of side padding, which read crammed. */
+  --_padding-inline: max(32px, calc(64px + var(--md-sys-density-scale, 0) * 4px));
+  padding: 0 var(--_padding-inline);
+  gap: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
+  font-family: var(--md-sys-typescale-headline-large-font-family, Roboto, sans-serif);
+  font-size: max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px));
+  font-weight: var(--md-sys-typescale-headline-large-font-weight, 400);
+  letter-spacing: var(--md-sys-typescale-headline-large-letter-spacing, 0px);
+  line-height: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 2px));
 }
 
 /* ==========================================================
@@ -230,10 +241,10 @@
   border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)));
 }
 
-:host(.md-button--square.md-button--xs) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-small, 8px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
+:host(.md-button--square.md-button--xs) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-medium, 12px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
 :host(.md-button--square.md-button--sm) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-medium, 12px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
-:host(.md-button--square.md-button--md) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-medium, 12px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
-:host(.md-button--square.md-button--lg) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-large, 16px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
+:host(.md-button--square.md-button--md) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-large, 16px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
+:host(.md-button--square.md-button--lg) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-extra-large, 28px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
 :host(.md-button--square.md-button--xl) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-extra-large, 28px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
 
 /* ==========================================================
@@ -249,10 +260,10 @@
    ========================================================== */
 
 /* ── Selected shape — round resting → square tokens when selected ── */
-:host(.md-button--shape-morph.md-button--round.md-button--selected.md-button--xs) { --_morph-to: var(--md-sys-shape-corner-small, 8px); }
+:host(.md-button--shape-morph.md-button--round.md-button--selected.md-button--xs) { --_morph-to: var(--md-sys-shape-corner-medium, 12px); }
 :host(.md-button--shape-morph.md-button--round.md-button--selected.md-button--sm) { --_morph-to: var(--md-sys-shape-corner-medium, 12px); }
-:host(.md-button--shape-morph.md-button--round.md-button--selected.md-button--md) { --_morph-to: var(--md-sys-shape-corner-medium, 12px); }
-:host(.md-button--shape-morph.md-button--round.md-button--selected.md-button--lg) { --_morph-to: var(--md-sys-shape-corner-large, 16px); }
+:host(.md-button--shape-morph.md-button--round.md-button--selected.md-button--md) { --_morph-to: var(--md-sys-shape-corner-large, 16px); }
+:host(.md-button--shape-morph.md-button--round.md-button--selected.md-button--lg) { --_morph-to: var(--md-sys-shape-corner-extra-large, 28px); }
 :host(.md-button--shape-morph.md-button--round.md-button--selected.md-button--xl) { --_morph-to: var(--md-sys-shape-corner-extra-large, 28px); }
 
 /* ── Selected shape — square resting → round when selected ── */
@@ -262,7 +273,7 @@
 
 /* ── Pressed shape — both round & square morph to more square, overrides selected ── */
 :host(.md-button--pressed.md-button--xs) {
-  --_morph-to: var(--md-sys-shape-corner-extra-small, 4px);
+  --_morph-to: var(--md-sys-shape-corner-small, 8px);
   transition-duration: var(--md-sys-motion-duration-short4, 200ms);
   transition-timing-function: var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
 }
@@ -272,12 +283,12 @@
   transition-timing-function: var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
 }
 :host(.md-button--pressed.md-button--md) {
-  --_morph-to: var(--md-sys-shape-corner-small, 8px);
+  --_morph-to: var(--md-sys-shape-corner-medium, 12px);
   transition-duration: var(--md-sys-motion-duration-short4, 200ms);
   transition-timing-function: var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
 }
 :host(.md-button--pressed.md-button--lg) {
-  --_morph-to: var(--md-sys-shape-corner-medium, 12px);
+  --_morph-to: var(--md-sys-shape-corner-large, 16px);
   transition-duration: var(--md-sys-motion-duration-short4, 200ms);
   transition-timing-function: var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
 }
@@ -368,21 +379,12 @@
   --_container-color: var(--md-button-container-color, transparent);
   --_label-color: var(--md-button-label-color, var(--md-sys-color-primary));
   --_state-layer-color: var(--md-sys-color-primary);
-  border: var(--md-button-outline-width, 1px) solid var(--md-button-outline-color, var(--md-sys-color-outline));
+  border: var(--_outline-width) solid var(--md-button-outline-color, var(--md-sys-color-outline));
+  padding-inline: max(0px, calc(var(--_padding-inline) - var(--_outline-width)));
 }
-/* Variant padding follows the SAME density rule as the base size rules above:
-   slope = base/16 (25% shrink across the four rungs) and a floor of base/2.
-   These overrides previously decayed at 52-133% per the old tuning — text sm
-   lost 133% of its inset and pinned to its floor by rung -2 — so outlined and
-   text shrank far faster than the button did. Past rung -2 that INVERTED the
-   variants: an outlined button, wider than filled at density 0, became
-   narrower than it, and a row of mixed-variant buttons went visibly ragged.
-   Density-0 values are unchanged; only the decay was corrected. */
-:host(.md-button--outlined.md-button--xs) { padding: 0 max(5.5px, calc(11px + var(--md-sys-density-scale, 0) * 0.6875px)); }
-:host(.md-button--outlined.md-button--sm) { padding: 0 max(11.5px, calc(23px + var(--md-sys-density-scale, 0) * 1.4375px)); }
-:host(.md-button--outlined.md-button--md) { padding: 0 max(13.5px, calc(27px + var(--md-sys-density-scale, 0) * 1.6875px)); }
-:host(.md-button--outlined.md-button--lg) { padding: 0 max(15.5px, calc(31px + var(--md-sys-density-scale, 0) * 1.9375px)); }
-:host(.md-button--outlined.md-button--xl) { padding: 0 max(23.5px, calc(47px + var(--md-sys-density-scale, 0) * 2.9375px)); }
+/* M3 Expressive uses the same outer-edge content inset for all variants.
+   Subtract the actual outline from the shared inset so border-box sizing keeps
+   filled and outlined widths equal, including density and outline overrides. */
 :host(.md-button--outlined:hover:not(.md-button--disabled)) {
   border-color: var(--md-button-outline-color, var(--md-sys-color-primary));
 }
