@@ -150,3 +150,47 @@ test('a build whose inputs changed during compilation cannot authorize later run
   assert.equal(built.source.stableDuringBuild, false);
   await assert.rejects(verifyIsolatedBuild({ root, runtimeDirectory: `${directory}/www/build` }), /incomplete or changed/);
 });
+
+test('component readers recheck captured build inputs without invalidating historical report contents', async t => {
+  const { root, options } = await fixture(t), buildDirectory = 'packages/core/coverage-e2e/scopes/all';
+  const config = path.join(root, 'packages/core/stencil.config.ts');
+  await writeFile(config, 'export const config = {};');
+  const building = await beginIsolatedBuild({ root, directory: buildDirectory });
+  for (const name of ['www/build', 'components']) {
+    await mkdir(path.join(root, buildDirectory, name), { recursive: true });
+    await writeFile(path.join(root, buildDirectory, name, 'index.js'), 'export {};');
+  }
+  await finishIsolatedBuild(building, { exitCode: 0 });
+  const build = await verifyIsolatedBuild({ root, runtimeDirectory: `${buildDirectory}/www/build` });
+  const directories = [];
+  for (const [framework, directory] of [['vitest', 'apps/storybook/coverage-stories'], ['playwright', 'apps/test-react/coverage-native/scopes/all']]) {
+    const handle = await beginTestRun({ ...options, category: 'component', framework, directory });
+    await writeFile(path.join(root, directory, 'results.json'), '{"testResults":[]}');
+    await finishTestRun(handle, { exitCode: 0, build });
+    directories.push(directory);
+    const fresh = await readTestRunEvidence(root, directory);
+    assert.equal(fresh.build.inputsMatchCurrent, true);
+    assert.equal(fresh.source.matchesCurrent, true);
+  }
+  await rm(path.join(root, buildDirectory), { recursive: true, force: true });
+  for (const directory of directories) assert.equal((await readTestRunEvidence(root, directory)).build.inputsMatchCurrent, true,
+    'Removing a replaceable compiled output does not erase historical input identity');
+  await writeFile(config, 'export const config = { changed: true };');
+  for (const directory of directories) {
+    const changed = await readTestRunEvidence(root, directory);
+    assert.deepEqual(changed.source.changedFiles, [], 'This dependency belongs to the build snapshot, not the runner snapshot');
+    assert.equal(changed.build.inputsMatchCurrent, false);
+    assert.equal(changed.source.matchesCurrent, false);
+    assert.deepEqual(changed.validArtifacts, ['results.json'], 'Report correlation survives an input change');
+  }
+  await writeFile(config, 'export const config = {};');
+  const filename = path.join(root, directories[0], 'run-evidence.json'), record = JSON.parse(await readFile(filename, 'utf8'));
+  for (const invalid of [null, {}, { ...build, sourceDigest: undefined }, { ...build, sourceDigest: 'invalid' },
+    { ...build, verified: false }, { ...build, runtimeDirectory: '../escape' }]) {
+    await writeFile(filename, JSON.stringify({ ...record, build: invalid }));
+    const read = await readTestRunEvidence(root, directories[0]);
+    assert.equal(read.build.inputsMatchCurrent, false);
+    assert.equal(read.source.matchesCurrent, false);
+    assert.deepEqual(read.validArtifacts, ['results.json']);
+  }
+});

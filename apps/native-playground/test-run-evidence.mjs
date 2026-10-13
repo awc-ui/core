@@ -231,6 +231,21 @@ export async function readTestRunEvidence(root, directory) {
     const current = await sourceSnapshot(root, value.category, value.framework);
     const changedFiles = [...new Set([...Object.keys(current.files), ...Object.keys(value.source.files)])]
       .filter(file => current.files[file] !== value.source.files[file]).sort();
-    return { ...value, validArtifacts, source: { ...value.source, matchesCurrent: value.source.stableDuringRun === true && changedFiles.length === 0, changedFiles } };
+    let build = value.build;
+    if (Object.hasOwn(value, 'build')) {
+      const claimed = build && typeof build === 'object' && !Array.isArray(build) ? build : {};
+      const buildRoot = typeof claimed.manifestPath === 'string' && claimed.manifestPath.endsWith('/build-evidence.json')
+        ? claimed.manifestPath.slice(0, -'/build-evidence.json'.length) : null;
+      const valid = claimed.verified === true && /^[a-f0-9-]{36}$/.test(claimed.buildId || '')
+        && hashPattern.test(claimed.sourceDigest) && hashPattern.test(claimed.runtimeDigest)
+        && buildDirectory(buildRoot) && ['www/build', 'components'].some(name => claimed.runtimeDirectory === `${buildRoot}/${name}`);
+      // Compare the captured digest, not the latest mutable build directory:
+      // a later compilation may replace that directory without changing inputs.
+      const buildInputs = valid ? value.category === 'e2e' && value.framework === 'jest' ? current : await sourceSnapshot(root, 'e2e', 'jest') : null;
+      build = { ...claimed, inputsMatchCurrent: !!buildInputs && buildInputs.digest === claimed.sourceDigest };
+    }
+    return { ...value, ...(Object.hasOwn(value, 'build') ? { build } : {}), validArtifacts,
+      source: { ...value.source, matchesCurrent: value.source.stableDuringRun === true && changedFiles.length === 0
+        && (!Object.hasOwn(value, 'build') || build.inputsMatchCurrent), changedFiles } };
   } catch { return null; }
 }

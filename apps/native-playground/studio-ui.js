@@ -230,7 +230,8 @@ export function renderCoverageRun(run, category) {
   const date = new Date(run.reportedAt);
   const timestamp = Number.isFinite(date.getTime()) ? date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'Time unavailable';
   const sourceStatus = run.state === 'running' ? 'Run in progress; inputs not yet verified' : !run.verified ? 'Unverified legacy report' : run.source?.matchesCurrent ? 'Tested inputs unchanged'
-    : run.source?.stableDuringRun === false ? 'Inputs changed during this run' : run.source?.changedFiles?.length ? 'Inputs changed since this run' : 'Input verification incomplete';
+    : run.source?.stableDuringRun === false ? 'Inputs changed during this run' : run.source?.changedFiles?.length ? 'Inputs changed since this run'
+      : run.source?.buildInputsMatchCurrent === false ? 'Build inputs changed or could not be verified' : 'Input verification incomplete';
   const heading = run.label || 'Saved test report';
   const metricHTML = measurement ? `<div class="coverage-measurements">${metrics.map(metric => `<div class="coverage-measurement"><div><span>${metric.label}</span><strong>${metric.text}</strong></div>${metric.percent === null ? '' : `<md-progress-indicator variant="linear" value="${metric.percent}" max="100" label="${escape(heading)} ${metric.label} coverage"></md-progress-indicator>`}<small>${metric.covered} of ${metric.total} covered</small></div>`).join('')}</div>` : '';
   const noCases = measurement?.attribution?.kind === 'broader-run' && measurement.attribution.componentTestCount === 0;

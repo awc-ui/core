@@ -376,6 +376,7 @@ function runMetadata(descriptor, modifiedAt) {
       startedAt: evidence.startedAt, completedAt: evidence.completedAt,
       source: { revision: evidence.source.revision, digest: evidence.source.digest,
         stableDuringRun: evidence.source.stableDuringRun, matchesCurrent: evidence.source.matchesCurrent,
+        ...(evidence.build ? { buildInputsMatchCurrent: evidence.build.inputsMatchCurrent } : {}),
         changedFiles: evidence.source.changedFiles } } : descriptor.run ? { legacyManifestPath: descriptor.manifestPath } : {}),
   };
 }

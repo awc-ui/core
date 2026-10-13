@@ -197,6 +197,11 @@ test('axe findings remain separate from passing related cases and source changes
   assert.match(html, /<b>1<\/b> failed/);
   assert.match(html, /2 recorded rule violations/);
   assert.doesNotMatch(html, /progress-indicator|13 passed/);
+  const changedBuild = renderCoverageRun({ label: 'Storybook', verified: true, reportedAt: '2026-10-14T12:00:00Z',
+    source: { stableDuringRun: true, matchesCurrent: false, changedFiles: [], buildInputsMatchCurrent: false },
+  }, 'component');
+  assert.match(changedBuild, /Build inputs changed or could not be verified/);
+  assert.doesNotMatch(changedBuild, /Tested inputs unchanged/);
 });
 
 test('incomplete runner attempts never display verified report hashes or fabricated case counts', () => {
