@@ -5,6 +5,7 @@ import { usageBrandIcon } from './brand-icons.js';
 import { renderCode } from './syntax-highlighting.js';
 import { createButtonAppearanceUI } from './button-appearance-ui.js';
 import { BUTTON_APPEARANCE_FIELDS, buttonAppearanceCSS } from './button-appearance.js';
+import { apiExample } from './api-examples.js';
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const prose = value => escape(value).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
@@ -14,6 +15,14 @@ const categoryDescriptions = {
   Methods: 'Methods are actions you can call on a component, such as focusing an input or checking validity. Each method documents its arguments and return value. Run them against the Web preview with a JSON argument array; native method availability depends on the adapter.',
   'CSS parts': 'CSS parts are named elements exposed from a Web component’s shadow DOM. Style them with `component-tag::part(name)` without depending on private markup. CSS selectors do not apply directly to SwiftUI or Jetpack Compose.',
 };
+
+const categorySummaries = {
+  Events: 'Handle interactions and read the data they send.',
+  Slots: 'Add labels, icons and custom content.',
+  Methods: 'Call actions from your application code.',
+  'CSS parts': 'Customize individual surfaces, text and icons.',
+};
+const codeLanguageLabels = { javascript: 'JavaScript', typescript: 'TypeScript', html: 'HTML', tsx: 'React · TSX', vue: 'Vue', svelte: 'Svelte', swift: 'Swift', kotlin: 'Kotlin', css: 'CSS' };
 
 /** Explicit fixture/edited values plus values that actually differ from defaults. */
 export function snippetProperties(state) {
@@ -65,9 +74,10 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
   });
   listen(document, 'click', event => { if (activeTooltip && !activeTooltip.contains(event.target)) hide(); });
 
-  function infoButton(kind, member) {
+  const documentationPlatform = () => ({ swift: 'ios', android: 'android' })[snippetLanguage] || 'web';
+  function infoButton(kind, member, platform = getState().platform) {
     const state = getState(), key = String(++sequence);
-    const doc = memberDocumentation(state.selected, kind, member, state.platform);
+    const doc = memberDocumentation(state.selected, kind, member, platform);
     const values = doc.options?.length ? doc.options.map(value => JSON.stringify(value)).join(' · ') : '';
     return `<md-tooltip class="documentation-tooltip" data-doc-tooltip="${key}" variant="rich" position="${tooltipPosition()}" show-delay="350" hide-delay="300">
       <md-icon-button class="doc-info" data-doc-info="${key}" icon="info" size="xs" aria-label="About ${escape(member.name || 'the default slot')}"></md-icon-button>
@@ -157,23 +167,29 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
     for (const [name, value] of Object.entries(state.docCssValues || {})) { if (value) target.style.setProperty(name, value); else if (Object.hasOwn(appearance, name)) target.style.setProperty(name, appearance[name]); else target.style.removeProperty(name); }
   }
   function memberRow(kind, member, content = '') {
-    const state = getState(), doc = memberDocumentation(state.selected, kind, member, state.platform);
-    const status = doc.support?.status;
-    return `<div class="usage-member"><div class="usage-member-heading"><code>${escape(member.name || 'Default slot')}</code>${infoButton(kind, member)}</div>
-      <p>${prose(doc.description)}</p>${status === 'unsupported' || status === 'unknown' || status === 'native-equivalent' ? `<span class="usage-support${status === 'native-equivalent' ? ' native-equivalent' : ''}">${escape(doc.support.description)}</span>` : ''}${content}</div>`;
+    const state = getState(), doc = memberDocumentation(state.selected, kind, member, documentationPlatform());
+    return `<article class="usage-member"><div class="usage-member-heading"><code>${escape(member.name || 'Default slot')}</code>${infoButton(kind, member, documentationPlatform())}</div>
+      <p>${prose(doc.description)}</p>${content}</article>`;
   }
   function codeCard({ id, title, description, language, code, payload }) {
-    return `<md-card id="${id}" class="usage-code-card" variant="filled" full-width density="-3"${payload ? ` data-usage-payload="${escape(payload)}"` : ''}><div class="usage-code-card-heading"><h4 id="${id}-title">${escape(title)}</h4><span class="usage-code-language">${language === 'javascript' ? 'JavaScript' : 'TypeScript'}</span></div><p class="usage-code-description">${prose(description)}</p><pre id="${id}-code" class="usage-code-body" data-code-language="${language}" tabindex="0" aria-labelledby="${id}-title">${escape(code)}</pre></md-card>`;
+    return `<md-card id="${id}" class="usage-code-card" variant="filled" full-width density="-3"${payload ? ` data-usage-payload="${escape(payload)}"` : ''}><div class="usage-code-card-heading"><h4 id="${id}-title">${escape(title)}</h4><div class="usage-code-card-actions"><span class="usage-code-language">${escape(codeLanguageLabels[language] || language)}</span><md-icon-button icon="content_copy" size="xs" data-copy-api-code="${id}-code" aria-label="Copy ${escape(title)}"></md-icon-button></div></div><p class="usage-code-description">${prose(description)}</p><pre id="${id}-code" class="usage-code-body" data-code-language="${language}" tabindex="0" aria-labelledby="${id}-title">${escape(code)}</pre></md-card>`;
+  }
+  function memberExample(kind, member, index) {
+    const example = apiExample(getState().selected, kind, member, snippetLanguage);
+    const id = `usage-api-${kind}-${index}`;
+    return `<div class="usage-api-example" data-api-framework="${snippetLanguage}" data-api-status="${escape(example.status)}">${example.code
+      ? codeCard({ id, ...example })
+      : `<div class="usage-api-unavailable"><strong>${escape(example.title)}</strong><p>${prose(example.description)}</p></div>`}
+      ${example.notes?.length ? `<ul class="usage-api-notes">${example.notes.map(note => `<li>${prose(note)}</li>`).join('')}</ul>` : ''}</div>`;
   }
   function eventPayload(event, index) {
-    const state = getState(), doc = memberDocumentation(state.selected, 'event', event, state.platform);
+    if (documentationPlatform() !== 'web') return '';
+    const state = getState(), doc = memberDocumentation(state.selected, 'event', event, 'web');
     const payload = eventPayloadDocumentation(state.selected, doc);
     const fields = payload.fields.length ? `<dl class="payload-fields">${payload.fields.map(field => `<div class="payload-field"><dt><code>${escape(field.name)}</code>${field.optional ? '<span class="payload-field-optional">Optional</span>' : ''}<code class="payload-field-type">${escape(field.type)}</code></dt><dd>${prose(field.description)}</dd></div>`).join('')}</dl>` : '';
     const typeLabel = payload.fields.length ? doc.payloadType?.name || 'object' : payload.type.length < 80 && !/[\n{};]/.test(payload.type) ? payload.type : 'declared type';
-    return `<div class="event-payload"><p class="payload-heading">Web event detail${payload.empty ? '' : ` · <code>${escape(typeLabel)}</code>`}</p><p>${escape(payload.description)}</p>${fields}
-      <div class="payload-code-cards">${payload.example ? codeCard({ id: `usage-event-example-${index}`, title: 'Read this event', description: `Listen for \`${event.name}\`${payload.empty ? '.' : ' and read its payload through `event.detail`.'}`, language: 'javascript', code: payload.example }) : ''}
-      ${payload.empty ? '' : codeCard({ id: `usage-payload-${index}`, title: 'Type definition', description: `The TypeScript contract for \`${event.name}\` event detail.`, language: 'typescript', code: payload.definition, payload: event.name })}</div>
-      ${state.platform !== 'web' ? '<p class="payload-platform-note">This is the source web contract. Native callbacks use their adapter payload; DOM event objects are not sent to the native renderer.</p>' : ''}
+    return `<div class="event-payload"><p class="payload-heading">Event data${payload.empty ? '' : ` · <code>${escape(typeLabel)}</code>`}</p><p>${escape(payload.description)}</p>${fields}
+      ${payload.empty ? '' : `<md-accordion-item id="usage-type-${index}" data-usage-disclosure class="usage-type-disclosure" headline="Type definition" heading-level="4" density="-3">${codeCard({ id: `usage-payload-${index}`, title: 'Type definition', description: `The TypeScript contract for \`${event.name}\` event detail.`, language: 'typescript', code: payload.definition, payload: event.name })}</md-accordion-item>`}
       </div>`;
   }
   let renderedCssKey;
@@ -190,7 +206,7 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
     if (key !== renderedCssKey) {
       renderedCssKey = key;
       const controls = styles.map((item, index) => `<div class="css-variable-control"><div class="css-variable-heading"><code>${escape(item.name)}</code>${infoButton('cssProperty', item)}</div><md-text-field id="css-${index}" data-css-index="${index}" aria-label="${escape(item.name)} value" placeholder="Inherited value" value="${escape(state.docCssValues?.[item.name] || '')}" density="-3" variant="outlined"></md-text-field></div>`).join('');
-      root.innerHTML = button ? `<md-accordion-item headline="Web CSS overrides" heading-level="3" density="-3"><div class="appearance-fields">${controls}</div></md-accordion-item>` : controls;
+      root.innerHTML = button ? `<md-accordion-item headline="Web CSS overrides" heading-level="3" density="-3"><div class="css-variable-fields">${controls}</div></md-accordion-item>` : controls;
       root.querySelectorAll('[data-css-index]').forEach(input => input.addEventListener('mdInput', event => {
         if (event.target !== input) return;
         const state = getState();
@@ -211,7 +227,9 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
     const state = getState(), component = state.selected, web = state.platform === 'web';
     const root = document.querySelector('#usage-docs'), cssRoot = document.querySelector('#css-controls');
     const sameComponent = renderedTag === component.tag;
-    const expandedSections = sameComponent ? new Set([...root.querySelectorAll('[data-usage-section]')].filter(item => item.expanded).map(item => item.dataset.usageSection)) : new Set();
+    const firstSection = [['Events', component.events], ['Slots', component.slots], ['Methods', component.methods], ['CSS parts', component.cssParts]].find(([, members]) => members?.length)?.[0];
+    const expandedSections = sameComponent ? new Set([...root.querySelectorAll('[data-usage-section]')].filter(item => item.expanded).map(item => item.dataset.usageSection)) : new Set(firstSection ? [firstSection] : []);
+    const openDisclosures = sameComponent ? [...root.querySelectorAll('[data-usage-disclosure]')].filter(item => item.expanded).map(item => item.id) : [];
     const methodArguments = sameComponent ? new Map([...root.querySelectorAll('[data-method-name]')].map(input => [input.dataset.methodName, input.value])) : new Map();
     const focused = sameComponent && (root.contains(document.activeElement) || cssRoot.contains(document.activeElement)) ? document.activeElement : null;
     const editor = focused?.shadowRoot?.activeElement || focused;
@@ -220,27 +238,28 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
     const generation = ++renderGeneration;
     const section = (title, rows, body, action = '') => {
       const id = `usage-section-${title.toLowerCase().replace(/[^a-z]+/g, '-')}`;
-      const content = rows.length ? body : `<p class="usage-empty">No public ${escape(title.toLowerCase())} declared.</p>`;
+      const empty = title === 'Methods' ? 'This component has no public methods. Configure it through properties and respond through events.' : `This component does not declare public ${title.toLowerCase()}.`;
+      const content = rows.length ? body : `<p class="usage-empty">${escape(empty)}</p>`;
       const count = `<md-chip class="usage-section-count" variant="input" selectable="false" removable="false" appearance="filled" density="-4" inert aria-hidden="true" tabindex="-1">${rows.length}</md-chip>`;
       if (!Object.hasOwn(categoryDescriptions, title)) return `<md-card id="${id}" class="usage-section" data-usage-section="${escape(title)}" variant="outlined" full-width density="-3"><div class="usage-section-heading"><div class="usage-section-label"><h3 class="usage-section-title">${escape(title)}<span class="sr-only">, ${rows.length} declarations</span></h3>${count}</div>${action}</div>${content}</md-card>`;
-      // AWC's header slots sit inside its native button. Keep the help trigger
-      // and display chip outside that button and outside its inert closed panel.
-      return `<section class="usage-accordion-section"><md-accordion-item id="${id}" class="usage-section usage-accordion" data-usage-section="${escape(title)}" headline="${escape(title)}" heading-level="3" region-role="group" density="-3"${expandedSections.has(title) ? ' expanded' : ''}><span slot="headline" class="sr-only">${escape(title)}, ${rows.length} declarations</span><div class="usage-accordion-body">${action ? `<div class="usage-accordion-action">${action}</div>` : ''}${content}</div></md-accordion-item><div class="usage-accordion-tools"><span class="usage-accordion-label" aria-hidden="true">${escape(title)}</span>${categoryInfo(title)}${count}</div></section>`;
+      const summary = rows.length ? categorySummaries[title] : `No public ${title.toLowerCase()} for this component.`;
+      // Interactive help stays outside the accordion's own header button.
+      return `<section class="usage-accordion-section"><md-accordion-item id="${id}" class="usage-section usage-accordion" data-usage-section="${escape(title)}" headline="${escape(title)}" heading-level="3" region-role="group" density="-3"${expandedSections.has(title) ? ' expanded' : ''}><span slot="headline" class="sr-only">${escape(title)}, ${rows.length} declarations. ${escape(summary)}</span><div class="usage-accordion-body">${action ? `<div class="usage-accordion-action">${action}</div>` : ''}${content}</div></md-accordion-item><div class="usage-accordion-tools"><div class="usage-accordion-copy"><div class="usage-accordion-title-row"><span class="usage-accordion-label" aria-hidden="true">${escape(title)}</span>${categoryInfo(title)}</div><p class="usage-accordion-summary" aria-hidden="true">${escape(summary)}</p></div>${count}</div></section>`;
     };
     const events = component.events || [], slots = component.slots || [], methods = component.methods || [], styles = component.cssProperties || [], parts = component.cssParts || [];
-    root.innerHTML = `<div class="usage-intro"><h2>Usage &amp; API</h2><p>Change properties and interact with the preview. Use <span aria-hidden="true">ⓘ</span> for details, defaults and platform support.</p></div>
-      <section class="usage-example" aria-label="Live usage example"><div class="usage-code-heading"><md-tabs id="usage-language-tabs" variant="secondary" tab-width="auto" active-tab-index="${snippetLanguages.findIndex(language => language.id === snippetLanguage)}" aria-label="Code language">${snippetLanguages.map(language => `<md-tab label="${escape(language.label)}" data-snippet-language="${language.id}" inline-icon${language.id === 'android' ? ' icon="android"' : ''}>${usageBrandIcon(language.id)}</md-tab>`).join('')}</md-tabs></div><md-card class="usage-snippet-card" variant="outlined" full-width><div class="usage-snippet-actions"><md-button type="button" id="copy-usage" variant="text" size="xs" icon="content_copy" aria-label="Copy usage code">Copy</md-button></div><pre id="usage-snippet" class="usage-code" tabindex="0" aria-label="Usage code"></pre></md-card></section>
-      <div class="api-reference">${section('Events', events, events.map((event, index) => {
-        return memberRow('event', event, eventPayload(event, index));
-      }).join(''), events.length ? '<md-button type="button" id="watch-usage-events" class="usage-action" variant="tonal" size="xs" density="0" icon="bolt">Watch live events</md-button>' : '')}
-      ${section('Slots', slots, `<p class="usage-empty">Edit plain slot text in the examples${web ? ' and Web preview' : ''}. ${component.tag === 'md-button' ? 'The default slot is also editable as Text in Properties and updates native previews. ' : ''}Reset props restores the fixture.</p>${slots.map((slot, index) => memberRow('slot', slot, `<md-text-field id="slot-${index}" data-slot-index="${index}" label="${escape(slot.name || 'Default')} slot text" aria-label="${escape(slot.name || 'Default')} slot text" placeholder="Use fixture content" value="${escape(slotValue(slot.name))}" density="-2" variant="outlined"></md-text-field>`)).join('')}`)}
-      ${section('Methods', methods, `<p class="usage-empty">${web ? 'Arguments use a JSON array, for example ["Message"].' : 'Methods are documented here; browser invocation is available in the Web reference.'}</p>${methods.map((method, index) => {
-        const doc = memberDocumentation(component, 'method', method, state.platform);
+    root.innerHTML = `<div class="usage-intro"><h2>Usage &amp; API</h2><p>Choose your framework to see how to render this component, handle events, add content and customize its appearance.</p></div>
+      <section class="usage-example" aria-label="Live usage example"><div class="usage-code-heading"><md-tabs id="usage-language-tabs" variant="secondary" tab-width="auto" active-tab-index="${snippetLanguages.findIndex(language => language.id === snippetLanguage)}" aria-label="Code language">${snippetLanguages.map(language => `<md-tab id="usage-language-${language.id}" label="${escape(language.label)}" data-snippet-language="${language.id}" inline-icon${language.id === 'android' ? ' icon="android"' : ''}>${usageBrandIcon(language.id)}</md-tab>`).join('')}</md-tabs></div><md-card class="usage-snippet-card" variant="outlined" full-width><div class="usage-snippet-actions"><md-button type="button" id="copy-usage" variant="text" size="xs" icon="content_copy" aria-label="Copy usage code">Copy</md-button></div><pre id="usage-snippet" class="usage-code" tabindex="0" aria-label="Usage code"></pre></md-card></section>
+      <div class="api-reference"><div class="usage-api-toolbar"><div><h3>API examples</h3><p>Practical recipes for each API. Changing the framework updates every example.</p></div><md-select id="api-framework" label="Framework" aria-label="API examples framework" value="${snippetLanguage}" variant="outlined" density="-2">${snippetLanguages.map(language => `<md-select-option value="${language.id}">${language.id === 'swift' ? 'SwiftUI / iOS' : escape(language.label)}</md-select-option>`).join('')}</md-select></div>
+      ${section('Events', events, events.map((event, index) => memberRow('event', event, memberExample('event', event, index) + eventPayload(event, index))).join(''), events.length ? '<md-button type="button" id="watch-usage-events" class="usage-action" variant="tonal" size="xs" density="0" icon="bolt">Watch live events</md-button>' : '')}
+      ${section('Slots', slots, slots.map((slot, index) => memberRow('slot', slot, memberExample('slot', slot, index) + `<div class="usage-try-it"><p>Try plain text${web ? ' in the Web preview' : ' in the usage example'}. ${component.tag === 'md-button' && !slot.name ? 'This also updates the native button label.' : ''}</p><md-text-field id="slot-${index}" data-slot-index="${index}" label="${escape(slot.name || 'Default')} slot text" aria-label="${escape(slot.name || 'Default')} slot text" placeholder="Use fixture content" value="${escape(slotValue(slot.name))}" density="-2" variant="outlined"></md-text-field></div>`)).join(''))}
+      ${section('Methods', methods, methods.map((method, index) => {
+        const doc = memberDocumentation(component, 'method', method, documentationPlatform());
         const signature = method.signature || `${method.name}(${method.params || (method.parameters || []).map(p => `${p.name}: ${p.type?.text || p.type || 'unknown'}`).join(', ')})`;
-        return memberRow('method', method, `<code class="usage-signature">${escape(signature)}</code>${doc.returnType && doc.returnType !== 'inferred' ? `<p>Returns <code>${escape(doc.returnType)}</code></p>` : ''}<md-text-field id="method-${index}" data-method-args="${index}" data-method-name="${escape(method.name)}" label="Arguments (JSON array)" value="${escape(methodArguments.get(method.name) ?? '[]')}" density="-2" variant="outlined" ${web ? '' : 'disabled'}></md-text-field><md-button type="button" class="usage-action" variant="tonal" size="xs" data-run-method="${index}" ${web ? '' : 'disabled'}>Run ${escape(method.name)}</md-button><output class="usage-result" id="method-result-${index}" aria-live="polite"></output>`);
-      }).join('')}`)}
-      ${section('CSS parts', parts, parts.map(part => memberRow('cssPart', part, `<code class="usage-signature">${escape(component.tag)}::part(${escape(part.name)}) { … }</code>`)).join(''))}
+        return memberRow('method', method, `<code class="usage-signature">${escape(signature)}</code>${doc.returnType && doc.returnType !== 'inferred' ? `<p>Returns <code>${escape(doc.returnType)}</code></p>` : ''}${memberExample('method', method, index)}<div class="usage-try-it"><p>${web ? 'Try this method in the Web preview. Supply arguments as a JSON array.' : 'Switch the preview to Web to try this source method.'}</p><md-text-field id="method-${index}" data-method-args="${index}" data-method-name="${escape(method.name)}" label="Arguments (JSON array)" value="${escape(methodArguments.get(method.name) ?? '[]')}" density="-2" variant="outlined" ${web ? '' : 'disabled'}></md-text-field><md-button type="button" class="usage-action" variant="tonal" size="xs" data-run-method="${index}" ${web ? '' : 'disabled'}>Run ${escape(method.name)}</md-button><output class="usage-result" id="method-result-${index}" aria-live="polite"></output></div>`);
+      }).join(''))}
+      ${section('CSS parts', parts, parts.map((part, index) => memberRow('cssPart', part, memberExample('cssPart', part, index))).join(''))}
       ${(component.dataTypes?.length || component.callableProps?.length) ? section('Data & callback types', [...(component.dataTypes || []), ...(component.callableProps || [])], [...(component.dataTypes || []).map(type => ['dataType', type]), ...(component.callableProps || []).map(type => ['callableProp', type])].map(([kind, type], index) => memberRow(kind, type, codeCard({ id: `usage-data-type-${index}`, title: type.name, description: kind === 'callableProp' ? 'The function signature accepted by this callback property.' : 'The TypeScript declaration used by this component.', language: 'typescript', code: type.body || type.type?.text || type.type || '' }))).join('')) : ''}</div>`;
+    openDisclosures.forEach(id => { const item = root.querySelector(`#${id}`); if (item) item.expanded = true; });
     root.querySelectorAll('[data-code-language]').forEach(code => renderCode(code, code.textContent, code.dataset.codeLanguage));
     renderCssVariables(styles);
     if (focus) {
@@ -256,7 +275,21 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
       }
     }
     updateSnippet();
-    root.querySelector('#usage-language-tabs').addEventListener('mdTabChange', event => { const language = snippetLanguages[event.detail?.index]; if (language) { snippetLanguage = language.id; updateSnippet(); } });
+    const changeFramework = id => {
+      if (id === snippetLanguage || !snippetLanguages.some(language => language.id === id)) return;
+      snippetLanguage = id; state.snippetLanguage = id; renderUsage();
+    };
+    root.querySelector('#usage-language-tabs').addEventListener('mdTabChange', event => {
+      if (event.target === root.querySelector('#usage-language-tabs')) changeFramework(snippetLanguages[event.detail?.index]?.id);
+    });
+    root.querySelector('#api-framework').addEventListener('mdChange', event => {
+      const select = root.querySelector('#api-framework');
+      if (event.target === select) changeFramework(typeof event.detail === 'string' ? event.detail : event.detail?.value ?? select.value);
+    });
+    root.querySelectorAll('[data-copy-api-code]').forEach(button => button.addEventListener('mdClick', async () => {
+      try { await navigator.clipboard.writeText(root.querySelector(`#${button.dataset.copyApiCode}`).textContent); notify('API example copied'); }
+      catch { notify('Clipboard unavailable'); }
+    }));
     root.querySelector('#copy-usage').addEventListener('mdClick', async () => { try { await navigator.clipboard.writeText(snippet()); notify('Usage example copied'); } catch { notify('Clipboard unavailable'); } });
     root.querySelector('#watch-usage-events')?.addEventListener('mdClick', watchEvents);
     const valueFor = (event, input) => typeof event.detail === 'string' ? event.detail : input.value;

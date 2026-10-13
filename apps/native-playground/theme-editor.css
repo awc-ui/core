@@ -1,0 +1,54 @@
+/* Theme editor overrides are isolated from the Studio's documentation styles. */
+#theme-sheet .theme-auto-help {
+  margin: -7px 0 22px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+#theme-sheet .theme-export-card {
+  --md-card-padding: 0px;
+  --md-card-gap: 0px;
+  --md-card-container-color: var(--panel);
+  --md-card-outline-color: var(--border);
+  --md-card-container-shape: 12px;
+  display: block;
+  margin-top: 26px;
+  min-width: 0;
+}
+#theme-sheet .theme-export { display: block; min-width: 0; }
+#theme-sheet .theme-export-heading { padding: 16px 16px 12px; }
+#theme-sheet .theme-export-heading h3,
+#theme-sheet .theme-reset-section h3 { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.5; font-weight: 600; }
+#theme-sheet .theme-export-heading p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+#theme-export-tabs { display: block; width: 100%; }
+#theme-export-panel { min-width: 0; padding: 12px 14px 14px; }
+#theme-sheet .theme-export-description { min-height: 3.2em; margin: 0 0 12px; font-size: 11px; line-height: 1.6; color: var(--muted); }
+#theme-sheet .theme-export-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; margin-bottom: 10px; }
+#theme-export-filename { min-width: 0; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+#theme-copy-export { flex: 0 0 auto; }
+#theme-sheet .theme-export-code {
+  box-sizing: border-box;
+  width: 100%;
+  max-height: 232px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 11px/1.75 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre;
+  overflow: auto;
+  overscroll-behavior: contain;
+  tab-size: 2;
+}
+#theme-sheet .theme-export-code:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+#theme-sheet .theme-reset-section { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; padding: 20px 0 2px; border-top: 1px solid var(--border); }
+#theme-sheet .theme-reset-section h3 { font-size: 12px; font-weight: 500; }
+#theme-sheet .theme-reset-section p { margin: 4px 0 0; font-size: 11px; line-height: 1.5; color: var(--muted); }
+#theme-reset { flex: 0 0 auto; }
+@media (max-width: 380px) {
+  #theme-sheet .theme-export-heading { padding-inline: 12px; }
+  #theme-export-panel { padding-inline: 10px; }
+  #theme-sheet .theme-reset-section { align-items: flex-start; flex-direction: column; gap: 8px; }
+}

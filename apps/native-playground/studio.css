@@ -188,9 +188,12 @@ body.component-canvas{margin:0;padding:0;background:var(--md-sys-color-surface,v
 #properties-tabpanel .props-hint { margin-top: 16px; }
 #css-variables-tabpanel { margin: 16px 18px 18px; }
 #css-controls { min-width: 0; }
+#css-controls, .css-variable-fields { display: grid; gap: 12px; }
+#css-controls > md-accordion-item { --md-accordion-item-content-padding: 12px; }
+#css-controls .css-variable-control { gap: 4px; margin: 0; }
 .appearance-intro h3 { margin: 0 0 8px; font-size: 15px; }
 .appearance-intro p { margin: 0 0 16px; font-size: 12px; line-height: 1.6; color: var(--muted); }
-#appearance-scope { display: block; margin-bottom: 14px; --md-tabs-container-height: 44px; }
+.appearance-editor-note { margin-bottom: 16px; }
 .appearance-groups { display: grid; gap: 10px; margin-bottom: 12px; }
 .appearance-fields { display: grid; gap: 16px; padding: 8px 0; min-width: 0; }
 .appearance-fields md-text-field { width: 100%; min-width: 0; }
@@ -218,7 +221,7 @@ md-breadcrumbs.component-kicker md-breadcrumb-item::part(label) { font-size: 11p
   --md-accordion-item-container-color: var(--md-sys-color-surface-container-low);
   --md-accordion-item-container-shape: 12px;
   --md-accordion-item-container-shape-expanded: 12px;
-  --md-accordion-item-header-min-height: 52px;
+  --md-accordion-item-header-min-height: 84px;
   --md-accordion-item-header-padding: 12px 16px;
   --md-accordion-item-content-padding: 4px 16px 16px;
   min-width: 0;
@@ -234,7 +237,7 @@ md-breadcrumbs.component-kicker md-breadcrumb-item::part(label) { font-size: 11p
   inset-block-start: 0;
   inset-inline-start: 16px;
   inset-inline-end: 48px;
-  block-size: 52px;
+  block-size: 84px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -248,6 +251,44 @@ md-breadcrumbs.component-kicker md-breadcrumb-item::part(label) { font-size: 11p
 #usage-docs .usage-accordion-action { display: flex; justify-content: flex-end; margin-block: 8px; }
 #usage-docs .usage-accordion-action .usage-action { margin: 0; }
 #usage-docs .usage-accordion-body { min-width: 0; }
+
+/* Keep the question, platform recipe and optional source contract distinct. */
+.usage-api-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px 24px; margin: 8px 0 20px; }
+.usage-api-toolbar > div { flex: 1; min-width: 190px; }
+.usage-api-toolbar h3 { margin: 0 0 6px; font-size: 17px; }
+.usage-api-toolbar p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--muted); max-width: 55ch; }
+#api-framework { width: 192px; flex-shrink: 0; }
+.usage-accordion-copy { min-width: 0; }
+.usage-accordion-title-row { display: flex; align-items: center; gap: 6px; }
+#usage-docs .usage-accordion-label { font-size: 15px; font-weight: 600; }
+.usage-accordion-summary { margin: 2px 0 0; font-size: 12px; line-height: 1.5; color: var(--md-sys-color-on-surface-variant); }
+#usage-docs .usage-accordion[expanded] + .usage-accordion-tools .usage-accordion-summary { color: var(--md-sys-color-on-secondary-container); }
+#usage-docs .usage-member { padding: 22px 0 26px; margin: 0; }
+#usage-docs .usage-member-heading { gap: 8px; }
+#usage-docs .usage-member-heading > code { font-size: 14px; font-weight: 600; }
+#usage-docs .usage-member > p { font-size: 13px; line-height: 1.75; margin: 8px 0 18px; max-width: 82ch; }
+.usage-api-example { margin-block: 16px; min-width: 0; }
+.usage-code-card-actions { display: flex; align-items: center; gap: 12px; }
+#usage-docs .usage-code-card { --md-card-padding: 16px; }
+#usage-docs .usage-code-card-heading h4 { font-size: 13px; }
+#usage-docs .usage-code-description { font-size: 12px; line-height: 1.75; }
+#usage-docs .usage-code-body { font-size: 12px; line-height: 1.8; padding-top: 14px; max-height: 420px; }
+.usage-api-notes { padding-inline-start: 20px; margin: 12px 0 0; color: var(--muted); font-size: 12px; line-height: 1.75; }
+.usage-api-notes li + li { margin-top: 6px; }
+.usage-api-notes code { color: var(--ink); }
+.usage-api-unavailable { border-inline-start: 3px solid var(--border); padding: 8px 16px; }
+.usage-api-unavailable strong { font-size: 13px; }
+#usage-docs .usage-api-unavailable p { margin: 8px 0 0; font-size: 13px; }
+.usage-try-it { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--border); }
+.usage-try-it p { font-size: 12px; }
+.usage-type-disclosure { margin-top: 16px; --md-accordion-item-header-min-height: 44px; --md-accordion-item-header-padding: 8px 12px; --md-accordion-item-content-padding: 0 12px 12px; }
+.usage-type-disclosure::part(content-inner) { transform: none; }
+@media (max-width: 640px) {
+  #api-framework { width: 100%; }
+  #usage-docs .usage-accordion { --md-accordion-item-header-min-height: 96px; --md-accordion-item-header-padding: 12px; --md-accordion-item-content-padding: 0 12px 16px; }
+  #usage-docs .usage-accordion-tools { block-size: 96px; inset-inline-start: 12px; gap: 10px; }
+  #usage-docs .usage-code-body { font-size: 12px; }
+}
 
 /* Count surfaces are provided by AWC chips, including their outline and padding. */
 /* Keep the chip's outline and state layer anchored to the count, including

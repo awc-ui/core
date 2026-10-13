@@ -83,9 +83,9 @@ API sections document events and payloads, slots, methods, CSS parts, and
 data/callback types. CSS variables are editable in their own tab in the right
 configuration panel; `md-button` names this tab **Styles**. Its shared appearance
 editor has 22 color, typography, spacing, icon, loader and interaction fields.
-**This button** overrides individual fields; **Theme default** supplies inherited
-values to the preview subtree and persists in this browser. Reset style clears
-only the selected scope. Web CSS overrides remain in a separate accordion.
+Edits apply to the current button; blank fields use component defaults.
+Reset style clears these local overrides. The former Studio-wide appearance
+defaults are retired, including their saved browser values. Web CSS overrides remain in a separate accordion.
 Shared edits update all three previews and their usage code. Native apps use
 `AWCButtonAppearance` with SwiftUI’s `.awcButtonAppearance(...)` or Compose’s
 `AWCButtonAppearanceScope`; CSS selectors stay Web-only. Android typography uses
@@ -98,9 +98,11 @@ not rewrite those fixtures. Native snippets preserve AWC children and slot text,
 while HTML layout CSS and recipe setup callbacks require native layout or state
 in the consuming app. Callbacks and object references remain application code.
 
-Event entries explain `event.detail`, list source-declared fields with their
-types and descriptions, and show handler examples alongside full type definitions
-in compact detail cards. Info popovers stay open while the pointer moves onto
+API examples follow the chosen HTML, React, Angular, Vue, Svelte, SwiftUI or
+Android framework. Each event, slot, method and part has a copyable recipe or an
+explicit support boundary. Event entries show framework handlers; Web payload
+fields remain readable, with full TypeScript definitions in optional disclosures.
+Native examples use actual callbacks, content APIs and appearance equivalents. Info popovers stay open while the pointer moves onto
 their content, so longer explanations can be read and scrolled.
 
 **Events** displays recorded Web and native events. Member help and property

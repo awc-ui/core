@@ -122,7 +122,7 @@ test('same-component docs enrichment and platform switches retain method args an
   assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').value, '[]');
 });
 
-test('API categories use collapsed AWC accordions with independent help and keep detail cards', async t => {
+test('API categories explain their purpose, open the first topic and retain independent help', async t => {
   const { ui, root, state, watched } = fixture(t, {
     events: [{ name: 'mdInput', detail: 'string' }, { name: 'mdChange', detail: '{ value: string }' }],
     slots: [{ name: '' }], cssParts: [{ name: 'input' }], dataTypes: [{ name: 'Payload', body: 'string' }],
@@ -131,10 +131,10 @@ test('API categories use collapsed AWC accordions with independent help and keep
   assert.equal(root.querySelectorAll('[data-usage-section]').length, 5);
   assert.equal(root.querySelectorAll('[data-usage-payload]').length, 2);
   assert.doesNotMatch(root.innerHTML, /<details\b|<summary\b|<button\b|<input\b/);
-  const accordions = root.querySelectorAll('md-accordion-item');
+  const accordions = root.querySelectorAll('[data-usage-section]').filter(item => item.tagName === 'MD-ACCORDION-ITEM');
   assert.equal(accordions.length, 4);
   assert.deepEqual(accordions.map(item => item.dataset.usageSection), ['Events', 'Slots', 'Methods', 'CSS parts']);
-  assert.ok(accordions.every(item => !item.expanded));
+  assert.deepEqual(accordions.filter(item => item.expanded).map(item => item.dataset.usageSection), ['Events']);
   assert.ok(accordions.every(item => item.attributes['heading-level'] === '3'));
   assert.equal(root.querySelectorAll('[data-category-info]').length, 4);
   for (const title of ['Events', 'Slots', 'Methods', 'CSS parts']) {
@@ -148,7 +148,7 @@ test('API categories use collapsed AWC accordions with independent help and keep
   assert.equal([...root.innerHTML.matchAll(/<\/md-accordion-item><div class="usage-accordion-tools">/g)].length, 4);
   assert.equal(root.querySelectorAll('md-chip').length, 5);
   assert.ok(root.querySelectorAll('md-chip').every(chip => Object.hasOwn(chip.attributes, 'inert') && chip.attributes['aria-hidden'] === 'true'));
-  assert.match(root.innerHTML, /slot="headline" class="sr-only">Events, 2 declarations/);
+  assert.match(root.innerHTML, /slot="headline" class="sr-only">Events, 2 declarations\. Handle interactions/);
   assert.match(root.innerHTML, /class="usage-accordion-label" aria-hidden="true">Events<\/span><md-tooltip[^>]+data-category-info="Events"/);
   assert.match(root.innerHTML, /<md-card[^>]+class="usage-code-card"[^>]+data-usage-payload="mdInput"/);
   assert.match(root.innerHTML, /class="usage-code-description"/);
@@ -172,10 +172,10 @@ test('API categories use collapsed AWC accordions with independent help and keep
   state.selected = { ...state.selected, tag: 'md-number-field' };
   ui.renderUsage();
   assert.notEqual(document.activeElement, root.querySelector('#usage-payload-0-code'), 'Changing component does not move focus into new code');
-  assert.ok(root.querySelectorAll('md-accordion-item').every(item => !item.expanded), 'New components start collapsed');
+  assert.equal(root.querySelector('#usage-section-events').expanded, true, 'New components show their first available topic');
 });
 
-test('event details show readable source fields and explained code cards with escaped type definitions', t => {
+test('event details show readable source fields and explained code cards with escaped type definitions', async t => {
   const { ui, root, state } = fixture(t, {
     tag: 'md-button', methods: [], events: [{ name: 'mdClick', detail: 'ClickDetail', cancelable: true }, { name: 'mdOpen', detail: 'void' }],
     eventTypes: [{ name: 'ClickDetail', kind: 'interface', body: '/** <source> */\nselected: boolean;', fields: [
@@ -188,7 +188,7 @@ test('event details show readable source fields and explained code cards with es
   assert.match(root.innerHTML, /<dt><code>selected<\/code>/);
   assert.match(root.innerHTML, /Proposed <strong>selected<\/strong> state; cancellation prevents the change/);
   assert.match(root.innerHTML, /payload-field-optional">Optional/);
-  assert.match(root.innerHTML, /Read this event/);
+  assert.match(root.innerHTML, /Handle mdClick/);
   assert.match(root.innerHTML, /event\.preventDefault/);
   assert.match(root.innerHTML, />Type definition<\/h4>/);
   assert.match(root.innerHTML, /The TypeScript contract for <code>mdClick<\/code> event detail/);
@@ -199,8 +199,10 @@ test('event details show readable source fields and explained code cards with es
   assert.doesNotMatch(root.innerHTML, /<source>|<script>/);
   assert.match(root.innerHTML, /&lt;source&gt;/);
   state.platform = 'ios'; ui.renderUsage();
-  assert.match(root.innerHTML, /Native callbacks use their adapter payload/);
-  assert.match(root.innerHTML, /DOM event objects are not sent to the native renderer/);
+  assert.match(root.innerHTML, /class="event-payload"/, 'Preview platform does not override the chosen documentation framework');
+  await root.querySelector('#api-framework').emit('mdChange', { detail: { value: 'swift' } });
+  assert.match(root.innerHTML, /data-api-framework="swift"/);
+  assert.doesNotMatch(root.innerHTML, /class="event-payload"|data-usage-payload=/);
 });
 
 test('data/callback types have accessible help and escaped source content', async t => {
@@ -432,7 +434,7 @@ test('rich help prefers vertical placement on mobile, updates mounted hosts on r
 });
 
 
-test('shared appearance editors preserve zero, inherited scopes and last valid values', async t => {
+test('shared appearance edits only this button and preserves zero and last valid values', async t => {
   const { ui, state, appearanceRoot, cssTab } = fixture(t, { tag: 'md-button' });
   ui.renderUsage();
   assert.equal(cssTab.label, 'Styles');
@@ -443,13 +445,69 @@ test('shared appearance editors preserve zero, inherited scopes and last valid v
   await gap.emit('mdInput', { detail: '-1' });
   assert.equal(gap.error, true);
   assert.equal(state.buttonAppearance.gap, 0);
-  await appearanceRoot.querySelector('#appearance-scope').emit('mdTabChange', { detail: { index: 1 } });
+  assert.equal(appearanceRoot.querySelector('#appearance-scope'), null);
+  assert.doesNotMatch(appearanceRoot.innerHTML, /Theme default|Appearance scope/);
+  assert.equal(gap.placeholder, 'Component default');
   await gap.emit('mdInput', { detail: '12' });
-  assert.equal(state.buttonAppearanceDefaults.gap, 12);
-  assert.equal(state.buttonAppearance.gap, 0);
-  await appearanceRoot.querySelector('#appearance-scope').emit('mdTabChange', { detail: { index: 0 } });
-  assert.equal(gap.placeholder, 'Theme: 12');
+  assert.equal(state.buttonAppearance.gap, 12);
+  assert.deepEqual(state.buttonAppearanceDefaults, {});
   await appearanceRoot.querySelector('#appearance-reset').emit('mdClick');
   assert.deepEqual(state.buttonAppearance, {});
-  assert.deepEqual(state.buttonAppearanceDefaults, { gap: 12 });
+  assert.deepEqual(state.buttonAppearanceDefaults, {});
+});
+
+test('framework tabs and API selector update all examples together while retaining editor state', async t => {
+  const { ui, root, state } = fixture(t, {
+    events: [{ name: 'mdInput', detail: 'string' }],
+    slots: [{ name: '' }], cssParts: [{ name: 'input' }],
+    support: { android: { events: ['mdInput'], slots: [''], unsupportedMethods: ['setCustomValidity'] } },
+  });
+  ui.renderUsage();
+  root.querySelector('[data-method-name="setCustomValidity"]').value = '["Review this value"]';
+  root.querySelector('#usage-section-slots').expanded = true;
+  await root.querySelector('#usage-language-tabs').emit('mdTabChange', { detail: { index: 1 } });
+  assert.equal(state.snippetLanguage, 'react');
+  assert.equal(root.querySelector('#api-framework').value, 'react');
+  assert.ok(root.querySelectorAll('[data-api-framework]').every(node => node.dataset.apiFramework === 'react'));
+  assert.match(root.innerHTML, /onMdInput/);
+  assert.equal(root.querySelector('#usage-section-slots').expanded, true);
+  assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').value, '["Review this value"]');
+  root.querySelector('#api-framework').focus();
+  await root.querySelector('#api-framework').emit('mdChange', { detail: { value: 'android' } });
+  assert.equal(state.snippetLanguage, 'android');
+  assert.equal(state.platform, 'web', 'Documentation selection does not silently switch the preview');
+  assert.equal(root.querySelector('#usage-language-tabs').attributes['active-tab-index'], '6');
+  assert.equal(document.activeElement.id, 'api-framework');
+  assert.ok(root.querySelectorAll('[data-api-framework]').every(node => node.dataset.apiFramework === 'android'));
+  assert.match(root.innerHTML, /AWCComponent/);
+  assert.doesNotMatch(root.innerHTML, /class="event-payload"/);
+  const generation = root.querySelector('#api-framework');
+  await generation.emit('mdChange', { detail: { value: 'unsupported-framework' } });
+  assert.equal(root.querySelector('#api-framework'), generation, 'Unknown values do not rebuild the interface');
+});
+
+test('API copy action copies the associated code block, not all page text', async t => {
+  const { ui, root } = fixture(t, { events: [{ name: 'mdInput', detail: 'string' }] });
+  const prior = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  const copied = [];
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { clipboard: { writeText: async value => copied.push(value) } } });
+  t.after(() => prior ? Object.defineProperty(globalThis, 'navigator', prior) : delete globalThis.navigator);
+  ui.renderUsage();
+  const code = root.querySelector('#usage-api-event-0-code');
+  code.textContent = 'component.addEventListener("mdInput", onInput);';
+  await root.querySelector('[data-copy-api-code="usage-api-event-0-code"]').emit('mdClick');
+  assert.deepEqual(copied, [code.textContent]);
+});
+
+test('retired theme defaults cannot remain hidden in Studio appearance state', t => {
+  const prior = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  const removed = [];
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem() { throw new Error('Retired defaults must never be loaded'); },
+    removeItem: key => removed.push(key),
+  } });
+  t.after(() => prior ? Object.defineProperty(globalThis, 'localStorage', prior) : delete globalThis.localStorage);
+  const { state } = fixture(t, { tag: 'md-button' });
+  assert.deepEqual(state.buttonAppearanceDefaults, {});
+  assert.deepEqual(removed, ['awc-studio-button-appearance']);
 });

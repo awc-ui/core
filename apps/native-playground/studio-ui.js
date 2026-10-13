@@ -4,11 +4,61 @@ import { computeStudioTheme, applyStudioTheme, DEFAULT_STUDIO_THEME, loadStudioT
 
 const $ = selector => document.querySelector(selector);
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+
+/** The visible source and clipboard always use the same export payload. */
+export function themeExportSource(result, format = 'css') {
+  if (format === 'css') return {
+    filename: 'theme.css', language: 'css', label: 'Copy CSS', announcement: 'Theme CSS copied',
+    description: 'Light and dark CSS variables. Switch modes with the data-theme attribute.',
+    code: exportStudioTheme(result),
+  };
+  if (format !== 'javascript') throw new Error('Choose CSS or JavaScript theme export.');
+  const { config } = result;
+  return {
+    filename: 'theme.js', language: 'javascript', label: 'Copy JS', announcement: 'Theme JavaScript copied',
+    description: 'Seed and contrast settings for @awc-ui/theme, including your current mode.',
+    code: `import { computeTheme, applyThemeStylesheet } from '@awc-ui/theme';\n\nconst theme = computeTheme(${JSON.stringify({ primaryHex: config.primaryHex, ...(config.secondaryHex ? { secondaryHex: config.secondaryHex } : {}), ...(config.tertiaryHex ? { tertiaryHex: config.tertiaryHex } : {}), contrastLevel: config.contrastLevel }, null, 2)});\n\napplyThemeStylesheet(theme);\ndocument.documentElement.dataset.theme = '${config.mode}';`,
+  };
+}
+
+export function createThemeExportUI({ root, getTheme, notify, writeText = text => navigator.clipboard.writeText(text), paintCode = renderCode }) {
+  const query = selector => root.querySelector(selector);
+  const tabs = query('#theme-export-tabs'), copy = query('#theme-copy-export');
+  let format = 'css', current;
+  function render() {
+    current = themeExportSource(getTheme(), format);
+    query('#theme-export-filename').textContent = current.filename;
+    query('#theme-export-description').textContent = current.description;
+    query('#theme-export-panel').setAttribute('aria-labelledby', format === 'css' ? 'theme-css-tab' : 'theme-javascript-tab');
+    const code = query('#theme-code');
+    code.setAttribute('aria-label', `${current.filename} source code`);
+    copy.textContent = current.label;
+    copy.setAttribute('aria-label', format === 'css' ? 'Copy theme CSS' : 'Copy theme JavaScript configuration');
+    paintCode(code, current.code, current.language);
+  }
+  function init() {
+    tabs.addEventListener('mdTabChange', event => {
+      if (event.target !== tabs || ![0, 1].includes(event.detail?.index)) return;
+      format = event.detail.index === 0 ? 'css' : 'javascript';
+      render();
+    });
+    copy.addEventListener('mdClick', async event => {
+      if (event.target !== copy) return;
+      const payload = current;
+      try { await writeText(payload.code); notify(payload.announcement); }
+      catch { notify('Clipboard unavailable'); }
+    });
+    render();
+  }
+  return { init, render };
+}
+
 export function createStudioUI({ getState, onLayoutChange, onThemeChange, notify }) {
   const state = getState();
   state.layout = { direction: 'ltr', width: 'fit', grid: false, bounds: false, expanded: false };
   const canvas = createCanvasTools({ getState, onLayoutChange });
   state.studioTheme = computeStudioTheme(loadStudioTheme());
+  const themeExport = createThemeExportUI({ root: $('#theme-sheet'), getTheme: () => state.studioTheme, notify });
   function applyTheme() {
     applyStudioTheme(state.studioTheme, { root: document.documentElement });
     const frameRoot = state.previewDocument?.documentElement;
@@ -36,7 +86,7 @@ export function createStudioUI({ getState, onLayoutChange, onThemeChange, notify
     $('#theme-contrast').value = String(config.contrastLevel);
     $('#theme-mode-label').textContent = config.mode === 'dark' ? 'Dark' : 'Light';
     $('#theme-swatches').innerHTML = ['primary', 'secondary', 'tertiary', 'surface', 'surfaceContainer', 'outline'].map(role => `<div class="theme-swatch"><span style="background:${roles[config.mode][role]}"></span><strong>${role.replace(/([A-Z])/g, ' $1')}</strong><code>${roles[config.mode][role]}</code></div>`).join('');
-    renderCode($('#theme-code'), `import { computeTheme, applyThemeStylesheet } from '@awc-ui/theme';\n\nconst theme = computeTheme(${JSON.stringify({ primaryHex: config.primaryHex, ...(config.secondaryHex ? { secondaryHex: config.secondaryHex } : {}), ...(config.tertiaryHex ? { tertiaryHex: config.tertiaryHex } : {}), contrastLevel: config.contrastLevel }, null, 2)});\n\napplyThemeStylesheet(theme);\ndocument.documentElement.dataset.theme = '${config.mode}';`, 'javascript');
+    themeExport.render();
   }
   function changeTheme(patch, persist = true) {
     try {
@@ -73,7 +123,7 @@ export function createStudioUI({ getState, onLayoutChange, onThemeChange, notify
     });
     $('#theme-contrast').addEventListener('mdChange', event => { if (event.target === $('#theme-contrast')) changeTheme({ contrastLevel: Number(event.detail) }); });
     $('#theme-reset').addEventListener('click', () => changeTheme({ ...DEFAULT_STUDIO_THEME, mode: state.studioTheme.config.mode }));
-    $('#theme-copy-css').addEventListener('click', async () => { try { await navigator.clipboard.writeText(exportStudioTheme(state.studioTheme)); notify('Theme CSS copied'); } catch { notify('Clipboard unavailable'); } });
+    themeExport.init();
     canvas.init();
   }
   return { init, applyTheme, applyCanvas: canvas.update, dispose: canvas.dispose, nativeOptions: () => ({ themeTokens: nativeThemeTokens(state.studioTheme), direction: state.layout.direction }) };

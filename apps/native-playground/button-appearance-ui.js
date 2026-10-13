@@ -1,6 +1,5 @@
 import { BUTTON_APPEARANCE_FIELDS, normalizeButtonAppearance, buttonAppearanceCSS } from './button-appearance.js';
 
-const storageKey = 'awc-studio-button-appearance';
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const groups = [
   ['Surface', ['containerColor', 'outlineColor', 'outlineWidth', 'cornerRadius', 'paddingInline', 'paddingBlock', 'gap']],
@@ -13,9 +12,10 @@ const groups = [
 export function createButtonAppearanceUI({ getState, onChange }) {
   const state = getState();
   state.buttonAppearance = {};
-  try { state.buttonAppearanceDefaults = normalizeButtonAppearance(JSON.parse(localStorage.getItem(storageKey) || '{}')); }
-  catch { state.buttonAppearanceDefaults = {}; }
-  let scope = 'buttonAppearance', mounted = false;
+  state.buttonAppearanceDefaults = {};
+  // Retire the former Studio-wide defaults so hidden settings cannot affect previews.
+  try { localStorage.removeItem('awc-studio-button-appearance'); } catch { /* Storage is optional. */ }
+  let mounted = false;
   const originalStyles = new WeakMap();
   function setAppearance(target, appearance, inherited) {
     if (!originalStyles.has(target)) originalStyles.set(target, new Map(BUTTON_APPEARANCE_FIELDS.map(field => [field.cssProperty, [target.style.getPropertyValue?.(field.cssProperty) || '', target.style.getPropertyPriority?.(field.cssProperty) || '']])));
@@ -26,24 +26,15 @@ export function createButtonAppearanceUI({ getState, onChange }) {
     for (const [name, value] of Object.entries(buttonAppearanceCSS(appearance, inherited))) target.style.setProperty(name, value);
   }
   const root = () => document.querySelector('#button-appearance-controls');
-  const values = () => getState()[scope] || {};
-  function changed() {
-    if (scope === 'buttonAppearanceDefaults') {
-      try { localStorage.setItem(storageKey, JSON.stringify(values())); } catch { /* Storage is optional. */ }
-    }
-    onChange();
-  }
+  const values = () => getState().buttonAppearance || {};
+  function changed() { onChange(); }
   function sync() {
     root().querySelectorAll('[data-appearance-field]').forEach(input => {
       const name = input.dataset.appearanceField;
       input.value = values()[name] === undefined ? '' : String(values()[name]);
-      const inherited = scope === 'buttonAppearance' ? getState().buttonAppearanceDefaults?.[name] : undefined;
-      input.placeholder = inherited === undefined ? 'Component default' : `Theme: ${inherited}`;
+      input.placeholder = 'Component default';
       input.error = false;
     });
-    root().querySelector('#appearance-scope-note').textContent = scope === 'buttonAppearance'
-      ? 'Applies to this button. Blank fields inherit the theme, then component defaults.'
-      : 'Applies to buttons throughout the preview. Saved in this browser; local fields take precedence.';
   }
   function render() {
     const host = root();
@@ -53,8 +44,7 @@ export function createButtonAppearanceUI({ getState, onChange }) {
       mounted = true;
       const descriptors = new Map(BUTTON_APPEARANCE_FIELDS.map(field => [field.name, field]));
       host.innerHTML = `<div class="appearance-intro"><h3>Shared appearance</h3><p>Style the same button on Web, iOS and Android.</p></div>
-        <md-tabs id="appearance-scope" variant="secondary" aria-label="Appearance scope"><md-tab label="This button" active></md-tab><md-tab label="Theme default"></md-tab></md-tabs>
-        <p id="appearance-scope-note" class="prop-note"></p>
+        <p class="prop-note appearance-editor-note">Applies to this button. Leave a field blank to use its default style.</p>
         <div class="appearance-groups">${groups.map(([title, fields], index) => `<md-accordion-item headline="${title}" heading-level="4" density="-3"${index === 0 ? ' expanded' : ''}><div class="appearance-fields">${fields.map(name => {
           const field = descriptors.get(name);
           const hint = field.kind === 'color' ? 'Hex color, for example #6750A4.' : `${field.min}–${field.max}${/Opacity|Weight/.test(name) ? '' : ['fontSize', 'lineHeight', 'letterSpacing'].includes(name) ? ' px / pt / sp' : ' px / pt / dp'}.`;
@@ -62,12 +52,7 @@ export function createButtonAppearanceUI({ getState, onChange }) {
         }).join('')}</div></md-accordion-item>`).join('')}</div>
         <md-button id="appearance-reset" variant="text" size="xs" icon="restart_alt">Reset style</md-button>
         <p class="prop-note appearance-boundary">Explicit corner radius stays fixed on press. Authored slot content keeps its own styling. Typography uses CSS pixels on Web, points on SwiftUI and scalable text units on Android.</p>`;
-      host.querySelector('#appearance-scope').addEventListener('mdTabChange', event => {
-        if (event.target.id !== 'appearance-scope') return;
-        scope = event.detail.index === 1 ? 'buttonAppearanceDefaults' : 'buttonAppearance';
-        sync();
-      });
-      host.querySelector('#appearance-reset').addEventListener('mdClick', () => { getState()[scope] = {}; sync(); changed(); });
+      host.querySelector('#appearance-reset').addEventListener('mdClick', () => { getState().buttonAppearance = {}; sync(); changed(); });
       host.querySelectorAll('[data-appearance-field]').forEach(input => input.addEventListener('mdInput', event => {
         if (event.target !== input) return;
         const name = input.dataset.appearanceField, field = descriptors.get(name);
@@ -76,7 +61,7 @@ export function createButtonAppearanceUI({ getState, onChange }) {
           const next = { ...values() };
           if (!raw) delete next[name];
           else next[name] = field.kind === 'number' ? Number(raw) : raw;
-          getState()[scope] = normalizeButtonAppearance(next);
+          getState().buttonAppearance = normalizeButtonAppearance(next);
           input.error = false;
           changed();
         } catch (error) { input.error = true; input.errorText = error.message; }
@@ -87,12 +72,9 @@ export function createButtonAppearanceUI({ getState, onChange }) {
   }
   function apply(target) {
     if (!target) return;
-    const current = getState(), docRoot = target.ownerDocument?.documentElement;
-    if (docRoot && docRoot !== document.documentElement) {
-      setAppearance(docRoot, current.buttonAppearanceDefaults);
-    }
+    const current = getState();
     if (current.selected?.tag !== 'md-button') return;
-    setAppearance(target, current.buttonAppearance, current.buttonAppearanceDefaults);
+    setAppearance(target, current.buttonAppearance);
   }
   return { render, apply };
 }

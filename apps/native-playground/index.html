@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/web-dist/md3/md3.css" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/studio.css" />
+  <link rel="stylesheet" href="/theme-editor.css" />
   <link rel="stylesheet" href="/canvas-tools.css" />
   <script type="module" src="/app.js"></script>
 </head>
@@ -86,14 +87,24 @@
     <div class="theme-editor"><p class="theme-intro">Make it yours. Your palette updates the studio and component previews together.</p>
       <div class="theme-section-title"><h3>Color palette</h3><span>Material 3 · HCT</span></div>
       <div class="theme-color-field"><span class="theme-color-label">Primary seed</span><md-color-picker id="theme-primary" variant="popover" dismiss-on-outside-click format="hex" show-inputs="false" density="-2" value="#6750A4" aria-label="Primary seed color"><md-button id="theme-primary-trigger" slot="trigger" variant="outlined" size="sm" full-width aria-label="Choose primary seed color, #6750A4"><span slot="leading-icon" class="theme-seed-swatch" aria-hidden="true"></span><span class="theme-seed-value">#6750A4</span></md-button></md-color-picker></div>
-      <div class="theme-color-field"><div class="theme-label-row"><span class="theme-color-label">Secondary seed</span><label class="theme-auto"><md-switch id="theme-secondary-auto" selected density="-3" aria-label="Derive secondary color"></md-switch>Auto</label></div><md-color-picker id="theme-secondary" variant="popover" dismiss-on-outside-click format="hex" show-inputs="false" density="-2" value="#625B71" aria-label="Secondary seed color" disabled><md-button id="theme-secondary-trigger" slot="trigger" variant="outlined" size="sm" full-width aria-label="Choose secondary seed color, #625B71" disabled><span slot="leading-icon" class="theme-seed-swatch" aria-hidden="true"></span><span class="theme-seed-value">#625B71</span></md-button></md-color-picker></div>
-      <div class="theme-color-field"><div class="theme-label-row"><span class="theme-color-label">Tertiary seed</span><label class="theme-auto"><md-switch id="theme-tertiary-auto" selected density="-3" aria-label="Derive tertiary color"></md-switch>Auto</label></div><md-color-picker id="theme-tertiary" variant="popover" dismiss-on-outside-click format="hex" show-inputs="false" density="-2" value="#7D5260" aria-label="Tertiary seed color" disabled><md-button id="theme-tertiary-trigger" slot="trigger" variant="outlined" size="sm" full-width aria-label="Choose tertiary seed color, #7D5260" disabled><span slot="leading-icon" class="theme-seed-swatch" aria-hidden="true"></span><span class="theme-seed-value">#7D5260</span></md-button></md-color-picker></div>
+      <div class="theme-color-field"><div class="theme-label-row"><span class="theme-color-label">Secondary seed</span><label class="theme-auto"><md-switch id="theme-secondary-auto" selected density="-3" aria-label="Derive secondary color" aria-describedby="theme-auto-help"></md-switch>Auto</label></div><md-color-picker id="theme-secondary" variant="popover" dismiss-on-outside-click format="hex" show-inputs="false" density="-2" value="#625B71" aria-label="Secondary seed color" disabled><md-button id="theme-secondary-trigger" slot="trigger" variant="outlined" size="sm" full-width aria-label="Choose secondary seed color, #625B71" disabled><span slot="leading-icon" class="theme-seed-swatch" aria-hidden="true"></span><span class="theme-seed-value">#625B71</span></md-button></md-color-picker></div>
+      <div class="theme-color-field"><div class="theme-label-row"><span class="theme-color-label">Tertiary seed</span><label class="theme-auto"><md-switch id="theme-tertiary-auto" selected density="-3" aria-label="Derive tertiary color" aria-describedby="theme-auto-help"></md-switch>Auto</label></div><md-color-picker id="theme-tertiary" variant="popover" dismiss-on-outside-click format="hex" show-inputs="false" density="-2" value="#7D5260" aria-label="Tertiary seed color" disabled><md-button id="theme-tertiary-trigger" slot="trigger" variant="outlined" size="sm" full-width aria-label="Choose tertiary seed color, #7D5260" disabled><span slot="leading-icon" class="theme-seed-swatch" aria-hidden="true"></span><span class="theme-seed-value">#7D5260</span></md-button></md-color-picker></div>
+      <p id="theme-auto-help" class="theme-auto-help">Auto follows your primary seed. Turn it off to choose a color.</p>
       <p id="theme-error" class="prop-error" role="status" hidden></p>
       <md-select id="theme-contrast" label="Contrast" value="0" density="-2"><md-select-option value="0">Standard</md-select-option><md-select-option value="0.5">Medium</md-select-option><md-select-option value="1">High</md-select-option></md-select>
       <div class="theme-section-title"><h3>Your color roles</h3><span id="theme-mode-label">Light</span></div><div id="theme-swatches" class="theme-swatches"></div>
-      <p class="theme-note">Secondary and tertiary are derived from the primary seed. Turn off Auto to give either its own seed.</p>
-      <div class="theme-export"><md-button id="theme-copy-css" variant="tonal" size="sm" icon="content_copy">Copy theme CSS</md-button><md-button id="theme-reset" variant="text" size="sm">Reset theme</md-button></div>
-      <md-accordion-item class="theme-source" headline="Theme code" density="-3" transition="standard"><pre id="theme-code"></pre></md-accordion-item>
+      <md-card class="theme-export-card" variant="outlined" full-width>
+        <section class="theme-export" aria-labelledby="theme-export-title">
+          <div class="theme-export-heading"><h3 id="theme-export-title">Export theme</h3><p>Bring this palette into your app.</p></div>
+          <md-tabs id="theme-export-tabs" variant="secondary" tab-width="equal" aria-label="Theme export format"><md-tab id="theme-css-tab" label="CSS" controls="theme-export-panel" active></md-tab><md-tab id="theme-javascript-tab" label="JavaScript" controls="theme-export-panel"></md-tab></md-tabs>
+          <div id="theme-export-panel" role="tabpanel" aria-labelledby="theme-css-tab">
+            <p id="theme-export-description" class="theme-export-description">Light and dark CSS variables, ready for your stylesheet.</p>
+            <div class="theme-export-toolbar"><code id="theme-export-filename">theme.css</code><md-button id="theme-copy-export" variant="tonal" size="sm" icon="content_copy" aria-label="Copy theme CSS">Copy CSS</md-button></div>
+            <pre id="theme-code" class="theme-export-code" tabindex="0" role="region" aria-label="theme.css source code"></pre>
+          </div>
+        </section>
+      </md-card>
+      <div class="theme-reset-section"><div><h3>Start over</h3><p>Restore default seeds and contrast.</p></div><md-button id="theme-reset" variant="text" size="sm" icon="restart_alt">Reset theme</md-button></div>
     </div>
   </md-side-sheet>
   <md-snackbar id="toast" position="bottom" closeable auto-hide-duration="4000"></md-snackbar>
