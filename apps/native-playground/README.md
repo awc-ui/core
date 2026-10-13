@@ -1,4 +1,4 @@
-# AWC Component Studio
+# AWC UI Laboratory
 
 A local playground for all 81 AWC components, built with AWC controls. Explore the
 original web components, edit their properties, copy framework examples, inspect
