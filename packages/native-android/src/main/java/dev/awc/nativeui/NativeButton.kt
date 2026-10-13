@@ -312,7 +312,11 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     val flip = mirrored && LocalLayoutDirection.current == LayoutDirection.Rtl
     val rotation by animateFloatAsState(if(expanded && !flip) 180f else 0f,tween(100,easing=Standard),label="source icon expansion")
     Box(Modifier.size(size.dp).graphicsLayer { scaleX=if(flip) -1f else 1f; rotationZ=rotation },contentAlignment=Alignment.Center) {
-        Text(name,fontFamily=SymbolFont,fontWeight=FontWeight.Normal,fontSize=size.sp,lineHeight=size.sp,letterSpacing=0.sp,maxLines=1,softWrap=false,
+        // Material Symbols has a 1.2em typographic line. Constraining Text to
+        // the 1em icon cell truncates its measured height without moving its
+        // baseline. Measure the natural line, then center it inside the cell.
+        Text(name,modifier=Modifier.wrapContentSize(unbounded=true),fontFamily=SymbolFont,fontWeight=FontWeight.Normal,
+            fontSize=size.sp,letterSpacing=0.sp,maxLines=1,softWrap=false,
             style=TextStyle(platformStyle=PlatformTextStyle(includeFontPadding=false),fontFeatureSettings="liga"))
     }
 }
