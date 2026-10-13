@@ -1,6 +1,6 @@
 const escape = value => value.replace(/[&<>"'\r]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '\r': '&#13;' })[char]);
 const aliases = { web: 'html', react: 'tsx', angular: 'typescript', ios: 'swift', android: 'kotlin', js: 'javascript', ts: 'typescript', sh: 'bash', shell: 'bash' };
-const languages = new Set(['html', 'tsx', 'typescript', 'vue', 'svelte', 'swift', 'kotlin', 'javascript', 'json', 'css', 'bash']);
+const languages = new Set(['html', 'tsx', 'typescript', 'vue', 'svelte', 'swift', 'kotlin', 'javascript', 'json', 'css', 'bash', 'markdown']);
 const normalize = language => aliases[language] || language;
 const colors = color => /^#[\da-f]{6}(?:[\da-f]{2})?$/i.test(color || '') ? color : 'inherit';
 const cache = new Map(), rendered = new WeakMap();

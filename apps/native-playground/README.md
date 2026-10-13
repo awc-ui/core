@@ -34,14 +34,16 @@ Native previews additionally require the platform hosts described below.
 ## Explore components
 
 The left catalog groups and searches all source tags; `/` focuses search. The
-right properties panel provides typed scalar, boolean, enum and JSON editors,
-reset, and a property search. Mixed literal unions retain their actual types,
+right configuration panel separates **Properties** and **CSS variables** into
+tabs with declaration counts. Properties provides typed scalar, boolean, enum
+and JSON editors, reset, and a property search. Mixed literal unions retain their actual types,
 including values such as `false`. Info controls explain source types, defaults,
 usage and native support. Hover, focus or tap for help; use Escape or click
 outside to dismiss it.
 
-Studio panels use AWC cards; API groups and supporting details use AWC
-accordions. Coverage source links use AWC lists.
+Studio panels use AWC cards; API groups use AWC accordions. Event handler examples
+and payload type definitions appear in compact cards with titles and descriptions.
+Coverage source links use AWC lists.
 
 The web preview runs in a dedicated same-origin iframe. Responsive, 360 px,
 768 px and 1024 px widths change its actual viewport, so media queries respond
@@ -66,14 +68,14 @@ edit supplies them. Web framework examples use the repository's public AWC
 packages; native examples use `AWCNativeView`/`AWCNode` and `AWCComponent`.
 Generated examples use inert recipe markup, never hydrated preview markup.
 
-Code examples, payload types, theme code and test commands use local Shiki syntax
+Code examples, payload types, theme code, Markdown instructions and test commands use local Shiki syntax
 highlighting in light and dark mode. Copy preserves the original source exactly.
 The checked-in bundle contains only the required grammars; rebuild it from the
 existing workspace dependencies with `node apps/native-playground/build-syntax-highlighting.mjs`.
 
 API sections document events and payloads, slots, methods, CSS parts, and
-data/callback types. CSS variables are editable in the AWC accordion at the bottom
-of the right Properties panel. Slot text and CSS edits update the relevant
+data/callback types. CSS variables are editable in their own tab in the right
+configuration panel. Slot text and CSS edits update the relevant
 examples and the live Web preview. Public web methods accept JSON argument
 arrays. Native fixtures keep their own children; editing documentation slots does
 not rewrite those fixtures. Native snippets preserve AWC children and slot text,
@@ -81,12 +83,27 @@ while HTML layout CSS and recipe setup callbacks require native layout or state
 in the consuming app. Callbacks and object references remain application code.
 
 Event entries explain `event.detail`, list source-declared fields with their
-types and descriptions, and show handler examples. Full type definitions are
-available in an AWC accordion.
+types and descriptions, and show handler examples alongside full type definitions
+in compact detail cards. Info popovers stay open while the pointer moves onto
+their content, so longer explanations can be read and scrolled.
 
 **Events** displays recorded Web and native events. Member help and property
 controls show per-platform support, including unsupported native members.
 SwiftUI and Android examples remain available under **Usage & API**.
+
+**AI instructions** provides a Markdown guide for every component. It preserves
+the component's original Web README and appends SwiftUI/iOS integration guidance
+from the current native catalog, generated public wrappers and native support
+policy. The guide includes a typed SwiftUI example, property support, state and
+events, child slots, unsupported methods, native replacements and recorded
+verification limits. It distinguishes the local macOS SwiftUI preview from an
+iOS Simulator or device run.
+
+Use **Copy** to copy the original Markdown, **Download .md** to save
+`md-component.md`, or **Refresh** to reread the local source files. Guides are
+generated on demand through `GET /api/ai-instructions/<tag>`; the server does not
+rewrite source READMEs or keep 81 duplicate Markdown files. The response contains
+`filename`, `markdown` and repository-relative `sources` for provenance.
 
 ## Theme studio
 

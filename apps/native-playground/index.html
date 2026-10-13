@@ -19,14 +19,14 @@
   </header>
   <div class="shell">
     <aside class="sidebar" aria-label="Component navigation">
-      <div class="sidebar-heading"><span>COMPONENTS</span><span class="count-badge" id="component-count">—</span></div>
+      <div class="sidebar-heading"><span>COMPONENTS</span><md-chip class="count-chip" id="component-count" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">—</md-chip></div>
       <md-text-field id="search" placeholder="Find a component…" aria-label="Find a component" variant="outlined" density="-3" clearable="internal"></md-text-field>
       <div class="filter-row"><md-button class="filter active" size="xs" variant="tonal" data-filter="all">All</md-button><md-button class="filter" size="xs" variant="text" data-filter="findings">With findings</md-button></div>
       <nav id="component-list" aria-label="Components"><p class="muted">Reading component manifest…</p></nav>
       <footer class="sidebar-footer"><span class="studio-symbol material-symbols-outlined" aria-hidden="true">science</span><div><strong>Built with AWC UI</strong><span>One system. Every surface.</span></div></footer>
     </aside>
     <main>
-      <section class="component-heading"><div><div class="component-kicker"><span>Library</span><span class="dot-separator">/</span><span id="category-label">Actions</span><span class="dot-separator">/</span><code id="tag-label">md-button</code></div><h1 id="component-title">Button</h1><p id="component-description"></p></div><div class="component-actions"><md-button id="reset" variant="outlined" size="sm" icon="restart_alt">Reset</md-button></div></section>
+      <section class="component-heading"><div><md-breadcrumbs class="component-kicker" label="Component location" density="-2"><md-breadcrumb-item>Library</md-breadcrumb-item><md-breadcrumb-item><span id="category-label">Actions</span></md-breadcrumb-item><md-breadcrumb-item current><code id="tag-label">md-button</code></md-breadcrumb-item></md-breadcrumbs><h1 id="component-title">Button</h1><p id="component-description"></p></div><div class="component-actions"><md-button id="reset" variant="outlined" size="sm" icon="restart_alt">Reset</md-button></div></section>
       <div class="workspace-grid">
         <div class="studio-main-column">
           <section class="preview-panel" aria-label="Component preview">
@@ -48,20 +48,29 @@
           </section>
           <section class="studio-documentation" aria-label="Component documentation">
             <md-card class="studio-card" variant="outlined" full-width>
-            <md-tabs id="studio-doc-tabs" variant="secondary" tab-width="auto" aria-label="Documentation sections"><md-tab label="Usage & API" active></md-tab><md-tab label="Test coverage"></md-tab><md-tab label="Events"></md-tab></md-tabs>
-            <div id="usage-docs" aria-label="Usage and API"></div>
-            <div id="coverage-panel" hidden></div>
-            <section class="inspector-panel" aria-label="Live component events" hidden><div class="inspector-toolbar"><h3>Live events</h3></div><div id="inspector-content"></div></section>
+            <md-tabs id="studio-doc-tabs" variant="secondary" tab-width="auto" aria-label="Documentation sections"><md-tab id="usage-tab" label="Usage & API" controls="usage-docs" icon="code" inline-icon active></md-tab><md-tab id="coverage-tab" label="Test coverage" controls="coverage-panel" icon="fact_check" inline-icon></md-tab><md-tab id="events-tab" label="Events" controls="events-panel" icon="bolt" inline-icon></md-tab><md-tab id="ai-instructions-tab" label="AI instructions" controls="ai-instructions-panel" icon="auto_awesome" inline-icon></md-tab></md-tabs>
+            <div id="usage-docs" role="tabpanel" aria-labelledby="usage-tab" tabindex="0"></div>
+            <div id="coverage-panel" role="tabpanel" aria-labelledby="coverage-tab" tabindex="0" hidden></div>
+            <div id="ai-instructions-panel" role="tabpanel" aria-labelledby="ai-instructions-tab" tabindex="0" hidden></div>
+            <section id="events-panel" class="inspector-panel" role="tabpanel" aria-labelledby="events-tab" tabindex="0" hidden><div class="inspector-toolbar"><h3>Live events</h3></div><div id="inspector-content"></div></section>
             </md-card>
           </section>
           <p class="footnote">Built with the same AWC components you’re exploring. SwiftUI streams from this Mac; Android streams from a connected emulator.</p>
         </div>
         <aside class="props-panel" aria-label="Component properties">
           <md-card class="studio-card props-card" variant="outlined" full-width>
-          <div class="panel-heading"><div><span class="panel-eyebrow">CONFIGURE</span><h2>Properties</h2></div><span id="props-count" class="count-badge">0</span></div>
-          <p class="props-hint">Changes apply to the web reference.</p>
-          <md-text-field id="props-search" class="props-search" placeholder="Find a property…" aria-label="Search properties" variant="outlined" density="-3" clearable="internal"></md-text-field>
-          <div id="properties-panel"><div id="props-controls"></div><p id="props-empty" class="prop-note" hidden>No matching properties.</p><div class="css-variables-panel"><md-accordion id="css-variables-accordion" variant="outlined" density="-3" heading-level="3" transition="standard"><md-accordion-item id="css-variables-section" headline="CSS variables" density="-3"><span slot="headline" class="css-variables-heading">CSS variables <span id="css-variables-count" class="count-badge">0</span></span><p id="css-variables-note" class="prop-note"></p><div id="css-controls"></div></md-accordion-item></md-accordion></div></div>
+          <md-tabs id="properties-tabs" variant="secondary" aria-label="Component configuration">
+            <md-tab id="properties-tab" label="Properties" controls="properties-tabpanel" active><md-chip id="props-count" slot="badge" class="count-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">0</md-chip></md-tab>
+            <md-tab id="css-variables-tab" label="CSS variables" controls="css-variables-tabpanel"><md-chip id="css-variables-count" slot="badge" class="count-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">0</md-chip></md-tab>
+          </md-tabs>
+          <div id="properties-panel">
+            <section id="properties-tabpanel" role="tabpanel" aria-labelledby="properties-tab" tabindex="0">
+              <p class="props-hint">Changes apply to the web reference.</p>
+              <md-text-field id="props-search" class="props-search" placeholder="Find a property…" aria-label="Search properties" variant="outlined" density="-3" clearable="internal"></md-text-field>
+              <div id="props-controls"></div><p id="props-empty" class="prop-note" hidden>No matching properties.</p>
+            </section>
+            <section id="css-variables-tabpanel" class="css-variables-panel" role="tabpanel" aria-labelledby="css-variables-tab" tabindex="0" hidden><p id="css-variables-note" class="prop-note"></p><div id="css-controls"></div></section>
+          </div>
           <div class="props-panel-footer"><span class="material-symbols-outlined" aria-hidden="true">info</span>Hover an info icon for details and platform support.</div>
           </md-card>
         </aside>

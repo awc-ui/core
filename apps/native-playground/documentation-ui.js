@@ -6,6 +6,12 @@ import { renderCode } from './syntax-highlighting.js';
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const prose = value => escape(value).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+const categoryDescriptions = {
+  Events: 'Events notify your application about interactions or changes proposed by a component. In Web, listen with `addEventListener` and read `event.detail`; cancelable events can prevent their default action. Native adapters use their documented callback contracts.',
+  Slots: 'Slots are insertion points for child content. The default slot accepts unnamed content; named Web slots use the `slot` attribute. Native adapters provide their supported content equivalents. The editors below change plain text.',
+  Methods: 'Methods are actions you can call on a component, such as focusing an input or checking validity. Each method documents its arguments and return value. Run them against the Web preview with a JSON argument array; native method availability depends on the adapter.',
+  'CSS parts': 'CSS parts are named elements exposed from a Web component’s shadow DOM. Style them with `component-tag::part(name)` without depending on private markup. CSS selectors do not apply directly to SwiftUI or Jetpack Compose.',
+};
 
 /** Explicit fixture/edited values plus values that actually differ from defaults. */
 export function snippetProperties(state) {
@@ -71,7 +77,14 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
         ${doc.returnType && doc.returnType !== 'inferred' ? `<p>Returns <code>${escape(doc.returnType)}</code></p>` : ''}
         ${doc.usage ? `<p>${prose(doc.usage)}</p>` : ''}<p class="doc-support">${escape(doc.support?.description || '')}</p>
       </div>
-      <md-button slot="actions" variant="text" size="xs" href="/repo/packages/core/src/components/${escape(state.selected.tag)}/readme.md" target="_blank">Full guide</md-button>
+    </md-tooltip>`;
+  }
+  function categoryInfo(title) {
+    const key = String(++sequence);
+    return `<md-tooltip class="documentation-tooltip usage-category-tooltip" data-doc-tooltip="${key}" data-category-info="${escape(title)}" variant="rich" position="${tooltipPosition()}" show-delay="350" hide-delay="300">
+      <md-icon-button class="doc-info" data-doc-info="${key}" icon="info" size="xs" aria-label="About ${escape(title)}"></md-icon-button>
+      <strong slot="subhead" class="doc-tooltip-title">${escape(title)}</strong>
+      <div slot="content" class="doc-tooltip-content" tabindex="0" aria-label="${escape(title)} explanation"><p>${prose(categoryDescriptions[title])}</p></div>
     </md-tooltip>`;
   }
   function filterProperties() {
@@ -159,10 +172,8 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
       </div>`;
   }
   let renderedCssKey;
-  function renderCssVariables(styles, sameComponent) {
+  function renderCssVariables(styles) {
     const state = getState(), root = document.querySelector('#css-controls');
-    const section = document.querySelector('#css-variables-section');
-    if (!sameComponent) section.expanded = false;
     document.querySelector('#css-variables-count').textContent = String(styles.length);
     document.querySelector('#css-variables-note').textContent = styles.length
       ? `Overrides update web framework examples${state.platform === 'web' ? ' and this Web preview' : ''}.`
@@ -181,7 +192,7 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
       }));
     }
     // Keep mounted editors on ordinary preview refreshes so the active input,
-    // caret and accordion state survive. Reset still synchronizes their values.
+    // caret survive. Reset still synchronizes their values.
     root.querySelectorAll('[data-css-index]').forEach(input => {
       const value = state.docCssValues?.[styles[Number(input.dataset.cssIndex)].name] || '';
       if (input.value !== value) input.value = value;
@@ -191,15 +202,24 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
     const state = getState(), component = state.selected, web = state.platform === 'web';
     const root = document.querySelector('#usage-docs'), cssRoot = document.querySelector('#css-controls');
     const sameComponent = renderedTag === component.tag;
+    const expandedSections = sameComponent ? new Set([...root.querySelectorAll('[data-usage-section]')].filter(item => item.expanded).map(item => item.dataset.usageSection)) : new Set();
     const methodArguments = sameComponent ? new Map([...root.querySelectorAll('[data-method-name]')].map(input => [input.dataset.methodName, input.value])) : new Map();
     const focused = sameComponent && (root.contains(document.activeElement) || cssRoot.contains(document.activeElement)) ? document.activeElement : null;
     const editor = focused?.shadowRoot?.activeElement || focused;
     const focus = focused?.id ? { id: focused.id, start: editor.selectionStart, end: editor.selectionEnd } : null;
     renderedTag = component.tag;
     const generation = ++renderGeneration;
-    const section = (title, rows, body, action = '') => `<md-card id="usage-section-${title.toLowerCase().replace(/[^a-z]+/g, '-')}" class="usage-section" data-usage-section="${escape(title)}" variant="outlined" full-width density="-3"><div class="usage-section-heading"><div class="usage-section-label"><h3 class="usage-section-title">${escape(title)}</h3><span class="usage-section-count">${rows.length}</span></div>${action}</div>${rows.length ? body : `<p class="usage-empty">No public ${escape(title.toLowerCase())} declared.</p>`}</md-card>`;
+    const section = (title, rows, body, action = '') => {
+      const id = `usage-section-${title.toLowerCase().replace(/[^a-z]+/g, '-')}`;
+      const content = rows.length ? body : `<p class="usage-empty">No public ${escape(title.toLowerCase())} declared.</p>`;
+      const count = `<md-chip class="usage-section-count" variant="input" selectable="false" removable="false" appearance="filled" density="-4" inert aria-hidden="true" tabindex="-1">${rows.length}</md-chip>`;
+      if (!Object.hasOwn(categoryDescriptions, title)) return `<md-card id="${id}" class="usage-section" data-usage-section="${escape(title)}" variant="outlined" full-width density="-3"><div class="usage-section-heading"><div class="usage-section-label"><h3 class="usage-section-title">${escape(title)}<span class="sr-only">, ${rows.length} declarations</span></h3>${count}</div>${action}</div>${content}</md-card>`;
+      // AWC's header slots sit inside its native button. Keep the help trigger
+      // and display chip outside that button and outside its inert closed panel.
+      return `<section class="usage-accordion-section"><md-accordion-item id="${id}" class="usage-section usage-accordion" data-usage-section="${escape(title)}" headline="${escape(title)}" heading-level="3" region-role="group" density="-3"${expandedSections.has(title) ? ' expanded' : ''}><span slot="headline" class="sr-only">${escape(title)}, ${rows.length} declarations</span><div class="usage-accordion-body">${action ? `<div class="usage-accordion-action">${action}</div>` : ''}${content}</div></md-accordion-item><div class="usage-accordion-tools"><span class="usage-accordion-label" aria-hidden="true">${escape(title)}</span>${categoryInfo(title)}${count}</div></section>`;
+    };
     const events = component.events || [], slots = component.slots || [], methods = component.methods || [], styles = component.cssProperties || [], parts = component.cssParts || [];
-    root.innerHTML = `<div class="usage-intro"><p>Change properties and interact with the preview. Use <span aria-hidden="true">ⓘ</span> for details, defaults and platform support.</p><md-button class="usage-guide" variant="text" size="xs" icon="open_in_new" href="/repo/packages/core/src/components/${escape(component.tag)}/readme.md" target="_blank">Full component guide</md-button></div>
+    root.innerHTML = `<div class="usage-intro"><p>Change properties and interact with the preview. Use <span aria-hidden="true">ⓘ</span> for details, defaults and platform support.</p></div>
       <section class="usage-example" aria-label="Live usage example"><div class="usage-code-heading"><md-tabs id="usage-language-tabs" variant="secondary" tab-width="auto" active-tab-index="${snippetLanguages.findIndex(language => language.id === snippetLanguage)}" aria-label="Code language">${snippetLanguages.map(language => `<md-tab label="${escape(language.label)}" data-snippet-language="${language.id}" inline-icon${language.id === 'android' ? ' icon="android"' : ''}>${usageBrandIcon(language.id)}</md-tab>`).join('')}</md-tabs></div><md-card class="usage-snippet-card" variant="outlined" full-width><div class="usage-snippet-actions"><md-button type="button" id="copy-usage" variant="text" size="xs" icon="content_copy" aria-label="Copy usage code">Copy</md-button></div><pre id="usage-snippet" class="usage-code" tabindex="0" aria-label="Usage code"></pre></md-card></section>
       <div class="api-reference">${section('Events', events, events.map((event, index) => {
         return memberRow('event', event, eventPayload(event, index));
@@ -213,14 +233,14 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
       ${section('CSS parts', parts, parts.map(part => memberRow('cssPart', part, `<code class="usage-signature">${escape(component.tag)}::part(${escape(part.name)}) { … }</code>`)).join(''))}
       ${(component.dataTypes?.length || component.callableProps?.length) ? section('Data & callback types', [...(component.dataTypes || []), ...(component.callableProps || [])], [...(component.dataTypes || []).map(type => ['dataType', type]), ...(component.callableProps || []).map(type => ['callableProp', type])].map(([kind, type], index) => memberRow(kind, type, codeCard({ id: `usage-data-type-${index}`, title: type.name, description: kind === 'callableProp' ? 'The function signature accepted by this callback property.' : 'The TypeScript declaration used by this component.', language: 'typescript', code: type.body || type.type?.text || type.type || '' }))).join('')) : ''}</div>`;
     root.querySelectorAll('[data-code-language]').forEach(code => renderCode(code, code.textContent, code.dataset.codeLanguage));
-    renderCssVariables(styles, sameComponent);
+    renderCssVariables(styles);
     if (focus) {
       const next = document.getElementById(focus.id);
       if (next && next !== focused && (root.contains(next) || cssRoot.contains(next)) && !next.disabled) {
         const restore = input => { if (generation === renderGeneration && typeof input?.setSelectionRange === 'function' && focus.start != null) input.setSelectionRange(focus.start, focus.end); };
         const restoreFocus = () => {
           if (generation !== renderGeneration || !next.isConnected) return;
-          next.focus({ preventScroll: true });
+          if (next.matches('md-accordion-item')) next.focusHeader(); else next.focus({ preventScroll: true });
           if (typeof next.getInputElement === 'function') next.getInputElement().then(restore); else restore(next);
         };
         if (typeof next.componentOnReady === 'function') next.componentOnReady().then(restoreFocus); else restoreFocus();

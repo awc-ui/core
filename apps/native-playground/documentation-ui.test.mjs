@@ -6,7 +6,8 @@ import { createDocumentationUI, snippetProperties } from './documentation-ui.js'
 // additionally checked in the real browser. No browser implementation dependency.
 const decode = value => value.replace(/&(amp|quot|lt|gt|#39);/g, (_, entity) => ({ amp: '&', quot: '"', lt: '<', gt: '>', '#39': "'" })[entity]);
 class ElementStub {
-  constructor(attributes = {}) {
+  constructor(attributes = {}, tag = 'div') {
+    this.tagName = tag.toUpperCase();
     this.attributes = attributes; this.dataset = {}; this.listeners = {}; this.nodes = [];
     this.id = attributes.id; this.value = attributes.value || ''; this.open = Object.hasOwn(attributes, 'open'); this.expanded = Object.hasOwn(attributes, 'expanded');
     this.disabled = Object.hasOwn(attributes, 'disabled'); this.hidden = false; this.isConnected = true;
@@ -19,7 +20,7 @@ class ElementStub {
   setAttribute(name, value) { this.attributes[name] = value; }
   removeAttribute(name) { delete this.attributes[name]; }
   getBoundingClientRect() { return { left: 50, right: 70, top: 30 }; }
-  matches(selector) { return selector === ':hover' ? false : selector.startsWith('#') ? this.id === selector.slice(1) : /^\[([\w-]+)\]$/.test(selector) && Object.hasOwn(this.attributes, selector.slice(1, -1)); }
+  matches(selector) { return selector === ':hover' ? false : selector.startsWith('#') ? this.id === selector.slice(1) : /^[a-z][a-z-]*$/i.test(selector) ? this.tagName === selector.toUpperCase() : /^\[([\w-]+)\]$/.test(selector) && Object.hasOwn(this.attributes, selector.slice(1, -1)); }
   closest(selector) { return this.matches(selector) ? this : null; }
   contains(node) { return this.nodes.includes(node); }
   focus() { document.activeElement = this; }
@@ -32,9 +33,9 @@ class ElementStub {
   querySelector(selector) { return this.querySelectorAll(selector)[0] || null; }
   set innerHTML(html) {
     this.html = html; this.nodes.forEach(node => { node.isConnected = false; });
-    this.nodes = [...html.matchAll(/<([a-z-]+)\b([^>]*)>/gi)].map(([, , raw]) => {
+    this.nodes = [...html.matchAll(/<([a-z-]+)\b([^>]*)>/gi)].map(([, tag, raw]) => {
       const attributes = Object.fromEntries([...raw.matchAll(/([\w-]+)(?:="([^"]*)")?/g)].map(([, key, value]) => [key, decode(value || '')]));
-      return new ElementStub(attributes);
+      return new ElementStub(attributes, tag);
     });
   }
   get innerHTML() { return this.html || ''; }
@@ -44,7 +45,7 @@ function fixture(t, extra = {}) {
   const cssRoot = new ElementStub(), cssSection = new ElementStub(), cssCount = new ElementStub(), cssNote = new ElementStub();
   const surfaces = { '#usage-docs': root, '#props-search': search, '#css-controls': cssRoot, '#css-variables-section': cssSection, '#css-variables-count': cssCount, '#css-variables-note': cssNote };
   doc.activeElement = null; doc.body = { append() {} }; doc.createElement = name => {
-    const element = new ElementStub();
+    const element = new ElementStub({}, name);
     if (name === 'template') element.content = { querySelector: () => null };
     return element;
   };
@@ -57,10 +58,10 @@ function fixture(t, extra = {}) {
   }
   const component = { tag: 'md-text-field', properties: [], methods: [{ name: 'setCustomValidity', parameters: [{ name: 'message', type: 'string' }], returnType: 'inferred' }], ...extra };
   const state = { selected: component, platform: 'web', props: {}, target: { outerHTML: '<md-text-field></md-text-field>' } };
-  let interactions = 0;
+  let interactions = 0, watched = 0;
   const contentChanges = [];
-  const ui = createDocumentationUI({ getState: () => state, notify() {}, watchEvents() {}, afterInteraction() { interactions++; }, onContentChange: (...args) => contentChanges.push(args) });
-  return { ui, root, propsRoot, cssRoot, cssSection, cssCount, cssNote, state, doc, search, contentChanges, interactions: () => interactions };
+  const ui = createDocumentationUI({ getState: () => state, notify() {}, watchEvents() { watched++; }, afterInteraction() { interactions++; }, onContentChange: (...args) => contentChanges.push(args) });
+  return { ui, root, propsRoot, cssRoot, cssSection, cssCount, cssNote, state, doc, search, contentChanges, interactions: () => interactions, watched: () => watched };
 }
 
 test('Text editor shares default-slot state with usage, preserves empty labels, and resets to the fixture', async t => {
@@ -119,19 +120,40 @@ test('same-component docs enrichment and platform switches retain method args an
   assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').value, '[]');
 });
 
-test('API topics and code use visible AWC cards and preserve keyboard focus on code', t => {
-  const { ui, root, state } = fixture(t, {
+test('API categories use collapsed AWC accordions with independent help and keep detail cards', async t => {
+  const { ui, root, state, watched } = fixture(t, {
     events: [{ name: 'mdInput', detail: 'string' }, { name: 'mdChange', detail: '{ value: string }' }],
     slots: [{ name: '' }], cssParts: [{ name: 'input' }], dataTypes: [{ name: 'Payload', body: 'string' }],
   });
   ui.renderUsage();
   assert.equal(root.querySelectorAll('[data-usage-section]').length, 5);
   assert.equal(root.querySelectorAll('[data-usage-payload]').length, 2);
-  assert.doesNotMatch(root.innerHTML, /<details\b|<summary\b|<button\b|<input\b|<md-accordion/);
-  assert.match(root.innerHTML, /<md-card[^>]+data-usage-section="Events"[^>]+variant="outlined"/);
+  assert.doesNotMatch(root.innerHTML, /<details\b|<summary\b|<button\b|<input\b/);
+  const accordions = root.querySelectorAll('md-accordion-item');
+  assert.equal(accordions.length, 4);
+  assert.deepEqual(accordions.map(item => item.dataset.usageSection), ['Events', 'Slots', 'Methods', 'CSS parts']);
+  assert.ok(accordions.every(item => !item.expanded));
+  assert.ok(accordions.every(item => item.attributes['heading-level'] === '3'));
+  assert.equal(root.querySelectorAll('[data-category-info]').length, 4);
+  for (const title of ['Events', 'Slots', 'Methods', 'CSS parts']) {
+    const tooltip = root.querySelector(`[data-category-info="${title}"]`);
+    assert.equal(tooltip.attributes.variant, 'rich');
+    const button = root.querySelector(`[data-doc-info="${tooltip.dataset.docTooltip}"]`);
+    assert.equal(button.attributes['aria-label'], `About ${title}`);
+  }
+  // Each tools container follows the item's closing tag: no nested interactive
+  // triggers in its header button or hidden triggers in its collapsed panel.
+  assert.equal([...root.innerHTML.matchAll(/<\/md-accordion-item><div class="usage-accordion-tools">/g)].length, 4);
+  assert.equal(root.querySelectorAll('md-chip').length, 5);
+  assert.ok(root.querySelectorAll('md-chip').every(chip => Object.hasOwn(chip.attributes, 'inert') && chip.attributes['aria-hidden'] === 'true'));
+  assert.match(root.innerHTML, /slot="headline" class="sr-only">Events, 2 declarations/);
+  assert.match(root.innerHTML, /class="usage-accordion-label" aria-hidden="true">Events<\/span><md-tooltip[^>]+data-category-info="Events"/);
   assert.match(root.innerHTML, /<md-card[^>]+class="usage-code-card"[^>]+data-usage-payload="mdInput"/);
   assert.match(root.innerHTML, /class="usage-code-description"/);
-  assert.match(root.innerHTML, /<md-button[^>]+class="usage-guide"/);
+  assert.doesNotMatch(root.innerHTML, /Full component guide|Full guide|slot="actions"/);
+  await root.querySelector('#watch-usage-events').emit('mdClick');
+  assert.equal(watched(), 1);
+  root.querySelector('#usage-section-events').expanded = true;
   const code = root.querySelector('#usage-payload-0-code');
   assert.equal(code.attributes.tabindex, '0');
   assert.equal(code.attributes['aria-labelledby'], 'usage-payload-0-title');
@@ -139,10 +161,16 @@ test('API topics and code use visible AWC cards and preserve keyboard focus on c
   state.platform = 'ios';
   ui.renderUsage();
   assert.equal(document.activeElement, root.querySelector('#usage-payload-0-code'));
-  assert.doesNotMatch(root.innerHTML, /<md-accordion|content-max-height/);
+  assert.equal(root.querySelector('#usage-section-events').expanded, true);
+  assert.doesNotMatch(root.innerHTML, /content-max-height/);
+  const header = root.querySelector('#usage-section-events');
+  await header.focusHeader(); ui.renderUsage();
+  assert.equal(document.activeElement, root.querySelector('#usage-section-events'));
+  assert.equal(document.activeElement.focusHeaderCalls, 1, 'Restore the real header button through its AWC API');
   state.selected = { ...state.selected, tag: 'md-number-field' };
   ui.renderUsage();
   assert.notEqual(document.activeElement, root.querySelector('#usage-payload-0-code'), 'Changing component does not move focus into new code');
+  assert.ok(root.querySelectorAll('md-accordion-item').every(item => !item.expanded), 'New components start collapsed');
 });
 
 test('event details show readable source fields and explained code cards with escaped type definitions', t => {
@@ -188,7 +216,7 @@ test('data/callback types have accessible help and escaped source content', asyn
   assert.ok(Number(tooltip.attributes['hide-delay']) > 0, 'AWC owns a grace period to reach the rich popup');
   assert.match(root.innerHTML, /slot="subhead"/);
   assert.match(root.innerHTML, /slot="content" class="doc-tooltip-content" tabindex="0"/);
-  assert.match(root.innerHTML, /slot="actions"[^>]*>Full guide<\/md-button>/);
+  assert.doesNotMatch(root.innerHTML, /slot="actions"|Full guide/);
   assert.equal(doc.listeners.focusin, undefined, 'Hover, focus, descriptions and Escape belong to md-tooltip');
   assert.equal(doc.listeners.keydown, undefined);
   assert.equal(help.attributes['aria-describedby'], undefined, 'No cross-shadow custom IDREF is added');
@@ -312,17 +340,15 @@ test('AWC field events edit slot examples and filter properties; browser input e
   assert.equal(rows[0].hidden, true); assert.equal(rows[1].hidden, false); assert.equal(empty.hidden, true);
 });
 
-test('sidebar CSS editing preserves focus, caret and expansion on refresh and resets for a new component', async t => {
-  const { ui, cssRoot, cssSection, cssCount, cssNote, state, doc } = fixture(t, { cssProperties: [{ name: '--md-color', description: 'Accent color.' }] });
+test('sidebar CSS tab editing preserves focus and caret on refresh and resets for a new component', async t => {
+  const { ui, cssRoot, cssCount, cssNote, state, doc } = fixture(t, { cssProperties: [{ name: '--md-color', description: 'Accent color.' }] });
   state.platform = 'ios';
   ui.renderUsage();
-  cssSection.expanded = true;
   const input = cssRoot.querySelector('[data-css-index="0"]');
   input.value = 'rebeccapurple'; input.focus(); input.setSelectionRange(2, 7);
   await input.emit('mdInput', { detail: input.value });
   ui.renderUsage();
   assert.equal(cssRoot.querySelector('[data-css-index="0"]'), input, 'Ordinary preview refresh keeps the mounted editor');
-  assert.equal(cssSection.expanded, true);
   assert.equal(doc.activeElement, input);
   assert.deepEqual([input.selectionStart, input.selectionEnd], [2, 7]);
   assert.equal(cssCount.textContent, '1');
@@ -332,13 +358,10 @@ test('sidebar CSS editing preserves focus, caret and expansion on refresh and re
   assert.notEqual(doc.activeElement, input, 'Metadata enrichment refreshes help content');
   assert.equal(doc.activeElement.value, 'rebeccapurple');
   assert.deepEqual([doc.activeElement.selectionStart, doc.activeElement.selectionEnd], [2, 7]);
-  assert.equal(cssSection.expanded, true);
   state.platform = 'android'; ui.renderUsage();
-  assert.equal(cssSection.expanded, true);
   assert.equal(doc.activeElement.value, 'rebeccapurple');
   state.selected = { ...state.selected, tag: 'md-button', cssProperties: [] }; state.docCssValues = {};
   ui.renderUsage();
-  assert.equal(cssSection.expanded, false);
   assert.equal(cssRoot.querySelectorAll('[data-css-index]').length, 0);
   assert.equal(cssCount.textContent, '0');
   assert.equal(cssNote.textContent, 'No public CSS variables declared.');

@@ -7,6 +7,49 @@ describe('md-tab e2e', () => {
     const el = await page.find('md-tab');
     expect(el).toBeTruthy();
   });
+
+  it.each(['ltr', 'rtl'])('keeps a slotted count chip outline around only the count in %s', async direction => {
+    const page = await newE2EPage();
+    await page.setContent(`
+      <md-tabs variant="secondary" dir="${direction}" style="width: 360px">
+        <md-tab id="properties-tab" label="Properties" controls="properties-panel" active>
+          <md-chip id="count" slot="badge" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">24</md-chip>
+        </md-tab>
+        <md-tab id="css-tab" label="CSS variables" controls="css-panel"></md-tab>
+      </md-tabs>
+    `);
+    await page.waitForChanges();
+
+    const geometry = await page.evaluate(() => {
+      const tab = document.getElementById('properties-tab')!;
+      const chip = document.getElementById('count')!;
+      const bounds = (element: Element) => {
+        const { left, right, top, bottom } = element.getBoundingClientRect();
+        return { left, right, top, bottom };
+      };
+      return {
+        chip: bounds(chip),
+        outline: bounds(chip.shadowRoot!.querySelector('[part="outline"]')!),
+        label: bounds(tab.shadowRoot!.querySelector('.md-tab__label-text')!),
+        controls: tab.getAttribute('aria-controls'),
+      };
+    });
+    for (const edge of ['left', 'right', 'top', 'bottom'] as const) {
+      expect(Math.abs(geometry.outline[edge] - geometry.chip[edge])).toBeLessThan(1);
+    }
+    if (direction === 'ltr') expect(geometry.chip.left).toBeGreaterThan(geometry.label.right);
+    else expect(geometry.chip.right).toBeLessThan(geometry.label.left);
+    expect(geometry.controls).toBe('properties-panel');
+
+    await page.focus('#properties-tab');
+    await page.keyboard.press(direction === 'ltr' ? 'ArrowRight' : 'ArrowLeft');
+    await page.waitForChanges();
+    expect(await page.evaluate(() => ({
+      focused: document.activeElement?.id,
+      selected: document.getElementById('css-tab')?.getAttribute('aria-selected'),
+      chipTabStop: document.getElementById('count')?.inert,
+    }))).toEqual({ focused: 'css-tab', selected: 'true', chipTabStop: true });
+  });
 });
 
 describe('md-tab icon density', () => {

@@ -17,6 +17,15 @@ class CodeElement {
   set innerHTML(value) { this.html = value; this.text = text(parseFragment(value)); this.writes++; }
 }
 
+test('Markdown instructions preserve headings, tables, Swift fences and literal HTML safely', async () => {
+  const source = '# Button instructions\n\n| Property | Type |\n| --- | --- |\n| icon | String |\n\n```swift\nimport AWCUI\nlet label = "Continue"\n```\n\n<script>Do not execute</script>\n';
+  const html = await highlightCode(source, 'markdown');
+  const parsed = parseFragment(html);
+  assert.match(html, /class="syntax-token"/);
+  assert.equal(text(parsed), source);
+  assert.ok(nodes(parsed).filter(node => node.tagName).every(node => node.tagName === 'span'));
+});
+
 test('real generated code for all seven languages has dual-theme tokens and identical text', async () => {
   const catalog = JSON.parse(await readFile(new URL('../../packages/native-compiler/generated/catalog.json', import.meta.url), 'utf8'));
   const button = catalog.components.find(component => component.tag === 'md-button');

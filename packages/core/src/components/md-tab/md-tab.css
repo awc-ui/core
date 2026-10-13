@@ -448,9 +448,10 @@
   z-index: 1;
 }
 
-/* Label-only tabs: slotted badge flows inline beside the text. */
+/* Label-only tabs: keep the badge in flow and preserve a containing block
+   for a slotted component's own absolute outline, ripple and state layer. */
 .md-tab__label ::slotted([slot='badge']) {
-  position: static;
+  position: relative;
   margin-inline-start: var(--md-sys-spacing-inset-xs, 4px);
 }
 

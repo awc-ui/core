@@ -4,12 +4,14 @@ import { mergeComponentDocumentation, memberDocumentation } from './documentatio
 import { createDocumentationUI } from './documentation-ui.js';
 import { propertyEditor, parsePropertyInput } from './property-controls.js';
 import { createStudioUI, createCoverageUI } from './studio-ui.js';
+import { createAIInstructionsUI } from './ai-instructions-ui.js';
 
 const $ = selector => document.querySelector(selector);
-const state = { components: [], selected: null, platform: 'web', docSection: 'usage', snippetLanguage: 'html', filter: 'all', props: {}, events: [], catalog: null, ready: false, target: null };
+const state = { components: [], selected: null, platform: 'web', docSection: 'usage', propertiesSection: 'properties', propertiesScroll: {}, snippetLanguage: 'html', filter: 'all', props: {}, events: [], catalog: null, ready: false, target: null };
 const documentationUI = createDocumentationUI({ getState: () => state, notify: toast, afterInteraction: syncReferenceState, onContentChange: name => { if (state.selected.tag === 'md-button' && name === '') scheduleNativeRender(); }, watchEvents: () => { selectStudioSection('events'); $('.inspector-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
 const studioUI = createStudioUI({ getState: () => state, notify: toast, onLayoutChange: patch => { if ('direction' in patch || 'width' in patch) scheduleNativeRender(); }, onThemeChange: () => scheduleNativeRender(400) });
 const coverageUI = createCoverageUI({ getState: () => state, notify: toast });
+const aiInstructionsUI = createAIInstructionsUI({ getState: () => state, notify: toast });
 const documentationRequests = new Map();
 const nativeRequests = createLatestRequest();
 const nativeSessions = { ios: createNativeSessionCoordinator(), android: createNativeSessionCoordinator() };
@@ -107,7 +109,8 @@ function bindEvents() {
   document.addEventListener('visibilitychange', () => nativeLive.setVisible(!document.hidden));
   $('#reset').addEventListener('click', () => { selectComponent(state.selected.tag); toast('Component properties reset'); });
   $('#preview-platform-buttons').addEventListener('mdSelectionChange', event => { if (event.target === $('#preview-platform-buttons')) selectPlatform(event.detail.values[0]); });
-  $('#studio-doc-tabs').addEventListener('mdTabChange', event => { if (event.target === $('#studio-doc-tabs')) selectStudioSection(['usage', 'coverage', 'events'][event.detail.index]); });
+  $('#studio-doc-tabs').addEventListener('mdTabChange', event => { if (event.target === $('#studio-doc-tabs')) selectStudioSection(['usage', 'coverage', 'events', 'ai'][event.detail.index]); });
+  $('#properties-tabs').addEventListener('mdTabChange', event => { if (event.target === $('#properties-tabs')) selectPropertiesSection(['properties', 'css'][event.detail.index]); });
   document.addEventListener('keydown', event => { if (event.key === '/' && !event.composedPath().some(element => ['INPUT', 'TEXTAREA', 'SELECT', 'MD-TEXT-FIELD', 'MD-SELECT'].includes(element?.tagName))) { event.preventDefault(); $('#search').setFocus(); } });
 }
 function selectPlatform(platform) {
@@ -136,17 +139,18 @@ function renderNavigation() {
   const query = ($('#search').value || '').trim().toLowerCase();
   const filtered = state.components.filter(component => `${component.tag} ${displayName(component.tag)} ${component.category}`.toLowerCase().includes(query) && (state.filter === 'all' || portabilityFindings(component).total));
   const groups = categoryOrder.map(category => ({ category, components: filtered.filter(component => component.category === category) })).filter(group => group.components.length);
-  $('#component-list').innerHTML = groups.map(({ category, components }) => `<section class="nav-group"><h3>${escape(category)}<span>${components.length}</span></h3>${components.map(component => `<md-button type="button" class="component-link ${component.tag === state.selected?.tag ? 'active' : ''}" variant="${component.tag === state.selected?.tag ? 'tonal' : 'text'}" size="xs" shape="square" full-width data-tag="${escape(component.tag)}" ${component.tag === state.selected?.tag ? 'aria-current="true"' : ''}><span class="nav-icon" slot="leading-icon" aria-hidden="true">${icons[category]}</span><span>${escape(displayName(component.tag))}</span>${portabilityFindings(component).total ? `<span class="nav-warning" slot="trailing-icon" title="${portabilityFindings(component).source} source diagnostics · ${portabilityFindings(component).ios} iOS API gaps · ${portabilityFindings(component).android} Android API gaps">${portabilityFindings(component).total}</span>` : ''}</md-button>`).join('')}</section>`).join('') || '<p class="empty-state">No matching components.</p>';
+  $('#component-list').innerHTML = groups.map(({ category, components }) => `<section class="nav-group"><h3>${escape(category)}<md-chip class="count-chip nav-group-count" inert aria-hidden="true" variant="input" selectable="false" removable="false" density="-4">${components.length}</md-chip><span class="studio-visually-hidden">${components.length} components</span></h3>${components.map(component => `<md-button type="button" class="component-link ${component.tag === state.selected?.tag ? 'active' : ''}" variant="${component.tag === state.selected?.tag ? 'tonal' : 'text'}" size="xs" shape="square" full-width data-tag="${escape(component.tag)}" aria-label="${escape(displayName(component.tag))}${portabilityFindings(component).total ? `, ${portabilityFindings(component).total} portability findings` : ''}" ${component.tag === state.selected?.tag ? 'aria-current="true"' : ''}><span class="nav-icon" slot="leading-icon" aria-hidden="true">${icons[category]}</span><span>${escape(displayName(component.tag))}</span>${portabilityFindings(component).total ? `<md-chip class="count-chip nav-warning" inert aria-hidden="true" variant="input" selectable="false" removable="false" density="-4" slot="trailing-icon" title="${portabilityFindings(component).source} source diagnostics · ${portabilityFindings(component).ios} iOS API gaps · ${portabilityFindings(component).android} Android API gaps">${portabilityFindings(component).total}</md-chip>` : ''}</md-button>`).join('')}</section>`).join('') || '<p class="empty-state">No matching components.</p>';
 }
 function selectComponent(tag) {
   const component = state.components.find(item => item.tag === tag); if (!component) return;
   state.selected = component; state.events = []; state.props = {}; state.editedTag = tag; state.editedProps = {};
-  state.docSlotValues = {}; state.docCssValues = {}; $('#props-search').value = ''; $('#properties-panel').scrollTop = 0;
+  state.docSlotValues = {}; state.docCssValues = {}; state.propertiesScroll = {}; $('#props-search').value = ''; $('#properties-panel').scrollTop = 0;
   for (const prop of component.properties || []) { if (prop.defaultValue !== undefined) state.props[prop.name] = structuredClone(prop.defaultValue); }
   Object.assign(state.props, recipeFor(tag).props);
   text('#category-label', component.category); text('#tag-label', tag); text('#component-title', displayName(tag)); text('#component-description', component.description);
   text('#props-count', component.properties.length); text('#findings-count', portabilityFindings(component).total); text('#event-count', '0');
   renderNavigation(); renderPreview(); renderProperties(); renderEvents(); if (state.docSection === 'coverage') void coverageUI.load();
+  if (state.docSection === 'ai') void aiInstructionsUI.load();
   void loadComponentDocumentation(component);
 }
 function renderPreview() {
@@ -515,6 +519,7 @@ function renderProperties() {
   const scrollTop = $('#properties-panel').scrollTop;
   documentationUI.beginRender();
   const fields = state.selected.properties || [];
+  text('#props-count', fields.length);
   const preferred = ['label', 'headline', 'variant', 'size', 'shape', 'value', 'selected', 'checked', 'disabled', 'loading', 'icon', 'supportingText', 'options', 'series', 'data', 'nodes'];
   const sorted = [...fields].sort((a, b) => { const ai = preferred.indexOf(a.name), bi = preferred.indexOf(b.name); return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi); });
   const editors = new Map();
@@ -566,6 +571,8 @@ function renderProperties() {
     applyValue(input.dataset.prop, value);
   }));
   documentationUI.renderUsage(); documentationUI.filterProperties();
+  $('#properties-tab').setAttribute('aria-label', `Properties, ${fields.length} declarations`);
+  $('#css-variables-tab').setAttribute('aria-label', `CSS variables, ${$('#css-variables-count').textContent} declarations`);
   $('#properties-panel').scrollTop = scrollTop;
   const replacement = focusedId && document.getElementById(focusedId);
   if (replacement && !replacement.disabled) {
@@ -577,6 +584,17 @@ function renderProperties() {
     else if (replacement.focusTrigger) void replacement.focusTrigger();
     else replacement.focus({ preventScroll: true });
   }
+}
+function selectPropertiesSection(section) {
+  if (!['properties', 'css'].includes(section) || section === state.propertiesSection) return;
+  const panel = $('#properties-panel');
+  state.propertiesScroll[state.propertiesSection] = panel.scrollTop;
+  state.propertiesSection = section;
+  for (const tooltip of $('.props-panel').querySelectorAll('md-tooltip[open]')) tooltip.open = false;
+  $('#properties-tabs').activeTabIndex = section === 'css' ? 1 : 0;
+  $('#properties-tabpanel').hidden = section !== 'properties';
+  $('#css-variables-tabpanel').hidden = section !== 'css';
+  panel.scrollTop = state.propertiesScroll[section] || 0;
 }
 function syncReferenceState() {
   if (!state.target) return;
@@ -601,14 +619,16 @@ function recordEvent(event) {
   state.events = state.events.slice(0, 100); text('#event-count', state.events.length); if (state.docSection === 'events') renderEvents();
 }
 function selectStudioSection(section) {
-  const names = ['usage', 'coverage', 'events'];
+  const names = ['usage', 'coverage', 'events', 'ai'];
   if (!names.includes(section)) return;
   state.docSection = section;
   $('#studio-doc-tabs').activeTabIndex = names.indexOf(section);
   $('#usage-docs').hidden = section !== 'usage'; $('#coverage-panel').hidden = section !== 'coverage';
   $('.inspector-panel').hidden = section !== 'events';
+  $('#ai-instructions-panel').hidden = section !== 'ai';
   if (section === 'coverage') void coverageUI.load();
   else if (section === 'events') renderEvents();
+  else if (section === 'ai') void aiInstructionsUI.load();
 }
 function renderEvents() {
   const root = $('#inspector-content');

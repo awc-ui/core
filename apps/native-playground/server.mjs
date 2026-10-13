@@ -7,6 +7,7 @@ import { createNativeLiveRenderer } from './native-live.mjs';
 import { createAndroidLiveRenderer } from './android-live.mjs';
 import { getComponentCoverage, isCoverageEvidencePath } from './coverage.mjs';
 import { enrichEventDocumentation } from './event-documentation.mjs';
+import { getAIInstructions, AIInstructionsError } from './ai-instructions.mjs';
 
 const appRoot = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appRoot, '../..');
@@ -42,7 +43,7 @@ export async function resolveAsset(rawUrl, options = {}) {
   } else {
     root = app;
     relative = pathname === '/' ? 'index.html' : pathname.slice(1);
-    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'documentation.js', 'documentation-ui.js', 'brand-icons.js', 'usage-snippets.js', 'syntax-highlighting.js', 'syntax-vendor/highlighter.js', 'syntax-vendor/LICENSES.txt', 'property-controls.js', 'studio.css', 'studio-ui.js', 'canvas-tools.js', 'canvas-tools.css', 'canvas-inspector.js', 'canvas-inspector.css', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'].includes(relative)) return null;
+    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'documentation.js', 'documentation-ui.js', 'ai-instructions-ui.js', 'brand-icons.js', 'usage-snippets.js', 'syntax-highlighting.js', 'syntax-vendor/highlighter.js', 'syntax-vendor/LICENSES.txt', 'property-controls.js', 'studio.css', 'studio-ui.js', 'canvas-tools.js', 'canvas-tools.css', 'canvas-inspector.js', 'canvas-inspector.css', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'].includes(relative)) return null;
   }
   const absolute = path.resolve(root, relative);
   if (!within(path.resolve(root), absolute)) return null;
@@ -71,6 +72,24 @@ export async function handleCoverageRequest(req, res, { repoRoot: repository = r
 
 export function assetContentSecurityPolicy(pathname) {
   return `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors '${pathname === '/preview-frame.html' ? 'self' : 'none'}'`;
+}
+
+export async function handleAIInstructionsRequest(req, res, { repoRoot: repository = repoRoot, tags, json }) {
+  const pathname = (req.url || '/').split('?')[0];
+  if (pathname !== '/api/ai-instructions' && !pathname.startsWith('/api/ai-instructions/')) return false;
+  if (req.method !== 'GET') { res.writeHead(405, { Allow: 'GET' }); res.end(); return true; }
+  const match = /^\/api\/ai-instructions\/(md-[a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(pathname);
+  if (!match) { json(res, 404, { error: 'UNKNOWN_COMPONENT', message: 'Choose a known component tag.' }); return true; }
+  try {
+    if (!(await tags()).has(match[1])) throw new AIInstructionsError(404, 'UNKNOWN_COMPONENT', 'Choose a known component tag.');
+    json(res, 200, await getAIInstructions(repository, match[1]));
+  } catch (error) {
+    json(res, error instanceof AIInstructionsError ? error.status : 503, {
+      error: error instanceof AIInstructionsError ? error.code : 'AI_INSTRUCTIONS_UNAVAILABLE',
+      message: error instanceof AIInstructionsError ? error.message : 'Local component instructions are unavailable.',
+    });
+  }
+  return true;
 }
 
 export async function readAssetContent(file, repository = repoRoot) {
@@ -175,6 +194,7 @@ export function createServer(options = {}) {
   const json = (res,status,value) => {res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
   const server = http.createServer(async (req, res) => {
     const pathname=(req.url||'/').split('?')[0];
+    if (await handleAIInstructionsRequest(req, res, { repoRoot: options.repoRoot || repoRoot, tags, json })) return;
     if (await handleCoverageRequest(req, res, { repoRoot: options.repoRoot || repoRoot, tags, json })) return;
     if (await handleNativeLiveRequest(req, res, { renderer: liveRenderer, androidRenderer, tags, json })) return;
     if(pathname==='/api/native-render/status' && req.method==='GET'){
