@@ -76,7 +76,8 @@ export function reportSourcePath(value, base = 'packages/core') {
 function componentSource(value, tags) {
   const file = reportSourcePath(value);
   const tag = /^packages\/core\/src\/components\/(md-[a-z0-9-]+)\/.+\.tsx?$/.exec(file || '')?.[1];
-  return tag && tags.has(tag) && !/\.(?:spec|e2e|d)\.tsx?$/.test(file) ? { file, tag } : null;
+  return tag && tags.has(tag) && !/\.(?:spec|e2e|d)\.tsx?$/.test(file)
+    && !/(?:^|\/)(?:test-utils|test-fixtures|__tests__|__fixtures__)\//.test(file) ? { file, tag } : null;
 }
 const validCount = value => Number.isSafeInteger(value) && value >= 0;
 const percent = (covered, total) => total ? Math.round(covered * 10000 / total) / 100 : null;
@@ -88,32 +89,66 @@ const emptyCoverage = () => ({ lines: new Map(), branches: new Map(), functions:
 function addHit(map, key, hits) { if (validCount(hits)) map.set(key, Math.max(map.get(key) || 0, hits)); }
 
 export function parseLCOV(text, tags) {
-  const result = new Map(); let current;
+  const result = new Map(), functionRecords = new Map(), invalidFunctionFiles = new Set(); let current;
   for (const line of text.split(/\r?\n/)) {
     if (line.startsWith('SF:')) {
       const source = componentSource(line.slice(3), tags); current = null;
       if (!source) continue;
-      current = { ...source, data: emptyCoverage() }; current.data.files.add(source.file);
+      current = { ...source, data: emptyCoverage(), functionOccurrences: new Map(), functionTotals: {} }; current.data.files.add(source.file);
     } else if (line === 'end_of_record') {
       if (current) {
         if (!result.has(current.tag)) result.set(current.tag, emptyCoverage());
         const data = result.get(current.tag); data.files.add(current.file);
         for (const name of ['lines', 'branches', 'functions']) for (const [key, hits] of current.data[name]) addHit(data[name], key, hits);
+        const { found, hit, invalid } = current.functionTotals;
+        const recorded = coverageMetric(current.data.functions);
+        if (invalid || found !== undefined && found !== recorded.total || hit !== undefined && hit !== recorded.covered) invalidFunctionFiles.add(current.file);
+        if (current.data.functions.size || found !== undefined || hit !== undefined) {
+          const signature = JSON.stringify([...current.data.functions].map(([key, hits]) => [key, hits > 0]).sort(([a], [b]) => a.localeCompare(b)));
+          const previous = functionRecords.get(current.file);
+          // Repeated records must agree on function identities and hit states.
+          // Unioning different partial records would invent a larger denominator.
+          if (previous && previous.signature !== signature) invalidFunctionFiles.add(current.file);
+          else functionRecords.set(current.file, { ...recorded, signature });
+        }
       }
       current = null;
     }
     else if (current) {
       const colon = line.indexOf(':'), prefix = line.slice(0, colon), value = line.slice(colon + 1);
+      if (prefix === 'FNF' || prefix === 'FNH') {
+        const name = prefix === 'FNF' ? 'found' : 'hit';
+        if (!/^\d+$/.test(value) || !validCount(Number(value)) || current.functionTotals[name] !== undefined && current.functionTotals[name] !== Number(value)) current.functionTotals.invalid = true;
+        else current.functionTotals[name] = Number(value);
+        continue;
+      }
       let key, hits;
       if (prefix === 'DA') { const parts = value.split(','); key = parts[0]; hits = Number(parts[1]); if (!/^[1-9]\d*$/.test(key)) continue; }
       else if (prefix === 'BRDA') { const parts = value.split(','); if (parts.length !== 4 || !parts.slice(0, 3).every(part => /^\d+$/.test(part))) continue; key = parts.slice(0, 3).join(','); hits = parts[3] === '-' ? 0 : Number(parts[3]); }
-      else if (prefix === 'FNDA') { const comma = value.indexOf(','); if (comma < 1) continue; hits = Number(value.slice(0, comma)); key = value.slice(comma + 1); }
+      else if (prefix === 'FNDA') {
+        const comma = value.indexOf(','); if (comma < 1) continue;
+        hits = Number(value.slice(0, comma)); const name = value.slice(comma + 1);
+        if (!name || !validCount(hits)) continue;
+        // Istanbul can emit multiple distinct functions with the same name.
+        // Each FNDA occurrence is a function; a name is not a source identity.
+        const occurrence = current.functionOccurrences.get(name) || 0;
+        current.functionOccurrences.set(name, occurrence + 1); key = `${name}:${occurrence}`;
+      }
       else continue;
       if (!key) continue;
       addHit(current.data[prefix === 'DA' ? 'lines' : prefix === 'BRDA' ? 'branches' : 'functions'], `${current.file}:${key}`, hits);
     }
   }
-  return new Map([...result].map(([tag, data]) => [tag, { lines: coverageMetric(data.lines), branches: coverageMetric(data.branches), functions: coverageMetric(data.functions), sourceFiles: [...data.files].sort() }]));
+  return new Map([...result].map(([tag, data]) => {
+    const functions = { total: 0, covered: 0 };
+    for (const file of data.files) {
+      const metric = functionRecords.get(file) || { total: 0, covered: 0 };
+      functions.total += metric.total; functions.covered += metric.covered;
+    }
+    functions.percent = percent(functions.covered, functions.total);
+    return [tag, { lines: coverageMetric(data.lines), branches: coverageMetric(data.branches),
+      ...([...data.files].some(file => invalidFunctionFiles.has(file)) ? {} : { functions }), sourceFiles: [...data.files].sort() }];
+  }));
 }
 
 export function parseIstanbul(text, tags, summary = false) {

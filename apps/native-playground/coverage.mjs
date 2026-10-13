@@ -59,8 +59,19 @@ function staticDocument(text, file) {
   }
   function resolve(node, seen = new Set()) {
     if (!node) return undefined;
-    if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node) || ts.isTypeAssertionExpression(node)) return resolve(node.expression, seen);
+    if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node) || ts.isTypeAssertionExpression(node) || ts.isNonNullExpression(node)) return resolve(node.expression, seen);
     if (ts.isIdentifier(node) && variables.has(node.text) && !seen.has(node.text)) return resolve(variables.get(node.text), new Set([...seen, node.text]));
+    if (ts.isElementAccessExpression(node) && ts.isNumericLiteral(node.argumentExpression)) {
+      const array = resolve(node.expression, seen);
+      if (array && ts.isArrayLiteralExpression(array)) return resolve(array.elements[Number(node.argumentExpression.text)], seen);
+    }
+    if (ts.isPropertyAccessExpression(node)) {
+      const object = resolve(node.expression, seen);
+      if (object && ts.isObjectLiteralExpression(object)) {
+        const property = object.properties.find(item => ts.isPropertyAssignment(item) && item.name.getText(source).replace(/^['"]|['"]$/g, '') === node.name.text);
+        if (property) return resolve(property.initializer, seen);
+      }
+    }
     return node;
   }
   function property(node, name) {
@@ -94,9 +105,73 @@ function accessibilityPlayAssertion(node) {
   if (node) visit(node);
   return assertion && related;
 }
-function inspectTests(text, file, defaultOwner) {
+function inspectTests(text, file, defaultOwner, knownTags) {
   const document = staticDocument(text, file), { source } = document;
   const tests = [], stories = [];
+  const htmlArguments = new Map();
+  function directHTML(call) {
+    const expression = call.expression;
+    return ts.isPropertyAccessExpression(expression) && expression.name.text === 'setContent' ? call.arguments[0]
+      : ts.isIdentifier(expression) && ['newE2EPage', 'newSpecPage'].includes(expression.text) ? document.property(call.arguments[0], 'html') : null;
+  }
+  // Recognize local fixture helpers only where a parameter directly supplies
+  // setContent/new*Page HTML. Never execute a helper or guess from its name.
+  for (const statement of source.statements) if (ts.isFunctionDeclaration(statement) && statement.name && statement.body) {
+    const indexes = new Set();
+    function findHTML(node) {
+      if (ts.isCallExpression(node)) {
+        const html = directHTML(node);
+        if (html) {
+          function references(current) {
+            if (ts.isIdentifier(current)) statement.parameters.forEach((parameter, index) => {
+              if (ts.isIdentifier(parameter.name) && parameter.name.text === current.text) indexes.add(index);
+            });
+            ts.forEachChild(current, references);
+          }
+          references(html);
+        }
+      }
+      ts.forEachChild(node, findHTML);
+    }
+    findHTML(statement.body); if (indexes.size) htmlArguments.set(statement.name.text, indexes);
+  }
+  function literalMarkup(node) {
+    const resolved = document.resolve(node);
+    if (!resolved) return null;
+    if (ts.isStringLiteralLike(resolved)) return resolved.text;
+    if (ts.isTemplateExpression(resolved)) {
+      let value = resolved.head.text;
+      for (const span of resolved.templateSpans) {
+        const text = literalMarkup(span.expression); if (text === null) return null;
+        value += text + span.literal.text;
+      }
+      return value;
+    }
+    return null;
+  }
+  function primaryMarkupTags(html) {
+    const tags = new Set(), stack = [];
+    const voids = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
+    for (const match of html.matchAll(/<(\/?)([a-z][a-z0-9-]*)\b[^>]*>/gi)) {
+      const name = match[2].toLowerCase();
+      if (match[1]) { const index = stack.lastIndexOf(name); if (index >= 0) stack.splice(index); continue; }
+      if (knownTags.has(name) && !stack.some(tag => knownTags.has(tag))) tags.add(name);
+      if (!voids.has(name) && !match[0].endsWith('/>')) stack.push(name);
+    }
+    return [...tags];
+  }
+  function parameterTags(expression) {
+    if (!ts.isCallExpression(expression) || !ts.isPropertyAccessExpression(expression.expression) || expression.expression.name.text !== 'each') return [];
+    let array = document.resolve(expression.arguments[0]);
+    if (array && ts.isCallExpression(array) && ts.isPropertyAccessExpression(array.expression) && array.expression.name.text === 'map') array = document.resolve(array.expression.expression);
+    if (!array || !ts.isArrayLiteralExpression(array)) return [];
+    return [...new Set(array.elements.flatMap(element => {
+      let item = document.resolve(element);
+      if (item && ts.isObjectLiteralExpression(item)) item = document.property(item, 'tag');
+      if (item && ts.isArrayLiteralExpression(item)) item = document.resolve(item.elements[0]);
+      return item && ts.isStringLiteralLike(item) && knownTags.has(item.text) ? [item.text] : [];
+    }))];
+  }
   function caseReferences(node, seen = new Set()) {
     const tags = new Set();
     const locals = new Set();
@@ -106,6 +181,12 @@ function inspectTests(text, file, defaultOwner) {
     }
     localBindings(node);
     function collect(current) {
+      // An indexed fixture refers to that object, not every sibling in its
+      // source table. Resolve it before walking identifiers such as controls.
+      if (ts.isPropertyAccessExpression(current) || ts.isElementAccessExpression(current)) {
+        const resolved = document.resolve(current);
+        if (resolved && resolved !== current) { collect(resolved); return; }
+      }
       if (ts.isStringLiteralLike(current)) literalTags(current.text).forEach(tag => tags.add(tag));
       if (ts.isJsxOpeningElement(current) || ts.isJsxSelfClosingElement(current)) literalTags(current.tagName.getText(source)).forEach(tag => tags.add(tag));
       if (ts.isIdentifier(current) && !locals.has(current.text) && !seen.has(current.text)) {
@@ -115,6 +196,18 @@ function inspectTests(text, file, defaultOwner) {
       ts.forEachChild(current, collect);
     }
     collect(node); return [...tags];
+  }
+  function mountedTags(node) {
+    const mounted = new Set();
+    function visit(current) {
+      if (ts.isCallExpression(current)) {
+        const expression = current.expression, direct = directHTML(current);
+        const html = direct ? [direct] : ts.isIdentifier(expression) ? [...(htmlArguments.get(expression.text) || [])].map(index => current.arguments[index]) : [];
+        for (const value of html) { const markup = literalMarkup(value); if (markup !== null) primaryMarkupTags(markup).forEach(tag => mounted.add(tag)); }
+      }
+      ts.forEachChild(current, visit);
+    }
+    visit(node); return [...mounted];
   }
   function visit(node, ancestors = []) {
     if (ts.isCallExpression(node)) {
@@ -131,10 +224,22 @@ function inspectTests(text, file, defaultOwner) {
         const titlePattern = ts.isStringLiteralLike(titleNode) ? escapePattern(titleNode.text).replace(/%[sdifjo#]/g, '.+?')
           : escapePattern(titleNode.head.text) + titleNode.templateSpans.map(span => '.+?' + escapePattern(span.literal.text)).join('');
         const declaredTags = [...ancestors].reverse().map(literalTags).find(tags => tags.length) || literalTags(ts.isStringLiteralLike(titleNode) ? titleNode.text : titleNode.head.text);
+        const mounted = defaultOwner ? mountedTags(node) : [];
+        const parameters = parameterTags(node.expression);
+        const runtimeTag = parameters.length > 0 && (ts.isTemplateExpression(titleNode) || /%[sdifjo#]/.test(titleNode.text));
+        const leadingSubject = /^\s*(md-[a-z0-9]+(?:-[a-z0-9]+)*)\b/.exec(ts.isStringLiteralLike(titleNode) ? titleNode.text : titleNode.head.text)?.[1];
+        const outerSubject = /^\s*(md-[a-z0-9]+(?:-[a-z0-9]+)*)\b/.exec(ancestors[0] || '')?.[1];
+        const mountedSubject = leadingSubject && mounted.includes(leadingSubject) ? [leadingSubject] : [];
+        const caseTags = runtimeTag ? parameters : defaultOwner
+          ? mountedSubject.length ? mountedSubject
+            : mounted.includes(defaultOwner) || caseReferences(node).includes(defaultOwner) ? [defaultOwner]
+              : mounted.length ? declaredTags.some(tag => mounted.includes(tag)) ? declaredTags.filter(tag => mounted.includes(tag)) : mounted
+                : knownTags.has(outerSubject) ? [outerSubject] : [defaultOwner]
+          : declaredTags.length ? declaredTags : caseReferences(node);
         tests.push({ line: source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1,
           title: ts.isStringLiteralLike(node.arguments[0]) ? node.arguments[0].text : undefined,
           pattern: new RegExp(`(?:^|\\s)${[...ancestors.map(escapePattern), titlePattern].join(' ')}$`),
-          tags: declaredTags.length ? declaredTags : defaultOwner ? [defaultOwner] : caseReferences(node),
+          tags: caseTags, runtimeTag,
           accessibility: /\b(?:axe|AxeBuilder|toHaveNoViolations|accessib\w*|a11y|aria-[\w-]+|keyboard|tabindex|focus)\b/i.test(body),
           skipped: /\.(?:skip|todo)\b/.test(expression) });
       }
@@ -174,9 +279,12 @@ function testsForTag(source, tests, tag) {
   if (source.owner) return source.tags.includes(tag) ? tests : [];
   return tests.filter(test => {
     const declarations = matchingDeclarations(source, test);
-    const namedTags = literalTags(test.name || test.title || '').filter(value => source.tags.includes(value));
-    if (source.shared && namedTags.length) return namedTags.includes(tag) && declarations.some(declaration => declaration.tags.includes(tag));
-    return declarations.length ? declarations.some(declaration => declaration.tags.includes(tag)) : source.fallbackOwner === tag;
+    return declarations.length ? declarations.some(declaration => {
+      if (!declaration.tags.includes(tag)) return false;
+      if (!declaration.runtimeTag) return true;
+      const namedTags = literalTags(test.title || test.name || '').filter(value => declaration.tags.includes(value));
+      return namedTags.length === 1 && namedTags[0] === tag;
+    }) : source.fallbackOwner === tag;
   });
 }
 
@@ -217,8 +325,8 @@ async function buildInventory(root) {
     const categoryID = story || framework && framework !== 'angular' ? 'component' : file.includes('.e2e.') || framework === 'angular' ? 'e2e' : 'unit';
     const coreOwner = /^packages\/core\/src\/components\/(md-[a-z0-9-]+)\//.exec(file)?.[1];
     const fallbackOwner = framework ? frameworkOwner(file, tags) : undefined;
-    const parsed = inspectTests(source.text, file, coreOwner || fallbackOwner), declarations = story ? parsed.stories : parsed.tests;
-    const owner = story ? storyOwner(file, parsed.document, tags) : coreOwner;
+    const parsed = inspectTests(source.text, file, coreOwner || fallbackOwner, tags), declarations = story ? parsed.stories : parsed.tests;
+    const owner = story ? storyOwner(file, parsed.document, tags) : coreOwner && parsed.tests.every(item => item.tags.length === 1 && item.tags[0] === coreOwner && !item.runtimeTag) ? coreOwner : undefined;
     const references = owner ? [owner] : story ? [] : [...new Set([...(fallbackOwner ? [fallbackOwner] : []), ...parsed.tests.flatMap(item => item.tags)])];
     const shared = !owner && !fallbackOwner;
     ownership.set(file, { category: categoryID, tags: references.filter(tag => tags.has(tag)), shared, owner, fallbackOwner, story, tests: parsed.tests });
@@ -262,6 +370,7 @@ async function buildInventory(root) {
     } catch { /* A malformed or partially written report supplies no measured evidence. */ }
   }
   const scopedExecutionFiles = new Map();
+  const scopedExecutionContexts = new Map();
   for (const descriptor of [...executionReports, ...scopedDescriptors.filter(descriptor => descriptor.kind === 'execution')]) {
     const report = await safeRead(root, descriptor.path, 32 * 1024 * 1024); if (!report) continue;
     if (descriptor.run && !reportBelongsToRun(report.modifiedAt, descriptor.run)) continue;
@@ -272,7 +381,19 @@ async function buildInventory(root) {
         if (!grouped.has(key)) grouped.set(key, { tag, categoryID, records: [] });
         grouped.get(key).records.push(record);
       };
-      for (const suite of parseExecutionReport(report.text, descriptor)) {
+      const suites = parseExecutionReport(report.text, descriptor).filter(suite => {
+        const source = ownership.get(suite.file);
+        return source?.category === descriptor.category && (!descriptor.run || descriptor.run.files.includes(suite.file));
+      });
+      if (descriptor.run) {
+        const summary = executionSummary(suites);
+        if (summary.total || summary.failedSuites) scopedExecutionContexts.set(descriptor.manifestPath, {
+          path: descriptor.path, runPath: descriptor.manifestPath, scope: 'report', framework: descriptor.framework,
+          reportedAt: descriptor.run.completedAt, timestampSource: 'run-completedAt',
+          sourceFileCount: new Set(suites.map(suite => suite.file)).size, ...summary,
+        });
+      }
+      for (const suite of suites) {
         const source = ownership.get(suite.file);
         if (!source || source.category !== descriptor.category) continue;
         if (descriptor.run && !descriptor.run.files.includes(suite.file)) continue;
@@ -294,7 +415,7 @@ async function buildInventory(root) {
         const summary = executionSummary(records);
         if (!summary.total && !summary.failedSuites) continue;
         const notes = ['Outcomes describe only the test cases recorded in this report, not every source declaration or a current rerun.', descriptor.run ? 'Timestamp comes from the matching completed runner manifest; cases are limited to its intended source files and component scope.' : 'Timestamp is report modification time.'];
-        if (records.some(record => record.shared)) notes.push('Shared test-file outcomes are filtered by individual test/describe titles or source locations. Suite-level setup failures remain shared-file evidence.');
+        if (records.some(record => record.shared)) notes.push('Shared test-file outcomes are filtered by individual test/describe titles or source locations. Suite-level setup failures remain shared-file evidence. A case that checks multiple components can appear under each; per-component case counts are not additive.');
         if (categoryID === 'accessibility') {
           notes.push(descriptor.framework === 'vitest' ? 'Story outcomes are included only when their matching source play function contains accessibility-related assertions. A story title or configured addon alone is not a recorded accessibility audit.' : `This ${descriptor.framework} report is filtered to individual accessibility-related cases using suite/test names or matching source declarations. Other tests in the same file are excluded.`);
           notes.push('Passing axe, keyboard or ARIA checks is not a WCAG conformance or accessibility coverage percentage. Results from separate runs are not combined.');
@@ -375,11 +496,35 @@ async function buildInventory(root) {
       entry.commands.unshift(command('Measure all test families', 'node apps/native-playground/scripts/measure-tests.mjs'));
       const newestFirst = (a, b) => Date.parse(b.reportedAt) - Date.parse(a.reportedAt) || a.path.localeCompare(b.path);
       entry.measurements.sort(newestFirst); entry.executions.sort(newestFirst);
+      for (const measurement of entry.measurements) {
+        const descriptor = measurement.runPath && scopedRuns.get(measurement.runPath);
+        const sameRun = descriptor?.category === entry.id && descriptor.run.completedAt === measurement.reportedAt;
+        const context = sameRun && scopedExecutionContexts.get(measurement.runPath);
+        const matching = context && entry.executions.find(execution => execution.path === context.path
+          && execution.runPath === measurement.runPath && execution.reportedAt === measurement.reportedAt && (execution.total > 0 || execution.failedSuites > 0));
+        const sourceExecution = ['lines', 'branches', 'functions', 'statements'].some(metric => measurement[metric]?.covered > 0) ? 'observed' : 'zero-hit';
+        const runContext = context || (sameRun ? {
+          path: descriptor.path, runPath: descriptor.path, scope: 'report', framework: descriptor.framework,
+          reportedAt: descriptor.run.completedAt, timestampSource: 'run-completedAt',
+          status: 'unknown', total: null, passed: null, failed: null, skipped: null, sourceFileCount: null,
+        } : null);
+        measurement.attribution = {
+          kind: matching ? 'component-outcomes' : runContext ? 'broader-run' : 'coverage-only', sourceExecution,
+          componentExecutionPath: matching?.path || null, componentTestCount: matching?.total ?? (context ? 0 : null), runContext,
+          notes: matching
+            ? [matching.total > 0 ? 'Component-specific case outcomes are recorded in the same verified run as this source measurement.' : 'A component-attributed test suite failed in the same verified run before recording case outcomes.']
+            : runContext
+              ? [sourceExecution === 'observed' ? 'This component’s source executed in a broader run.' : 'This component’s source is included with zero recorded hits in a broader run.',
+                context ? 'No component-specific case outcomes are recorded for it in that run.' : 'Component-specific case outcomes could not be verified for that run.',
+                'The linked report describes the broader run; its test totals and result are not component-specific outcomes.']
+              : ['Saved source coverage is available. No execution report is verified as belonging to this measurement; separately saved component outcomes may describe another run.'],
+        };
+      }
       entry.executionStatus = entry.executions[0]?.status || 'unknown';
       entry.status = entry.measurements.length ? 'measured' : entry.files.length ? 'evidence-only' : 'unavailable';
       if (!entry.measurements.length) entry.notes.push('No component-specific measured coverage report is available in this checkout.');
-      if (!entry.executions.length) entry.notes.push('No matching execution report is available; the last execution result is unknown.');
-      if (!entry.files.length) entry.notes.push('No matching source test evidence was found in the indexed test directories.');
+      if (!entry.executions.length) entry.notes.push('No component-specific test outcomes are recorded in the indexed reports.');
+      if (!entry.files.length) entry.notes.push('No component-specific test declarations were found in the indexed test directories. Source coverage may still be recorded by broader runs.');
     }
     if (librarySnapshot) result.librarySnapshot = librarySnapshot;
   }

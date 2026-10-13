@@ -178,6 +178,10 @@ The panel reads saved reports; it never runs tests. LCOV and Istanbul reports
 provide component-specific line, branch, function and, when available, statement
 coverage. The latest report supplies percentages, progress bars and covered/total
 counts. Alternative formats and separate runs are not added together.
+Source coverage can come from initialization or use inside another component's
+tests. The panel labels that evidence as indirect execution when the associated
+run has no cases attributed to the selected component. It does not present the
+percentage as behavioral validation or invent a component pass count.
 
 Jest, Vitest and Playwright result reports supply executed pass/fail/skip counts
 separately from code coverage. Accessibility results include only matching checks,
@@ -187,9 +191,18 @@ execution results do not count as passed. Shared-file results are identified.
 Each result links to its source report and shows when that file was saved; this
 does not prove the run matches the current source revision. Without a matching
 report, the panel retains source declaration counts and labels the missing data.
+Coverage and test outcomes are linked only when a validated run manifest and
+report provenance establish that they belong together. Legacy reports without
+that evidence remain explicitly unlinked, even if their modification times are
+close. File-update timestamps and verified run-completion timestamps have
+different labels. The measured source files are listed beside the raw report.
+Failed or incomplete runner attempts with no case output are labeled separately
+from component test results. A build failure does not establish a failed component
+assertion or an executed test suite.
 Declaration counts do not expand parameterized cases. Whole-library totals are
-never substituted for the selected component. Accessibility results describe
-automated checks, not WCAG conformance.
+never substituted for the selected component. A case checking multiple components
+can appear under each, so per-component case totals are not additive.
+Accessibility results describe automated checks, not WCAG conformance.
 
 Generate reports with the repository's supported Node version and installed
 Chromium browser:

@@ -49,6 +49,7 @@ test('category measurements distinguish real zero coverage, missing reports, mis
   assert.equal(overview[1].executionLabel, 'No saved run');
   assert.equal(overview[1].sourceLabel, '8 declarations');
   assert.equal(overview[2].sourceLabel, 'No tests found');
+  assert.equal(overview[2].contextTitle, 'No end-to-end tests attributed to this component');
   assert.equal(overview[3].measurementLabel, 'No coverage percentage');
   assert.equal(overview[3].executionLabel, 'Passed');
   assert.equal(overview[3].executionNote, '3/3 cases passed');
@@ -76,5 +77,85 @@ test('shared source outcomes and measurement-only reports retain separate attrib
   const coverageOnly = coveragePresentation({ measurements: [{ branches: { covered: 2, total: 4, percent: 50 } }] });
   assert.equal(coverageOnly.measurementLabel, 'Measured · no line data');
   assert.equal(coverageOnly.percentage, 'No line data');
-  assert.equal(coverageOnly.executionLabel, 'No saved run');
+  assert.equal(coverageOnly.executionLabel, 'No component test results');
+});
+
+test('indirect execution explains positive coverage without inventing component tests or denying a saved run', () => {
+  const view = coveragePresentation({ files: [], testCount: 0, measurements: [{
+    scopeId: 'all', lines: { covered: 55, total: 168, percent: 32.74 },
+    attribution: { kind: 'broader-run', sourceExecution: 'observed', componentTestCount: 0,
+      runContext: { path: 'packages/core/coverage-e2e/scopes/all/results.json' } },
+  }] }, 'e2e');
+  assert.equal(view.percentage, '32.74%');
+  assert.equal(view.contextTitle, 'No end-to-end tests attributed to this component');
+  assert.equal(view.coverageTitle, 'Indirect source coverage');
+  assert.match(view.contextNote, /55 of 168 source lines covered during the recorded end-to-end run/);
+  assert.match(view.contextNote, /initialization and use by other components/);
+  assert.match(view.contextNote, /does not establish that its behavior was tested/);
+  assert.doesNotMatch(view.contextNote, /No saved run|passed/);
+  assert.equal(view.execution, undefined);
+});
+
+test('unexecuted source and an unlinked report do not become indirect behavioral coverage', () => {
+  const zero = coveragePresentation({ measurements: [{ lines: { covered: 0, total: 55, percent: 0 },
+    attribution: { kind: 'broader-run', sourceExecution: 'zero-hit', componentTestCount: 0 } }] }, 'e2e');
+  assert.equal(zero.coverageTitle, 'Source coverage · no execution');
+  assert.match(zero.contextNote, /0 of 55 source lines covered/);
+  assert.doesNotMatch(zero.contextNote, /use by other components/);
+  const functionOnly = coveragePresentation({ measurements: [{ functions: { covered: 1, total: 2, percent: 50 },
+    attribution: { kind: 'broader-run', sourceExecution: 'observed', componentTestCount: 0 } }] }, 'e2e');
+  assert.equal(functionOnly.coverageTitle, 'Indirect source coverage');
+  assert.doesNotMatch(functionOnly.contextNote, /unexecuted source/);
+  const unlinked = coveragePresentation({ measurements: [{ lines: { covered: 5, total: 5, percent: 100 },
+    attribution: { kind: 'coverage-only' } }] }, 'unit');
+  assert.equal(unlinked.coverageTitle, 'Source coverage · unlinked report');
+  assert.match(unlinked.contextNote, /No component test outcomes have been linked/);
+});
+
+test('a different successful execution never appears to validate an indirect coverage report', () => {
+  const view = coveragePresentation({ files: [{ kind: 'storybook-story' }], testCount: 9,
+    measurements: [{ scopeId: 'all', lines: { covered: 4, total: 4, percent: 100 }, attribution: { kind: 'broader-run', componentTestCount: 0 } }],
+    executions: [{ path: 'apps/storybook/coverage-stories/results.json', total: 9, passed: 9, status: 'passed' }],
+  }, 'component');
+  assert.equal(view.contextTitle, 'No component test results in this coverage run');
+  assert.match(view.contextNote, /component test results below belong to a different report or run/);
+  assert.equal(view.coverageTitle, 'Indirect source coverage');
+  assert.equal(view.execution.passed, 9);
+});
+
+test('verified matching run and accessibility checks keep their specific meaning', () => {
+  const path = 'scoped/results.json', reportedAt = '2026-10-13T17:44:20Z', runPath = 'scoped/run.json';
+  const view = coveragePresentation({ measurements: [{ runPath, reportedAt, attribution: { kind: 'component-outcomes', componentExecutionPath: path } }],
+    executions: [{ path, runPath, reportedAt, passed: 1, total: 1, status: 'passed' }] }, 'e2e');
+  assert.equal(view.contextTitle, 'Tests and source coverage');
+  assert.doesNotMatch(view.contextNote, /different|not linked/);
+  const a11y = coveragePresentation({ executions: [{ passed: 3, total: 3, status: 'passed' }] }, 'accessibility');
+  assert.equal(a11y.contextTitle, 'Accessibility check results');
+  assert.match(a11y.contextNote, /not a WCAG conformance or coverage percentage/);
+});
+
+test('a run manifest without verified outcomes does not prove that zero component cases ran', () => {
+  const view = coveragePresentation({ measurements: [{ lines: { covered: 4, total: 5, percent: 80 },
+    attribution: { kind: 'broader-run', componentTestCount: null } }] }, 'e2e');
+  assert.equal(view.contextTitle, 'Component outcomes unavailable for this run');
+  assert.match(view.contextNote, /outcomes could not be verified/);
+  assert.doesNotMatch(view.contextNote, /has no test outcomes|other components/);
+  assert.equal(view.coverageTitle, 'Source coverage · outcomes unavailable');
+});
+
+test('runner infrastructure failures do not claim component case or suite outcomes', () => {
+  for (const status of ['failed', 'unknown']) {
+    const view = coveragePresentation({ executions: [{ scope: 'runner-attempt', status, total: 0,
+      passed: 0, failed: 0, skipped: 0, failedSuites: status === 'failed' ? 2 : 0 }] }, 'e2e');
+    assert.equal(view.runnerAttempt, true);
+    assert.equal(view.executionTitle, status === 'failed' ? 'Runner attempt failed' : 'Runner attempt incomplete');
+    assert.equal(view.contextTitle, 'No recorded case outcomes');
+    assert.equal(view.executionNote, 'No case outcomes were recorded for this runner attempt.');
+    assert.doesNotMatch(view.contextNote, /Test outcomes are recorded|suite.*failed/);
+    const oldCoverage = coveragePresentation({ executions: [view.execution], measurements: [{
+      lines: { total: 10, covered: 8, percent: 80 }, attribution: { kind: 'coverage-only' },
+    }] }, 'e2e');
+    assert.match(oldCoverage.contextNote, /runner attempt below recorded no case outcomes/);
+    assert.doesNotMatch(oldCoverage.contextNote, /component results below/);
+  }
 });

@@ -111,6 +111,42 @@ test('Istanbul reports measure distinct source locations and remain separate fro
   assert.equal(unit.executionStatus, 'unknown', 'Coverage never establishes a passing test execution');
 });
 
+test('LCOV retains distinct same-named functions and validated per-file totals without counting test harness code', async t => {
+  const { root } = await fixture(t, { 'packages/core/coverage-spec/lcov.info': `SF:src/components/md-button/md-button.tsx
+FN:10,20,callback
+FN:30,40,callback
+FNDA:2,callback
+FNDA:0,callback
+FNF:2
+FNH:1
+DA:10,2
+DA:30,0
+end_of_record
+SF:src/components/md-button/helper.ts
+FN:5,handler
+FN:12,handler
+FNDA:0,handler
+FNDA:4,handler
+DA:5,0
+DA:12,4
+end_of_record
+SF:src/components/md-button/test-utils/axe-spec.ts
+FNDA:1,harness
+FNF:1
+FNH:1
+DA:1,1
+end_of_record
+`, 'packages/core/coverage-spec/coverage-summary.json': JSON.stringify({
+    'src/components/md-chip/test-utils/axe-spec.ts': { lines: { total: 20, covered: 20 } },
+    'src/components/md-chip/__fixtures__/sample.ts': { lines: { total: 40, covered: 40 } },
+  }) });
+  const measurement = (await getComponentCoverage(root, 'md-button')).categories.unit.measurements[0];
+  assert.deepEqual(measurement.functions, { total: 4, covered: 2, percent: 50 });
+  assert.deepEqual(measurement.lines, { total: 4, covered: 2, percent: 50 });
+  assert.equal(measurement.sourceFiles.length, 2);
+  assert.equal((await getComponentCoverage(root, 'md-chip')).categories.unit.measurements.length, 0);
+});
+
 test('per-file coverage summaries recompute percentages and ignore global totals and invalid entries', async t => {
   const { root } = await fixture(t, { 'packages/core/coverage-spec/coverage-summary.json': JSON.stringify({
     total: { lines: { total: 999, covered: 999, pct: 100 } },
@@ -123,6 +159,19 @@ test('per-file coverage summaries recompute percentages and ignore global totals
   assert.deepEqual(report.lines, { total: 6, covered: 3, percent: 50 });
   assert.deepEqual(report.branches, { total: 0, covered: 0, percent: null });
   assert.equal(report.statements, undefined);
+});
+
+test('conflicting function summaries and repeated LCOV records supply no invented function metric', async t => {
+  for (const records of [
+    'FNDA:1,callback\nFNF:2\nFNH:1\nend_of_record\n',
+    'FNDA:1,callback\nFNF:1\nFNH:invalid\nend_of_record\n',
+    'FNDA:1,callback\nFNF:1\nFNH:1\nend_of_record\nSF:src/components/md-button/md-button.tsx\nFNDA:1,other\nFNF:1\nFNH:1\nend_of_record\n',
+  ]) {
+    const { root } = await fixture(t, { 'packages/core/coverage-spec/lcov.info': `SF:src/components/md-button/md-button.tsx\nDA:1,1\n${records}` });
+    const measurement = (await getComponentCoverage(root, 'md-button')).categories.unit.measurements[0];
+    assert.equal(measurement.functions, undefined);
+    assert.equal(measurement.lines.percent, 100);
+  }
 });
 
 test('Jest execution is attributed per source file and accessibility includes only recorded related cases', async t => {
@@ -343,6 +392,99 @@ test('durable single-component and all-component reports coexist and preserve ex
   assert.equal(isCoverageEvidencePath(`${single}/report/private.json`), false);
 });
 
+test('source measurements distinguish indirect execution, zero hits, owned outcomes and absence without borrowing broader cases', async t => {
+  const all = scopePath('all'), group = 'md-button-group';
+  const { root } = await fixture(t, {
+    'packages/core/custom-elements.json': JSON.stringify({ modules: [{ declarations: ['md-button', 'md-chip', group].map(tagName => ({ tagName })) }] }),
+    [e2eFile('md-button')]: `it('renders', () => {});`,
+    [`${all}/run.json`]: scopedRun('all', ['md-button', 'md-chip', group], [e2eFile('md-button')]),
+    [`${all}/results.json`]: jestResult([['md-button', 'passed']]),
+    [`${all}/lcov.info`]: `SF:src/components/${group}/${group}.tsx\nDA:1,1\nDA:2,0\nend_of_record\nSF:src/components/md-chip/md-chip.tsx\nDA:1,0\nend_of_record\nSF:src/components/md-button/md-button.tsx\nDA:1,1\nend_of_record\n`,
+  });
+  for (const file of [`${all}/results.json`, `${all}/lcov.info`]) await reportTime(root, file);
+  const indirect = (await getComponentCoverage(root, group)).categories.e2e;
+  const zero = (await getComponentCoverage(root, 'md-chip')).categories.e2e.measurements[0];
+  const own = (await getComponentCoverage(root, 'md-button')).categories.e2e.measurements[0];
+  assert.equal(indirect.testCount, 0); assert.equal(indirect.files.length, 0); assert.deepEqual(indirect.executions, []);
+  assert.equal(indirect.measurements[0].lines.percent, 50, 'Measured hits do not change to match test ownership');
+  const attribution = indirect.measurements[0].attribution;
+  assert.equal(attribution.kind, 'broader-run'); assert.equal(attribution.sourceExecution, 'observed');
+  assert.equal(attribution.componentTestCount, 0); assert.equal(attribution.componentExecutionPath, null);
+  assert.equal(attribution.runContext.path, `${all}/results.json`); assert.equal(attribution.runContext.scope, 'report');
+  assert.equal(attribution.runContext.total, 1); assert.equal(attribution.runContext.sourceFileCount, 1);
+  assert.match(indirect.notes.join(' '), /No component-specific test outcomes/);
+  assert.doesNotMatch(indirect.notes.join(' '), /last execution result is unknown|No matching execution report/);
+  assert.equal(zero.lines.percent, 0); assert.equal(zero.attribution.sourceExecution, 'zero-hit');
+  assert.equal(zero.attribution.kind, 'broader-run'); assert.equal(zero.attribution.componentTestCount, 0);
+  assert.equal(own.attribution.kind, 'component-outcomes'); assert.equal(own.attribution.componentTestCount, 1);
+  assert.equal(own.attribution.componentExecutionPath, `${all}/results.json`);
+  const absent = (await getComponentCoverage(root, group)).categories.unit;
+  assert.deepEqual(absent.measurements, []); assert.deepEqual(absent.executions, []);
+});
+
+test('a measurement cannot borrow outcomes from another family, another scope, stale output or unverified legacy mtimes', async t => {
+  const all = scopePath('all'), single = scopePath('md-button');
+  const { root } = await fixture(t, {
+    [e2eFile('md-button')]: `it('renders', () => {});`,
+    'packages/core/src/components/md-button/md-button.spec.ts': `it('renders', () => {});`,
+    [`${all}/run.json`]: scopedRun('all', ['md-button', 'md-chip'], [e2eFile('md-button')]),
+    [`${all}/results.json`]: jestResult([['md-button', 'passed']]),
+    [`${all}/lcov.info`]: 'SF:src/components/md-button/md-button.tsx\nDA:1,1\nend_of_record\n',
+    [`${single}/run.json`]: scopedRun('md-button', ['md-button'], [e2eFile('md-button')], { completedAt: '2026-10-01T11:01:00Z', startedAt: '2026-10-01T11:00:00Z' }),
+    [`${single}/results.json`]: jestResult([['md-button', 'passed']]),
+    'packages/core/coverage-spec/lcov.info': 'SF:src/components/md-button/md-button.tsx\nDA:1,1\nend_of_record\n',
+    'packages/core/coverage-spec/test-results.json': JSON.stringify({ testResults: [{ name: 'packages/core/src/components/md-button/md-button.spec.ts', status: 'passed', assertionResults: [{ title: 'renders', status: 'passed' }] }] }),
+  });
+  await reportTime(root, `${all}/results.json`, '2026-09-01T10:00:00Z');
+  await reportTime(root, `${all}/lcov.info`);
+  await reportTime(root, `${single}/results.json`, '2026-10-01T11:00:30Z');
+  const result = await getComponentCoverage(root, 'md-button');
+  const attribution = result.categories.e2e.measurements[0].attribution;
+  assert.equal(result.categories.e2e.executions[0].scopeId, 'md-button');
+  assert.equal(attribution.kind, 'broader-run'); assert.equal(attribution.componentExecutionPath, null);
+  assert.equal(attribution.componentTestCount, null, 'The matching case report was stale; absence of readable outcomes is not a proven zero case count');
+  assert.equal(attribution.runContext.path, `${all}/run.json`);
+  assert.equal(attribution.runContext.total, null, 'A manifest alone supplies no invented case totals');
+  assert.match(attribution.notes.join(' '), /outcomes could not be verified/);
+  assert.equal(result.categories.unit.executions[0].total, 1);
+  assert.equal(result.categories.unit.measurements[0].attribution.kind, 'coverage-only');
+  assert.equal(result.categories.unit.measurements[0].attribution.runContext, null, 'Adjacent file mtimes do not prove legacy run identity');
+});
+
+test('a matching setup failure remains attributable even when no test case outcomes were recorded', async t => {
+  const all = scopePath('all');
+  const { root } = await fixture(t, {
+    [e2eFile('md-button')]: `it('renders', () => {});`,
+    [`${all}/run.json`]: scopedRun('all', ['md-button', 'md-chip'], [e2eFile('md-button')], { status: 'failed', stencilExit: 1 }),
+    [`${all}/results.json`]: JSON.stringify({ testResults: [{ name: e2eFile('md-button'), status: 'failed', assertionResults: [] }] }),
+    [`${all}/lcov.info`]: 'SF:src/components/md-button/md-button.tsx\nDA:1,0\nend_of_record\n',
+  });
+  for (const report of [`${all}/results.json`, `${all}/lcov.info`]) await reportTime(root, report);
+  const entry = (await getComponentCoverage(root, 'md-button')).categories.e2e;
+  assert.equal(entry.executions[0].failedSuites, 1);
+  assert.equal(entry.measurements[0].attribution.kind, 'component-outcomes');
+  assert.equal(entry.measurements[0].attribution.componentExecutionPath, `${all}/results.json`);
+  assert.equal(entry.measurements[0].attribution.componentTestCount, 0);
+  assert.match(entry.measurements[0].attribution.notes.join(' '), /suite failed/);
+});
+
+test('explicit per-case mounts override a misleading folder without borrowing another component pass', async t => {
+  const file = 'packages/core/src/components/md-button/shared.e2e.ts', all = scopePath('all');
+  const { root } = await fixture(t, {
+    [file]: `it('renders chip', async () => { const page = await newE2EPage(); await page.setContent('<md-chip>Chip</md-chip>'); expect(await page.find('md-chip')).toBeTruthy(); });`,
+    [`${all}/run.json`]: scopedRun('all', ['md-button', 'md-chip'], [file]),
+    [`${all}/results.json`]: JSON.stringify({ testResults: [{ name: file, status: 'passed', assertionResults: [{ title: 'renders chip', fullName: 'renders chip', status: 'passed' }] }] }),
+    [`${all}/lcov.info`]: 'SF:src/components/md-button/md-button.tsx\nDA:1,0\nend_of_record\nSF:src/components/md-chip/md-chip.tsx\nDA:1,1\nend_of_record\n',
+  });
+  for (const report of [`${all}/results.json`, `${all}/lcov.info`]) await reportTime(root, report);
+  const button = (await getComponentCoverage(root, 'md-button')).categories.e2e;
+  const chip = (await getComponentCoverage(root, 'md-chip')).categories.e2e;
+  assert.equal(button.testCount, 0); assert.deepEqual(button.executions, []);
+  assert.equal(button.measurements[0].attribution.kind, 'broader-run');
+  assert.equal(chip.testCount, 1); assert.equal(chip.executions[0].total, 1);
+  assert.equal(chip.measurements[0].attribution.kind, 'component-outcomes');
+});
+
 test('failed browser infrastructure replaces an old pass with a zero-case failed attempt', async t => {
   const scope = scopePath('md-button'), old = 'packages/core/coverage-e2e/results.json';
   const { root } = await fixture(t, {
@@ -492,6 +634,106 @@ test('parameterized shared cases use recorded tag names and do not propagate ano
   assert.equal(button.executions[0].total, 1); assert.equal(chip.executions[0].total, 1);
   assert.equal(button.executionStatus, 'failed'); assert.equal(chip.executionStatus, 'passed');
   assert.equal(chip.executions[0].failedSuites, 0);
+});
+
+test('a comparison title and a nested fixture child cannot steal the core component owner', async t => {
+  const multi = 'packages/core/src/components/md-multi-select/virtual.spec.ts';
+  const field = 'packages/core/src/components/md-text-field/field.spec.ts';
+  const tags = ['md-multi-select', 'md-select', 'md-text-field', 'md-icon-button'];
+  const { root } = await fixture(t, {
+    'packages/core/custom-elements.json': JSON.stringify({ modules: [{ declarations: tags.map(tagName => ({ tagName })) }] }),
+    [multi]: `describeWasm('virtual paths', () => { it('renders on BOTH paths, unlike md-select', async () => { await create(); }); });`,
+    [field]: `describe('md-text-field', () => { describe('slotted trailing md-icon-button', () => {
+      it('keeps the child wrapper', async () => { await newSpecPage({ html: '<md-text-field><md-icon-button slot="trailing"></md-icon-button></md-text-field>' }); });
+    }); });`,
+    'packages/core/coverage-spec/results.json': JSON.stringify({ testResults: [
+      { name: multi, status: 'passed', assertionResults: [{ title: 'renders on BOTH paths, unlike md-select', fullName: 'virtual paths renders on BOTH paths, unlike md-select', status: 'passed' }] },
+      { name: field, status: 'failed', assertionResults: [{ title: 'keeps the child wrapper', fullName: 'md-text-field slotted trailing md-icon-button keeps the child wrapper', status: 'failed' }] },
+    ] }),
+  });
+  const byTag = Object.fromEntries(await Promise.all(tags.map(async tag => [tag, (await getComponentCoverage(root, tag)).categories.unit])));
+  assert.equal(byTag['md-multi-select'].executions[0].total, 1);
+  assert.equal(byTag['md-text-field'].executions[0].failed, 1);
+  for (const incidental of ['md-select', 'md-icon-button']) {
+    assert.equal(byTag[incidental].testCount, 0);
+    assert.deepEqual(byTag[incidental].executions, []);
+  }
+});
+
+test('a foreign form fixture belongs to its mounted declared subject, not nested options or sibling controls', async t => {
+  const file = 'packages/core/src/components/md-select/form-participation.e2e.ts';
+  const tags = ['md-select', 'md-multi-select', 'md-select-option', 'md-button'];
+  const titles = ['md-multi-select submits repeated entries', 'md-select submits a value', 'md-button type=reset clears the form'];
+  const { root } = await fixture(t, {
+    'packages/core/custom-elements.json': JSON.stringify({ modules: [{ declarations: tags.map(tagName => ({ tagName })) }] }),
+    [file]: `it('${titles[0]}', async () => { await page.setContent('<form><md-multi-select><md-select-option></md-select-option></md-multi-select><md-button></md-button></form>'); });
+      it('${titles[1]}', async () => { await page.setContent('<form><md-select><md-select-option></md-select-option></md-select><md-button></md-button></form>'); });
+      it('${titles[2]}', async () => { await page.setContent('<form><md-select><md-select-option></md-select-option></md-select><md-button type="reset"></md-button></form>'); });`,
+    'packages/core/coverage-e2e/results.json': JSON.stringify({ testResults: [{ name: file, status: 'passed', assertionResults: titles.map(title => ({ title, fullName: title, status: 'passed' })) }] }),
+  });
+  for (const tag of ['md-multi-select', 'md-select', 'md-button']) {
+    const category = (await getComponentCoverage(root, tag)).categories.e2e;
+    assert.equal(category.testCount, 1, tag);
+    assert.equal(category.executions[0].total, 1, tag);
+  }
+  const option = (await getComponentCoverage(root, 'md-select-option')).categories.e2e;
+  assert.equal(option.testCount, 0); assert.deepEqual(option.executions, []);
+});
+
+test('shared control tables preserve runtime failure owners and resolve bounded helper fixtures', async t => {
+  const file = 'packages/core/src/components/md-text-field/inline-validation.e2e.ts';
+  const tags = ['md-text-field', 'md-multi-select', 'md-date-picker', 'md-number-field', 'md-checkbox', 'md-select-option'];
+  const outcomes = [
+    ['md-text-field validates', 'passed'], ['md-multi-select validates', 'failed'], ['md-date-picker validates', 'failed'],
+    ['checkValidity does not present an error', 'passed'], ['authored checkbox messages remain', 'passed'], ['native siblings remain', 'passed'],
+  ];
+  const { root } = await fixture(t, {
+    'packages/core/custom-elements.json': JSON.stringify({ modules: [{ declarations: tags.map(tagName => ({ tagName })) }] }),
+    [file]: `const controls = [
+      { tag: 'md-text-field', markup: '<md-text-field></md-text-field>' },
+      { tag: 'md-number-field', markup: '<md-number-field></md-number-field>' },
+      { tag: 'md-multi-select', markup: '<md-multi-select><md-select-option></md-select-option></md-multi-select>' },
+      { tag: 'md-date-picker', markup: '<md-date-picker></md-date-picker>' },
+    ];
+    async function fixture(page, markup) { await page.setContent(\`<form>\${markup}</form>\`); }
+    it.each(controls.map(control => [control.tag, control] as const))('%s validates', async (_, control) => { await fixture(page, control.markup); });
+    it('checkValidity does not present an error', async () => { await fixture(page, controls[1].markup); });
+    it('authored checkbox messages remain', async () => { await fixture(page, '<fieldset><md-checkbox></md-checkbox></fieldset>'); });
+    it('native siblings remain', async () => { await fixture(page, \`\${controls[0].markup}<input required>\`); });`,
+    'packages/core/coverage-e2e/results.json': JSON.stringify({ testResults: [{ name: file, status: 'failed', assertionResults: outcomes.map(([title, status]) => ({ title, fullName: title, status })) }] }),
+  });
+  const byTag = Object.fromEntries(await Promise.all(tags.map(async tag => [tag, (await getComponentCoverage(root, tag)).categories.e2e])));
+  for (const tag of ['md-multi-select', 'md-date-picker']) {
+    assert.equal(byTag[tag].executions[0].total, 1, tag);
+    assert.equal(byTag[tag].executions[0].failed, 1, tag);
+  }
+  assert.equal(byTag['md-text-field'].executions[0].total, 2);
+  assert.equal(byTag['md-text-field'].executions[0].failed, 0);
+  assert.equal(byTag['md-number-field'].executions[0].total, 1);
+  assert.equal(byTag['md-checkbox'].executions[0].total, 1);
+  assert.deepEqual(byTag['md-select-option'].executions, []);
+  assert.equal(byTag['md-select-option'].testCount, 0);
+  assert.equal(Object.values(byTag).reduce((sum, category) => sum + (category.executions[0]?.total || 0), 0), outcomes.length);
+});
+
+test('an explicit outer suite subject survives a foreign folder when helper markup is dynamic', async t => {
+  const file = 'packages/core/src/components/md-menu/modal-layer.e2e.ts';
+  const tags = ['md-menu', 'md-select', 'md-dialog'];
+  const { root } = await fixture(t, {
+    'packages/core/custom-elements.json': JSON.stringify({ modules: [{ declarations: tags.map(tagName => ({ tagName })) }] }),
+    [file]: `async function openFixture(overlayTag, direction) { await page.setContent(\`<\${overlayTag}><md-select></md-select></\${overlayTag}>\`); }
+      describe('md-select popup across a modal clipping boundary', () => {
+        for (const direction of ['ltr', 'rtl']) {
+          it(\`Escape preserves md-dialog (\${direction})\`, async () => { await openFixture('md-dialog', direction); await assertEscapeClosesMenuOnly(page); });
+        }
+      });`,
+    'packages/core/coverage-e2e/results.json': JSON.stringify({ testResults: [{ name: file, status: 'passed', assertionResults: ['ltr', 'rtl'].map(direction => ({ title: `Escape preserves md-dialog (${direction})`, fullName: `md-select popup across a modal clipping boundary Escape preserves md-dialog (${direction})`, status: 'passed' })) }] }),
+  });
+  const select = (await getComponentCoverage(root, 'md-select')).categories.e2e;
+  assert.equal(select.testCount, 1);
+  assert.equal(select.executions[0].total, 2);
+  assert.match(select.executions[0].notes.join(' '), /per-component case counts are not additive/);
+  for (const other of ['md-menu', 'md-dialog']) assert.deepEqual((await getComponentCoverage(root, other)).categories.e2e.executions, []);
 });
 
 test('real checkout maps button source, component, browser and accessibility evidence without inventing per-tag percentages', async () => {

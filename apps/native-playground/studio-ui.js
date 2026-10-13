@@ -145,17 +145,56 @@ export function coveragePresentation(entry = {}, category = entry.id) {
   const hasSources = !!entry.files?.length || entry.testCount > 0;
   const configurationOnly = !!entry.files?.length && !entry.testCount && entry.files.every(file => file.kind === 'storybook-a11y-configuration');
   const runStatus = execution ? (execution.failed || execution.failedSuites ? 'failed' : execution.status || 'unknown') : 'not-recorded';
-  const executionLabel = execution ? ({ passed: 'Passed', failed: 'Failed', skipped: 'Skipped', unknown: 'Incomplete' }[runStatus] || 'Incomplete') : 'No saved run';
+  const runnerAttempt = execution?.scope === 'runner-attempt';
+  const executionLabel = execution ? ({ passed: 'Passed', failed: 'Failed', skipped: 'Skipped', unknown: 'Incomplete' }[runStatus] || 'Incomplete') : measurement ? 'No component test results' : 'No saved run';
+  const executionTitle = runnerAttempt ? `Runner attempt ${runStatus === 'failed' ? 'failed' : 'incomplete'}` : `${executionLabel} · component test results`;
   const measurementLabel = measurement ? lines?.percent != null ? `${lines.percent}% lines` : 'Measured · no line data'
     : category === 'accessibility' ? 'No coverage percentage' : 'Not measured';
   const sourceLabel = entry.testCount > 0 ? `${entry.testCount} declarations` : configurationOnly ? 'Configuration only' : hasSources ? 'Test sources found' : 'No tests found';
   const outcome = execution?.total ? `${execution.passed}/${execution.total} cases passed`
     : execution?.failedSuites ? `${execution.failedSuites} suite${execution.failedSuites === 1 ? '' : 's'} failed before case results` : 'No case results recorded';
-  const executionNote = execution ? `${outcome}${execution.scope === 'shared-test-files' ? ' · shared test files' : ''}`
+  const executionNote = runnerAttempt ? 'No case outcomes were recorded for this runner attempt.' : execution ? `${outcome}${execution.scope === 'shared-test-files' ? ' · shared test files' : ''}`
     : configurationOnly ? 'Accessibility checks are configured; no matching run is saved.'
-    : hasSources ? 'Test sources exist; no matching execution report is saved.' : 'No matching tests were found in the indexed source directories.';
+    : hasSources ? 'Test sources exist; no component test outcomes are recorded.' : 'No tests are attributed to this component in this category.';
+  const attribution = measurement?.attribution;
+  const matched = attribution?.kind === 'component-outcomes';
+  const broaderRun = attribution?.kind === 'broader-run';
+  const noAttributedCases = broaderRun && attribution.componentTestCount === 0;
+  const sourceExecuted = attribution?.sourceExecution === 'observed' || metrics.some(metric => metric.covered > 0);
+  const categoryName = { unit: 'unit', component: 'component', e2e: 'end-to-end', accessibility: 'accessibility' }[category] || 'component';
+  const scopeName = `recorded ${(coverageCategories[category] || 'test').toLowerCase()} run`;
+  const executionSentence = lines ? `The report records ${lines.covered} of ${lines.total} source lines covered` : 'Source execution was measured';
+  const runnerNote = ' The runner attempt below recorded no case outcomes.';
+  let contextTitle, contextNote;
+  if (category === 'accessibility' && !measurement) {
+    contextTitle = execution && !runnerAttempt ? 'Accessibility check results' : 'No recorded accessibility checks';
+    contextNote = execution && !runnerAttempt ? 'These results describe the recorded accessibility-related checks, not a WCAG conformance or coverage percentage.'
+      : configurationOnly ? 'Checks are configured, but no executed accessibility results are recorded for this component.' : executionNote;
+  } else if (measurement && noAttributedCases) {
+    contextTitle = hasSources ? 'No component test results in this coverage run' : `No ${categoryName} tests attributed to this component`;
+    contextNote = `${executionSentence} during the ${scopeName}. ${sourceExecuted ? 'This can include initialization and use by other components.' : 'The report includes unexecuted source in its coverage denominator.'} This run has no test outcomes attributed to this component, so the percentage does not establish that its behavior was tested.`;
+    if (execution) contextNote += runnerAttempt ? runnerNote : ' The component test results below belong to a different report or run.';
+  } else if (measurement && broaderRun) {
+    contextTitle = 'Component outcomes unavailable for this run';
+    contextNote = `${executionSentence} during the ${scopeName}. The run is recorded, but its component-level test outcomes could not be verified. This percentage describes code execution only.`;
+    if (execution) contextNote += runnerAttempt ? runnerNote : ' The component results below are from a separate report or run.';
+  } else if (measurement && !matched) {
+    contextTitle = !hasSources && !execution ? `No ${categoryName} tests attributed to this component` : 'Coverage and test results are not linked';
+    contextNote = `${executionSentence} according to the saved coverage report. ${execution && !runnerAttempt ? 'The component results below have not been verified as belonging to that coverage run.' : 'No component test outcomes have been linked to that report.'} Code execution alone does not establish behavioral validation.`;
+    if (runnerAttempt) contextNote += runnerNote;
+  } else if (measurement) {
+    contextTitle = 'Tests and source coverage';
+    contextNote = 'This coverage report is linked to recorded test outcomes for this component. Coverage measures code execution across that run, not which behaviors were asserted.';
+    if (execution?.path !== attribution.componentExecutionPath || (measurement.runPath && execution?.runPath !== measurement.runPath) || (measurement.runPath && execution?.reportedAt !== measurement.reportedAt)) {
+      contextNote += runnerAttempt ? runnerNote : ' The latest component results below come from a different report or run.';
+    }
+  } else {
+    contextTitle = runnerAttempt ? 'No recorded case outcomes' : execution ? 'Component test results' : hasSources ? 'Tests found; no recorded results' : `No ${categoryName} tests attributed to this component`;
+    contextNote = execution && !runnerAttempt ? 'Test outcomes are recorded, but no source coverage measurement is available for this category.' : executionNote;
+  }
+  const coverageTitle = noAttributedCases ? (sourceExecuted ? 'Indirect source coverage' : 'Source coverage · no execution') : broaderRun ? 'Source coverage · outcomes unavailable' : matched ? 'Source coverage' : 'Source coverage · unlinked report';
   return { measurement, execution, metrics, percentage: lines?.percent != null ? `${lines.percent}%` : measurement ? 'No line data' : 'Not measured',
-    measurementLabel, sourceLabel, executionLabel, executionNote, runStatus, configurationOnly,
+    measurementLabel, sourceLabel, executionLabel, executionTitle, executionNote, runStatus, runnerAttempt, configurationOnly, contextTitle, contextNote, coverageTitle,
     testValue: execution ? execution.total ? `${execution.passed}/${execution.total}` : '0' : String(entry.testCount || 0),
     testLabel: execution ? execution.total ? 'Recorded cases passed' : 'Cases recorded' : 'Test / story declarations' };
 }
@@ -180,39 +219,35 @@ export function createCoverageUI({ getState, notify }) {
     if (!result) return;
     const keys = Object.keys(coverageCategories);
     const selected = result.categories[category];
-    const { measurement, execution, metrics, percentage, testValue, testLabel, executionLabel, executionNote, runStatus } = coveragePresentation(selected, category);
+    const { measurement, execution, metrics, executionTitle, executionNote, runStatus, runnerAttempt, contextTitle, contextNote, coverageTitle } = coveragePresentation(selected, category);
     const reportDate = value => {
       const date = new Date(value);
       return Number.isFinite(date.getTime()) ? date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : String(value || 'Unknown');
     };
-    const auditResult = category === 'accessibility' && !measurement;
-    const coverageNote = measurement ? 'Instrumented code coverage from the latest saved report. Test outcomes are recorded separately.'
-      : category === 'accessibility' ? 'Accessibility is reported as individual test outcomes, not a code-coverage or WCAG conformance percentage.'
-      : 'No component-specific instrumented report is saved for this category. Generate coverage below, then refresh.';
+    const reportTimeLabel = report => report.timestampSource === 'run-completedAt' ? 'Run completed' : report.timestampSource === 'run-startedAt' ? 'Run started' : 'Report file updated';
+    const linkedRun = measurement?.attribution?.runContext;
     const executionCard = execution ? `<md-card class="coverage-run-card" variant="filled" full-width density="-1">
-      <div class="coverage-run-heading"><strong data-status="${escape(runStatus)}">${escape(executionLabel)} · saved test run</strong><time datetime="${escape(execution.reportedAt)}">Report saved ${escape(reportDate(execution.reportedAt))}</time></div>
-      <div class="coverage-run-counts"><span><b>${execution.passed}</b> passed</span><span><b>${execution.failed}</b> failed</span><span><b>${execution.skipped}</b> skipped</span>${execution.unknown ? `<span><b>${execution.unknown}</b> incomplete</span>` : ''}</div>
-      ${execution.failedSuites ? `<p class="coverage-suite-failure">${execution.failedSuites} test suite${execution.failedSuites === 1 ? '' : 's'} failed${execution.total ? '.' : ' before any case results were recorded.'}</p>` : ''}
-      <a href="/repo/${escape(execution.path)}" target="_blank" rel="noopener">${escape(execution.framework)} test report</a>
+      <div class="coverage-run-heading"><strong data-status="${escape(runStatus)}">${escape(executionTitle)}</strong><time datetime="${escape(execution.reportedAt)}">${reportTimeLabel(execution)} ${escape(reportDate(execution.reportedAt))}</time></div>
+      ${runnerAttempt ? `<p>${escape(executionNote)}</p>` : `<div class="coverage-run-counts"><span><b>${execution.passed}</b> passed</span><span><b>${execution.failed}</b> failed</span><span><b>${execution.skipped}</b> skipped</span>${execution.unknown ? `<span><b>${execution.unknown}</b> incomplete</span>` : ''}</div>`}
+      ${!runnerAttempt && execution.failedSuites ? `<p class="coverage-suite-failure">${execution.failedSuites} test suite${execution.failedSuites === 1 ? '' : 's'} failed${execution.total ? '.' : ' before any case results were recorded.'}</p>` : ''}
+      <a href="/repo/${escape(execution.path)}" target="_blank" rel="noopener">${runnerAttempt ? 'Runner record' : `${escape(execution.framework)} test report`}</a>
       ${(execution.notes || []).map(note => `<p>${escape(note)}</p>`).join('')}
-    </md-card>` : `<p class="coverage-no-run"><strong>No saved run.</strong> ${escape(executionNote)}</p>`;
+    </md-card>` : '';
     const measurementCard = measurement ? `<md-card class="coverage-report-card" variant="outlined" full-width density="-1">
-      <div class="coverage-run-heading"><strong>Measured code coverage</strong><time datetime="${escape(measurement.reportedAt)}">Report saved ${escape(reportDate(measurement.reportedAt))}</time></div>
+      <div class="coverage-run-heading"><strong>${escape(coverageTitle)}</strong><time datetime="${escape(measurement.reportedAt)}">${reportTimeLabel(measurement)} ${escape(reportDate(measurement.reportedAt))}</time></div>
       <div class="coverage-measurements">${metrics.map(metric => `<div class="coverage-measurement"><div><span>${metric.label}</span><strong>${metric.text}</strong></div>
         ${metric.percent === null ? '' : `<md-progress-indicator variant="linear" value="${metric.percent}" max="100" label="${metric.label} coverage"></md-progress-indicator>`}
         <small>${metric.covered} of ${metric.total} covered</small></div>`).join('')}</div>
-      <a href="/repo/${escape(measurement.path)}" target="_blank" rel="noopener">${escape(measurement.path)}</a>
+      <div class="coverage-report-links"><a href="/repo/${escape(measurement.path)}" target="_blank" rel="noopener">Coverage report</a>${linkedRun ? `<a href="/repo/${escape(linkedRun.path)}" target="_blank" rel="noopener">Associated test run</a>` : ''}</div>
+      <p class="coverage-report-path"><code>${escape(measurement.path)}</code></p>
+      ${measurement.sourceFiles?.length ? `<p class="coverage-report-path">Measured sources: ${measurement.sourceFiles.map(file => `<code>${escape(file)}</code>`).join(', ')}</p>` : ''}
     </md-card>` : '';
     const sourceRow = (path, supportingText = '') => `<md-list-item type="link" href="/repo/${escape(path)}" target="_blank" leading-icon="description" trailing-icon="open_in_new" supporting-text="${escape(supportingText)}" density="-2"><code slot="headline">${escape(path)}</code></md-list-item>`;
-    $('#coverage-panel').innerHTML = `<div class="coverage-heading"><div><h2>Test coverage</h2><p>Web library tests from this checkout, scoped to <code>${escape(result.tag)}</code>.</p></div><md-button id="coverage-refresh" variant="text" size="sm" icon="refresh">Refresh</md-button></div>
+    $('#coverage-panel').innerHTML = `<div class="coverage-heading"><div><h2>Test coverage</h2><p>Saved Web test evidence for <code>${escape(result.tag)}</code>.</p></div><md-button id="coverage-refresh" variant="text" size="sm" icon="refresh">Refresh</md-button></div>
       <md-tabs id="coverage-tabs" variant="secondary" tab-width="auto" active-tab-index="${keys.indexOf(category)}" aria-label="Coverage category">${keys.map(key => `<md-tab label="${escape(result.categories[key].label)}"></md-tab>`).join('')}</md-tabs>
-      <div class="coverage-body"><div class="coverage-summary" role="group" aria-label="Coverage evidence summary">
-        <md-card class="coverage-metric" variant="outlined" density="-1"><strong>${selected.files.length}</strong><span>Test files</span></md-card>
-        <md-card class="coverage-metric" variant="outlined" density="-1"><strong>${testValue}</strong><span>${testLabel}</span></md-card>
-        <md-card class="coverage-metric" variant="outlined" density="-1"><strong${auditResult || !measurement ? ' class="coverage-word-metric"' : ''}>${escape(auditResult ? executionLabel : percentage)}</strong><span>${auditResult ? 'Saved accessibility run' : 'Measured line coverage'}</span></md-card>
-      </div><p class="coverage-disclaimer">${coverageNote}</p>
+      <div class="coverage-body"><div class="coverage-context"><h3>${escape(contextTitle)}</h3><p>${escape(contextNote)}</p>${measurement || execution ? '<p>Saved reports do not establish that the current source revision was tested.</p>' : ''}</div>
       ${measurementCard}${executionCard}
-      <h3>Test sources</h3>${selected.files.length ? `<md-list class="coverage-source-list" label="Component test sources" density="-2">${selected.files.map(file => sourceRow(file.path, [file.kind === 'storybook-a11y-configuration' ? 'Configuration only' : `${file.testCount ?? 0} ${file.countKind === 'static-story-exports' ? 'story' : 'test'} declarations`, ...(file.notes || [])].join(' · '))).join('<md-divider></md-divider>')}</md-list>` : '<p class="usage-empty">No tests found in the indexed source directories for this category.</p>'}
+      <h3>Tests attributed to this component</h3>${selected.files.length ? `<md-list class="coverage-source-list" label="Component test sources" density="-2">${selected.files.map(file => sourceRow(file.path, [file.kind === 'storybook-a11y-configuration' ? 'Configuration only' : `${file.testCount ?? 0} ${file.countKind === 'static-story-exports' ? 'story' : 'test'} declarations`, ...(file.notes || [])].join(' · '))).join('<md-divider></md-divider>')}</md-list>` : '<p class="usage-empty">No test sources are attributed to this component in this category.</p>'}
       <h3>Run locally</h3>${selected.commands.map((command, index) => `<md-card class="coverage-command-card" variant="filled" full-width density="-1"><div class="coverage-command-content"><p>${escape(command.label)}</p><code data-command-code="${index}">${escape(command.command)}</code></div><md-icon-button data-copy-command="${index}" icon="content_copy" size="sm" aria-label="Copy ${escape(command.label)} command"></md-icon-button></md-card>`).join('')}
       ${selected.notes.length ? `<ul class="coverage-notes">${selected.notes.map(note => `<li>${escape(note)}</li>`).join('')}</ul>` : ''}</div>`;
     $('#coverage-panel').querySelectorAll('[data-command-code]').forEach(code => renderCode(code, selected.commands[Number(code.dataset.commandCode)].command, 'bash'));
