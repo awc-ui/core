@@ -69,7 +69,8 @@
         "AWCNavigationCoordinator implements local _self/_blank/_parent/_top and named presentation contexts, current-base relative resolution, ordered histories/back and host veto/presentation callbacks. AWCButtonNavigationDemo shows real button propagation controls and local navigation without external page loads. Named reuse is an explicit native policy, not source noopener browser behavior.",
         "groupTabindex implements the source null/0/-1 native focus contract: -1 skips sequential keyboard entry while retaining pointer, programmatic and accessibility actions. Hard-disabled excludes focus; soft-disabled/loading remain focusable and inert. Positive HTML tabindex sorting is not reproduced.",
         "roleOverride supports native button/link/gridcell mappings with safe inference for empty/unknown roles. Gridcell selected state is independent of toggle. AppKit exposes a native actionable cell; UIKit supplies button/selected traits and data-table-cell coordinates through explicit AWCGridCellContext, not arbitrary ARIA roles or a browser calendar grid.",
-        "Native responder/accessibility assertions run on macOS. UIKit focus-engine/responder synchronization is implemented against documented iOS 17+ APIs, but this host has no iOS SDK/device to validate hardware keyboard or VoiceOver runtime behavior."
+        "Native responder/accessibility assertions run on macOS. UIKit focus-engine/responder synchronization is implemented against documented iOS 17+ APIs, but this host has no iOS SDK/device to validate hardware keyboard or VoiceOver runtime behavior.",
+        "AWCButtonAppearance and View.awcButtonAppearance provide validated native appearance values inherited fieldwise by subtree and overridden locally. These are native visual equivalents; CSS parts/selectors/custom properties remain Web-only. Explicit cornerRadius fixes all states; custom colors preserve disabled alpha. Nested slotted components may retain their own authored styling."
       ],
       "nativeEquivalents": {
         "HTML_FORM": {
@@ -126,7 +127,42 @@
             "Operates on declarative native child values; browser assignedElements, slotchange events and flattened DOM slot semantics do not exist."
           ]
         }
-      }
+      },
+      "appearance": {
+        "api": "AWCButtonAppearance / View.awcButtonAppearance",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "trailingIconColor",
+          "loadingColor",
+          "stateLayerColor",
+          "outlineColor",
+          "iconSize",
+          "trailingIconSize",
+          "loadingSize",
+          "fontSize",
+          "fontWeight",
+          "lineHeight",
+          "letterSpacing",
+          "cornerRadius",
+          "outlineWidth",
+          "paddingInline",
+          "paddingBlock",
+          "gap",
+          "hoverOpacity",
+          "focusOpacity",
+          "pressedOpacity"
+        ]
+      },
+      "visualParts": [
+        "anchor",
+        "state-layer",
+        "icon",
+        "label",
+        "trailing-icon",
+        "loading"
+      ]
     },
     "md-icon-button": {
       "status": "native-adapter",

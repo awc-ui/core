@@ -86,7 +86,10 @@ export function createCanvasTools({ getState, onLayoutChange, createInspector = 
     const measured = viewport?.clientWidth;
     const scaleLabel = fitted?.scale < 1 ? ` · ${Math.round(fitted.scale * 100)}%` : '';
     $('#canvas-dimensions').textContent = measured ? `${Math.round(measured)} × ${Math.round(viewport?.clientHeight || 0)} px${scaleLabel}` : 'Responsive';
-    $('#canvas-direction').textContent = layout.direction === 'rtl' ? 'RTL ←' : 'LTR →';
+    const directionLabel = layout.direction === 'rtl' ? 'RTL ←' : 'LTR →';
+    const directionAnnouncement = layout.direction === 'rtl' ? 'Right-to-left layout' : 'Left-to-right layout';
+    if ($('#canvas-direction').textContent !== directionLabel) $('#canvas-direction').textContent = directionLabel;
+    if ($('#canvas-direction-announcement').textContent !== directionAnnouncement) $('#canvas-direction-announcement').textContent = directionAnnouncement;
     $('#canvas-rtl').selected = layout.direction === 'rtl';
     $('#canvas-rtl').icon = layout.direction === 'rtl' ? 'format_textdirection_r_to_l' : 'format_textdirection_l_to_r';
     for (const [selector, selected, label, description] of [

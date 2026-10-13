@@ -14,6 +14,36 @@ test('syntax highlighting serves only its public helper, selected bundle and lic
   for (const asset of ['/build-syntax-highlighting.mjs', '/syntax-highlighting.test.mjs', '/syntax-vendor/../server.mjs']) assert.equal(await resolveAsset(asset), null, asset);
 });
 
+test('Studio branding serves the exact canonical Astro Docs logo assets', async () => {
+  for (const name of ['md3-logo-light.svg', 'md3-logo-dark.svg']) {
+    const canonical = await realpath(new URL(`../docs/src/assets/${name}`, import.meta.url));
+    assert.equal(await resolveAsset(`/brand/${name}`), canonical, name);
+  }
+});
+
+test('branding routes reject nearby assets, traversal and allowed-name symlink escapes', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'awc-native-brand-'));
+  try {
+    const repo = path.join(root, 'repo');
+    const assets = path.join(repo, 'apps/docs/src/assets');
+    await mkdir(assets, { recursive: true });
+    for (const name of ['md3-logo-light.svg', 'md3-logo-dark.svg', 'private.svg']) {
+      await writeFile(path.join(assets, name), '<svg/>');
+    }
+    const options = { repoRoot: repo };
+    for (const name of ['md3-logo-light.svg', 'md3-logo-dark.svg']) {
+      assert.equal(await resolveAsset(`/brand/${name}`, options), await realpath(path.join(assets, name)), name);
+    }
+    for (const url of ['/brand/private.svg', '/brand/nested/md3-logo-light.svg', '/brand/../assets/md3-logo-light.svg', '/brand/%2e%2e/assets/md3-logo-light.svg', '/brand/md3-logo-light.svg/../md3-logo-dark.svg']) {
+      assert.equal(await resolveAsset(url, options), null, url);
+    }
+    await writeFile(path.join(root, 'private.svg'), '<svg/>');
+    await rm(path.join(assets, 'md3-logo-light.svg'));
+    await symlink(path.join(root, 'private.svg'), path.join(assets, 'md3-logo-light.svg'));
+    assert.equal(await resolveAsset('/brand/md3-logo-light.svg', options), null);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
 test('asset routing rejects traversal, private files and symlink escapes', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'awc-native-lab-'));
   try {

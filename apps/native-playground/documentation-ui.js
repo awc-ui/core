@@ -3,6 +3,8 @@ import { usageSnippet, snippetLanguages } from './usage-snippets.js';
 import { recipeFor } from './recipes.js';
 import { usageBrandIcon } from './brand-icons.js';
 import { renderCode } from './syntax-highlighting.js';
+import { createButtonAppearanceUI } from './button-appearance-ui.js';
+import { BUTTON_APPEARANCE_FIELDS, buttonAppearanceCSS } from './button-appearance.js';
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const prose = value => escape(value).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
@@ -26,7 +28,8 @@ export function snippetProperties(state) {
   }));
 }
 
-export function createDocumentationUI({ getState, watchEvents, notify, afterInteraction, onContentChange }) {
+export function createDocumentationUI({ getState, watchEvents, notify, afterInteraction, onContentChange, onAppearanceChange }) {
+  const appearanceUI = createButtonAppearanceUI({ getState, onChange: () => { applyOverrides(); updateSnippet(); onAppearanceChange?.(); } });
   let activeTooltip, sequence = 0, renderedTag, renderGeneration = 0, snippetLanguage = 'html';
   const listeners = [];
   const listen = (target, name, callback, options) => {
@@ -103,8 +106,8 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
     const template = document.createElement('template');
     template.innerHTML = recipe.html;
     const target = template.content.querySelector(state.selected.tag);
-    if (target) applyOverrides(target);
-    return usageSnippet(state.selected, snippetProperties(state), snippetLanguage, { html: template.innerHTML, ...(Object.hasOwn(state.docSlotValues || {}, '') ? { text: state.docSlotValues[''] } : {}) });
+    if (target) applyOverrides(target, false);
+    return usageSnippet(state.selected, snippetProperties(state), snippetLanguage, { html: template.innerHTML, buttonAppearanceDefaults: state.buttonAppearanceDefaults, buttonAppearance: state.buttonAppearance, ...(Object.hasOwn(state.docSlotValues || {}, '') ? { text: state.docSlotValues[''] } : {}) });
   }
   function updateSnippet() {
     const code = document.querySelector('#usage-snippet');
@@ -138,9 +141,10 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
       if (event.target === input) setSlotValue('', typeof event.detail === 'string' ? event.detail : input.value);
     });
   }
-  function applyOverrides(target = getState().target) {
+  function applyOverrides(target = getState().target, includeAppearance = true) {
     const state = getState();
     if (!target) return;
+    if (includeAppearance) appearanceUI.apply(target);
     for (const [name, value] of Object.entries(state.docSlotValues || {})) {
       for (const child of [...target.childNodes]) {
         const slot = child.nodeType === 1 ? child.getAttribute('slot') || '' : '';
@@ -149,13 +153,14 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
       const content = (target.ownerDocument || document).createElement('span'); if (name) content.slot = name;
       content.textContent = value; target.append(content);
     }
-    for (const [name, value] of Object.entries(state.docCssValues || {})) { if (value) target.style.setProperty(name, value); else target.style.removeProperty(name); }
+    const appearance = includeAppearance && state.selected.tag === 'md-button' ? buttonAppearanceCSS(state.buttonAppearance, state.buttonAppearanceDefaults) : {};
+    for (const [name, value] of Object.entries(state.docCssValues || {})) { if (value) target.style.setProperty(name, value); else if (Object.hasOwn(appearance, name)) target.style.setProperty(name, appearance[name]); else target.style.removeProperty(name); }
   }
   function memberRow(kind, member, content = '') {
     const state = getState(), doc = memberDocumentation(state.selected, kind, member, state.platform);
     const status = doc.support?.status;
     return `<div class="usage-member"><div class="usage-member-heading"><code>${escape(member.name || 'Default slot')}</code>${infoButton(kind, member)}</div>
-      <p>${prose(doc.description)}</p>${status === 'unsupported' || status === 'unknown' ? `<span class="usage-support">${escape(doc.support.description)}</span>` : ''}${content}</div>`;
+      <p>${prose(doc.description)}</p>${status === 'unsupported' || status === 'unknown' || status === 'native-equivalent' ? `<span class="usage-support${status === 'native-equivalent' ? ' native-equivalent' : ''}">${escape(doc.support.description)}</span>` : ''}${content}</div>`;
   }
   function codeCard({ id, title, description, language, code, payload }) {
     return `<md-card id="${id}" class="usage-code-card" variant="filled" full-width density="-3"${payload ? ` data-usage-payload="${escape(payload)}"` : ''}><div class="usage-code-card-heading"><h4 id="${id}-title">${escape(title)}</h4><span class="usage-code-language">${language === 'javascript' ? 'JavaScript' : 'TypeScript'}</span></div><p class="usage-code-description">${prose(description)}</p><pre id="${id}-code" class="usage-code-body" data-code-language="${language}" tabindex="0" aria-labelledby="${id}-title">${escape(code)}</pre></md-card>`;
@@ -174,14 +179,18 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
   let renderedCssKey;
   function renderCssVariables(styles) {
     const state = getState(), root = document.querySelector('#css-controls');
-    document.querySelector('#css-variables-count').textContent = String(styles.length);
+    const button = state.selected.tag === 'md-button';
+    document.querySelector('#css-variables-tab').label = button ? 'Styles' : 'CSS variables';
+    document.querySelector('#css-variables-count').textContent = String(button ? BUTTON_APPEARANCE_FIELDS.length : styles.length);
+    appearanceUI.render();
     document.querySelector('#css-variables-note').textContent = styles.length
       ? `Overrides update web framework examples${state.platform === 'web' ? ' and this Web preview' : ''}.`
       : 'No public CSS variables declared.';
     const key = JSON.stringify([state.selected.tag, state.platform, styles]);
     if (key !== renderedCssKey) {
       renderedCssKey = key;
-      root.innerHTML = styles.map((item, index) => `<div class="css-variable-control"><div class="css-variable-heading"><code>${escape(item.name)}</code>${infoButton('cssProperty', item)}</div><md-text-field id="css-${index}" data-css-index="${index}" aria-label="${escape(item.name)} value" placeholder="Inherited value" value="${escape(state.docCssValues?.[item.name] || '')}" density="-3" variant="outlined"></md-text-field></div>`).join('');
+      const controls = styles.map((item, index) => `<div class="css-variable-control"><div class="css-variable-heading"><code>${escape(item.name)}</code>${infoButton('cssProperty', item)}</div><md-text-field id="css-${index}" data-css-index="${index}" aria-label="${escape(item.name)} value" placeholder="Inherited value" value="${escape(state.docCssValues?.[item.name] || '')}" density="-3" variant="outlined"></md-text-field></div>`).join('');
+      root.innerHTML = button ? `<md-accordion-item headline="Web CSS overrides" heading-level="3" density="-3"><div class="appearance-fields">${controls}</div></md-accordion-item>` : controls;
       root.querySelectorAll('[data-css-index]').forEach(input => input.addEventListener('mdInput', event => {
         if (event.target !== input) return;
         const state = getState();
@@ -219,7 +228,7 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
       return `<section class="usage-accordion-section"><md-accordion-item id="${id}" class="usage-section usage-accordion" data-usage-section="${escape(title)}" headline="${escape(title)}" heading-level="3" region-role="group" density="-3"${expandedSections.has(title) ? ' expanded' : ''}><span slot="headline" class="sr-only">${escape(title)}, ${rows.length} declarations</span><div class="usage-accordion-body">${action ? `<div class="usage-accordion-action">${action}</div>` : ''}${content}</div></md-accordion-item><div class="usage-accordion-tools"><span class="usage-accordion-label" aria-hidden="true">${escape(title)}</span>${categoryInfo(title)}${count}</div></section>`;
     };
     const events = component.events || [], slots = component.slots || [], methods = component.methods || [], styles = component.cssProperties || [], parts = component.cssParts || [];
-    root.innerHTML = `<div class="usage-intro"><p>Change properties and interact with the preview. Use <span aria-hidden="true">ⓘ</span> for details, defaults and platform support.</p></div>
+    root.innerHTML = `<div class="usage-intro"><h2>Usage &amp; API</h2><p>Change properties and interact with the preview. Use <span aria-hidden="true">ⓘ</span> for details, defaults and platform support.</p></div>
       <section class="usage-example" aria-label="Live usage example"><div class="usage-code-heading"><md-tabs id="usage-language-tabs" variant="secondary" tab-width="auto" active-tab-index="${snippetLanguages.findIndex(language => language.id === snippetLanguage)}" aria-label="Code language">${snippetLanguages.map(language => `<md-tab label="${escape(language.label)}" data-snippet-language="${language.id}" inline-icon${language.id === 'android' ? ' icon="android"' : ''}>${usageBrandIcon(language.id)}</md-tab>`).join('')}</md-tabs></div><md-card class="usage-snippet-card" variant="outlined" full-width><div class="usage-snippet-actions"><md-button type="button" id="copy-usage" variant="text" size="xs" icon="content_copy" aria-label="Copy usage code">Copy</md-button></div><pre id="usage-snippet" class="usage-code" tabindex="0" aria-label="Usage code"></pre></md-card></section>
       <div class="api-reference">${section('Events', events, events.map((event, index) => {
         return memberRow('event', event, eventPayload(event, index));

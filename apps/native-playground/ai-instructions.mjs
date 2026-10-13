@@ -2,6 +2,7 @@ import { readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { usageSnippet } from './usage-snippets.js';
 import { androidGuide, androidInstructionFiles } from './ai-instructions-android.mjs';
+import { buttonAppearanceGuide } from './button-appearance-guide.mjs';
 
 const files = Object.freeze({
   catalog: 'packages/native-compiler/generated/catalog.json',
@@ -172,8 +173,8 @@ export async function getAIInstructions(repository, tag) {
     const policy = manifest.components?.[tag];
     if (!policy) throw new Error('Native support policy is missing.');
     const wrapper = swiftWrapper(byPath[files.wrappers], tag);
-    const guide = nativeGuide(component, policy, manifest, wrapper, byPath[files.package]);
-    const composeGuide = androidGuide(component, byPath);
+    const guide = nativeGuide(component, policy, manifest, wrapper, byPath[files.package]) + (tag === 'md-button' ? '\n\n' + buttonAppearanceGuide('ios') : '');
+    const composeGuide = androidGuide(component, byPath) + (tag === 'md-button' ? '\n\n' + buttonAppearanceGuide('android') : '');
     const provenance = '### Guide sources\n\n' + sources.map(source => `- [${source}](${source})`).join('\n');
     return { filename: `${tag}.md`, markdown: byPath[readmePath] + '\n\n---\n\n' + guide + '\n\n---\n\n' + composeGuide + '\n\n' + provenance + '\n', sources };
   } catch (error) {

@@ -12,6 +12,8 @@ private struct PreviewRequest: Decodable {
     let dark: Bool?
     let width: Double?
     let scenario: String?
+    let buttonAppearanceDefaults: [String: AWCValue]?
+    let buttonAppearance: [String: AWCValue]?
     let themeTokens: [String: String]?
     let direction: String?
     let x: Double?
@@ -154,6 +156,7 @@ private struct PreviewRoot: View {
     let scenario: String?
     let themeTokens: [String: String]
     let direction: String
+    let buttonAppearance: AWCButtonAppearance
     private var theme: AWCTheme { .generated(dark: dark, tokens: themeTokens) }
     @ViewBuilder private var example: some View {
         if scenario == "button-behavior" { AWCButtonBehaviorDemo(properties: node.properties, onEvent: onEvent) }
@@ -171,6 +174,7 @@ private struct PreviewRoot: View {
             .environment(\.layoutDirection, direction == "rtl" ? .rightToLeft : .leftToRight)
             .environment(\.openURL, OpenURLAction { _ in .discarded })
             .awcTheme(theme)
+            .awcButtonAppearance(buttonAppearance)
             .environment(\.awcNativePointerState, pointerState)
             .coordinateSpace(name: "awc-native-preview")
     }
@@ -269,7 +273,7 @@ private final class NativeSession {
             }
         }
         tag = requestedTag
-        let newHost = NSHostingView(rootView: PreviewRoot(node: node, width: logicalWidth, dark: request.dark ?? false, onEvent: events.append, pointerState: pointerState, scenario: request.scenario, themeTokens: request.themeTokens ?? [:], direction: request.direction ?? "ltr"))
+        let newHost = NSHostingView(rootView: PreviewRoot(node: node, width: logicalWidth, dark: request.dark ?? false, onEvent: events.append, pointerState: pointerState, scenario: request.scenario, themeTokens: request.themeTokens ?? [:], direction: request.direction ?? "ltr", buttonAppearance: AWCButtonAppearance(values: request.buttonAppearanceDefaults ?? [:]).merging(.init(values: request.buttonAppearance ?? [:]))))
         // The window is realized outside every display, never activated, and never made key.
         let left = NSScreen.screens.map { $0.frame.minX }.min() ?? 0
         let bottom = NSScreen.screens.map { $0.frame.minY }.min() ?? 0
@@ -481,6 +485,19 @@ private final class NativeSession {
         }
     }
 
+    private func png(_ bitmap: NSBitmapImageRep) -> Data? {
+        // Draw the captured CGImage into an explicit sRGB bitmap. AppKit's
+        // NSBitmapImageRep.converting applies a second display-profile transform
+        // to some SwiftUI captures, visibly shifting saturated appearance colors.
+        guard let image = bitmap.cgImage, let space = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(data: nil, width: image.width, height: image.height,
+                  bitsPerComponent: 8, bytesPerRow: image.width * 4, space: space,
+                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        guard let converted = context.makeImage() else { return nil }
+        return NSBitmapImageRep(cgImage: converted).representation(using: .png, properties: [:])
+    }
+
     private func frame() throws -> [String: AWCValue] {
         try requireConfigured()
         guard let host, let window else { throw PreviewFailure("Native window unavailable.") }
@@ -499,8 +516,7 @@ private final class NativeSession {
         guard let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { throw PreviewFailure("Native bitmap allocation failed.") }
         host.cacheDisplay(in: host.bounds, to: bitmap)
         let captureDone = ProcessInfo.processInfo.systemUptime
-        guard let output = bitmap.colorSpace == .sRGB ? bitmap : bitmap.converting(to: .sRGB, renderingIntent: .default),
-              let png = output.representation(using: .png, properties: [:]) else { throw PreviewFailure("Native sRGB PNG encoding failed.") }
+        guard let png = png(bitmap) else { throw PreviewFailure("Native sRGB PNG encoding failed.") }
         if profiling {
             let end = ProcessInfo.processInfo.systemUptime
             let profile: [String: Double] = ["layoutMs": (layoutDone - start) * 1000, "captureMs": (captureDone - layoutDone) * 1000,

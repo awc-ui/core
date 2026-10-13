@@ -103,6 +103,9 @@ for source in sorted((ROOT/'packages/core/src/components').glob('md-*/*.tsx')):
  if tag in notes:n.append(notes[tag])
  if 'chart' in tag or tag=='md-sparkline':n.append('Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete.')
  components[tag]={'properties':sorted(handled & source_props),'events':sorted(set(events.get(tag,'').split()) & source_events),'methods':[],'slots':sorted(set(slots[tag].split('|')) & source_slots) if tag in slots else [],'notes':n}
- if tag=='md-button':components[tag]['nativeEquivalents']=button_equivalents
+ if tag=='md-button':
+  components[tag]['nativeEquivalents']=button_equivalents
+  components[tag]['appearance']={'api':'AWCButtonAppearance / AWCButtonAppearanceScope','fields':'containerColor labelColor iconColor trailingIconColor loadingColor stateLayerColor outlineColor iconSize trailingIconSize loadingSize fontSize fontWeight lineHeight letterSpacing cornerRadius outlineWidth paddingInline paddingBlock gap hoverOpacity focusOpacity pressedOpacity'.split()}
+  components[tag]['visualParts']=['anchor','state-layer','icon','label','trailing-icon','loading']
 Path(__file__).with_name('support.json').write_text(json.dumps({'platform':'android','components':components},indent=2)+'\n')
 print(f'{len(components)} native Android adapter contracts')

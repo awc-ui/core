@@ -52,6 +52,8 @@ function coverage(component,policy){
     unsupportedMethods:component.methods.map(p=>p.name).filter(p=>!names(methods).includes(p)),
     unsupportedSlots:component.slots.map(p=>p.name).filter(p=>!names(slots).includes(p)),
     notes:entry?.notes??[], verification:'not-device-verified',
+    ...(Array.isArray(entry?.visualParts) ? {visualParts: entry.visualParts.filter(value=>typeof value==='string')} : {}),
+    ...(entry?.appearance && typeof entry.appearance.api==='string' && Array.isArray(entry.appearance.fields) ? {appearance:{api:entry.appearance.api,fields:entry.appearance.fields.filter(value=>typeof value==='string')}} : {}),
     ...(equivalents===undefined?{}:{nativeEquivalents:equivalents}),
   };
 }

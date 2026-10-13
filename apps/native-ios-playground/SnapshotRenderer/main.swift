@@ -7,10 +7,16 @@ import AWCUI
 @main
 struct SnapshotRenderer {
     private static func png(_ bitmap: NSBitmapImageRep) -> Data? {
-        // A monitor's Color LCD profile is neither portable nor comparable to CSS sRGB.
-        // Convert pixels, rather than merely changing the profile tag, before exporting.
-        guard let output = bitmap.colorSpace == .sRGB ? bitmap : bitmap.converting(to: .sRGB, renderingIntent: .default) else { return nil }
-        return output.representation(using: .png, properties: [:])
+        // Draw the captured CGImage into an explicit sRGB bitmap. AppKit's
+        // NSBitmapImageRep.converting applies a second display-profile transform
+        // to some SwiftUI captures, visibly shifting saturated appearance colors.
+        guard let image = bitmap.cgImage, let space = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(data: nil, width: image.width, height: image.height,
+                  bitsPerComponent: 8, bytesPerRow: image.width * 4, space: space,
+                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        guard let converted = context.makeImage() else { return nil }
+        return NSBitmapImageRep(cgImage: converted).representation(using: .png, properties: [:])
     }
     private struct RenderRequest: Decodable {
         let tag: String
@@ -18,6 +24,8 @@ struct SnapshotRenderer {
         let dark: Bool
         let width: Double?
         let text: String?
+        let buttonAppearanceDefaults: [String: AWCValue]?
+        let buttonAppearance: [String: AWCValue]?
     }
     private struct RenderMetadata: Encodable {
         let platform = "macos"
@@ -32,6 +40,7 @@ struct SnapshotRenderer {
     }
 
     @MainActor static func main() {
+        _ = NSApplication.shared; NSApp.setActivationPolicy(.accessory)
         do {
             let arguments = Array(CommandLine.arguments.dropFirst())
             if arguments.first == "--request" {
@@ -50,6 +59,18 @@ struct SnapshotRenderer {
             FileHandle.standardError.write(Data(("AWCSnapshots: " + error.localizedDescription + "\n").utf8))
             exit(EXIT_FAILURE)
         }
+    }
+
+    @MainActor private static func mount(_ host: NSView, width: Double) throws -> NSWindow {
+        guard !NSScreen.screens.isEmpty else { throw RenderFailure(message: "Native snapshots require desktop WindowServer access.") }
+        let left = NSScreen.screens.map { $0.frame.minX }.min() ?? 0
+        let bottom = NSScreen.screens.map { $0.frame.minY }.min() ?? 0
+        let window = NSWindow(contentRect: NSRect(x: left - 10000, y: bottom - 10000, width: width, height: 100),
+                              styleMask: .borderless, backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false; window.colorSpace = .sRGB
+        window.isExcludedFromWindowsMenu = true; window.collectionBehavior = [.transient, .ignoresCycle]
+        window.contentView = host; window.orderBack(nil)
+        return window
     }
 
     @MainActor private static func renderRequest(input: URL, output: URL) throws {
@@ -76,12 +97,16 @@ struct SnapshotRenderer {
             .background(request.dark ? Color(white: 0.08) : .white)
             .environment(\.colorScheme, request.dark ? .dark : .light)
             .awcTheme(.generated(dark: request.dark))
+            .awcButtonAppearance(AWCButtonAppearance(values: request.buttonAppearanceDefaults ?? [:]).merging(.init(values: request.buttonAppearance ?? [:])))
         let host = NSHostingView(rootView: view)
+        let window = try mount(host, width: width)
+        defer { window.close() }
         let measuredHeight = host.fittingSize.height
         guard measuredHeight.isFinite, measuredHeight > 0 else {
             throw RenderFailure(message: "Component produced invalid native layout dimensions.")
         }
         let height = min(2000, max(100, measuredHeight.rounded(.up)))
+        window.setContentSize(NSSize(width: width, height: height))
         host.frame = NSRect(x: 0, y: 0, width: width, height: height)
         host.layoutSubtreeIfNeeded()
         guard let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds) else {
@@ -110,6 +135,9 @@ struct SnapshotRenderer {
                 }.padding(24).frame(width: 640).background(dark ? Color(white: 0.08) : .white)
                     .environment(\.colorScheme, dark ? .dark : .light).awcTheme(.generated(dark: dark))
                 let host = NSHostingView(rootView: view)
+                let window = try mount(host, width: 640)
+                defer { window.close() }
+                window.setContentSize(NSSize(width: 640, height: max(100, host.fittingSize.height)))
                 host.frame = NSRect(x: 0, y: 0, width: 640, height: max(100, host.fittingSize.height))
                 host.layoutSubtreeIfNeeded()
                 guard let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { failed.append(tag); continue }

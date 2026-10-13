@@ -38,7 +38,7 @@ function frameDocument(width = 384, height = 256) {
 }
 
 function fixture(t, options = {}) {
-  const selectors = ['.workspace-grid', '#preview-stage', '#preview-content', '.canvas-viewport-shell', '.canvas-viewport-scale', '#component-frame', '#canvas-dimensions', '#canvas-direction', '#canvas-help', '#canvas-rtl', '#canvas-grid', '#canvas-bounds', '#canvas-fullscreen', '#canvas-expand-tooltip', '#canvas-expanded-label', '#canvas-width'];
+  const selectors = ['.workspace-grid', '#preview-stage', '#preview-content', '.canvas-viewport-shell', '.canvas-viewport-scale', '#component-frame', '#canvas-dimensions', '#canvas-direction', '#canvas-direction-announcement', '#canvas-help', '#canvas-rtl', '#canvas-grid', '#canvas-bounds', '#canvas-fullscreen', '#canvas-expand-tooltip', '#canvas-expanded-label', '#canvas-width'];
   const nodes = new Map(selectors.map(selector => [selector, new ElementStub()]));
   for (const selector of ['#canvas-grid', '#canvas-bounds']) nodes.get(selector).tooltip = new ElementStub();
   const doc = frameDocument(), frame = nodes.get('#component-frame'), workspace = nodes.get('.workspace-grid');
@@ -118,9 +118,11 @@ test('direction and viewport controls update the preview without rewriting compo
   const props = structuredClone(state.props);
   ui.init();
   assert.equal(preview.documentElement.dir, 'ltr');
+  assert.equal(nodes.get('#canvas-direction-announcement').textContent, 'Left-to-right layout');
   await nodes.get('#canvas-rtl').emit('mdClick', { detail: { selected: true } });
   assert.equal(preview.documentElement.dir, 'rtl');
   assert.equal(nodes.get('#canvas-direction').textContent, 'RTL ←');
+  assert.equal(nodes.get('#canvas-direction-announcement').textContent, 'Right-to-left layout');
   assert.equal(nodes.get('#canvas-rtl').selected, true);
   assert.match(nodes.get('#canvas-help').textContent, /centered text-only.*can look unchanged/);
   assert.deepEqual(state.props, props);

@@ -4,6 +4,7 @@ import { createDocumentationUI, snippetProperties } from './documentation-ui.js'
 
 // Minimal DOM boundary for event/state tests; rendering and focus behavior are
 // additionally checked in the real browser. No browser implementation dependency.
+const styleStub = () => ({ setProperty() {}, removeProperty() {}, getPropertyValue() { return ''; }, getPropertyPriority() { return ''; } });
 const decode = value => value.replace(/&(amp|quot|lt|gt|#39);/g, (_, entity) => ({ amp: '&', quot: '"', lt: '<', gt: '>', '#39': "'" })[entity]);
 class ElementStub {
   constructor(attributes = {}, tag = 'div') {
@@ -11,7 +12,7 @@ class ElementStub {
     this.attributes = attributes; this.dataset = {}; this.listeners = {}; this.nodes = [];
     this.id = attributes.id; this.value = attributes.value || ''; this.open = Object.hasOwn(attributes, 'open'); this.expanded = Object.hasOwn(attributes, 'expanded');
     this.disabled = Object.hasOwn(attributes, 'disabled'); this.hidden = false; this.isConnected = true;
-    this.style = {}; this.offsetWidth = 300; this.offsetHeight = 120;
+    this.style = styleStub(); this.offsetWidth = 300; this.offsetHeight = 120;
     for (const [name, value] of Object.entries(attributes)) if (name.startsWith('data-')) this.dataset[name.slice(5).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())] = value;
   }
   addEventListener(name, listener) { (this.listeners[name] ||= []).push(listener); }
@@ -43,7 +44,8 @@ class ElementStub {
 function fixture(t, extra = {}) {
   const root = new ElementStub(), propsRoot = new ElementStub(), search = new ElementStub(), doc = new ElementStub();
   const cssRoot = new ElementStub(), cssSection = new ElementStub(), cssCount = new ElementStub(), cssNote = new ElementStub();
-  const surfaces = { '#usage-docs': root, '#props-search': search, '#css-controls': cssRoot, '#css-variables-section': cssSection, '#css-variables-count': cssCount, '#css-variables-note': cssNote };
+  const appearanceRoot = new ElementStub(), cssTab = new ElementStub();
+  const surfaces = { '#button-appearance-controls': appearanceRoot, '#css-variables-tab': cssTab, '#usage-docs': root, '#props-search': search, '#css-controls': cssRoot, '#css-variables-section': cssSection, '#css-variables-count': cssCount, '#css-variables-note': cssNote };
   doc.activeElement = null; doc.body = { append() {} }; doc.createElement = name => {
     const element = new ElementStub({}, name);
     if (name === 'template') element.content = { querySelector: () => null };
@@ -57,11 +59,11 @@ function fixture(t, extra = {}) {
     t.after(() => descriptor ? Object.defineProperty(globalThis, key, descriptor) : delete globalThis[key]);
   }
   const component = { tag: 'md-text-field', properties: [], methods: [{ name: 'setCustomValidity', parameters: [{ name: 'message', type: 'string' }], returnType: 'inferred' }], ...extra };
-  const state = { selected: component, platform: 'web', props: {}, target: { outerHTML: '<md-text-field></md-text-field>' } };
+  const state = { selected: component, platform: 'web', props: {}, target: { outerHTML: '<md-text-field></md-text-field>', style: styleStub() } };
   let interactions = 0, watched = 0;
   const contentChanges = [];
   const ui = createDocumentationUI({ getState: () => state, notify() {}, watchEvents() { watched++; }, afterInteraction() { interactions++; }, onContentChange: (...args) => contentChanges.push(args) });
-  return { ui, root, propsRoot, cssRoot, cssSection, cssCount, cssNote, state, doc, search, contentChanges, interactions: () => interactions, watched: () => watched };
+  return { ui, root, propsRoot, cssRoot, cssSection, cssCount, cssNote, state, doc, search, appearanceRoot, cssTab, contentChanges, interactions: () => interactions, watched: () => watched };
 }
 
 test('Text editor shares default-slot state with usage, preserves empty labels, and resets to the fixture', async t => {
@@ -94,7 +96,7 @@ test('Text editor shares default-slot state with usage, preserves empty labels, 
 test('Text input immediately applies safe plain content to the Web preview', async t => {
   const { ui, propsRoot, state } = fixture(t, { tag: 'md-button', slots: [{ name: '' }] });
   const appended = [], removed = [];
-  state.target = { childNodes: [{ nodeType: 3, remove: () => removed.push('old text') }, { nodeType: 1, getAttribute: () => 'leading-icon', remove: () => removed.push('icon') }], append: node => appended.push(node) };
+  state.target = { childNodes: [{ nodeType: 3, remove: () => removed.push('old text') }, { nodeType: 1, getAttribute: () => 'leading-icon', remove: () => removed.push('icon') }], append: node => appended.push(node), style: styleStub() };
   propsRoot.innerHTML = ui.textControl(); ui.bindTextControl();
   await propsRoot.querySelector('#component-text').emit('mdInput', { detail: '<img src=x>Save' });
   assert.deepEqual(removed, ['old text']);
@@ -363,7 +365,7 @@ test('sidebar CSS tab editing preserves focus and caret on refresh and resets fo
   state.selected = { ...state.selected, tag: 'md-button', cssProperties: [] }; state.docCssValues = {};
   ui.renderUsage();
   assert.equal(cssRoot.querySelectorAll('[data-css-index]').length, 0);
-  assert.equal(cssCount.textContent, '0');
+  assert.equal(cssCount.textContent, '22');
   assert.equal(cssNote.textContent, 'No public CSS variables declared.');
 });
 
@@ -427,4 +429,27 @@ test('rich help prefers vertical placement on mobile, updates mounted hosts on r
   await viewport.emit('resize');
   assert.equal(tooltip.position, 'bottom', 'disposed controllers do not update mounted hosts');
   ui.dispose(); // Cleanup is safe when repeated.
+});
+
+
+test('shared appearance editors preserve zero, inherited scopes and last valid values', async t => {
+  const { ui, state, appearanceRoot, cssTab } = fixture(t, { tag: 'md-button' });
+  ui.renderUsage();
+  assert.equal(cssTab.label, 'Styles');
+  assert.equal(appearanceRoot.querySelectorAll('[data-appearance-field]').length, 22);
+  const gap = appearanceRoot.querySelector('#appearance-gap');
+  await gap.emit('mdInput', { detail: '0' });
+  assert.equal(state.buttonAppearance.gap, 0);
+  await gap.emit('mdInput', { detail: '-1' });
+  assert.equal(gap.error, true);
+  assert.equal(state.buttonAppearance.gap, 0);
+  await appearanceRoot.querySelector('#appearance-scope').emit('mdTabChange', { detail: { index: 1 } });
+  await gap.emit('mdInput', { detail: '12' });
+  assert.equal(state.buttonAppearanceDefaults.gap, 12);
+  assert.equal(state.buttonAppearance.gap, 0);
+  await appearanceRoot.querySelector('#appearance-scope').emit('mdTabChange', { detail: { index: 0 } });
+  assert.equal(gap.placeholder, 'Theme: 12');
+  await appearanceRoot.querySelector('#appearance-reset').emit('mdClick');
+  assert.deepEqual(state.buttonAppearance, {});
+  assert.deepEqual(state.buttonAppearanceDefaults, { gap: 12 });
 });

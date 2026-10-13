@@ -8,11 +8,26 @@
    PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
      --md-button-container-color    Container background
      --md-button-label-color        Label + icon text color
-     --md-button-icon-color         Icon-only color override
-     --md-button-icon-size          Icon dimensions
-     --md-button-container-shape    Border-radius override
-     --md-button-outline-color      Outlined border color
-     --md-button-outline-width      Outlined border width
+     --md-button-icon-color         Leading icon color (trailing fallback)
+     --md-button-icon-size          Leading icon dimensions (trailing fallback)
+     --md-button-trailing-icon-color Trailing icon color
+     --md-button-trailing-icon-size  Trailing icon dimensions
+     --md-button-loading-color      Loading indicator color
+     --md-button-loading-size       Loading indicator dimensions
+     --md-button-state-layer-color  Hover/focus/press overlay color
+     --md-button-hover-opacity      Hover overlay opacity
+     --md-button-focus-opacity      Focus overlay opacity
+     --md-button-pressed-opacity    Press overlay opacity
+     --md-button-font-size          Label font size
+     --md-button-font-weight        Label font weight
+     --md-button-line-height        Label line height
+     --md-button-letter-spacing     Label letter spacing
+     --md-button-padding-inline     Content inset from the outer inline edges
+     --md-button-padding-block      Vertical content padding
+     --md-button-gap                Icon/label/loading gap
+     --md-button-container-shape    Fixed border radius, including pressed/selected
+     --md-button-outline-color      Border color
+     --md-button-outline-width      Border width (enables a border on any variant)
      --md-button-width              Fixed inline-size (default: auto)
      --md-button-min-width          Minimum inline-size (default: per-size touch target)
      --md-button-max-width          Maximum inline-size (default: none)
@@ -43,6 +58,9 @@
   --_state-layer-color: var(--md-sys-color-primary);
   --_container-elevation: var(--md-sys-elevation-0, none);
   --_icon-size: var(--md-button-icon-size, 18px);
+  --_leading-icon-color: var(--md-button-icon-color, currentColor);
+  --_trailing-icon-color: var(--md-button-trailing-icon-color, var(--md-button-icon-color, currentColor));
+  --_loading-color: var(--md-button-loading-color, currentColor);
   --_outline-width: var(--md-button-outline-width, var(--_size-outline-width, 1px));
 
   /* Sizing — defaults come from each size class via --_size-* tokens.
@@ -74,7 +92,7 @@
   cursor: pointer;
   user-select: none;
   text-decoration: none;
-  border: none;
+  border: var(--md-button-outline-width, 0px) solid var(--md-button-outline-color, var(--md-sys-color-outline));
   /* Transparent resting outline; focus-visible swaps outline-color in instantly.
      Deliberately NOT transitioned — on hydration the host's pre-upgrade UA outline
      (style:none, color:currentColor) animates to solid/transparent, which renders a
@@ -119,14 +137,14 @@
   /* 25% across the density range, floored at half. At 50% the inset shrank
      faster than the button did — a -4 sm button was still 24px tall but had
      only 8px of side padding, which read crammed. */
-  --_padding-inline: max(6px, calc(12px + var(--md-sys-density-scale, 0) * 0.75px));
-  padding: 0 var(--_padding-inline);
-  gap: max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px));
+  --_padding-inline: var(--md-button-padding-inline, max(6px, calc(12px + var(--md-sys-density-scale, 0) * 0.75px)));
+  padding: var(--md-button-padding-block, 0px) max(0px, calc(var(--_padding-inline) - var(--md-button-outline-width, 0px)));
+  gap: var(--md-button-gap, max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px)));
   font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
-  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
-  font-weight: var(--md-sys-typescale-label-large-font-weight, 500);
-  letter-spacing: var(--md-sys-typescale-label-large-letter-spacing, 0.1px);
-  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  font-size: var(--md-button-font-size, max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px)));
+  font-weight: var(--md-button-font-weight, var(--md-sys-typescale-label-large-font-weight, 500));
+  letter-spacing: var(--md-button-letter-spacing, var(--md-sys-typescale-label-large-letter-spacing, 0.1px));
+  line-height: var(--md-button-line-height, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)));
 }
 
 :host(.md-button--sm) {
@@ -138,14 +156,14 @@
   /* 25% across the density range, floored at half. At 50% the inset shrank
      faster than the button did — a -4 sm button was still 24px tall but had
      only 8px of side padding, which read crammed. */
-  --_padding-inline: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 1px));
-  padding: 0 var(--_padding-inline);
-  gap: max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px));
+  --_padding-inline: var(--md-button-padding-inline, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 1px)));
+  padding: var(--md-button-padding-block, 0px) max(0px, calc(var(--_padding-inline) - var(--md-button-outline-width, 0px)));
+  gap: var(--md-button-gap, max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)));
   font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
-  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
-  font-weight: var(--md-sys-typescale-label-large-font-weight, 500);
-  letter-spacing: var(--md-sys-typescale-label-large-letter-spacing, 0.1px);
-  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  font-size: var(--md-button-font-size, max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px)));
+  font-weight: var(--md-button-font-weight, var(--md-sys-typescale-label-large-font-weight, 500));
+  letter-spacing: var(--md-button-letter-spacing, var(--md-sys-typescale-label-large-letter-spacing, 0.1px));
+  line-height: var(--md-button-line-height, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)));
 }
 
 :host(.md-button--md) {
@@ -157,14 +175,14 @@
   /* 25% across the density range, floored at half. At 50% the inset shrank
      faster than the button did — a -4 sm button was still 24px tall but had
      only 8px of side padding, which read crammed. */
-  --_padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 1.5px));
-  padding: 0 var(--_padding-inline);
-  gap: max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px));
+  --_padding-inline: var(--md-button-padding-inline, max(12px, calc(24px + var(--md-sys-density-scale, 0) * 1.5px)));
+  padding: var(--md-button-padding-block, 0px) max(0px, calc(var(--_padding-inline) - var(--md-button-outline-width, 0px)));
+  gap: var(--md-button-gap, max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)));
   font-family: var(--md-sys-typescale-title-medium-font-family, Roboto, sans-serif);
-  font-size: max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
-  font-weight: var(--md-sys-typescale-title-medium-font-weight, 500);
-  letter-spacing: var(--md-sys-typescale-title-medium-letter-spacing, 0.15px);
-  line-height: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  font-size: var(--md-button-font-size, max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px)));
+  font-weight: var(--md-button-font-weight, var(--md-sys-typescale-title-medium-font-weight, 500));
+  letter-spacing: var(--md-button-letter-spacing, var(--md-sys-typescale-title-medium-letter-spacing, 0.15px));
+  line-height: var(--md-button-line-height, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
 }
 
 :host(.md-button--lg) {
@@ -176,14 +194,14 @@
   /* 25% across the density range, floored at half. At 50% the inset shrank
      faster than the button did — a -4 sm button was still 24px tall but had
      only 8px of side padding, which read crammed. */
-  --_padding-inline: max(24px, calc(48px + var(--md-sys-density-scale, 0) * 3px));
-  padding: 0 var(--_padding-inline);
-  gap: max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px));
+  --_padding-inline: var(--md-button-padding-inline, max(24px, calc(48px + var(--md-sys-density-scale, 0) * 3px)));
+  padding: var(--md-button-padding-block, 0px) max(0px, calc(var(--_padding-inline) - var(--md-button-outline-width, 0px)));
+  gap: var(--md-button-gap, max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px)));
   font-family: var(--md-sys-typescale-headline-small-font-family, Roboto, sans-serif);
-  font-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
-  font-weight: var(--md-sys-typescale-headline-small-font-weight, 400);
-  letter-spacing: var(--md-sys-typescale-headline-small-letter-spacing, 0px);
-  line-height: max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px));
+  font-size: var(--md-button-font-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  font-weight: var(--md-button-font-weight, var(--md-sys-typescale-headline-small-font-weight, 400));
+  letter-spacing: var(--md-button-letter-spacing, var(--md-sys-typescale-headline-small-letter-spacing, 0px));
+  line-height: var(--md-button-line-height, max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px)));
 }
 
 :host(.md-button--xl) {
@@ -195,14 +213,14 @@
   /* 25% across the density range, floored at half. At 50% the inset shrank
      faster than the button did — a -4 sm button was still 24px tall but had
      only 8px of side padding, which read crammed. */
-  --_padding-inline: max(32px, calc(64px + var(--md-sys-density-scale, 0) * 4px));
-  padding: 0 var(--_padding-inline);
-  gap: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
+  --_padding-inline: var(--md-button-padding-inline, max(32px, calc(64px + var(--md-sys-density-scale, 0) * 4px)));
+  padding: var(--md-button-padding-block, 0px) max(0px, calc(var(--_padding-inline) - var(--md-button-outline-width, 0px)));
+  gap: var(--md-button-gap, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)));
   font-family: var(--md-sys-typescale-headline-large-font-family, Roboto, sans-serif);
-  font-size: max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px));
-  font-weight: var(--md-sys-typescale-headline-large-font-weight, 400);
-  letter-spacing: var(--md-sys-typescale-headline-large-letter-spacing, 0px);
-  line-height: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 2px));
+  font-size: var(--md-button-font-size, max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px)));
+  font-weight: var(--md-button-font-weight, var(--md-sys-typescale-headline-large-font-weight, 400));
+  letter-spacing: var(--md-button-letter-spacing, var(--md-sys-typescale-headline-large-letter-spacing, 0px));
+  line-height: var(--md-button-line-height, max(32px, calc(40px + var(--md-sys-density-scale, 0) * 2px)));
 }
 
 /* ==========================================================
@@ -224,7 +242,7 @@
    Round uses --_shape-round (height/2 per size) instead of
    corner-full (9999px) so the browser can smoothly interpolate
    border-radius transitions between resting and morphed states.
-   --md-button-container-shape overrides both.
+   --md-button-container-shape fixes both, bypassing selected/pressed morphing.
    ========================================================== */
 /* The RESTING radius is named (--_shape-rest) so the morph states below can be
    expressed as a blend back toward it. --_morph-to carries the morphed target
@@ -238,14 +256,14 @@
    which Firefox does not implement. */
 :host(.md-button--round) {
   --_shape-rest: var(--md-button-container-shape, var(--_shape-round));
-  border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)));
+  border-radius: var(--md-button-container-shape, calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))));
 }
 
-:host(.md-button--square.md-button--xs) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-medium, 12px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
-:host(.md-button--square.md-button--sm) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-medium, 12px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
-:host(.md-button--square.md-button--md) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-large, 16px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
-:host(.md-button--square.md-button--lg) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-extra-large, 28px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
-:host(.md-button--square.md-button--xl) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-extra-large, 28px)); border-radius: calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))); }
+:host(.md-button--square.md-button--xs) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-medium, 12px)); border-radius: var(--md-button-container-shape, calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)))); }
+:host(.md-button--square.md-button--sm) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-medium, 12px)); border-radius: var(--md-button-container-shape, calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)))); }
+:host(.md-button--square.md-button--md) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-large, 16px)); border-radius: var(--md-button-container-shape, calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)))); }
+:host(.md-button--square.md-button--lg) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-extra-large, 28px)); border-radius: var(--md-button-container-shape, calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)))); }
+:host(.md-button--square.md-button--xl) { --_shape-rest: var(--md-button-container-shape, var(--md-sys-shape-corner-extra-large, 28px)); border-radius: var(--md-button-container-shape, calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)))); }
 
 /* ==========================================================
    2b. SHAPE MORPHING — M3 Expressive
@@ -460,7 +478,7 @@
   --_container-color: var(--md-button-container-color, var(--md-sys-color-secondary-container, #E8DEF8));
   --_label-color: var(--md-button-label-color, var(--md-sys-color-on-secondary-container, #1E192B));
   --_state-layer-color: var(--md-sys-color-on-secondary-container, #1E192B);
-  border-color: transparent;
+  border-color: var(--md-button-outline-color, transparent);
 }
 
 /* ── Elevated toggle ── */
@@ -484,21 +502,24 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background-color: var(--_state-layer-color);
+  background-color: var(--md-button-state-layer-color, var(--md-button-label-color, var(--_state-layer-color)));
   opacity: 0;
   transition: opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
   pointer-events: none;
 }
 :host(:hover) .md-button__state-layer {
-  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
-}
-:host(:active:not(.md-button--disabled)) .md-button__state-layer {
-  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
-  transition-duration: var(--md-sys-motion-duration-short1, 50ms);
-  transition-timing-function: var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+  opacity: var(--md-button-hover-opacity, var(--md-sys-state-hover-state-layer-opacity, 0.08));
 }
 :host(:focus-visible) .md-button__state-layer {
-  opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+  opacity: var(--md-button-focus-opacity, var(--md-sys-state-focus-state-layer-opacity, 0.12));
+}
+/* The interaction state is independent of shape morphing, including the real
+   keyboard activation pulse. Pressed feedback takes precedence over focus. */
+:host(:active:not(.md-button--disabled)) .md-button__state-layer,
+:host(.md-button--pressing:not(.md-button--disabled)) .md-button__state-layer {
+  opacity: var(--md-button-pressed-opacity, var(--md-sys-state-pressed-state-layer-opacity, 0.12));
+  transition-duration: var(--md-sys-motion-duration-short1, 50ms);
+  transition-timing-function: var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
 }
 
 /* ==========================================================
@@ -536,24 +557,27 @@
 
 :host(.md-button--filled.md-button--disabled),
 :host(.md-button--tonal.md-button--disabled) {
-  --_container-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+  --_container-color: color-mix(in srgb, var(--md-button-container-color, var(--md-sys-color-on-surface)) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
 }
 :host(.md-button--elevated.md-button--disabled) {
-  --_container-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+  --_container-color: color-mix(in srgb, var(--md-button-container-color, var(--md-sys-color-on-surface)) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
   --_container-elevation: var(--md-sys-elevation-0, none);
 }
 
 :host(.md-button--disabled) {
-  --_label-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  border-color: color-mix(in srgb, var(--md-button-outline-color, var(--md-sys-color-on-surface)) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+  --_label-color: color-mix(in srgb, var(--md-button-label-color, var(--md-sys-color-on-surface)) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_leading-icon-color: color-mix(in srgb, var(--md-button-icon-color, var(--md-button-label-color, var(--md-sys-color-on-surface))) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_trailing-icon-color: color-mix(in srgb, var(--md-button-trailing-icon-color, var(--md-button-icon-color, var(--md-button-label-color, var(--md-sys-color-on-surface)))) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_loading-color: color-mix(in srgb, var(--md-button-loading-color, var(--md-button-label-color, var(--md-sys-color-on-surface))) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
 }
 
 :host(.md-button--outlined.md-button--disabled) {
-  --_container-color: transparent;
-  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+  --_container-color: color-mix(in srgb, var(--md-button-container-color, transparent) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
 }
 
 :host(.md-button--text.md-button--disabled) {
-  --_container-color: transparent;
+  --_container-color: color-mix(in srgb, var(--md-button-container-color, transparent) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
 }
 
 :host(.md-button--disabled:hover) .md-button__state-layer,
@@ -565,12 +589,19 @@
 /* ==========================================================
    8. ICON (prop-based fallback inside slot)
    ========================================================== */
+.md-button__icon {
+  --_glyph-size: var(--_icon-size, 18px);
+  color: var(--_leading-icon-color);
+}
+.md-button__trailing-icon {
+  --_glyph-size: var(--md-button-trailing-icon-size, var(--_icon-size, 18px));
+  color: var(--_trailing-icon-color);
+}
 .md-button__icon,
 .md-button__trailing-icon {
-  color: var(--md-button-icon-color, inherit);
-  font-size: var(--_icon-size, 18px);
-  width: var(--_icon-size, 18px);
-  height: var(--_icon-size, 18px);
+  font-size: var(--_glyph-size);
+  width: var(--_glyph-size);
+  height: var(--_glyph-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -589,10 +620,17 @@ slot[name="trailing-icon"] {
 
 ::slotted([slot="leading-icon"]),
 ::slotted([slot="trailing-icon"]) {
-  color: var(--md-button-icon-color, inherit);
+  color: var(--_leading-icon-color);
   width: var(--_icon-size, 18px);
   height: var(--_icon-size, 18px);
   flex-shrink: 0;
+}
+
+/* Light-DOM styles authored on a custom icon still take precedence. */
+::slotted([slot="trailing-icon"]) {
+  color: var(--_trailing-icon-color);
+  width: var(--md-button-trailing-icon-size, var(--_icon-size, 18px));
+  height: var(--md-button-trailing-icon-size, var(--_icon-size, 18px));
 }
 
 /* ----------------------------------------------------------
@@ -661,11 +699,12 @@ slot[name="trailing-icon"] {
      replace the child's whole default expression, so the button's own taper
      (and its 10px floor) survives instead of hitting the child's 32px floor.
      Not --_size / --_shape-size: those are the child's private vars and
-     writing them from out here is the handoff trap. currentColor keeps the
-     indicator matching each variant's label, which a token would not. */
+     writing them from out here is the handoff trap. The resolved loading color
+     inherits the label unless explicitly overridden, including disabled alpha. */
   --md-loading-indicator-size: var(--_loading-size);
   --md-loading-indicator-shape-size: var(--_loading-size);
-  --md-loading-indicator-color: currentColor;
+  --md-loading-indicator-color: var(--_loading-color);
+  color: var(--_loading-color);
   flex-shrink: 0;
   /* A wrapper now, so the hooks above reach a SLOTTED replacement too. It has
      to lay out like the indicator it replaced — an inline span would add a text
@@ -687,7 +726,7 @@ slot[name="trailing-icon"] {
   font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
   font-weight: normal;
   font-style: normal;
-  font-size: var(--_icon-size, 18px);
+  font-size: var(--_glyph-size, var(--_icon-size, 18px));
   line-height: 1;
   letter-spacing: normal;
   text-transform: none;

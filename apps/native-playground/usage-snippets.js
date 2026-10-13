@@ -1,3 +1,5 @@
+import { BUTTON_APPEARANCE_FIELDS, normalizeButtonAppearance, buttonAppearanceCSS } from './button-appearance.js';
+
 export const snippetLanguages = Object.freeze([
   { id: 'html', label: 'HTML', language: 'html' },
   { id: 'react', label: 'React', language: 'tsx' },
@@ -11,7 +13,7 @@ export const snippetLanguages = Object.freeze([
 /** Copyable examples for the public framework, SwiftUI and Compose APIs.
  * `html` is trusted local recipe markup. Property values are JSON data, never code.
  */
-export function usageSnippet(component, properties = {}, platform = 'web', { html, text } = {}) {
+export function usageSnippet(component, properties = {}, platform = 'web', { html, text, buttonAppearance, buttonAppearanceDefaults } = {}) {
   const tag = component?.tag;
   if (typeof tag !== 'string' || !/^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/.test(tag)) throw new TypeError('A valid component tag is required.');
   platform = ({ web: 'html', ios: 'swift' })[platform] ?? platform;
@@ -21,10 +23,14 @@ export function usageSnippet(component, properties = {}, platform = 'web', { htm
   const values = jsonValue(filtered);
   const events = [...new Set((component.events ?? []).map(event => typeof event === 'string' ? event : event.name).filter(name => typeof name === 'string' && name.length))];
   const tree = recipeTree(tag, html, text);
+  const appearance = { defaults: normalizeButtonAppearance(buttonAppearanceDefaults), local: normalizeButtonAppearance(tag === 'md-button' ? buttonAppearance : undefined) };
+  if (platform === 'swift') return swiftSnippet(tag, values, tree, appearance);
+  if (platform === 'android') return kotlinSnippet(tag, values, tree, appearance);
+  const css = (value, inherited) => Object.entries(buttonAppearanceCSS(value, inherited)).map(([name, value]) => `${name}: ${value}`).join('; ');
+  if (Object.keys(appearance.local).length) tree.selected.attrs.style = [css(appearance.local, appearance.defaults), tree.selected.attrs.style].filter(Boolean).join('; ');
+  if (Object.keys(appearance.defaults).length) tree.nodes = [{tag: 'div', attrs: {style: css(appearance.defaults)}, children: tree.nodes}];
   const markup = tree.nodes.map(node => renderHTML(node)).join('');
   if (platform === 'html') return webSnippet(tag, values, events, markup);
-  if (platform === 'swift') return swiftSnippet(tag, values, tree);
-  if (platform === 'android') return kotlinSnippet(tag, values, tree);
   return frameworkSnippet(tag, values, events, tree, platform);
 }
 
@@ -60,6 +66,7 @@ const camel = name => name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCas
 const pascal = tag => tag.split('-').map(part => part[0].toUpperCase() + part.slice(1)).join('');
 const custom = node => node.tag?.startsWith('md-');
 const walk = nodes => nodes.flatMap(node => [node, ...walk(node.children ?? [])]);
+const appearanceEntries = value => BUTTON_APPEARANCE_FIELDS.filter(field => Object.hasOwn(value, field.name)).map(field => [field.name, value[field.name]]);
 
 // A small, non-executing parser for authored recipe fragments. It is deliberately
 // independent of document/DOMParser so generation is identical in Node and the UI.
@@ -253,7 +260,7 @@ function swiftNode(node, values) {
   const children = node.children.map(child => swiftNode(child, values)).join(', ');
   return `AWCNode(${node.attrs.id ? `id: ${nativeString(node.attrs.id, 'swift')}, ` : ''}tag: ${nativeString(node.tag, 'swift')}, properties: ${dictionary}, children: [${children}]${node.slot ? `, slot: ${nativeString(node.slot, 'swift')}` : ''})`;
 }
-function swiftSnippet(tag, values, tree) {
+function swiftSnippet(tag, values, tree, appearance) {
   const roots = nativeNodes(tree.nodes);
   const simple = roots.length === 1 && roots[0].selected;
   const selected = simple ? roots[0] : null;
@@ -262,7 +269,10 @@ function swiftSnippet(tag, values, tree) {
   const properties = entries.length ? `[\n${entries.map(([key, value]) => `                ${nativeString(key, 'swift')}: ${swiftValue(value)}`).join(',\n')}\n            ]` : '[:]';
   const children = selected ? `[${selected.children.map(child => swiftNode(child, values)).join(', ')}]` : '[]';
   const note = '        // Add the AWCUI Swift package to your app.\n        // AWCNode preserves native children and named slots; HTML layout CSS and\n        // recipe setup callbacks require native layout/state in the host app.\n';
-  const body = simple ? `AWCNativeView(\n    tag: ${nativeString(tag, 'swift')},\n    properties: ${properties},\n    children: ${children},\n    onEvent: { event in\n        print(event.name, event.detail.json)\n    }\n)` : `VStack(alignment: .leading) {\n${roots.map(node => node.text !== undefined ? `    Text(${nativeString(node.text, 'swift')})` : `    AWCNativeView(node: ${swiftNode(node, values)}, onEvent: { event in\n        print(event.name, event.detail.json)\n    })`).join('\n')}\n}`;
+  let body = simple ? `AWCNativeView(\n    tag: ${nativeString(tag, 'swift')},\n    properties: ${properties},\n    children: ${children},\n    onEvent: { event in\n        print(event.name, event.detail.json)\n    }\n)` : `VStack(alignment: .leading) {\n${roots.map(node => node.text !== undefined ? `    Text(${nativeString(node.text, 'swift')})` : `    AWCNativeView(node: ${swiftNode(node, values)}, onEvent: { event in\n        print(event.name, event.detail.json)\n    })`).join('\n')}\n}`;
+  for (const [scope, value] of [['This button', appearance.local], ['Theme defaults for this subtree', appearance.defaults]]) {
+    if (Object.keys(value).length) body += `\n// ${scope}\n.awcButtonAppearance(.init(${appearanceEntries(value).map(([key, item]) => `${key}: ${typeof item === 'string' ? nativeString(item, 'swift') : numberLiteral(item)}`).join(', ')}))`;
+  }
   return `import SwiftUI\nimport AWCUI\n\nstruct ComponentExample: View {\n    var body: some View {\n${note}${indent(body, 8)}\n    }\n}`;
 }
 function kotlinValue(value) {
@@ -288,9 +298,14 @@ function kotlinNode(node, values) {
   const content = node.children.length ? ` { slot ->\n${[...groups].map(([slot, nodes]) => nodes.length === 1 && nodes[0].text !== undefined ? `    if (slot == ${nativeString(slot, 'kotlin')}) ${kotlinNode(nodes[0], values)}` : `    if (slot == ${nativeString(slot, 'kotlin')}) {\n${indent(nodes.map(child => kotlinNode(child, values)).join('\n'), 8)}\n    }`).join('\n')}\n}` : '';
   return `AWCComponent(\n    tag = ${nativeString(node.tag, 'kotlin')},\n    properties = ${dictionary},\n    onEvent = { name, detail -> println(name + ": " + detail) },\n)${content}`;
 }
-function kotlinSnippet(tag, values, tree) {
+function kotlinSnippet(tag, values, tree, appearance) {
   const roots = nativeNodes(tree.nodes);
   const hasText = walk(roots).some(node => node.text !== undefined);
-  const body = roots.map(node => kotlinNode(node, values)).join('\n');
-  return `import androidx.compose.runtime.Composable\n${hasText ? 'import androidx.compose.material3.Text\n' : ''}${roots.length > 1 ? 'import androidx.compose.foundation.layout.Column\n' : ''}import dev.awc.nativeui.AWCComponent\nimport dev.awc.nativeui.AWCTheme\nimport dev.awc.nativeui.AWCValue\n\n// Add the :native-ui Gradle module to your app.\n// Children are composed in matching native content slots. HTML layout CSS and\n// recipe setup callbacks require native layout/state in the host app.\n@Composable\nfun ComponentExample() {\n    AWCTheme {\n${indent(roots.length > 1 ? `Column {\n${indent(body, 4)}\n}` : body, 8)}\n    }\n}`;
+  let body = roots.map(node => kotlinNode(node, values)).join('\n');
+  if (roots.length > 1) body = `Column {\n${indent(body, 4)}\n}`;
+  const styled = Object.keys(appearance.local).length || Object.keys(appearance.defaults).length;
+  for (const [scope, value] of [['This button', appearance.local], ['Theme defaults for this subtree', appearance.defaults]]) {
+    if (Object.keys(value).length) body = `// ${scope}\nAWCButtonAppearanceScope(appearance = AWCButtonAppearance(${Object.entries(value).map(([key, item]) => `${key} = ${typeof item === 'string' ? nativeString(item, 'kotlin') : Number.isInteger(item) ? `${item}.0` : numberLiteral(item)}`).join(', ')})) {\n${indent(body, 4)}\n}`;
+  }
+  return `import androidx.compose.runtime.Composable\n${hasText ? 'import androidx.compose.material3.Text\n' : ''}${roots.length > 1 ? 'import androidx.compose.foundation.layout.Column\n' : ''}import dev.awc.nativeui.AWCComponent\nimport dev.awc.nativeui.AWCTheme\nimport dev.awc.nativeui.AWCValue\n${styled ? 'import dev.awc.nativeui.AWCButtonAppearance\nimport dev.awc.nativeui.AWCButtonAppearanceScope\n' : ''}\n// Add the :native-ui Gradle module to your app.\n// Children are composed in matching native content slots. HTML layout CSS and\n// recipe setup callbacks require native layout/state in the host app.\n@Composable\nfun ComponentExample() {\n    AWCTheme {\n${indent(body, 8)}\n    }\n}`;
 }

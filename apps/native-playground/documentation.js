@@ -261,6 +261,10 @@ function memberSupport(component, kind, name, platform) {
   if (platform === 'web') return { platform, status: 'source', description: 'Declared by the source web component.' };
   const policy = component.support?.[platform], key = kind === 'callableProp' ? 'properties' : collection[kind];
   const has = values => Array.isArray(values) && values.some(item => (typeof item === 'string' ? item : item?.name) === name);
+  if (kind === 'cssPart' && has(policy?.visualParts)) {
+    const appearance = policy.appearance?.api;
+    return { platform, status: 'native-equivalent', description: `CSS selector: Web only. Native visual equivalent: implemented.${appearance ? ` Customize supported appearance fields with ${appearance}.` : ''}${name === 'anchor' ? ' Navigation uses the native action/router; style the button surface.' : ''}` };
+  }
   const unsupportedKey = key ? `unsupported${key[0].toUpperCase()}${key.slice(1)}` : '';
   if (policy?.status === 'missing-adapter' || has(policy?.[unsupportedKey])) return { platform, status: 'unsupported', description: 'Not implemented by this native adapter.' };
   if (has(policy?.[key])) return { platform, status: 'supported', description: 'Listed as supported by this native adapter. Platform limitations still apply.' };

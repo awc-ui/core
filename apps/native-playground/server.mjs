@@ -8,6 +8,7 @@ import { createAndroidLiveRenderer } from './android-live.mjs';
 import { getComponentCoverage, isCoverageEvidencePath } from './coverage.mjs';
 import { enrichEventDocumentation } from './event-documentation.mjs';
 import { getAIInstructions, AIInstructionsError } from './ai-instructions.mjs';
+import { readDocumentationNavigation } from './component-navigation.mjs';
 
 const appRoot = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appRoot, '../..');
@@ -31,6 +32,10 @@ export async function resolveAsset(rawUrl, options = {}) {
   } else if (pathname.startsWith('/fonts/')) {
     root = path.join(repo, 'apps/smart-home/public/fonts');
     relative = pathname.slice('/fonts/'.length);
+  } else if (pathname.startsWith('/brand/')) {
+    relative = pathname.slice('/brand/'.length);
+    if (!['md3-logo-light.svg', 'md3-logo-dark.svg'].includes(relative)) return null;
+    root = path.join(repo, 'apps/docs/src/assets');
   } else if (pathname.startsWith('/repo/')) {
     relative = pathname.slice('/repo/'.length);
     const allowed = ['packages/native-compiler/generated/', 'packages/native-ios/', 'packages/native-android/'];
@@ -43,7 +48,7 @@ export async function resolveAsset(rawUrl, options = {}) {
   } else {
     root = app;
     relative = pathname === '/' ? 'index.html' : pathname.slice(1);
-    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'documentation.js', 'documentation-ui.js', 'ai-instructions-ui.js', 'brand-icons.js', 'usage-snippets.js', 'syntax-highlighting.js', 'syntax-vendor/highlighter.js', 'syntax-vendor/LICENSES.txt', 'property-controls.js', 'studio.css', 'studio-ui.js', 'canvas-tools.js', 'canvas-tools.css', 'canvas-inspector.js', 'canvas-inspector.css', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'].includes(relative)) return null;
+    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'documentation.js', 'documentation-ui.js', 'button-appearance.js', 'button-appearance-ui.js', 'ai-instructions-ui.js', 'component-navigation-ui.js', 'component-icons.js', 'brand-icons.js', 'usage-snippets.js', 'syntax-highlighting.js', 'syntax-vendor/highlighter.js', 'syntax-vendor/LICENSES.txt', 'property-controls.js', 'studio.css', 'studio-ui.js', 'canvas-tools.js', 'canvas-tools.css', 'canvas-inspector.js', 'canvas-inspector.css', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'].includes(relative)) return null;
   }
   const absolute = path.resolve(root, relative);
   if (!within(path.resolve(root), absolute)) return null;
@@ -72,6 +77,16 @@ export async function handleCoverageRequest(req, res, { repoRoot: repository = r
 
 export function assetContentSecurityPolicy(pathname) {
   return `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors '${pathname === '/preview-frame.html' ? 'self' : 'none'}'`;
+}
+
+export async function handleComponentNavigationRequest(req, res, { repoRoot: repository = repoRoot, json }) {
+  const pathname = (req.url || '/').split('?')[0];
+  if (pathname !== '/api/component-navigation' && !pathname.startsWith('/api/component-navigation/')) return false;
+  if (req.method !== 'GET') { res.writeHead(405, { Allow: 'GET' }); res.end(); return true; }
+  if (pathname !== '/api/component-navigation') { json(res, 404, { error: 'UNKNOWN_ENDPOINT' }); return true; }
+  try { json(res, 200, await readDocumentationNavigation(repository)); }
+  catch { json(res, 503, { error: 'NAVIGATION_UNAVAILABLE', message: 'Astro Docs component navigation is unavailable.' }); }
+  return true;
 }
 
 export async function handleAIInstructionsRequest(req, res, { repoRoot: repository = repoRoot, tags, json }) {
@@ -194,6 +209,7 @@ export function createServer(options = {}) {
   const json = (res,status,value) => {res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
   const server = http.createServer(async (req, res) => {
     const pathname=(req.url||'/').split('?')[0];
+    if (await handleComponentNavigationRequest(req, res, { repoRoot: options.repoRoot || repoRoot, json })) return;
     if (await handleAIInstructionsRequest(req, res, { repoRoot: options.repoRoot || repoRoot, tags, json })) return;
     if (await handleCoverageRequest(req, res, { repoRoot: options.repoRoot || repoRoot, tags, json })) return;
     if (await handleNativeLiveRequest(req, res, { renderer: liveRenderer, androidRenderer, tags, json })) return;

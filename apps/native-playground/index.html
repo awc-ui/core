@@ -12,16 +12,21 @@
   <script type="module" src="/app.js"></script>
 </head>
 <body>
-  <header class="app-header">
-    <a href="#md-button" class="brand" aria-label="AWC UI Component Studio"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>AWC<span> UI</span></strong></a>
-    <span class="header-divider"></span><span class="header-title">Component Studio <span class="studio-beta">LAB</span></span>
-    <div class="header-actions"><span class="compiler-status" id="compiler-status"><i></i>Connecting</span><md-button id="open-theme" variant="tonal" size="sm" icon="palette" aria-label="Open theme settings">Theme</md-button><md-icon-button id="theme-toggle" icon="dark_mode" aria-label="Switch to dark theme" title="Switch theme"></md-icon-button></div>
-  </header>
+  <md-app-bar class="app-header" variant="small" aria-label="AWC UI Component Studio">
+    <a slot="leading" href="#md-button" class="studio-brand" aria-label="AWC UI Component Studio">
+      <img class="studio-logo studio-logo-light" src="/brand/md3-logo-light.svg" width="36" height="36" alt="" />
+      <img class="studio-logo studio-logo-dark" src="/brand/md3-logo-dark.svg" width="36" height="36" alt="" />
+      <strong>AWC UI</strong>
+    </a>
+    <span slot="headline" class="studio-app-title">Component Studio <md-chip class="studio-lab-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">LAB</md-chip></span>
+    <span slot="trailing" class="compiler-status" id="compiler-status"><i></i>Connecting</span>
+    <md-icon-button slot="trailing" id="open-theme" variant="tonal" icon="palette" aria-label="Open theme settings" title="Open theme settings"></md-icon-button>
+    <md-icon-button slot="trailing" id="theme-toggle" icon="dark_mode" aria-label="Switch to dark theme" title="Switch theme"></md-icon-button>
+  </md-app-bar>
   <div class="shell">
     <aside class="sidebar" aria-label="Component navigation">
       <div class="sidebar-heading"><span>COMPONENTS</span><md-chip class="count-chip" id="component-count" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">—</md-chip></div>
       <md-text-field id="search" placeholder="Find a component…" aria-label="Find a component" variant="outlined" density="-3" clearable="internal"></md-text-field>
-      <div class="filter-row"><md-button class="filter active" size="xs" variant="tonal" data-filter="all">All</md-button><md-button class="filter" size="xs" variant="text" data-filter="findings">With findings</md-button></div>
       <nav id="component-list" aria-label="Components"><p class="muted">Reading component manifest…</p></nav>
       <footer class="sidebar-footer"><span class="studio-symbol material-symbols-outlined" aria-hidden="true">science</span><div><strong>Built with AWC UI</strong><span>One system. Every surface.</span></div></footer>
     </aside>
@@ -35,9 +40,9 @@
               <md-button id="platform-web" variant="filled" value="web" data-platform="web" icon="language" selected>Web</md-button>
               <md-button id="platform-ios" variant="filled" value="ios" data-platform="ios"><svg class="platform-brand-icon" slot="leading-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true" focusable="false"><path d="M17.6 12.7c0-2.4 2-3.6 2.1-3.7-1.2-1.7-3-1.9-3.7-1.9-1.6-.2-3.1 1-3.9 1-.8 0-2-1-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.2 10.2.8 1.2 1.7 2.4 3 2.3 1.2-.1 1.7-.8 3.2-.8 1.5 0 1.9.8 3.3.8 1.4 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.4-2.8-.1 0-2.7-1-2.7-4.3ZM15.1 5.5c.7-.9 1.2-2 1.1-3.2-1.1 0-2.4.8-3.1 1.6-.7.7-1.3 1.9-1.2 3 1.2.1 2.4-.6 3.2-1.4Z"/></svg>SwiftUI</md-button>
               <md-button id="platform-android" variant="filled" value="android" data-platform="android" icon="android">Android</md-button>
-            </md-button-group><span id="preview-runtime" class="runtime-badge">LIVE WEB</span></div>
+            </md-button-group><span class="studio-status" role="status" aria-live="polite" aria-atomic="true"><md-chip id="preview-runtime" class="runtime-badge studio-status-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">LIVE WEB</md-chip><span id="preview-runtime-announcement" class="studio-visually-hidden">LIVE WEB</span></span></div>
             <div class="canvas-toolbar" aria-label="Canvas controls">
-              <div class="viewport-controls"><md-select id="canvas-width" aria-label="Preview viewport width" variant="outlined" density="-4" value="fit"><md-select-option value="fit">Responsive</md-select-option><md-select-option value="360">Phone · 360px</md-select-option><md-select-option value="768">Tablet · 768px</md-select-option><md-select-option value="1024">Desktop · 1024px</md-select-option></md-select><span id="canvas-dimensions" class="canvas-dimensions">Auto width</span><span id="canvas-direction">LTR →</span></div>
+              <div class="viewport-controls"><md-select id="canvas-width" aria-label="Preview viewport width" variant="outlined" density="-4" value="fit"><md-select-option value="fit">Responsive</md-select-option><md-select-option value="360">Phone · 360px</md-select-option><md-select-option value="768">Tablet · 768px</md-select-option><md-select-option value="1024">Desktop · 1024px</md-select-option></md-select><span id="canvas-dimensions" class="canvas-dimensions">Auto width</span><span class="studio-status" role="status" aria-live="polite" aria-atomic="true"><md-chip id="canvas-direction" class="studio-status-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">LTR →</md-chip><span id="canvas-direction-announcement" class="studio-visually-hidden">Left-to-right layout</span></span></div>
               <span id="canvas-expanded-label" hidden>Expanded studio · Esc to exit</span>
               <div class="canvas-toggles"><md-tooltip text="Switch left-to-right / right-to-left layout" position="bottom"><md-icon-button id="canvas-rtl" icon="format_textdirection_l_to_r" toggle aria-label="Toggle right-to-left layout"></md-icon-button></md-tooltip><md-tooltip text="8px grid with 64px pixel rulers" position="bottom"><md-icon-button id="canvas-grid" icon="grid_4x4" toggle aria-label="Toggle pixel grid and rulers"></md-icon-button></md-tooltip><md-tooltip text="Inspect size, padding, spacing and typography" position="bottom"><md-icon-button id="canvas-bounds" icon="design_services" toggle aria-label="Inspect component measurements"></md-icon-button></md-tooltip><md-tooltip id="canvas-expand-tooltip" text="Expand canvas and properties" position="bottom"><md-icon-button id="canvas-fullscreen" icon="fullscreen" aria-label="Expand studio with properties" aria-expanded="false"></md-icon-button></md-tooltip></div>
             </div>
@@ -69,7 +74,7 @@
               <md-text-field id="props-search" class="props-search" placeholder="Find a property…" aria-label="Search properties" variant="outlined" density="-3" clearable="internal"></md-text-field>
               <div id="props-controls"></div><p id="props-empty" class="prop-note" hidden>No matching properties.</p>
             </section>
-            <section id="css-variables-tabpanel" class="css-variables-panel" role="tabpanel" aria-labelledby="css-variables-tab" tabindex="0" hidden><p id="css-variables-note" class="prop-note"></p><div id="css-controls"></div></section>
+            <section id="css-variables-tabpanel" class="css-variables-panel" role="tabpanel" aria-labelledby="css-variables-tab" tabindex="0" hidden><div id="button-appearance-controls" hidden></div><p id="css-variables-note" class="prop-note"></p><div id="css-controls"></div></section>
           </div>
           <div class="props-panel-footer"><span class="material-symbols-outlined" aria-hidden="true">info</span>Hover an info icon for details and platform support.</div>
           </md-card>

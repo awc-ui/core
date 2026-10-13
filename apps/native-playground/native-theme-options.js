@@ -1,13 +1,17 @@
 import { STUDIO_THEME_TOKEN_NAMES } from './studio-theme.js';
+import { normalizeButtonAppearance } from './button-appearance.js';
 
 const allowed = new Set(STUDIO_THEME_TOKEN_NAMES);
 export class NativeThemeOptionsError extends Error {
   constructor(code, message) { super(message); this.code = code; }
 }
 
-/** The preview accepts only bounded MD3 color roles, never arbitrary CSS. */
+/** The preview accepts bounded MD3 colors and typed button appearance, never arbitrary CSS. */
 export function nativeThemeOptions(value = {}) {
   const result = {};
+  for (const key of ['buttonAppearanceDefaults', 'buttonAppearance']) {
+    if (value[key] !== undefined) result[key] = normalizeButtonAppearance(value[key]);
+  }
   if (value.direction !== undefined) {
     if (!['ltr', 'rtl'].includes(value.direction)) throw new NativeThemeOptionsError('INVALID_DIRECTION', 'Direction must be ltr or rtl.');
     result.direction = value.direction;

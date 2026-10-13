@@ -18,6 +18,12 @@ enum AWCNativeFonts {
         return .custom(regular ? "Roboto-Regular" : "Roboto-Medium", fixedSize: size)
     }
 
+    static func label(size: CGFloat, weight: Double) -> Font {
+        let weights: [Font.Weight] = [.ultraLight, .thin, .light, .regular, .medium, .semibold, .bold, .heavy, .black]
+        let index = min(8, max(0, Int((weight / 100).rounded()) - 1))
+        return label(size: size, regular: weight < 500).weight(weights[index])
+    }
+
     static func symbol(size: CGFloat) -> Font {
         _ = registered
         return .custom("MaterialSymbolsOutlined-Regular", fixedSize: size)

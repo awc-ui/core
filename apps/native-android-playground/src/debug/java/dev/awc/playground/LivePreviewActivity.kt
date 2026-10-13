@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import dev.awc.nativeui.AWCComponent
+import dev.awc.nativeui.AWCButtonAppearance
+import dev.awc.nativeui.AWCButtonAppearanceScope
 import dev.awc.nativeui.AWCButtonBehaviorDemo
 import dev.awc.nativeui.AWCButtonNavigationDemo
 import dev.awc.nativeui.AWCButtonAccessibilityDemo
@@ -63,7 +65,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * input is dispatched to this activity's views, never to the Android system.
  */
 class LivePreviewActivity : ComponentActivity() {
-    private data class Configuration(val tag: String, val properties: Map<String, AWCValue>, val dark: Boolean, val width: Double, val scenario: String, val themeTokens: Map<String, String>, val direction: LayoutDirection, val text: String?)
+    private data class Configuration(val tag: String, val properties: Map<String, AWCValue>, val dark: Boolean, val width: Double, val scenario: String, val themeTokens: Map<String, String>, val direction: LayoutDirection, val text: String?, val buttonAppearanceDefaults: AWCButtonAppearance, val buttonAppearance: AWCButtonAppearance)
     private val main = Handler(Looper.getMainLooper())
     private var configuration by mutableStateOf<Configuration?>(null)
     private val previewDensity = 2f
@@ -247,7 +249,9 @@ class LivePreviewActivity : ComponentActivity() {
                 value
             })
         } else emptyMap()
-        configuration = Configuration(tag, AWCNativeCatalog.defaults[tag].orEmpty() + fixture(tag) + properties, dark, width, scenario, themeTokens, if(direction == "rtl") LayoutDirection.Rtl else LayoutDirection.Ltr, text)
+        val appearanceDefaults = parseLivePreviewButtonAppearance(request, "buttonAppearanceDefaults")
+        val appearance = if(tag == "md-button") parseLivePreviewButtonAppearance(request, "buttonAppearance") else AWCButtonAppearance()
+        configuration = Configuration(tag, AWCNativeCatalog.defaults[tag].orEmpty() + fixture(tag) + properties, dark, width, scenario, themeTokens, if(direction == "rtl") LayoutDirection.Rtl else LayoutDirection.Ltr, text, appearanceDefaults, appearance)
         createSurface(width)
         container.setBackgroundColor(themeTokens["--md-sys-color-surface"]?.let(Color::parseColor) ?: if (dark) 0xFF141414.toInt() else Color.WHITE)
     }
@@ -262,13 +266,17 @@ class LivePreviewActivity : ComponentActivity() {
             configuration?.let { config ->
                 CompositionLocalProvider(LocalDensity provides Density(previewDensity, 1f), LocalLayoutDirection provides config.direction) {
                     AWCTheme(darkTheme = config.dark, tokenOverrides = config.themeTokens) {
-                        Box(Modifier.fillMaxWidth().heightIn(min = 100.dp, max = nativeSurface.maxLogicalHeight.dp)
-                            .background(if (config.themeTokens.isEmpty()) androidx.compose.ui.graphics.Color(if (config.dark) 0xFF141414 else 0xFFFFFFFF) else androidx.compose.material3.MaterialTheme.colorScheme.surface)
-                            .padding(24.dp), contentAlignment = Alignment.Center) {
-                            if (config.scenario == "button-behavior") AWCButtonBehaviorDemo(config.properties, ::recordEvent)
-                            else if (config.scenario == "navigation-events") AWCButtonNavigationDemo(config.properties, ::recordEvent)
-                            else if (config.scenario == "focus-accessibility") AWCButtonAccessibilityDemo(config.properties, ::recordEvent)
-                            else AWCComponent(config.tag, config.properties, onEvent = ::recordEvent) { slot -> LivePreviewSampleSlot(config.tag, slot, config.scenario, config.text, ::recordEvent) }
+                        AWCButtonAppearanceScope(config.buttonAppearanceDefaults) {
+                            AWCButtonAppearanceScope(config.buttonAppearance) {
+                                Box(Modifier.fillMaxWidth().heightIn(min = 100.dp, max = nativeSurface.maxLogicalHeight.dp)
+                                    .background(if (config.themeTokens.isEmpty()) androidx.compose.ui.graphics.Color(if (config.dark) 0xFF141414 else 0xFFFFFFFF) else androidx.compose.material3.MaterialTheme.colorScheme.surface)
+                                    .padding(24.dp), contentAlignment = Alignment.Center) {
+                                    if (config.scenario == "button-behavior") AWCButtonBehaviorDemo(config.properties, ::recordEvent)
+                                    else if (config.scenario == "navigation-events") AWCButtonNavigationDemo(config.properties, ::recordEvent)
+                                    else if (config.scenario == "focus-accessibility") AWCButtonAccessibilityDemo(config.properties, ::recordEvent)
+                                    else AWCComponent(config.tag, config.properties, onEvent = ::recordEvent) { slot -> LivePreviewSampleSlot(config.tag, slot, config.scenario, config.text, ::recordEvent) }
+                                }
+                            }
                         }
                     }
                 }
@@ -618,6 +626,12 @@ class LivePreviewActivity : ComponentActivity() {
             "Escape" to KeyEvent.KEYCODE_ESCAPE, "Space" to KeyEvent.KEYCODE_SPACE,
             "PageUp" to KeyEvent.KEYCODE_PAGE_UP, "PageDown" to KeyEvent.KEYCODE_PAGE_DOWN)
     }
+}
+
+/** The Node boundary validates requests; malformed optional styling is ignored here defensively. */
+internal fun parseLivePreviewButtonAppearance(request: JSONObject, field: String): AWCButtonAppearance {
+    val values = request.optJSONObject(field) ?: return AWCButtonAppearance()
+    return AWCButtonAppearance.fromValues(values.keys().asSequence().associateWith { values.opt(it) })
 }
 
 /** Null means omitted; the empty string intentionally clears the default button label. */

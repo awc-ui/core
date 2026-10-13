@@ -1,17 +1,19 @@
 import { encodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, nativeViewportWidth, nativePreviewTarget, nativeLiveEndpoint, createNativeSessionCoordinator, createNativeLiveClient, createNativePointerInput, nativeImagePoint, nativeTextChunks } from './contracts.js';
-import { recipeFor, categoryFor, categoryOrder, displayName, icons } from './recipes.js';
+import { recipeFor, categoryFor, displayName } from './recipes.js';
 import { mergeComponentDocumentation, memberDocumentation } from './documentation.js';
 import { createDocumentationUI } from './documentation-ui.js';
 import { propertyEditor, parsePropertyInput } from './property-controls.js';
 import { createStudioUI, createCoverageUI } from './studio-ui.js';
 import { createAIInstructionsUI } from './ai-instructions-ui.js';
+import { createComponentNavigation, filterDocumentationNavigation } from './component-navigation-ui.js';
 
 const $ = selector => document.querySelector(selector);
-const state = { components: [], selected: null, platform: 'web', docSection: 'usage', propertiesSection: 'properties', propertiesScroll: {}, snippetLanguage: 'html', filter: 'all', props: {}, events: [], catalog: null, ready: false, target: null };
-const documentationUI = createDocumentationUI({ getState: () => state, notify: toast, afterInteraction: syncReferenceState, onContentChange: name => { if (state.selected.tag === 'md-button' && name === '') scheduleNativeRender(); }, watchEvents: () => { selectStudioSection('events'); $('.inspector-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
+const state = { components: [], selected: null, platform: 'web', docSection: 'usage', propertiesSection: 'properties', propertiesScroll: {}, snippetLanguage: 'html', props: {}, events: [], catalog: null, ready: false, target: null };
+const documentationUI = createDocumentationUI({ getState: () => state, notify: toast, afterInteraction: syncReferenceState, onAppearanceChange: () => scheduleNativeRender(400), onContentChange: name => { if (state.selected.tag === 'md-button' && name === '') scheduleNativeRender(); }, watchEvents: () => { selectStudioSection('events'); $('.inspector-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
 const studioUI = createStudioUI({ getState: () => state, notify: toast, onLayoutChange: patch => { if ('direction' in patch || 'width' in patch) scheduleNativeRender(); }, onThemeChange: () => scheduleNativeRender(400) });
 const coverageUI = createCoverageUI({ getState: () => state, notify: toast });
 const aiInstructionsUI = createAIInstructionsUI({ getState: () => state, notify: toast });
+const componentNavigation = createComponentNavigation({ container: $('#component-list'), onSelect: tag => { selectNativeScenario(''); location.hash = tag; } });
 const documentationRequests = new Map();
 const nativeRequests = createLatestRequest();
 const nativeSessions = { ios: createNativeSessionCoordinator(), android: createNativeSessionCoordinator() };
@@ -66,10 +68,14 @@ async function getJSON(url) { const response = await fetch(url); if (!response.o
 async function init() {
   try {
 
-    const [manifestResult, catalogResult, runtimeResult, tokensResult] = await Promise.allSettled([
+    const [manifestResult, catalogResult, runtimeResult, tokensResult, navigationResult] = await Promise.allSettled([
       getJSON('/repo/packages/core/custom-elements.json'), getJSON('/repo/packages/native-compiler/generated/catalog.json'), import('/web-dist/md3/md3.esm.js'), getJSON('/repo/packages/native-compiler/generated/tokens.json'),
+      getJSON('/api/component-navigation'),
     ]);
     if (manifestResult.status !== 'fulfilled') throw new Error('Unable to read the AWC component manifest. Start the server from the repository checkout.');
+    if (navigationResult.status !== 'fulfilled') throw new Error('Unable to read the Astro Docs component navigation.');
+    state.navigation = navigationResult.value;
+    const documented = new Map(state.navigation.groups.flatMap(group => group.items.map(item => [item.tag, { ...item, category: group.title }])));
     const contracts = normalizeManifest(manifestResult.value);
     state.catalog = catalogResult.status === 'fulfilled' ? catalogResult.value : null;
     state.tokens = tokensResult.status === 'fulfilled' ? tokensResult.value : null;
@@ -78,10 +84,10 @@ async function init() {
     state.components = contracts.map(component => {
       const output = generated.get(component.tag);
       const merged = mergeComponentDocumentation(component, output || {});
-      return { ...merged, category: categoryFor(component.tag), properties: merged.properties.map(normalizeProperty) };
+      return { ...merged, category: documented.get(component.tag)?.category || categoryFor(component.tag), navigationTitle: documented.get(component.tag)?.title, properties: merged.properties.map(normalizeProperty) };
     });
     state.ready = runtimeResult.status === 'fulfilled';
-    text('#component-count', state.components.length);
+    text('#component-count', state.navigation.total);
     $('#compiler-status').innerHTML = `<i></i>${state.catalog ? 'Library connected' : 'Source manifest only'}`;
     text('#pipeline-state', state.catalog ? `${generated.size} contracts · ${state.components.reduce((count, component) => count + portabilityFindings(component).total, 0)} findings` : 'Run native:build to inspect output');
     const hashTag = location.hash.slice(1);
@@ -101,8 +107,6 @@ async function init() {
 
 function bindEvents() {
   $('#search').addEventListener('mdInput', renderNavigation);
-  document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => { state.filter = button.dataset.filter; document.querySelectorAll('[data-filter]').forEach(item => item.variant = item === button ? 'tonal' : 'text'); renderNavigation(); }));
-  $('#component-list').addEventListener('mdClick', event => { const button = event.target.closest('[data-tag]'); if (button) { selectNativeScenario(''); location.hash = button.dataset.tag; if (state.selected?.tag === button.dataset.tag) selectComponent(button.dataset.tag); } });
   window.addEventListener('hashchange', () => { const tag = location.hash.slice(1); if (state.components.some(component => component.tag === tag)) { selectNativeScenario(''); selectComponent(tag); } });
   window.addEventListener('pagehide', () => { disposeNativePointer(); nativeRequests.cancel(); clearTimeout(state.nativeRenderTimer); nativeLive.stop(); });
   window.addEventListener('pageshow', event => { if (event.persisted && isNativePlatform(state.platform)) renderPreview(); });
@@ -137,21 +141,29 @@ async function toast(message) {
 }
 function renderNavigation() {
   const query = ($('#search').value || '').trim().toLowerCase();
-  const filtered = state.components.filter(component => `${component.tag} ${displayName(component.tag)} ${component.category}`.toLowerCase().includes(query) && (state.filter === 'all' || portabilityFindings(component).total));
-  const groups = categoryOrder.map(category => ({ category, components: filtered.filter(component => component.category === category) })).filter(group => group.components.length);
-  $('#component-list').innerHTML = groups.map(({ category, components }) => `<section class="nav-group"><h3>${escape(category)}<md-chip class="count-chip nav-group-count" inert aria-hidden="true" variant="input" selectable="false" removable="false" density="-4">${components.length}</md-chip><span class="studio-visually-hidden">${components.length} components</span></h3>${components.map(component => `<md-button type="button" class="component-link ${component.tag === state.selected?.tag ? 'active' : ''}" variant="${component.tag === state.selected?.tag ? 'tonal' : 'text'}" size="xs" shape="square" full-width data-tag="${escape(component.tag)}" aria-label="${escape(displayName(component.tag))}${portabilityFindings(component).total ? `, ${portabilityFindings(component).total} portability findings` : ''}" ${component.tag === state.selected?.tag ? 'aria-current="true"' : ''}><span class="nav-icon" slot="leading-icon" aria-hidden="true">${icons[category]}</span><span>${escape(displayName(component.tag))}</span>${portabilityFindings(component).total ? `<md-chip class="count-chip nav-warning" inert aria-hidden="true" variant="input" selectable="false" removable="false" density="-4" slot="trailing-icon" title="${portabilityFindings(component).source} source diagnostics · ${portabilityFindings(component).ios} iOS API gaps · ${portabilityFindings(component).android} Android API gaps">${portabilityFindings(component).total}</md-chip>` : ''}</md-button>`).join('')}</section>`).join('') || '<p class="empty-state">No matching components.</p>';
+  const groups = filterDocumentationNavigation(state.navigation, state.components, query);
+  componentNavigation.render(groups, state.selected?.tag);
 }
 function selectComponent(tag) {
   const component = state.components.find(item => item.tag === tag); if (!component) return;
   state.selected = component; state.events = []; state.props = {}; state.editedTag = tag; state.editedProps = {};
-  state.docSlotValues = {}; state.docCssValues = {}; state.propertiesScroll = {}; $('#props-search').value = ''; $('#properties-panel').scrollTop = 0;
+  state.docSlotValues = {}; state.docCssValues = {}; state.buttonAppearance = {}; state.propertiesScroll = {}; $('#props-search').value = ''; $('#properties-panel').scrollTop = 0;
   for (const prop of component.properties || []) { if (prop.defaultValue !== undefined) state.props[prop.name] = structuredClone(prop.defaultValue); }
   Object.assign(state.props, recipeFor(tag).props);
-  text('#category-label', component.category); text('#tag-label', tag); text('#component-title', displayName(tag)); text('#component-description', component.description);
+  text('#category-label', component.category); text('#tag-label', tag); text('#component-title', component.navigationTitle || displayName(tag)); text('#component-description', component.description);
   text('#props-count', component.properties.length); text('#findings-count', portabilityFindings(component).total); text('#event-count', '0');
   renderNavigation(); renderPreview(); renderProperties(); renderEvents(); if (state.docSection === 'coverage') void coverageUI.load();
   if (state.docSection === 'ai') void aiInstructionsUI.load();
   void loadComponentDocumentation(component);
+}
+function setPreviewRuntime(value) {
+  const update = (selector, label) => { const node = $(selector); if (node && node.textContent !== label) node.textContent = label; };
+  update('#preview-runtime', value);
+  update('#preview-runtime-announcement', value);
+  const nativeLabel = value === 'CONNECTING' ? 'Connecting' : value.includes('OFFLINE') ? 'Offline'
+    : value === 'DISCONNECTED' ? 'Disconnected' : value.startsWith('LIVE ') ? 'Live' : 'Connecting';
+  update('.native-live-badge', nativeLabel);
+  update('#native-live-announcement', `Native preview: ${nativeLabel}`);
 }
 function renderPreview() {
   disposeNativePointer(); clearTimeout(state.nativeRenderTimer); nativeRequests.cancel(); nativeLive.stop();
@@ -161,7 +173,7 @@ function renderPreview() {
   const root = $('#preview-content'); root.replaceChildren(); state.target = null;
   const isWeb = state.platform === 'web'; $('#preview-stage').classList.toggle('native-mode', !isWeb);
   $('#preview-stage').classList.toggle('snapshot-mode', !isWeb);
-  text('#preview-runtime', isWeb ? 'LIVE WEB' : 'NATIVE PREVIEW');
+  setPreviewRuntime(isWeb ? 'LIVE WEB' : 'NATIVE PREVIEW');
   text('.props-hint', isWeb ? 'Explore every property. Changes update the component and usage code.' : 'Initial properties · editing restarts the native session.');
   if (!isWeb) { nativeLive = nativeClientFor(state.platform); renderNativePreview(); studioUI.applyCanvas(); return; }
   if (!state.ready) { root.innerHTML = '<div class="load-error">Web runtime unavailable. Build <code>@awc-ui/core</code> and reload.</div>'; return; }
@@ -209,7 +221,7 @@ function renderPreview() {
 function renderNativePreview() {
   const component = state.selected;
   const target = nativePreviewTarget(state.platform);
-  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><span class="native-live-badge">Live</span><md-button variant="text" size="xs" id="native-render-button" icon="refresh">Reconnect</md-button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div></section>`;
+  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><span class="studio-status"><md-chip class="native-live-badge studio-status-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">Connecting</md-chip><span id="native-live-announcement" class="studio-visually-hidden">Native preview: Connecting</span></span><md-button variant="text" size="xs" id="native-render-button" icon="refresh">Reconnect</md-button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div></section>`;
   studioUI.applyCanvas();
   $('#native-render-button').addEventListener('mdClick', () => scheduleNativeRender(0));
   configureNativeLivePreview();
@@ -230,7 +242,7 @@ function nativeRenderState(kind, message) {
   if (!frame) return;
   frame.dataset.state = kind;
   frame.setAttribute('aria-busy', String(kind === 'loading'));
-  if (kind === 'loading' && state.activeNativeMode === 'live') text('#preview-runtime', 'CONNECTING');
+  if (kind === 'loading' && state.activeNativeMode === 'live') setPreviewRuntime('CONNECTING');
   frame.replaceChildren();
   if (kind !== 'ready') {
     const marker = document.createElement(kind === 'loading' ? 'md-progress-indicator' : 'span');
@@ -251,7 +263,7 @@ function scheduleNativeRender(delay = 300) {
   clearTimeout(state.nativeRenderTimer);
   disposeNativePointer(); nativeLive.stop(); state.liveFrame = null; state.liveDisplayedRevision = -1; state.liveImageVersion = (state.liveImageVersion || 0) + 1;
   const request = nativeRequests.start();
-  const payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark', { ...studioUI.nativeOptions(), text: state.docSlotValues?.[''] });
+  const payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark', { ...studioUI.nativeOptions(), buttonAppearanceDefaults: state.buttonAppearanceDefaults, ...(state.selected.tag === 'md-button' ? { buttonAppearance: state.buttonAppearance } : {}), text: state.docSlotValues?.[''] });
   if (state.selected.tag === 'md-button' && state.nativeScenario) payload.scenario = state.nativeScenario;
   // Fixed presets retain their native logical viewport when the image fits a
   // narrower card. Responsive mode uses the available width at native scale.
@@ -308,7 +320,7 @@ function subscribeNativeLive(id, onFrame, onError, platform) {
 
 function configureNativeLivePreview() {
   state.activeNativeMode = 'live';
-  text('#preview-runtime', 'CONNECTING');
+  setPreviewRuntime('CONNECTING');
   text('.props-hint', 'Initial properties · editing restarts the native session.');
   if (state.selected.tag === 'md-button' && state.nativeScenario === 'button-behavior') {
     text('.props-hint', 'This linked form demo has fixed actions. Select Button in the library to edit the component.');
@@ -336,7 +348,7 @@ async function chooseNativePreview(payload, request, platform) {
       void nativeLive.start(payload);
       return;
     }
-    text('#preview-runtime', platform === 'android' ? 'EMULATOR OFFLINE' : 'LIVE HOST OFFLINE');
+    setPreviewRuntime(platform === 'android' ? 'EMULATOR OFFLINE' : 'LIVE HOST OFFLINE');
     nativeRenderState('error', platform === 'android'
       ? `${status.message || 'The Android emulator is not ready.'} Start the native Android playground, then reconnect.`
       : `${status.message || 'The SwiftUI live host is not ready.'} Build AWCLivePreview in apps/native-ios-playground, then reconnect.`);
@@ -414,13 +426,13 @@ function presentNativeLiveFrame(image, result, platform) {
 
 function updateNativeLiveFrameMetadata(result, target) {
   state.liveDisplayedRevision = result.revision; state.liveFrame = result;
-  if ($('#preview-runtime').textContent !== target.badge) text('#preview-runtime', target.badge);
+  if ($('#preview-runtime').textContent !== target.badge) setPreviewRuntime(target.badge);
 }
 
 function reportNativeLiveError(error) {
   disposeNativePointer();
   state.liveImageVersion = (state.liveImageVersion || 0) + 1; state.liveFrame = null;
-  text('#preview-runtime', 'DISCONNECTED');
+  setPreviewRuntime('DISCONNECTED');
   nativeRenderState('error', `${error.message} Reconnect starts a fresh native session.`);
 }
 
@@ -572,7 +584,7 @@ function renderProperties() {
   }));
   documentationUI.renderUsage(); documentationUI.filterProperties();
   $('#properties-tab').setAttribute('aria-label', `Properties, ${fields.length} declarations`);
-  $('#css-variables-tab').setAttribute('aria-label', `CSS variables, ${$('#css-variables-count').textContent} declarations`);
+  $('#css-variables-tab').setAttribute('aria-label', `${state.selected?.tag === 'md-button' ? 'Styles' : 'CSS variables'}, ${$('#css-variables-count').textContent} declarations`);
   $('#properties-panel').scrollTop = scrollTop;
   const replacement = focusedId && document.getElementById(focusedId);
   if (replacement && !replacement.disabled) {

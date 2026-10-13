@@ -447,7 +447,7 @@
     "attributes": [
       {
         "name": "class",
-        "value": "{\n          'md-button': true,\n          [`md-button--${this.variant}`]: true,\n          [`md-button--${this.size}`]: true,\n          [`md-button--${this.shape}`]: true,\n          'md-button--with-leading-icon': hasLeadingIcon || this.hasSlottedLeadingIcon,\n          'md-button--with-trailing-icon': hasTrailingIcon || this.hasSlottedTrailingIcon,\n          'md-button--disabled': this.disabled || this.softDisabled,\n          'md-button--loading': this.loading,\n          'md-button--toggle': this.toggle,\n          'md-button--selected': this.selected,\n          'md-button--shape-morph': this.shapeMorph,\n          'md-button--pressed': this.shapeMorph && this.pressed,\n          'md-button--connected-left': this.connectedLeft,\n          'md-button--connected-right': this.connectedRight,\n          'md-button--full-width': this.fullWidth,\n        }"
+        "value": "{\n          'md-button': true,\n          [`md-button--${this.variant}`]: true,\n          [`md-button--${this.size}`]: true,\n          [`md-button--${this.shape}`]: true,\n          'md-button--with-leading-icon': hasLeadingIcon || this.hasSlottedLeadingIcon,\n          'md-button--with-trailing-icon': hasTrailingIcon || this.hasSlottedTrailingIcon,\n          'md-button--disabled': this.disabled || this.softDisabled,\n          'md-button--loading': this.loading,\n          'md-button--toggle': this.toggle,\n          'md-button--selected': this.selected,\n          'md-button--shape-morph': this.shapeMorph,\n          'md-button--pressed': this.shapeMorph && this.pressed,\n          'md-button--pressing': this.pressed,\n          'md-button--connected-left': this.connectedLeft,\n          'md-button--connected-right': this.connectedRight,\n          'md-button--full-width': this.fullWidth,\n        }"
       },
       {
         "name": "role",
@@ -548,7 +548,7 @@
     "styleUrl": "md-button.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "ca88f4bd3c908f116d2a8735d824e232090a8ebdbbca3efd2df7be7e5f15b11d"
+    "sha256": "50f0bd49f15754b328973af415c2bcdf2a14a33ebebc8ecbe01953fd453a8873"
   },
   "styles": [
     {
@@ -578,6 +578,21 @@
         {
           "property": "--_icon-size",
           "value": "var(--md-button-icon-size, 18px)",
+          "important": false
+        },
+        {
+          "property": "--_leading-icon-color",
+          "value": "var(--md-button-icon-color, currentColor)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-color",
+          "value": "var(--md-button-trailing-icon-color, var(--md-button-icon-color, currentColor))",
+          "important": false
+        },
+        {
+          "property": "--_loading-color",
+          "value": "var(--md-button-loading-color, currentColor)",
           "important": false
         },
         {
@@ -652,7 +667,7 @@
         },
         {
           "property": "border",
-          "value": "none",
+          "value": "var(--md-button-outline-width, 0px) solid var(--md-button-outline-color, var(--md-sys-color-outline))",
           "important": false
         },
         {
@@ -763,17 +778,17 @@
         },
         {
           "property": "--_padding-inline",
-          "value": "max(6px, calc(12px + var(--md-sys-density-scale, 0) * 0.75px))",
+          "value": "var(--md-button-padding-inline, max(6px, calc(12px + var(--md-sys-density-scale, 0) * 0.75px)))",
           "important": false
         },
         {
           "property": "padding",
-          "value": "0 var(--_padding-inline)",
+          "value": "var(--md-button-padding-block, 0px) max(0px, calc(var(--_padding-inline) - var(--md-button-outline-width, 0px)))",
           "important": false
         },
         {
           "property": "gap",
-          "value": "max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "value": "var(--md-button-gap, max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px)))",
           "important": false
         },
         {
@@ -783,22 +798,22 @@
         },
         {
           "property": "font-size",
-          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "value": "var(--md-button-font-size, max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px)))",
           "important": false
         },
         {
           "property": "font-weight",
-          "value": "var(--md-sys-typescale-label-large-font-weight, 500)",
+          "value": "var(--md-button-font-weight, var(--md-sys-typescale-label-large-font-weight, 500))",
           "important": false
         },
         {
           "property": "letter-spacing",
-          "value": "var(--md-sys-typescale-label-large-letter-spacing, 0.1px)",
+          "value": "var(--md-button-letter-spacing, var(--md-sys-typescale-label-large-letter-spacing, 0.1px))",
           "important": false
         },
         {
           "property": "line-height",
-          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "value": "var(--md-button-line-height, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)))",
           "important": false
         }
       ]
@@ -834,17 +849,17 @@
         },
         {
           "property": "--_padding-inline",
-          "value": "max(8px, calc(16px + var(--md-sys-density-scale, 0) * 1px))",
+          "value": "var(--md-button-padding-inline, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 1px)))",
           "important": false
         },
         {
           "property": "padding",
-          "value": "0 var(--_padding-inline)",
+          "value": "var(--md-button-padding-block, 0px) max(0px, calc(var(--_padding-inline) - var(--md-button-outline-width, 0px)))",
           "important": false
         },
         {
           "property": "gap",
-          "value": "max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px))",
+          "value": "var(--md-button-gap, max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)))",
           "important": false
         },
         {
@@ -854,22 +869,22 @@
         },
         {
           "property": "font-size",
-          "value": "max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "value": "var(--md-button-font-size, max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px)))",
           "important": false
         },
         {
           "property": "font-weight",
-          "value": "var(--md-sys-typescale-label-large-font-weight, 500)",
+          "value": "var(--md-button-font-weight, var(--md-sys-typescale-label-large-font-weight, 500))",
           "important": false
         },
         {
           "property": "letter-spacing",
-          "value": "var(--md-sys-typescale-label-large-letter-spacing, 0.1px)",
+          "value": "var(--md-button-letter-spacing, var(--md-sys-typescale-label-large-letter-spacing, 0.1px))",
           "important": false
         },
         {
           "property": "line-height",
-          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "value": "var(--md-button-line-height, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)))",
           "important": false
         }
       ]
@@ -905,17 +920,17 @@
         },
         {
           "property": "--_padding-inline",
-          "value": "max(12px, calc(24px + var(--md-sys-density-scale, 0) * 1.5px))",
+          "value": "var(--md-button-padding-inline, max(12px, calc(24px + var(--md-sys-density-scale, 0) * 1.5px)))",
           "important": false
         },
         {
           "property": "padding",
-          "value": "0 var(--_padding-inline)",
+          "value": "var(--md-button-padding-block, 0px) max(0px, calc(var(--_padding-inline) - var(--md-button-outline-width, 0px)))",
           "important": false
         },
         {
           "property": "gap",
-          "value": "max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px))",
+          "value": "var(--md-button-gap, max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)))",
           "important": false
         },
         {
@@ -925,22 +940,22 @@
         },
         {
           "property": "font-size",
-          "value": "max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))",
+          "value": "var(--md-button-font-size, max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px)))",
           "important": false
         },
         {
           "property": "font-weight",
-          "value": "var(--md-sys-typescale-title-medium-font-weight, 500)",
+          "value": "var(--md-button-font-weight, var(--md-sys-typescale-title-medium-font-weight, 500))",
           "important": false
         },
         {
           "property": "letter-spacing",
-          "value": "var(--md-sys-typescale-title-medium-letter-spacing, 0.15px)",
+          "value": "var(--md-button-letter-spacing, var(--md-sys-typescale-title-medium-letter-spacing, 0.15px))",
           "important": false
         },
         {
           "property": "line-height",
-          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "value": "var(--md-button-line-height, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
           "important": false
         }
       ]
@@ -976,17 +991,17 @@
         },
         {
           "property": "--_padding-inline",
-          "value": "max(24px, calc(48px + var(--md-sys-density-scale, 0) * 3px))",
+          "value": "var(--md-button-padding-inline, max(24px, calc(48px + var(--md-sys-density-scale, 0) * 3px)))",
           "important": false
         },
         {
           "property": "padding",
-          "value": "0 var(--_padding-inline)",
+          "value": "var(--md-button-padding-block, 0px) max(0px, calc(var(--_padding-inline) - var(--md-button-outline-width, 0px)))",
           "important": false
         },
         {
           "property": "gap",
-          "value": "max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px))",
+          "value": "var(--md-button-gap, max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px)))",
           "important": false
         },
         {
@@ -996,22 +1011,22 @@
         },
         {
           "property": "font-size",
-          "value": "max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px))",
+          "value": "var(--md-button-font-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)))",
           "important": false
         },
         {
           "property": "font-weight",
-          "value": "var(--md-sys-typescale-headline-small-font-weight, 400)",
+          "value": "var(--md-button-font-weight, var(--md-sys-typescale-headline-small-font-weight, 400))",
           "important": false
         },
         {
           "property": "letter-spacing",
-          "value": "var(--md-sys-typescale-headline-small-letter-spacing, 0px)",
+          "value": "var(--md-button-letter-spacing, var(--md-sys-typescale-headline-small-letter-spacing, 0px))",
           "important": false
         },
         {
           "property": "line-height",
-          "value": "max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px))",
+          "value": "var(--md-button-line-height, max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px)))",
           "important": false
         }
       ]
@@ -1047,17 +1062,17 @@
         },
         {
           "property": "--_padding-inline",
-          "value": "max(32px, calc(64px + var(--md-sys-density-scale, 0) * 4px))",
+          "value": "var(--md-button-padding-inline, max(32px, calc(64px + var(--md-sys-density-scale, 0) * 4px)))",
           "important": false
         },
         {
           "property": "padding",
-          "value": "0 var(--_padding-inline)",
+          "value": "var(--md-button-padding-block, 0px) max(0px, calc(var(--_padding-inline) - var(--md-button-outline-width, 0px)))",
           "important": false
         },
         {
           "property": "gap",
-          "value": "max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px))",
+          "value": "var(--md-button-gap, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)))",
           "important": false
         },
         {
@@ -1067,22 +1082,22 @@
         },
         {
           "property": "font-size",
-          "value": "max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px))",
+          "value": "var(--md-button-font-size, max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px)))",
           "important": false
         },
         {
           "property": "font-weight",
-          "value": "var(--md-sys-typescale-headline-large-font-weight, 400)",
+          "value": "var(--md-button-font-weight, var(--md-sys-typescale-headline-large-font-weight, 400))",
           "important": false
         },
         {
           "property": "letter-spacing",
-          "value": "var(--md-sys-typescale-headline-large-letter-spacing, 0px)",
+          "value": "var(--md-button-letter-spacing, var(--md-sys-typescale-headline-large-letter-spacing, 0px))",
           "important": false
         },
         {
           "property": "line-height",
-          "value": "max(32px, calc(40px + var(--md-sys-density-scale, 0) * 2px))",
+          "value": "var(--md-button-line-height, max(32px, calc(40px + var(--md-sys-density-scale, 0) * 2px)))",
           "important": false
         }
       ]
@@ -1114,7 +1129,7 @@
         },
         {
           "property": "border-radius",
-          "value": "calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)))",
+          "value": "var(--md-button-container-shape, calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))))",
           "important": false
         }
       ]
@@ -1130,7 +1145,7 @@
         },
         {
           "property": "border-radius",
-          "value": "calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)))",
+          "value": "var(--md-button-container-shape, calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))))",
           "important": false
         }
       ]
@@ -1146,7 +1161,7 @@
         },
         {
           "property": "border-radius",
-          "value": "calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)))",
+          "value": "var(--md-button-container-shape, calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))))",
           "important": false
         }
       ]
@@ -1162,7 +1177,7 @@
         },
         {
           "property": "border-radius",
-          "value": "calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)))",
+          "value": "var(--md-button-container-shape, calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))))",
           "important": false
         }
       ]
@@ -1178,7 +1193,7 @@
         },
         {
           "property": "border-radius",
-          "value": "calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)))",
+          "value": "var(--md-button-container-shape, calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))))",
           "important": false
         }
       ]
@@ -1194,7 +1209,7 @@
         },
         {
           "property": "border-radius",
-          "value": "calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest)))",
+          "value": "var(--md-button-container-shape, calc(var(--_shape-rest) + var(--md-sys-shape-morph-enabled, 1) * (var(--_morph-to, var(--_shape-rest)) - var(--_shape-rest))))",
           "important": false
         }
       ]
@@ -1803,7 +1818,7 @@
         },
         {
           "property": "border-color",
-          "value": "transparent",
+          "value": "var(--md-button-outline-color, transparent)",
           "important": false
         }
       ]
@@ -1871,7 +1886,7 @@
         },
         {
           "property": "background-color",
-          "value": "var(--_state-layer-color)",
+          "value": "var(--md-button-state-layer-color, var(--md-button-label-color, var(--_state-layer-color)))",
           "important": false
         },
         {
@@ -1897,28 +1912,7 @@
       "declarations": [
         {
           "property": "opacity",
-          "value": "var(--md-sys-state-hover-state-layer-opacity, 0.08)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": ":host(:active:not(.md-button--disabled)) .md-button__state-layer",
-      "context": null,
-      "declarations": [
-        {
-          "property": "opacity",
-          "value": "var(--md-sys-state-pressed-state-layer-opacity, 0.12)",
-          "important": false
-        },
-        {
-          "property": "transition-duration",
-          "value": "var(--md-sys-motion-duration-short1, 50ms)",
-          "important": false
-        },
-        {
-          "property": "transition-timing-function",
-          "value": "var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "value": "var(--md-button-hover-opacity, var(--md-sys-state-hover-state-layer-opacity, 0.08))",
           "important": false
         }
       ]
@@ -1929,7 +1923,28 @@
       "declarations": [
         {
           "property": "opacity",
-          "value": "var(--md-sys-state-focus-state-layer-opacity, 0.12)",
+          "value": "var(--md-button-focus-opacity, var(--md-sys-state-focus-state-layer-opacity, 0.12))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:active:not(.md-button--disabled)) .md-button__state-layer,\n:host(.md-button--pressing:not(.md-button--disabled)) .md-button__state-layer",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "var(--md-button-pressed-opacity, var(--md-sys-state-pressed-state-layer-opacity, 0.12))",
+          "important": false
+        },
+        {
+          "property": "transition-duration",
+          "value": "var(--md-sys-motion-duration-short1, 50ms)",
+          "important": false
+        },
+        {
+          "property": "transition-timing-function",
+          "value": "var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
           "important": false
         }
       ]
@@ -2009,7 +2024,7 @@
       "declarations": [
         {
           "property": "--_container-color",
-          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "value": "color-mix(in srgb, var(--md-button-container-color, var(--md-sys-color-on-surface)) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
           "important": false
         }
       ]
@@ -2020,7 +2035,7 @@
       "declarations": [
         {
           "property": "--_container-color",
-          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "value": "color-mix(in srgb, var(--md-button-container-color, var(--md-sys-color-on-surface)) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
           "important": false
         },
         {
@@ -2035,8 +2050,28 @@
       "context": null,
       "declarations": [
         {
+          "property": "border-color",
+          "value": "color-mix(in srgb, var(--md-button-outline-color, var(--md-sys-color-on-surface)) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "important": false
+        },
+        {
           "property": "--_label-color",
-          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "value": "color-mix(in srgb, var(--md-button-label-color, var(--md-sys-color-on-surface)) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_leading-icon-color",
+          "value": "color-mix(in srgb, var(--md-button-icon-color, var(--md-button-label-color, var(--md-sys-color-on-surface))) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_trailing-icon-color",
+          "value": "color-mix(in srgb, var(--md-button-trailing-icon-color, var(--md-button-icon-color, var(--md-button-label-color, var(--md-sys-color-on-surface)))) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
+          "important": false
+        },
+        {
+          "property": "--_loading-color",
+          "value": "color-mix(in srgb, var(--md-button-loading-color, var(--md-button-label-color, var(--md-sys-color-on-surface))) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
           "important": false
         }
       ]
@@ -2047,12 +2082,7 @@
       "declarations": [
         {
           "property": "--_container-color",
-          "value": "transparent",
-          "important": false
-        },
-        {
-          "property": "border-color",
-          "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
+          "value": "color-mix(in srgb, var(--md-button-container-color, transparent) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
           "important": false
         }
       ]
@@ -2063,7 +2093,7 @@
       "declarations": [
         {
           "property": "--_container-color",
-          "value": "transparent",
+          "value": "color-mix(in srgb, var(--md-button-container-color, transparent) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent)",
           "important": false
         }
       ]
@@ -2080,27 +2110,54 @@
       ]
     },
     {
+      "selector": ".md-button__icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_glyph-size",
+          "value": "var(--_icon-size, 18px)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_leading-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-button__trailing-icon",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_glyph-size",
+          "value": "var(--md-button-trailing-icon-size, var(--_icon-size, 18px))",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_trailing-icon-color)",
+          "important": false
+        }
+      ]
+    },
+    {
       "selector": ".md-button__icon,\n.md-button__trailing-icon",
       "context": null,
       "declarations": [
         {
-          "property": "color",
-          "value": "var(--md-button-icon-color, inherit)",
-          "important": false
-        },
-        {
           "property": "font-size",
-          "value": "var(--_icon-size, 18px)",
+          "value": "var(--_glyph-size)",
           "important": false
         },
         {
           "property": "width",
-          "value": "var(--_icon-size, 18px)",
+          "value": "var(--_glyph-size)",
           "important": false
         },
         {
           "property": "height",
-          "value": "var(--_icon-size, 18px)",
+          "value": "var(--_glyph-size)",
           "important": false
         },
         {
@@ -2142,7 +2199,7 @@
       "declarations": [
         {
           "property": "color",
-          "value": "var(--md-button-icon-color, inherit)",
+          "value": "var(--_leading-icon-color)",
           "important": false
         },
         {
@@ -2158,6 +2215,27 @@
         {
           "property": "flex-shrink",
           "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "::slotted([slot=\"trailing-icon\"])",
+      "context": null,
+      "declarations": [
+        {
+          "property": "color",
+          "value": "var(--_trailing-icon-color)",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "var(--md-button-trailing-icon-size, var(--_icon-size, 18px))",
+          "important": false
+        },
+        {
+          "property": "height",
+          "value": "var(--md-button-trailing-icon-size, var(--_icon-size, 18px))",
           "important": false
         }
       ]
@@ -2259,7 +2337,12 @@
         },
         {
           "property": "--md-loading-indicator-color",
-          "value": "currentColor",
+          "value": "var(--_loading-color)",
+          "important": false
+        },
+        {
+          "property": "color",
+          "value": "var(--_loading-color)",
           "important": false
         },
         {
@@ -2316,7 +2399,7 @@
         },
         {
           "property": "font-size",
-          "value": "var(--_icon-size, 18px)",
+          "value": "var(--_glyph-size, var(--_icon-size, 18px))",
           "important": false
         },
         {
@@ -2627,9 +2710,45 @@
         "AWCNavigationCoordinator implements local _self/_blank/_parent/_top and named presentation contexts, current-base relative resolution, ordered histories/back and host veto/presentation callbacks. AWCButtonNavigationDemo shows real button propagation controls and local navigation without external page loads. Named reuse is an explicit native policy, not source noopener browser behavior.",
         "groupTabindex implements the source null/0/-1 native focus contract: -1 skips sequential keyboard entry while retaining pointer, programmatic and accessibility actions. Hard-disabled excludes focus; soft-disabled/loading remain focusable and inert. Positive HTML tabindex sorting is not reproduced.",
         "roleOverride supports native button/link/gridcell mappings with safe inference for empty/unknown roles. Gridcell selected state is independent of toggle. AppKit exposes a native actionable cell; UIKit supplies button/selected traits and data-table-cell coordinates through explicit AWCGridCellContext, not arbitrary ARIA roles or a browser calendar grid.",
-        "Native responder/accessibility assertions run on macOS. UIKit focus-engine/responder synchronization is implemented against documented iOS 17+ APIs, but this host has no iOS SDK/device to validate hardware keyboard or VoiceOver runtime behavior."
+        "Native responder/accessibility assertions run on macOS. UIKit focus-engine/responder synchronization is implemented against documented iOS 17+ APIs, but this host has no iOS SDK/device to validate hardware keyboard or VoiceOver runtime behavior.",
+        "AWCButtonAppearance and View.awcButtonAppearance provide validated native appearance values inherited fieldwise by subtree and overridden locally. These are native visual equivalents; CSS parts/selectors/custom properties remain Web-only. Explicit cornerRadius fixes all states; custom colors preserve disabled alpha. Nested slotted components may retain their own authored styling."
       ],
       "verification": "not-device-verified",
+      "visualParts": [
+        "anchor",
+        "state-layer",
+        "icon",
+        "label",
+        "trailing-icon",
+        "loading"
+      ],
+      "appearance": {
+        "api": "AWCButtonAppearance / View.awcButtonAppearance",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "trailingIconColor",
+          "loadingColor",
+          "stateLayerColor",
+          "outlineColor",
+          "iconSize",
+          "trailingIconSize",
+          "loadingSize",
+          "fontSize",
+          "fontWeight",
+          "lineHeight",
+          "letterSpacing",
+          "cornerRadius",
+          "outlineWidth",
+          "paddingInline",
+          "paddingBlock",
+          "gap",
+          "hoverOpacity",
+          "focusOpacity",
+          "pressedOpacity"
+        ]
+      },
       "nativeEquivalents": {
         "HTML_FORM": {
           "status": "implemented",
@@ -2735,6 +2854,41 @@
         "Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Native form scopes automatically register source field adapters, collect ordered successful entries, apply declarative rules and support vetoable submit/reset and Enter; native action scopes can synchronously cancel defaults or stop scoped propagation; safe application routing carries target metadata. Literal browser form APIs, browser documents/origins, DOM nodes, platform elevation shadows, antialiasing and unrestricted browser ARIA roles remain different. Native groupTabindex supports null/0 sequential entry and -1 omission while preserving native programmatic focus, touch and accessibility actions. Hard-disabled controls are excluded; soft-disabled/loading controls remain focusable and block activation. roleOverride supports button and gridcell; unknown values safely retain Button semantics. Grid cells expose selected state independent of toggle plus explicit AWCGridScope/AWCGridCellScope collection metadata. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated."
       ],
       "verification": "not-device-verified",
+      "visualParts": [
+        "anchor",
+        "state-layer",
+        "icon",
+        "label",
+        "trailing-icon",
+        "loading"
+      ],
+      "appearance": {
+        "api": "AWCButtonAppearance / AWCButtonAppearanceScope",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "trailingIconColor",
+          "loadingColor",
+          "stateLayerColor",
+          "outlineColor",
+          "iconSize",
+          "trailingIconSize",
+          "loadingSize",
+          "fontSize",
+          "fontWeight",
+          "lineHeight",
+          "letterSpacing",
+          "cornerRadius",
+          "outlineWidth",
+          "paddingInline",
+          "paddingBlock",
+          "gap",
+          "hoverOpacity",
+          "focusOpacity",
+          "pressedOpacity"
+        ]
+      },
       "nativeEquivalents": {
         "HTML_FORM": {
           "status": "implemented",

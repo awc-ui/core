@@ -7,6 +7,10 @@ import Foundation
             checks += 1
             guard valid else { fatalError("Native button metric contract failed: \(message)") }
         }
-        print("Passed \(checks) native button typography, corners, outline and density checks.")
+        NativeButtonAppearanceCases.run { valid, message in
+            checks += 1
+            guard valid else { fatalError("Native button appearance contract failed: \(message)") }
+        }
+        print("Passed \(checks) native button metric and appearance checks.")
     }
 }

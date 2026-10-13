@@ -6332,7 +6332,7 @@
         "styleUrl": "md-button.css",
         "shadow": true,
         "formAssociated": true,
-        "sha256": "ca88f4bd3c908f116d2a8735d824e232090a8ebdbbca3efd2df7be7e5f15b11d"
+        "sha256": "50f0bd49f15754b328973af415c2bcdf2a14a33ebebc8ecbe01953fd453a8873"
       },
       "schemaVersion": 1,
       "lowering": {
@@ -6409,9 +6409,45 @@
             "AWCNavigationCoordinator implements local _self/_blank/_parent/_top and named presentation contexts, current-base relative resolution, ordered histories/back and host veto/presentation callbacks. AWCButtonNavigationDemo shows real button propagation controls and local navigation without external page loads. Named reuse is an explicit native policy, not source noopener browser behavior.",
             "groupTabindex implements the source null/0/-1 native focus contract: -1 skips sequential keyboard entry while retaining pointer, programmatic and accessibility actions. Hard-disabled excludes focus; soft-disabled/loading remain focusable and inert. Positive HTML tabindex sorting is not reproduced.",
             "roleOverride supports native button/link/gridcell mappings with safe inference for empty/unknown roles. Gridcell selected state is independent of toggle. AppKit exposes a native actionable cell; UIKit supplies button/selected traits and data-table-cell coordinates through explicit AWCGridCellContext, not arbitrary ARIA roles or a browser calendar grid.",
-            "Native responder/accessibility assertions run on macOS. UIKit focus-engine/responder synchronization is implemented against documented iOS 17+ APIs, but this host has no iOS SDK/device to validate hardware keyboard or VoiceOver runtime behavior."
+            "Native responder/accessibility assertions run on macOS. UIKit focus-engine/responder synchronization is implemented against documented iOS 17+ APIs, but this host has no iOS SDK/device to validate hardware keyboard or VoiceOver runtime behavior.",
+            "AWCButtonAppearance and View.awcButtonAppearance provide validated native appearance values inherited fieldwise by subtree and overridden locally. These are native visual equivalents; CSS parts/selectors/custom properties remain Web-only. Explicit cornerRadius fixes all states; custom colors preserve disabled alpha. Nested slotted components may retain their own authored styling."
           ],
           "verification": "not-device-verified",
+          "visualParts": [
+            "anchor",
+            "state-layer",
+            "icon",
+            "label",
+            "trailing-icon",
+            "loading"
+          ],
+          "appearance": {
+            "api": "AWCButtonAppearance / View.awcButtonAppearance",
+            "fields": [
+              "containerColor",
+              "labelColor",
+              "iconColor",
+              "trailingIconColor",
+              "loadingColor",
+              "stateLayerColor",
+              "outlineColor",
+              "iconSize",
+              "trailingIconSize",
+              "loadingSize",
+              "fontSize",
+              "fontWeight",
+              "lineHeight",
+              "letterSpacing",
+              "cornerRadius",
+              "outlineWidth",
+              "paddingInline",
+              "paddingBlock",
+              "gap",
+              "hoverOpacity",
+              "focusOpacity",
+              "pressedOpacity"
+            ]
+          },
           "nativeEquivalents": {
             "HTML_FORM": {
               "status": "implemented",
@@ -6517,6 +6553,41 @@
             "Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Native form scopes automatically register source field adapters, collect ordered successful entries, apply declarative rules and support vetoable submit/reset and Enter; native action scopes can synchronously cancel defaults or stop scoped propagation; safe application routing carries target metadata. Literal browser form APIs, browser documents/origins, DOM nodes, platform elevation shadows, antialiasing and unrestricted browser ARIA roles remain different. Native groupTabindex supports null/0 sequential entry and -1 omission while preserving native programmatic focus, touch and accessibility actions. Hard-disabled controls are excluded; soft-disabled/loading controls remain focusable and block activation. roleOverride supports button and gridcell; unknown values safely retain Button semantics. Grid cells expose selected state independent of toggle plus explicit AWCGridScope/AWCGridCellScope collection metadata. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated."
           ],
           "verification": "not-device-verified",
+          "visualParts": [
+            "anchor",
+            "state-layer",
+            "icon",
+            "label",
+            "trailing-icon",
+            "loading"
+          ],
+          "appearance": {
+            "api": "AWCButtonAppearance / AWCButtonAppearanceScope",
+            "fields": [
+              "containerColor",
+              "labelColor",
+              "iconColor",
+              "trailingIconColor",
+              "loadingColor",
+              "stateLayerColor",
+              "outlineColor",
+              "iconSize",
+              "trailingIconSize",
+              "loadingSize",
+              "fontSize",
+              "fontWeight",
+              "lineHeight",
+              "letterSpacing",
+              "cornerRadius",
+              "outlineWidth",
+              "paddingInline",
+              "paddingBlock",
+              "gap",
+              "hoverOpacity",
+              "focusOpacity",
+              "pressedOpacity"
+            ]
+          },
           "nativeEquivalents": {
             "HTML_FORM": {
               "status": "implemented",
@@ -29332,7 +29403,7 @@
         "styleUrl": "md-tab.css",
         "shadow": true,
         "formAssociated": false,
-        "sha256": "64d25783461e83b5787c584ab2afcca6cfaaf80d8e5781d2b1fecf84c8adfc15"
+        "sha256": "e0a039398f8dc6522b63679fa355695e14396495be4308a18d0a286ee31acab2"
       },
       "schemaVersion": 1,
       "lowering": {

@@ -339,6 +339,7 @@ export class MdButton {
           'md-button--selected': this.selected,
           'md-button--shape-morph': this.shapeMorph,
           'md-button--pressed': this.shapeMorph && this.pressed,
+          'md-button--pressing': this.pressed,
           'md-button--connected-left': this.connectedLeft,
           'md-button--connected-right': this.connectedRight,
           'md-button--full-width': this.fullWidth,

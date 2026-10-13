@@ -2,6 +2,10 @@ import XCTest
 @testable import AWCUI
 
 final class NativeButtonTests: XCTestCase {
+    func testAppearanceMergeAndValidation() {
+        NativeButtonAppearanceCases.run { valid, message in XCTAssertTrue(valid, message) }
+    }
+
     func testActualSourceSizeRules() {
         NativeButtonMetricCases.run { valid, message in XCTAssertTrue(valid, message) }
     }

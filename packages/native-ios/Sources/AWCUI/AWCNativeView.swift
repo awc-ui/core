@@ -19,6 +19,7 @@ public struct AWCNativeView: View {
     @State private var ownedInteractionStore = AWCInteractionStore()
     @Environment(\.awcInteractionStore) private var inheritedInteractionStore
     var interactionStore: AWCInteractionStore { inheritedInteractionStore ?? ownedInteractionStore }
+    @Environment(\.awcButtonAppearance) var buttonAppearance
     @Environment(\.awcTheme) var customTheme
     @Environment(\.openURL) var openURL
     @Environment(\.colorScheme) var colorScheme

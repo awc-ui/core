@@ -96,3 +96,16 @@ test('strict gate does not misrepresent generated wrappers as complete source pa
  assert.ok(button.diagnostics.some(d=>d.code==='HTML_FORM'));
  assert.ok(button.events.some(e=>e.name==='mdClick'&&e.cancelable));
 });
+
+
+test('native appearance metadata distinguishes visual equivalents from CSS selector support', async () => {
+ const {catalog} = await compile({write:false});
+ const button = catalog.components.find(component => component.tag === 'md-button');
+ for (const platform of ['ios', 'android']) {
+  const support = button.support[platform];
+  assert.equal(support.appearance.fields.length, 22);
+  assert.ok(support.appearance.api.includes('AWCButtonAppearance'));
+  assert.deepEqual(support.visualParts, ['anchor', 'state-layer', 'icon', 'label', 'trailing-icon', 'loading']);
+  assert.ok(!support.cssParts?.length, 'Native visuals must not claim CSS selector evaluation');
+ }
+});

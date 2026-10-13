@@ -338,7 +338,42 @@
             "Activation metadata defaults to unknown when the host cannot identify the source; DOM originalEvent, isTrusted, browser modifiers and cancellation of native OS input are not claimed."
           ]
         }
-      }
+      },
+      "appearance": {
+        "api": "AWCButtonAppearance / AWCButtonAppearanceScope",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "trailingIconColor",
+          "loadingColor",
+          "stateLayerColor",
+          "outlineColor",
+          "iconSize",
+          "trailingIconSize",
+          "loadingSize",
+          "fontSize",
+          "fontWeight",
+          "lineHeight",
+          "letterSpacing",
+          "cornerRadius",
+          "outlineWidth",
+          "paddingInline",
+          "paddingBlock",
+          "gap",
+          "hoverOpacity",
+          "focusOpacity",
+          "pressedOpacity"
+        ]
+      },
+      "visualParts": [
+        "anchor",
+        "state-layer",
+        "icon",
+        "label",
+        "trailing-icon",
+        "loading"
+      ]
     },
     "md-button-group": {
       "properties": [

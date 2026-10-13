@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.*
@@ -95,6 +96,7 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
 
 /** A true Compose click/press target; no simulated JavaScript state or web surface. */
 @Composable internal fun NativeButton(p: Props, emit: EventSink, slot: Slot?) {
+    val appearance = LocalAWCButtonAppearance.current
     var localSelected by awcState(p["selected"]) { p.bool("selected") }
     val group = LocalSelection.current?.takeIf { it.tag == "md-button-group" }
     val identity = remember { Any() }
@@ -173,17 +175,34 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     val metrics = remember(p.str("size"), p.num("density"), p.str("variant")) { NativeButtonMetrics(p.str("size","sm"), p.num("density"), p.str("variant","filled")) }
     val palette = NativeButtonPalette.resolve(p.str("variant","filled"), p.bool("toggle"), selected, !p.enabled())
     val motion = !reduceMotion && !palette.disabled
-    val radius by animateFloatAsState(metrics.radius(p.str("shape") == "square", p.bool("shapeMorph",true), selected, pressed), tween(if(!motion) 0 else if(pressed) 200 else 400, easing = if(pressed) Standard else Release), label = "source button radius")
+    val radius by animateFloatAsState(appearance.cornerRadius?.toFloat() ?: metrics.radius(p.str("shape") == "square", p.bool("shapeMorph",true), selected, pressed), tween(if(!motion) 0 else if(pressed) 200 else 400, easing = if(pressed) Standard else Release), label = "source button radius")
     val connected = p.bool("connectedLeft") || p.bool("connectedRight")
-    val leading = if(connected) { if(p.bool("connectedLeft") || p.str("shape") == "square") metrics.connectedRadius else metrics.roundRadius } else radius
-    val trailing = if(connected) { if(p.bool("connectedRight") || p.str("shape") == "square") metrics.connectedRadius else metrics.roundRadius } else radius
+    val leading = if(appearance.cornerRadius != null) radius else if(connected) { if(p.bool("connectedLeft") || p.str("shape") == "square") metrics.connectedRadius else metrics.roundRadius } else radius
+    val trailing = if(appearance.cornerRadius != null) radius else if(connected) { if(p.bool("connectedRight") || p.str("shape") == "square") metrics.connectedRadius else metrics.roundRadius } else radius
     val shape = RoundedCornerShape(topStart = leading.dp, topEnd = trailing.dp, bottomEnd = trailing.dp, bottomStart = leading.dp)
     val colorDuration = if(!motion) 0 else if(pressed && p.bool("shapeMorph",true)) 200 else 100
-    val container by animateColorAsState(roleColor(palette.container).copy(alpha = if(palette.container == null) 0f else if(palette.disabled) .12f else 1f), tween(colorDuration, easing=Standard), label="source button container")
-    val label by animateColorAsState(roleColor(palette.label).copy(alpha = if(palette.disabled) .38f else 1f), tween(colorDuration, easing=Standard), label="source button label")
-    val outline by animateColorAsState(roleColor(if(enabled && (hovered || focused) && palette.outline == "outline") "primary" else palette.outline).copy(alpha = if(palette.outline == null) 0f else if(palette.disabled) .12f else 1f), tween(colorDuration, easing=Standard), label="source button outline")
-    val opacity by animateFloatAsState(if(!enabled) 0f else if(pressed || focused) .12f else if(hovered) .08f else 0f, tween(if(!motion) 0 else if(pressed) 50 else 100, easing=if(pressed) Release else Standard), label="source button state layer")
-    val stateColor = roleColor(palette.label)
+    fun appearanceColor(value: String?, fallback: Color) = value?.let { Color(0xFF000000L or it.drop(1).toLong(16)) } ?: fallback
+    val contentAlpha = if(palette.disabled) .38f else 1f
+    val baseLabel = appearanceColor(appearance.labelColor, roleColor(palette.label))
+    val container by animateColorAsState(appearanceColor(appearance.containerColor, roleColor(palette.container)).copy(alpha = if(palette.container == null && appearance.containerColor == null) 0f else if(palette.disabled) .12f else 1f), tween(colorDuration, easing=Standard), label="source button container")
+    val label by animateColorAsState(baseLabel.copy(alpha = contentAlpha), tween(colorDuration, easing=Standard), label="source button label")
+    val icon by animateColorAsState(appearanceColor(appearance.iconColor, baseLabel).copy(alpha = contentAlpha), tween(colorDuration, easing=Standard), label="source leading icon color")
+    val trailingIcon by animateColorAsState(appearanceColor(appearance.trailingIconColor, appearanceColor(appearance.iconColor, baseLabel)).copy(alpha = contentAlpha), tween(colorDuration, easing=Standard), label="source trailing icon color")
+    val loadingColor by animateColorAsState(appearanceColor(appearance.loadingColor, baseLabel).copy(alpha = contentAlpha), tween(colorDuration, easing=Standard), label="source loading color")
+    val outlineRole = if(enabled && (hovered || focused) && palette.outline == "outline") "primary" else palette.outline
+    val outline by animateColorAsState(appearanceColor(appearance.outlineColor, roleColor(outlineRole ?: if(appearance.outlineWidth != null) "outline" else null)).copy(alpha = if(palette.outline == null && appearance.outlineColor == null && appearance.outlineWidth == null) 0f else if(palette.disabled) .12f else 1f), tween(colorDuration, easing=Standard), label="source button outline")
+    val opacity by animateFloatAsState(if(!enabled) 0f else if(pressed) appearance.pressedOpacity?.toFloat() ?: .12f else if(focused) appearance.focusOpacity?.toFloat() ?: .12f else if(hovered) appearance.hoverOpacity?.toFloat() ?: .08f else 0f, tween(if(!motion) 0 else if(pressed) 50 else 100, easing=if(pressed) Release else Standard), label="source button state layer")
+    val stateColor = appearanceColor(appearance.stateLayerColor, baseLabel)
+    val iconSize = appearance.iconSize?.toFloat() ?: metrics.icon
+    val trailingIconSize = appearance.trailingIconSize?.toFloat() ?: iconSize
+    val loadingSize = appearance.loadingSize?.toFloat() ?: metrics.loading
+    val lineHeight = appearance.lineHeight?.toFloat() ?: metrics.lineHeight
+    val minimumLineHeight = if(appearance.lineHeight != null) with(LocalDensity.current) { lineHeight.sp.toDp() } else lineHeight.dp
+    val outlineWidth = appearance.outlineWidth?.toFloat() ?: if(p.str("variant") == "outlined") metrics.outlineWidth else 0f
+    // A Compose border paints inside the box. CSS includes its border in the
+    // outer-edge inline inset; reserve that full inset without adding it twice.
+    val paddingInline = max(appearance.paddingInline?.toFloat() ?: metrics.padding, outlineWidth)
+    val paddingBlock = appearance.paddingBlock?.toFloat()?.plus(outlineWidth) ?: 0f
     val elevation by animateDpAsState((if(enabled && hovered && !pressed && !focused) palette.hoverElevation else palette.elevation).dp, tween(colorDuration, easing=Standard), label="source button elevation")
     val focusColor = MaterialTheme.colorScheme.secondary
     val role = nativeButtonRole(p)
@@ -201,7 +220,7 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
         if (isSubmitControl) form?.registerSubmitButton(identity) { latestClick.value() }
         onDispose { form?.unregisterSubmitButton(identity) }
     }
-    val textStyle = TextStyle(fontFamily = ButtonFonts, fontSize = metrics.fontSize.sp, fontWeight = FontWeight(metrics.weight), lineHeight = metrics.lineHeight.sp, letterSpacing = metrics.tracking.sp, platformStyle = PlatformTextStyle(includeFontPadding = false))
+    val textStyle = TextStyle(fontFamily = ButtonFonts, fontSize = (appearance.fontSize?.toFloat() ?: metrics.fontSize).sp, fontWeight = FontWeight(appearance.fontWeight?.toInt() ?: metrics.weight), lineHeight = lineHeight.sp, letterSpacing = (appearance.letterSpacing?.toFloat() ?: metrics.tracking).sp, platformStyle = PlatformTextStyle(includeFontPadding = false))
     CompositionLocalProvider(LocalContentColor provides label) {
         ProvideTextStyle(textStyle) {
             Box((if(p.bool("fullWidth")) Modifier.fillMaxWidth() else Modifier)
@@ -234,7 +253,7 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
                     }
                     drawContent()
                 }
-                .then(if(p.str("variant") == "outlined") Modifier.border(metrics.outlineWidth.dp,outline,shape) else Modifier)
+                .then(if(outlineWidth > 0f) Modifier.border(outlineWidth.dp,outline,shape) else Modifier)
                 .then(nativeFocus.modifier)
                 .onPreviewKeyEvent { event ->
                     if(event.key !in listOf(Key.Enter, Key.NumPadEnter, Key.Spacebar)) false
@@ -277,14 +296,35 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
                     }
                 }
                 .sizeIn(minWidth=metrics.minimumWidth.dp,minHeight=metrics.height.dp)
-                .padding(horizontal=metrics.padding.dp), contentAlignment=Alignment.Center) {
-                ButtonSlotRow(metrics.gap.dp, metrics.lineHeight.dp) {
-                    ButtonSlot("leading-icon", slot, slots) { if(p.str("icon").isNotBlank()) ButtonGlyph(p.str("icon"),metrics.icon,p.bool("mirrorIcon"),false) }
+                .padding(horizontal=paddingInline.dp, vertical=paddingBlock.dp), contentAlignment=Alignment.Center) {
+                ButtonSlotRow((appearance.gap?.toFloat() ?: metrics.gap).dp, minimumLineHeight) {
+                    ButtonVisualPart(appearance.iconSize, icon) {
+                        ButtonSlot("leading-icon", slot, slots) { if(p.str("icon").isNotBlank()) ButtonGlyph(p.str("icon"),iconSize,p.bool("mirrorIcon"),false) }
+                    }
                     ButtonSlot("", slot, slots) { if(p.label().isNotBlank()) Text(p.label(),maxLines=1,overflow=TextOverflow.Clip) }
-                    ButtonSlot("trailing-icon", slot, slots) { if(p.str("trailingIcon").isNotBlank()) ButtonGlyph(p.str("trailingIcon"),metrics.icon,p.bool("mirrorIcon"),p.bool("aria-expanded") && !p.bool("suppressExpandIconFlip")) }
-                    if(p.bool("loading")) ButtonSlot("loader",slot, slots) { NativeButtonLoading(metrics.loading.dp,label,reduceMotion) }
+                    ButtonVisualPart(appearance.trailingIconSize ?: appearance.iconSize, trailingIcon) {
+                        ButtonSlot("trailing-icon", slot, slots) { if(p.str("trailingIcon").isNotBlank()) ButtonGlyph(p.str("trailingIcon"),trailingIconSize,p.bool("mirrorIcon"),p.bool("aria-expanded") && !p.bool("suppressExpandIconFlip")) }
+                    }
+                    if(p.bool("loading")) ButtonVisualPart(appearance.loadingSize, loadingColor) {
+                        ButtonSlot("loader",slot, slots) { NativeButtonLoading(loadingSize.dp,loadingColor,reduceMotion) }
+                    }
                 }
             }
+        }
+    }
+}
+
+/** Scope colors without replacing a caller's explicitly styled content. */
+@Composable private fun ButtonVisualPart(size: Double?, color: Color, content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalContentColor provides color) {
+        if(size == null) content()
+        else SubcomposeLayout { constraints ->
+            val children = subcompose("part", content).map { it.measure(constraints.copy(minWidth=0, minHeight=0, maxWidth=min(constraints.maxWidth, size.dp.roundToPx()), maxHeight=min(constraints.maxHeight, size.dp.roundToPx()))) }
+            // Appearance alone must not create an otherwise absent icon/slot.
+            val visible = children.any { it.width > 0 || it.height > 0 }
+            val width = if(visible) constraints.constrainWidth(size.dp.roundToPx()) else 0
+            val height = if(visible) constraints.constrainHeight(size.dp.roundToPx()) else 0
+            layout(width, height) { children.forEach { it.placeRelative((width-it.width)/2, (height-it.height)/2) } }
         }
     }
 }

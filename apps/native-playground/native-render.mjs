@@ -25,6 +25,7 @@ export function validateRenderRequest(value, tags) {
   if (value.width !== undefined && (typeof value.width !== 'number' || !Number.isFinite(value.width))) throw new RenderError(400,'INVALID_WIDTH','width must be a finite number.');
   if (value.scenario !== undefined && (!['button-behavior', 'navigation-events', 'focus-accessibility'].includes(value.scenario) || value.tag !== 'md-button')) throw new RenderError(400,'INVALID_SCENARIO','Choose a supported native example for md-button.');
   if (value.text !== undefined && (value.tag !== 'md-button' || typeof value.text !== 'string' || Buffer.byteLength(value.text, 'utf8') > 4096)) throw new RenderError(400,'INVALID_TEXT','Button text must be a string of at most 4096 UTF-8 bytes.');
+  if (value.buttonAppearance !== undefined && value.tag !== 'md-button') throw new RenderError(400, 'INVALID_BUTTON_APPEARANCE', 'Local button appearance applies to md-button only.');
   function depth(v, level=0) {
     if (level>32) throw new RenderError(400,'INVALID_PROPERTIES','Property nesting is too deep.');
     if (v && typeof v==='object') for(const child of Object.values(v))depth(child,level+1);

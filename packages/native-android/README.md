@@ -59,6 +59,68 @@ rasterization remain platform-specific; this does not promise complete CSS or DO
 parity. Metric, palette, shape, and loader regressions are in
 `NativeButtonContractTest`; device interaction checks live in the playground.
 
+## Shared button appearance
+
+`AWCButtonAppearanceScope` supplies defaults to every native `md-button` in a
+Compose subtree. Nest it around one generated `AWCButton` for local overrides;
+valid local fields replace inherited fields individually. Omitted or malformed
+fields inherit, so an empty appearance keeps the existing source rendering.
+
+```kotlin
+import dev.awc.nativeui.AWCButtonAppearance
+import dev.awc.nativeui.AWCButtonAppearanceScope
+import dev.awc.nativeui.generated.AWCButton
+
+AWCTheme {
+    AWCButtonAppearanceScope(AWCButtonAppearance(
+        containerColor = "#3355AA", labelColor = "#FFFFFF", fontWeight = 600.0,
+    )) {
+        AWCButtonAppearanceScope(AWCButtonAppearance(
+            iconSize = 24.0, cornerRadius = 12.0, paddingInline = 24.0,
+        )) {
+            AWCButton { slot -> if (slot == "") Text("Continue") }
+        }
+    }
+}
+```
+
+Colors accept `#RRGGBB`: `containerColor`, `labelColor`, `iconColor`,
+`trailingIconColor`, `loadingColor`, `stateLayerColor`, `outlineColor`.
+All numeric parameters are nullable `Double`; dimensions use dp and typography
+uses sp. Accepted ranges are:
+
+| Fields | Range |
+| --- | --- |
+| `iconSize`, `trailingIconSize`, `loadingSize` | 8–128 |
+| `fontSize` / `lineHeight` | 8–96 / 8–160 |
+| `fontWeight` | Integer 100–900 |
+| `letterSpacing` | −5–20 |
+| `cornerRadius` / `outlineWidth` | 0–200 / 0–16 |
+| `paddingInline`, `paddingBlock` / `gap` | 0–128 / 0–64 |
+| `hoverOpacity`, `focusOpacity`, `pressedOpacity` | 0–1 |
+
+`paddingInline` is the per-side inset measured from the outer border edge;
+`paddingBlock` is per-side content padding inside the stroke. Original minimum
+button dimensions remain. An explicit corner radius stays fixed during press,
+selection and connected-button rendering. An explicit outline width enables a
+stroke on any variant; outline color alone retains that variant's source width.
+Disabled custom content retains 0.38 alpha, container and outline 0.12.
+
+Trailing icon size/color inherit the corresponding leading icon override unless
+provided separately; icon and loading colors otherwise inherit label color.
+Loading size remains independent. Named icon/loader slots inherit the part color
+and explicit size constraint; explicit styling inside caller content takes
+precedence. Label slots inherit the text style and content color. Empty slots do
+not acquire an icon merely because an appearance size is set. A line-height
+override reserves a minimum line box without clipping taller native glyphs.
+State-layer opacities do not change the source ripple opacity.
+
+These are typed native visual equivalents for anchor, state layer, icons, label
+and loader. They do not implement CSS selectors, CSS parts or the CSS cascade.
+Font synthesis/rasterization and native text metrics remain platform-specific.
+The debug live host accepts `buttonAppearanceDefaults` and `buttonAppearance`
+objects with these same fields; invalid native inputs are ignored per field.
+
 ## Button forms, actions and navigation
 
 `AWCFormScope` automatically registers the 13 source form field families rendered

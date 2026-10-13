@@ -472,11 +472,28 @@ describe('md-button', () => {
       expect(page.root?.classList.contains('md-button--pressed')).toBe(false);
     });
 
+    it.each(['Enter', ' '])('keeps %s press feedback independent of shape morphing', async key => {
+      const page = await create('<md-button shape-morph="false" toggle>Press</md-button>');
+      const activation = jest.fn();
+      page.root?.addEventListener('mdClick', activation);
+      page.root?.dispatchEvent(new KeyboardEvent('keydown', { key }));
+      await page.waitForChanges();
+      expect(page.root?.classList.contains('md-button--pressing')).toBe(true);
+      expect(page.root?.classList.contains('md-button--pressed')).toBe(false);
+      expect(page.root?.getAttribute('aria-pressed')).toBe('true');
+      expect(activation).toHaveBeenCalledTimes(1);
+      await new Promise(resolve => setTimeout(resolve, 160));
+      await page.waitForChanges();
+      expect(page.root?.classList.contains('md-button--pressing')).toBe(false);
+      expect(activation).toHaveBeenCalledTimes(1);
+    });
+
     it('does not enter pressed state when disabled', async () => {
       const page = await create('<md-button disabled>Press</md-button>');
       page.root?.dispatchEvent(new Event('pointerdown'));
       await page.waitForChanges();
       expect(page.root?.classList.contains('md-button--pressed')).toBe(false);
+      expect(page.root?.classList.contains('md-button--pressing')).toBe(false);
     });
   });
 

@@ -33,8 +33,14 @@ Native previews additionally require the platform hosts described below.
 
 ## Explore components
 
-The left catalog groups and searches all source tags; `/` focuses search. The
-right configuration panel separates **Properties** and **CSS variables** into
+The left catalog uses AWC’s expanded `md-navigation-rail` and its destination
+components. Its 56 entries, eight groups, titles and order come directly from
+Astro Docs (`apps/docs/astro.config.mjs` and `apps/docs/src/data/components.json`),
+including the same exclusions for parts documented with their parent. All 81
+source contracts remain available by direct component URL. `/` focuses search;
+search matches documented titles, tags and groups.
+
+The right configuration panel separates **Properties** and **CSS variables** into
 tabs with declaration counts. Properties provides typed scalar, boolean, enum
 and JSON editors, reset, and a property search. Mixed literal unions retain their actual types,
 including values such as `false`. Info controls explain source types, defaults,
@@ -75,7 +81,17 @@ existing workspace dependencies with `node apps/native-playground/build-syntax-h
 
 API sections document events and payloads, slots, methods, CSS parts, and
 data/callback types. CSS variables are editable in their own tab in the right
-configuration panel. Slot text and CSS edits update the relevant
+configuration panel; `md-button` names this tab **Styles**. Its shared appearance
+editor has 22 color, typography, spacing, icon, loader and interaction fields.
+**This button** overrides individual fields; **Theme default** supplies inherited
+values to the preview subtree and persists in this browser. Reset style clears
+only the selected scope. Web CSS overrides remain in a separate accordion.
+Shared edits update all three previews and their usage code. Native apps use
+`AWCButtonAppearance` with SwiftUI’s `.awcButtonAppearance(...)` or Compose’s
+`AWCButtonAppearanceScope`; CSS selectors stay Web-only. Android typography uses
+scalable sp; the Swift adapter uses fixed point sizes.
+
+Slot text and Web CSS edits update the relevant
 examples and the live Web preview. Public web methods accept JSON argument
 arrays. Native fixtures keep their own children; editing documentation slots does
 not rewrite those fixtures. Native snippets preserve AWC children and slot text,
