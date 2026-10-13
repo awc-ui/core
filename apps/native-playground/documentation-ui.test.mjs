@@ -26,6 +26,7 @@ class ElementStub {
   contains(node) { return this.nodes.includes(node); }
   focus() { document.activeElement = this; }
   async focusHeader() { this.focusHeaderCalls = (this.focusHeaderCalls || 0) + 1; document.activeElement = this; }
+  async focusTrigger() { this.focusTriggerCalls = (this.focusTriggerCalls || 0) + 1; document.activeElement = this; }
   setSelectionRange(start, end) { this.selectionStart = start; this.selectionEnd = end; }
   querySelectorAll(selector) {
     const match = /^\[([\w-]+)(?:="([^"]*)")?\]$/.exec(selector);
@@ -473,11 +474,12 @@ test('framework tabs and API selector update all examples together while retaini
   assert.equal(root.querySelector('#usage-section-slots').expanded, true);
   assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').value, '["Review this value"]');
   root.querySelector('#api-framework').focus();
-  await root.querySelector('#api-framework').emit('mdChange', { detail: { value: 'android' } });
+  await root.querySelector('#api-framework').emit('mdChange', { detail: 'android' });
   assert.equal(state.snippetLanguage, 'android');
   assert.equal(state.platform, 'web', 'Documentation selection does not silently switch the preview');
   assert.equal(root.querySelector('#usage-language-tabs').attributes['active-tab-index'], '6');
   assert.equal(document.activeElement.id, 'api-framework');
+  assert.equal(root.querySelector('#api-framework').focusTriggerCalls, 1, 'Restore the focusable select trigger after rebuilding both selectors');
   assert.ok(root.querySelectorAll('[data-api-framework]').every(node => node.dataset.apiFramework === 'android'));
   assert.match(root.innerHTML, /AWCComponent/);
   assert.doesNotMatch(root.innerHTML, /class="event-payload"/);

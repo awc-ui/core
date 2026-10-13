@@ -268,7 +268,9 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
         const restore = input => { if (generation === renderGeneration && typeof input?.setSelectionRange === 'function' && focus.start != null) input.setSelectionRange(focus.start, focus.end); };
         const restoreFocus = () => {
           if (generation !== renderGeneration || !next.isConnected) return;
-          if (next.matches('md-accordion-item')) next.focusHeader(); else next.focus({ preventScroll: true });
+          if (next.matches('md-accordion-item')) next.focusHeader();
+          else if (next.matches('md-select')) next.focusTrigger();
+          else next.focus({ preventScroll: true });
           if (typeof next.getInputElement === 'function') next.getInputElement().then(restore); else restore(next);
         };
         if (typeof next.componentOnReady === 'function') next.componentOnReady().then(restoreFocus); else restoreFocus();
