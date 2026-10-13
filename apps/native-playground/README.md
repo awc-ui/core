@@ -121,13 +121,39 @@ configuration evidence and copyable local test commands. Component evidence
 includes Storybook and framework tests; accessibility evidence includes relevant
 axe, ARIA, keyboard and focus checks and configured Storybook checks.
 
-The panel reads evidence; it never runs tests. Declaration counts do not expand
-parameterized cases and may describe a shared file. Saved component-specific
-LCOV reports supply line, branch and function measurements when available.
-Report modification times do not prove freshness or a passing run. Without a
-matching measured report, coverage is unavailable and execution status remains
-unknown. A historical whole-library snapshot cannot establish coverage for the
-selected component. Accessibility evidence is not a WCAG conformance result.
+The panel reads saved reports; it never runs tests. LCOV and Istanbul reports
+provide component-specific line, branch, function and, when available, statement
+coverage. The latest report supplies percentages, progress bars and covered/total
+counts. Alternative formats and separate runs are not added together.
+
+Jest, Vitest and Playwright result reports supply executed pass/fail/skip counts
+separately from code coverage. Accessibility results include only matching checks,
+not every test in a file that happens to contain an axe scan. Planned tests without
+execution results do not count as passed. Shared-file results are identified.
+
+Each result links to its source report and shows when that file was saved; this
+does not prove the run matches the current source revision. Without a matching
+report, the panel retains source declaration counts and labels the missing data.
+Declaration counts do not expand parameterized cases. Whole-library totals are
+never substituted for the selected component. Accessibility results describe
+automated checks, not WCAG conformance.
+
+Generate reports with the repository's supported Node version and installed
+Chromium browser:
+
+```sh
+pnpm --filter @awc-ui/core test:spec:coverage
+node apps/native-playground/scripts/coverage/run-browser.mjs md-button
+```
+
+The unit command saves coverage and Jest outcomes in `packages/core/coverage-spec`.
+The browser collector runs the existing Stencil and React tests with source maps,
+writing reports to `packages/core/coverage-e2e` and
+`apps/test-react/coverage-native`. Its isolated build leaves the studio's live
+component distribution untouched. Failed assertions remain failed in the saved
+report and produce a nonzero exit code. Use **Refresh** in Test coverage after a run.
+The browser command accepts another component tag when matching suites exist;
+append `--list` to inspect its scope without running tests or replacing reports.
 
 ## Live native previews
 

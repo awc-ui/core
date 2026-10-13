@@ -85,3 +85,9 @@ packages/core/bin/templates/
 # Skill copies published by the Core docs builder. Canonical files live in /skills.
 packages/core/skills/
 packages/mcp/LICENSE
+
+# Maintained coverage collectors live alongside ignored generated coverage.
+!apps/native-playground/scripts/coverage/
+!apps/native-playground/scripts/coverage/**
+apps/test-react/coverage-native/
+apps/test-react/assets/

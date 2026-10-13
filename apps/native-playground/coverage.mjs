@@ -1,12 +1,8 @@
 import { readFile, readdir, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import ts from 'typescript';
+import { coverageReports, executionReports, parseLCOV, parseIstanbul, parseExecutionReport, executionSummary } from './coverage-reports.mjs';
 
-const reports = [
-  ['unit', 'packages/core/coverage-spec/lcov.info'],
-  ['e2e', 'packages/core/coverage-e2e/lcov.info'],
-  ['component', 'apps/storybook/coverage-stories/lcov.info'],
-];
 const configurations = [
   'packages/core/jest.coverage.config.cjs', 'packages/core/stencil.config.ts', 'packages/core/stencil.config.coverage.ts',
   'apps/storybook/vitest.config.mts', 'apps/storybook/.storybook/preview.ts', 'apps/storybook/.storybook/vitest.setup.ts',
@@ -21,7 +17,7 @@ const labels = { unit: 'Unit', component: 'Component', e2e: 'End-to-end', access
 /** A finite set of evidence families; the server must also retain realpath containment checks. */
 export function isCoverageEvidencePath(relative) {
   if (typeof relative !== 'string' || relative.includes('\\') || relative.includes('\0') || relative.split('/').includes('..')) return false;
-  if (configurations.includes(relative) || reports.some(([, file]) => file === relative) || relative === 'packages/core/coverage-snapshot.json') return true;
+  if (configurations.includes(relative) || [...coverageReports, ...executionReports].some(report => report.path === relative) || relative === 'packages/core/coverage-snapshot.json') return true;
   if (relative.split('/').some(segment => segment.startsWith('.'))) return false;
   return /^packages\/core\/src\/components\/md-[a-z0-9]+(?:-[a-z0-9]+)*\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+\.(?:spec|e2e)\.tsx?$/.test(relative)
     || /^apps\/test-(?:react|vue|svelte|angular)\/e2e\/[a-zA-Z0-9_.-]+\.spec\.tsx?$/.test(relative)
@@ -94,6 +90,7 @@ function inspectTests(text, file) {
         && (ts.isStringLiteralLike(node.arguments[0]) || ts.isTemplateExpression(node.arguments[0]))) {
         const body = node.getText(source);
         tests.push({ line: source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1,
+          title: ts.isStringLiteralLike(node.arguments[0]) ? node.arguments[0].text : undefined,
           accessibility: /\b(?:axe|AxeBuilder|toHaveNoViolations|accessib\w*|a11y|aria-[\w-]+|keyboard|tabindex|focus)\b/i.test(body),
           skipped: /\.(?:skip|todo)\b/.test(expression) });
       }
@@ -118,39 +115,8 @@ function storyOwner(file, document, tags) {
   return [...tags].find(tag => tag.replaceAll('-', '') === basename);
 }
 
-function metric(values) {
-  const total = values.size, covered = [...values.values()].filter(hits => hits > 0).length;
-  return { total, covered, percent: total ? Math.round(covered * 10000 / total) / 100 : null };
-}
-function parseLCOV(text, tags) {
-  const result = new Map(); let current;
-  for (const line of text.split(/\r?\n/)) {
-    if (line.startsWith('SF:')) {
-      const file = line.slice(3).replace(/\\/g, '/').replace(/^.*?packages\/core\//, '').replace(/^\.\//, '');
-      const match = /^src\/components\/(md-[a-z0-9-]+)\/(.+\.tsx?)$/.exec(file);
-      current = null;
-      if (!match || !tags.has(match[1]) || /\.(?:spec|e2e)\.tsx?$/.test(file) || file.split('/').includes('..')) continue;
-      if (!result.has(match[1])) result.set(match[1], { lines: new Map(), branches: new Map(), functions: new Map(), files: new Set() });
-      current = { file: `packages/core/${file}`, data: result.get(match[1]) }; current.data.files.add(current.file);
-    } else if (line === 'end_of_record') current = null;
-    else if (current) {
-      const [prefix, ...rest] = line.split(':'); const value = rest.join(':');
-      let key, hits;
-      if (prefix === 'DA') { const parts = value.split(','); key = parts[0]; hits = Number(parts[1]); if (!/^\d+$/.test(key)) continue; }
-      else if (prefix === 'BRDA') { const parts = value.split(','); if (parts.length !== 4) continue; key = parts.slice(0, 3).join(','); hits = parts[3] === '-' ? 0 : Number(parts[3]); }
-      else if (prefix === 'FNDA') { const comma = value.indexOf(','); if (comma < 1) continue; hits = Number(value.slice(0, comma)); key = value.slice(comma + 1); }
-      else continue;
-      if (!Number.isFinite(hits) || hits < 0 || !key) continue;
-      const map = current.data[prefix === 'DA' ? 'lines' : prefix === 'BRDA' ? 'branches' : 'functions'];
-      const full = `${current.file}:${key}`;
-      map.set(full, Math.max(map.get(full) || 0, hits));
-    }
-  }
-  return result;
-}
-
 function category(id) {
-  return { id, label: labels[id], status: 'unavailable', executionStatus: 'unknown', files: [], testCount: 0, countKind: 'static-declarations', commands: [], measurements: [], notes: [
+  return { id, label: labels[id], status: 'unavailable', executionStatus: 'unknown', files: [], testCount: 0, countKind: 'static-declarations', commands: [], measurements: [], executions: [], notes: [
     'Source declarations show available test coverage, not a passed test run. Parameterized cases and loops are not expanded.',
   ] };
 }
@@ -166,6 +132,7 @@ async function buildInventory(root) {
   const tags = new Set((json.modules || []).flatMap(module => module.declarations || []).map(item => item.tagName).filter(tag => tagPattern.test(tag)));
   const generatedAt = new Date().toISOString();
   const inventory = new Map([...tags].map(tag => [tag, { schemaVersion: 1, tag, generatedAt, categories: Object.fromEntries(Object.keys(labels).map(id => [id, category(id)])) }]));
+  const ownership = new Map();
   const previewSource = await safeRead(root, 'apps/storybook/.storybook/preview.ts');
   const preview = previewSource && staticDocument(previewSource.text, 'preview.ts');
   const storybookAccessibility = preview ? accessibilityConfiguration(preview, preview.metadata) : false;
@@ -177,6 +144,8 @@ async function buildInventory(root) {
     const parsed = inspectTests(source.text, file), declarations = story ? parsed.stories : parsed.tests;
     const owner = story ? storyOwner(file, parsed.document, tags) : /^packages\/core\/src\/components\/(md-[a-z0-9-]+)\//.exec(file)?.[1];
     const references = owner ? [owner] : story ? [] : [...new Set(source.text.match(/\bmd-[a-z0-9]+(?:-[a-z0-9]+)*\b/g) || [])];
+    ownership.set(file, { category: categoryID, tags: references.filter(tag => tags.has(tag)), shared: !owner,
+      accessibilityTitles: new Set(parsed.tests.filter(item => item.accessibility && item.title).map(item => item.title)) });
     const evidence = { path: file, kind: story ? 'storybook-story' : framework ? `playwright-${framework === 'angular' ? 'e2e' : 'component'}` : categoryID === 'unit' ? 'stencil-spec' : 'stencil-e2e', testCount: declarations.length,
       countKind: story ? 'static-story-exports' : 'static-test-declarations', skippedDeclarations: parsed.tests.filter(item => item.skipped).length,
       line: declarations[0]?.line || 1, notes: owner ? [] : ['Shared source file: counts describe the file, not assertions attributable exclusively to this tag.'] };
@@ -188,14 +157,52 @@ async function buildInventory(root) {
       if (story && parsed.stories.some(item => accessibilityConfiguration(parsed.document, item.node, storyAccessibility))) addEvidence(result, 'accessibility', { ...evidence, testCount: 0, kind: 'storybook-a11y-configuration', notes: [...evidence.notes, 'Configuration only: accessibility parameters apply to this component’s own stories. This is not a recorded audit or a count of accessibility assertions.'] });
     }
   }
-  for (const [categoryID, file] of reports) {
-    const report = await safeRead(root, file, 32 * 1024 * 1024); if (!report) continue;
-    for (const [tag, data] of parseLCOV(report.text, tags)) {
-      if (!data.lines.size && !data.functions.size && !data.branches.size) continue;
-      inventory.get(tag).categories[categoryID].measurements.push({ path: file, reportedAt: report.modifiedAt, timestampSource: 'file-mtime', scope: 'component',
-        lines: metric(data.lines), branches: metric(data.branches), functions: metric(data.functions), sourceFiles: [...data.files].sort(),
-        notes: ['Coverage measures executed source locations; it does not establish test success. Timestamp is report modification time, not a verified test-run time.'] });
-    }
+  for (const descriptor of coverageReports) {
+    const report = await safeRead(root, descriptor.path, 32 * 1024 * 1024); if (!report) continue;
+    try {
+      const parsed = descriptor.format === 'lcov' ? parseLCOV(report.text, tags) : parseIstanbul(report.text, tags, descriptor.format === 'istanbul-summary');
+      for (const [tag, data] of parsed) {
+        if (!['lines', 'branches', 'functions', 'statements'].some(name => data[name]?.total > 0)) continue;
+        inventory.get(tag).categories[descriptor.category].measurements.push({ path: descriptor.path, format: descriptor.format,
+          reportedAt: report.modifiedAt, timestampSource: 'file-mtime', scope: 'component', ...data,
+          notes: ['Coverage measures executed source locations; it does not establish test success. Timestamp is report modification time, not a verified test-run time.', 'Alternative report formats and runs are separate measurements; do not add their totals together.'] });
+      }
+    } catch { /* A malformed or partially written report supplies no measured evidence. */ }
+  }
+  for (const descriptor of executionReports) {
+    const report = await safeRead(root, descriptor.path, 32 * 1024 * 1024); if (!report) continue;
+    try {
+      const grouped = new Map();
+      const add = (tag, categoryID, record) => {
+        const key = `${tag}:${categoryID}`;
+        if (!grouped.has(key)) grouped.set(key, { tag, categoryID, records: [] });
+        grouped.get(key).records.push(record);
+      };
+      for (const suite of parseExecutionReport(report.text, descriptor)) {
+        const source = ownership.get(suite.file);
+        if (!source || source.category !== descriptor.category) continue;
+        for (const tag of source.tags) {
+          add(tag, descriptor.category, { ...suite, shared: source.shared });
+          const related = suite.tests.filter(item => source.accessibilityTitles.has(item.title)
+            || /\b(?:axe|AxeBuilder|toHaveNoViolations|accessib\w*|a11y|aria-[\w-]+|keyboard|tabindex|focus)\b/i.test(item.name));
+          if (related.length) add(tag, 'accessibility', { ...suite, tests: related, failedSuite: false, shared: source.shared });
+        }
+      }
+      for (const { tag, categoryID, records } of grouped.values()) {
+        const summary = executionSummary(records);
+        if (!summary.total && !summary.failedSuites) continue;
+        const notes = ['Outcomes describe only the test cases recorded in this report, not every source declaration or a current rerun. Timestamp is report modification time.'];
+        if (records.some(record => record.shared)) notes.push('Shared test-file results are not assertions attributable exclusively to this component.');
+        if (categoryID === 'accessibility') {
+          notes.push(`This ${descriptor.framework} report is filtered to individual accessibility-related cases using suite/test names or matching source declarations. Other tests in the same file are excluded.`);
+          notes.push('Passing axe, keyboard or ARIA checks is not a WCAG conformance or accessibility coverage percentage. Results from separate runs are not combined.');
+        }
+        if (summary.flaky) notes.push(`${summary.flaky} test cases passed after a retry.`);
+        inventory.get(tag).categories[categoryID].executions.push({ path: descriptor.path, framework: descriptor.framework,
+          reportedAt: report.modifiedAt, timestampSource: 'file-mtime', scope: records.some(record => record.shared) ? 'shared-test-files' : 'component-tests',
+          sourceFiles: [...new Set(records.map(record => record.file))].sort(), ...summary, notes });
+      }
+    } catch { /* Incomplete test output must never become a passing run. */ }
   }
   const snapshot = await safeRead(root, 'packages/core/coverage-snapshot.json');
   let librarySnapshot;
@@ -211,18 +218,30 @@ async function buildInventory(root) {
   }
   for (const result of inventory.values()) {
     result.categories.unit.commands = [command('Run source unit tests', 'pnpm --filter @awc-ui/core test:spec'), command('Generate unit coverage', 'pnpm --filter @awc-ui/core test:spec:coverage')];
-    result.categories.e2e.commands = [command('Run source browser tests', 'pnpm --filter @awc-ui/core test:e2e'), command('Generate E2E coverage', 'pnpm --filter @awc-ui/core test:e2e:coverage')];
+    result.categories.e2e.commands = [command('Run source browser tests', 'pnpm --filter @awc-ui/core test:e2e')];
     result.categories.component.commands = [command('Run stories (requires running Storybook)', 'pnpm --filter @awc-ui/storybook test:stories'), command('Generate story coverage', 'pnpm --filter @awc-ui/storybook test:coverage')];
     for (const framework of ['react', 'vue', 'svelte']) if (result.categories.component.files.some(file => file.path.startsWith(`apps/test-${framework}/`))) result.categories.component.commands.push(command(`Run ${framework} component tests`, `pnpm --filter @awc-ui/test-${framework} test:ct`));
     if (result.categories.e2e.files.some(file => file.path.startsWith('apps/test-angular/'))) result.categories.e2e.commands.push(command('Run Angular E2E tests', 'pnpm --filter @awc-ui/test-angular test:e2e'));
     result.categories.accessibility.commands = [command('Run configured Storybook accessibility tests (requires running Storybook)', 'pnpm test:a11y')];
+    const browserSources = new Set([
+      ...result.categories.e2e.files.filter(file => file.path.startsWith(`packages/core/src/components/${result.tag}/`)),
+      ...result.categories.component.files.filter(file => file.path.startsWith('apps/test-react/e2e/')
+        && [`${result.tag}.spec.tsx`, `${result.tag.slice(3)}.spec.tsx`].includes(path.basename(file.path))),
+    ].map(file => file.path));
+    for (const id of ['component', 'e2e', 'accessibility']) if (result.categories[id].files.some(file => browserSources.has(file.path))) {
+      result.categories[id].commands.unshift(command('Measure browser and accessibility tests', `node apps/native-playground/scripts/coverage/run-browser.mjs ${result.tag}`));
+    }
     result.categories.unit.configuration = ['packages/core/jest.coverage.config.cjs'];
     result.categories.component.configuration = ['apps/storybook/vitest.config.mts'];
     result.categories.e2e.configuration = ['packages/core/stencil.config.coverage.ts'];
     result.categories.accessibility.configuration = ['apps/storybook/.storybook/preview.ts', 'apps/storybook/.storybook/vitest.setup.ts'];
     for (const entry of Object.values(result.categories)) {
+      const newestFirst = (a, b) => Date.parse(b.reportedAt) - Date.parse(a.reportedAt) || a.path.localeCompare(b.path);
+      entry.measurements.sort(newestFirst); entry.executions.sort(newestFirst);
+      entry.executionStatus = entry.executions[0]?.status || 'unknown';
       entry.status = entry.measurements.length ? 'measured' : entry.files.length ? 'evidence-only' : 'unavailable';
-      if (!entry.measurements.length) entry.notes.push('No component-specific measured coverage report is available in this checkout. The last execution result is unknown.');
+      if (!entry.measurements.length) entry.notes.push('No component-specific measured coverage report is available in this checkout.');
+      if (!entry.executions.length) entry.notes.push('No matching execution report is available; the last execution result is unknown.');
       if (!entry.files.length) entry.notes.push('No matching source test evidence was found in the indexed test directories.');
     }
     if (librarySnapshot) result.librarySnapshot = librarySnapshot;

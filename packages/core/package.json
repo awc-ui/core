@@ -168,7 +168,7 @@
     "test:spec": "stencil test --spec",
     "test:e2e": "stencil test --e2e",
     "test:e2e:coverage": "E2E_COVERAGE=1 stencil test --e2e --config stencil.config.coverage.ts",
-    "test:spec:coverage": "jest --config jest.coverage.config.cjs",
+    "test:spec:coverage": "jest --config jest.coverage.config.cjs --json --outputFile=coverage-spec/test-results.json",
     "test:spec:coverage:html": "node scripts/coverage-html.mjs",
     "test:ssr:coverage": "node scripts/ssr-coverage.mjs",
     "test:ssr": "node scripts/ssr-smoke.mjs",
