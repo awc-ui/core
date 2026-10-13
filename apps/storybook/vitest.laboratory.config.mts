@@ -18,6 +18,9 @@ const active = new WeakSet();
 export default mergeConfig(base, {
   server: { fs: { allow: [root, fs.realpathSync(path.join(root, 'node_modules'))] } },
   resolve: { alias: [
+    // Public utilities used by stories must share the verified isolated build;
+    // a bare import otherwise resolves to the unrelated production dist tree.
+    { find: /^@awc-ui\/core$/, replacement: path.join(runtime, 'index.esm.js') },
     { find: '@awc-ui/core/define', replacement: path.join(runtime, 'md3.esm.js') },
     { find: '@awc-ui/tokens/tokens.css', replacement: path.join(root, 'packages/tokens/src/tokens.css') },
     { find: '@awc-ui/theme', replacement: path.join(root, 'packages/theme/src/index.ts') },

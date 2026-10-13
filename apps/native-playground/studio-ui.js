@@ -152,7 +152,7 @@ export function coveragePresentation(entry = {}, category = entry.id) {
     : category === 'accessibility' ? 'No coverage percentage' : 'Not measured';
   const sourceLabel = entry.testCount > 0 ? `${entry.testCount} declarations` : configurationOnly ? 'Configuration only' : hasSources ? 'Test sources found' : 'No tests found';
   const outcome = execution?.total ? `${execution.passed}/${execution.total} cases passed`
-    : execution?.failedSuites ? `${execution.failedSuites} suite${execution.failedSuites === 1 ? '' : 's'} failed before case results` : 'No case results recorded';
+    : execution?.failedSuites ? `${execution.failedSuites} suite-level failure${execution.failedSuites === 1 ? '' : 's'} recorded` : 'No case results recorded';
   const executionNote = runnerAttempt ? 'No case outcomes were recorded for this runner attempt.' : execution ? `${outcome}${execution.scope === 'shared-test-files' ? ' · shared test files' : ''}`
     : configurationOnly ? 'Accessibility checks are configured; no matching run is saved.'
     : hasSources ? 'Test sources exist; no component test outcomes are recorded.' : 'No tests are attributed to this component in this category.';
@@ -199,6 +199,71 @@ export function coveragePresentation(entry = {}, category = entry.id) {
     testLabel: execution ? execution.total ? 'Recorded cases passed' : 'Cases recorded' : 'Test / story declarations' };
 }
 
+/** Choose within each runner, never between independent test environments. */
+export function coverageRunViews(entry = {}) {
+  const grouped = new Map();
+  for (const run of [...(entry.runs || [])].sort((a, b) => Date.parse(b.reportedAt) - Date.parse(a.reportedAt) || Number(b.verified) - Number(a.verified))) {
+    const key = run.runnerKey || run.key;
+    if (!grouped.has(key)) grouped.set(key, []);
+    const kept = grouped.get(key);
+    if (kept.some(item => item.verified)) continue;
+    if (run.verified) {
+      if (!kept.length) kept.push(run);
+      else {
+        // A newer unpaired coverage file cannot replace recorded outcomes.
+        const execution = kept.some(item => item.execution) ? null : run.execution;
+        const axeAudit = kept.some(item => item.axeAudit) ? null : run.axeAudit;
+        if (execution || axeAudit) kept.push({ ...run, execution, axeAudit });
+      }
+      continue;
+    }
+    // Unverified files remain separate records even if their directory matches.
+    if (!kept.some(item => !!item.measurement === !!run.measurement && !!item.execution === !!run.execution && !!item.axeAudit === !!run.axeAudit)) kept.push(run);
+  }
+  return [...grouped.values()].flat();
+}
+
+export function renderCoverageRun(run, category) {
+  const view = coveragePresentation({ measurements: run.measurement ? [run.measurement] : [], executions: run.execution ? [run.execution] : [] }, category);
+  const { measurement, execution, metrics, runnerAttempt, runStatus, executionLabel } = view;
+  const audit = run.axeAudit;
+  const date = new Date(run.reportedAt);
+  const timestamp = Number.isFinite(date.getTime()) ? date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'Time unavailable';
+  const sourceStatus = run.state === 'running' ? 'Run in progress; inputs not yet verified' : !run.verified ? 'Unverified legacy report' : run.source?.matchesCurrent ? 'Tested inputs unchanged'
+    : run.source?.stableDuringRun === false ? 'Inputs changed during this run' : run.source?.changedFiles?.length ? 'Inputs changed since this run' : 'Input verification incomplete';
+  const heading = run.label || 'Saved test report';
+  const metricHTML = measurement ? `<div class="coverage-measurements">${metrics.map(metric => `<div class="coverage-measurement"><div><span>${metric.label}</span><strong>${metric.text}</strong></div>${metric.percent === null ? '' : `<md-progress-indicator variant="linear" value="${metric.percent}" max="100" label="${escape(heading)} ${metric.label} coverage"></md-progress-indicator>`}<small>${metric.covered} of ${metric.total} covered</small></div>`).join('')}</div>` : '';
+  const noCases = measurement?.attribution?.kind === 'broader-run' && measurement.attribution.componentTestCount === 0;
+  const noCaseNote = measurement?.attribution?.sourceExecution === 'observed'
+    ? 'Indirect source execution; this run contains no test cases attributed to this component.'
+    : 'Source included with zero recorded hits; this run contains no test cases attributed to this component.';
+  const caseLabel = category === 'accessibility' ? 'Accessibility-related test cases' : 'Test cases';
+  const executionHTML = execution ? `<div class="coverage-outcomes"><h4>${runnerAttempt ? 'Runner attempt' : caseLabel}</h4>${runnerAttempt
+    ? `<p data-status="${escape(runStatus)}">${run.state === 'running' ? 'Run in progress' : runStatus === 'failed' ? 'Runner failed' : 'Runner incomplete'}; no case outcomes were recorded.</p>`
+    : `<div class="coverage-run-counts"><strong data-status="${escape(runStatus)}">${escape(executionLabel)}</strong><span><b>${execution.passed}</b> passed</span><span><b>${execution.failed}</b> failed</span><span><b>${execution.skipped}</b> skipped</span>${execution.unknown ? `<span><b>${execution.unknown}</b> incomplete</span>` : ''}</div>${execution.failedSuites ? `<p>${execution.failedSuites} suite-level failures recorded.</p>` : ''}`}
+    ${category === 'accessibility' && execution.accessibilityKinds?.length ? `<p class="coverage-run-description">${escape(execution.environment === 'mock-dom' ? 'Mock DOM' : 'Browser')} · ${execution.accessibilityKinds.map(value => escape(value.replaceAll('-', ' '))).join(', ')}</p>` : ''}</div>` : '';
+  const auditHTML = audit ? `<div class="coverage-outcomes"><h4>Automated axe audits</h4><div class="coverage-run-counts"><span><b>${audit.passed}</b> clean</span><span><b>${audit.failed}</b> failed</span><span><b>${audit.unknown}</b> need review</span></div><p class="coverage-run-description">${audit.total ?? audit.passed + audit.failed + audit.unknown} scans recorded · ${audit.violations} recorded rule violations${audit.errors ? ` · ${audit.errors} audit errors` : ''}${audit.incomplete ? ` · ${audit.incomplete} rule results need review` : ''}${audit.warning ? ` · ${audit.warning} nonblocking warnings` : ''}. Counts describe this run’s scans.</p></div>` : '';
+  const links = [measurement && { path: measurement.path, label: 'Coverage report' }, execution && { path: execution.path, label: runnerAttempt ? 'Run record' : 'Test results' }, audit && { path: audit.path, label: 'Axe results' }, run.runPath && { path: run.runPath, label: 'Run record' }].filter(Boolean)
+    .filter((link, index, all) => all.findIndex(item => item.path === link.path) === index);
+  const notes = [...new Set([...(run.notes || []), ...(execution?.notes || []), ...(audit?.notes || [])])];
+  return `<section class="coverage-run-group" aria-label="${escape(heading)}"><md-card class="coverage-report-card" variant="outlined" full-width density="-1">
+    <div class="coverage-run-heading"><h3>${escape(heading)}</h3><time datetime="${escape(run.reportedAt)}">${run.timestampSource === 'file-mtime' ? 'File updated' : run.timestampSource === 'run-startedAt' ? 'Run started' : 'Run completed'} ${escape(timestamp)}</time></div>
+    <p class="coverage-run-description">${escape(sourceStatus)}${run.verified && (measurement || execution && !runnerAttempt || audit) ? ' · Report hashes verified' : ''}</p>
+    ${executionHTML}${auditHTML}${noCases ? `<p class="coverage-run-description">${noCaseNote}</p>` : ''}
+    ${measurement ? `<h4>${escape(view.coverageTitle)}</h4>${metricHTML}` : category !== 'accessibility' && !runnerAttempt ? '<p class="coverage-run-description">No source coverage report recorded for this run.</p>' : ''}
+    <div class="coverage-report-links">${links.map(link => `<a href="/repo/${escape(link.path)}" target="_blank" rel="noopener">${link.label}</a>`).join('')}</div>
+    <md-accordion-item class="coverage-provenance" headline="Run details" density="-3">
+      ${run.runId ? `<p>Run ID: <code>${escape(run.runId)}</code></p>` : '<p>This legacy file has no verified run identity and is displayed separately.</p>'}
+      ${run.source?.revision ? `<p>Git HEAD at collection: <code>${escape(run.source.revision)}</code></p>` : ''}
+      ${run.source?.digest ? `<p>Tested input fingerprint: <code>${escape(run.source.digest)}</code></p>` : ''}
+      ${run.source?.changedFiles?.length ? `<p>Changed inputs: ${run.source.changedFiles.map(file => `<code>${escape(file)}</code>`).join(', ')}</p>` : ''}
+      ${measurement?.sourceFiles?.length ? `<p>Measured sources: ${measurement.sourceFiles.map(file => `<code>${escape(file)}</code>`).join(', ')}</p>` : ''}
+      ${notes.map(note => `<p>${escape(note)}</p>`).join('')}
+      <p>Source coverage measures executed locations in this runner. Percentages from different runners are not combined.</p>
+    </md-accordion-item>
+  </md-card></section>`;
+}
+
 export function createCoverageUI({ getState, notify }) {
   let category = 'unit', currentTag, result, generation = 0;
   async function load(refresh = false) {
@@ -219,34 +284,13 @@ export function createCoverageUI({ getState, notify }) {
     if (!result) return;
     const keys = Object.keys(coverageCategories);
     const selected = result.categories[category];
-    const { measurement, execution, metrics, executionTitle, executionNote, runStatus, runnerAttempt, contextTitle, contextNote, coverageTitle } = coveragePresentation(selected, category);
-    const reportDate = value => {
-      const date = new Date(value);
-      return Number.isFinite(date.getTime()) ? date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : String(value || 'Unknown');
-    };
-    const reportTimeLabel = report => report.timestampSource === 'run-completedAt' ? 'Run completed' : report.timestampSource === 'run-startedAt' ? 'Run started' : 'Report file updated';
-    const linkedRun = measurement?.attribution?.runContext;
-    const executionCard = execution ? `<md-card class="coverage-run-card" variant="filled" full-width density="-1">
-      <div class="coverage-run-heading"><strong data-status="${escape(runStatus)}">${escape(executionTitle)}</strong><time datetime="${escape(execution.reportedAt)}">${reportTimeLabel(execution)} ${escape(reportDate(execution.reportedAt))}</time></div>
-      ${runnerAttempt ? `<p>${escape(executionNote)}</p>` : `<div class="coverage-run-counts"><span><b>${execution.passed}</b> passed</span><span><b>${execution.failed}</b> failed</span><span><b>${execution.skipped}</b> skipped</span>${execution.unknown ? `<span><b>${execution.unknown}</b> incomplete</span>` : ''}</div>`}
-      ${!runnerAttempt && execution.failedSuites ? `<p class="coverage-suite-failure">${execution.failedSuites} test suite${execution.failedSuites === 1 ? '' : 's'} failed${execution.total ? '.' : ' before any case results were recorded.'}</p>` : ''}
-      <a href="/repo/${escape(execution.path)}" target="_blank" rel="noopener">${runnerAttempt ? 'Runner record' : `${escape(execution.framework)} test report`}</a>
-      ${(execution.notes || []).map(note => `<p>${escape(note)}</p>`).join('')}
-    </md-card>` : '';
-    const measurementCard = measurement ? `<md-card class="coverage-report-card" variant="outlined" full-width density="-1">
-      <div class="coverage-run-heading"><strong>${escape(coverageTitle)}</strong><time datetime="${escape(measurement.reportedAt)}">${reportTimeLabel(measurement)} ${escape(reportDate(measurement.reportedAt))}</time></div>
-      <div class="coverage-measurements">${metrics.map(metric => `<div class="coverage-measurement"><div><span>${metric.label}</span><strong>${metric.text}</strong></div>
-        ${metric.percent === null ? '' : `<md-progress-indicator variant="linear" value="${metric.percent}" max="100" label="${metric.label} coverage"></md-progress-indicator>`}
-        <small>${metric.covered} of ${metric.total} covered</small></div>`).join('')}</div>
-      <div class="coverage-report-links"><a href="/repo/${escape(measurement.path)}" target="_blank" rel="noopener">Coverage report</a>${linkedRun ? `<a href="/repo/${escape(linkedRun.path)}" target="_blank" rel="noopener">Associated test run</a>` : ''}</div>
-      <p class="coverage-report-path"><code>${escape(measurement.path)}</code></p>
-      ${measurement.sourceFiles?.length ? `<p class="coverage-report-path">Measured sources: ${measurement.sourceFiles.map(file => `<code>${escape(file)}</code>`).join(', ')}</p>` : ''}
-    </md-card>` : '';
+    const runs = coverageRunViews(selected);
+    const reportHTML = runs.map(run => renderCoverageRun(run, category)).join('');
+    const empty = coveragePresentation(selected, category);
     const sourceRow = (path, supportingText = '') => `<md-list-item type="link" href="/repo/${escape(path)}" target="_blank" leading-icon="description" trailing-icon="open_in_new" supporting-text="${escape(supportingText)}" density="-2"><code slot="headline">${escape(path)}</code></md-list-item>`;
     $('#coverage-panel').innerHTML = `<div class="coverage-heading"><div><h2>Test coverage</h2><p>Saved Web test evidence for <code>${escape(result.tag)}</code>.</p></div><md-button id="coverage-refresh" variant="text" size="sm" icon="refresh">Refresh</md-button></div>
       <md-tabs id="coverage-tabs" variant="secondary" tab-width="auto" active-tab-index="${keys.indexOf(category)}" aria-label="Coverage category">${keys.map(key => `<md-tab label="${escape(result.categories[key].label)}"></md-tab>`).join('')}</md-tabs>
-      <div class="coverage-body"><div class="coverage-context"><h3>${escape(contextTitle)}</h3><p>${escape(contextNote)}</p>${measurement || execution ? '<p>Saved reports do not establish that the current source revision was tested.</p>' : ''}</div>
-      ${measurementCard}${executionCard}
+      <div class="coverage-body">${reportHTML || `<div class="coverage-context"><h3>${escape(empty.contextTitle)}</h3><p>${escape(empty.contextNote)}</p></div>`}
       <h3>Tests attributed to this component</h3>${selected.files.length ? `<md-list class="coverage-source-list" label="Component test sources" density="-2">${selected.files.map(file => sourceRow(file.path, [file.kind === 'storybook-a11y-configuration' ? 'Configuration only' : `${file.testCount ?? 0} ${file.countKind === 'static-story-exports' ? 'story' : 'test'} declarations`, ...(file.notes || [])].join(' · '))).join('<md-divider></md-divider>')}</md-list>` : '<p class="usage-empty">No test sources are attributed to this component in this category.</p>'}
       <h3>Run locally</h3>${selected.commands.map((command, index) => `<md-card class="coverage-command-card" variant="filled" full-width density="-1"><div class="coverage-command-content"><p>${escape(command.label)}</p><code data-command-code="${index}">${escape(command.command)}</code></div><md-icon-button data-copy-command="${index}" icon="content_copy" size="sm" aria-label="Copy ${escape(command.label)} command"></md-icon-button></md-card>`).join('')}
       ${selected.notes.length ? `<ul class="coverage-notes">${selected.notes.map(note => `<li>${escape(note)}</li>`).join('')}</ul>` : ''}</div>`;

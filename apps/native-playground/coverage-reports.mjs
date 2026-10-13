@@ -5,6 +5,33 @@ const coverageDirectories = [
   ...['react', 'vue', 'svelte', 'angular'].map(framework => [framework === 'angular' ? 'e2e' : 'component', `apps/test-${framework}/coverage-native`]),
 ];
 
+const runnerLabels = {
+  'packages/core/coverage-spec': 'Stencil/Jest unit tests',
+  'packages/core/coverage-e2e': 'Stencil browser E2E',
+  'apps/storybook/coverage-stories': 'Storybook interactions',
+  ...Object.fromEntries(['react', 'vue', 'svelte'].flatMap(project => ['coverage-native', 'test-results'].map(directory => [
+    `apps/test-${project}/${directory}`, `React harness · ${project[0].toUpperCase() + project.slice(1)} project`,
+  ]))),
+  'apps/test-angular/coverage-native': 'Angular application E2E',
+  'apps/test-angular/test-results': 'Angular application E2E',
+};
+
+/** Bounded report directories also define the runner identity used by the UI. */
+export const reportDirectories = [
+  ...coverageDirectories.map(([category, directory]) => ({ category, directory })),
+  ...['react', 'vue', 'svelte', 'angular'].map(project => ({ category: project === 'angular' ? 'e2e' : 'component', directory: `apps/test-${project}/test-results` })),
+].map(value => ({ ...value, label: runnerLabels[value.directory],
+  framework: value.directory.startsWith('packages/') ? 'jest' : value.directory.startsWith('apps/storybook/') ? 'vitest' : 'playwright',
+  runnerKey: value.directory.replace(/\/(?:coverage-native|test-results)$/, ''),
+}));
+
+export function reportDirectoryDescriptor(directory) {
+  const fixed = reportDirectories.find(item => item.directory === directory);
+  if (fixed) return fixed;
+  const scoped = /^(packages\/core\/coverage-e2e|apps\/test-react\/coverage-native)\/scopes\/(all|md-[a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(directory || '');
+  return scoped ? { ...reportDirectories.find(item => item.directory === scoped[1]), directory, scopeId: scoped[2] } : null;
+}
+
 export const coverageReports = coverageDirectories.flatMap(([category, directory]) => [
   { category, path: `${directory}/lcov.info`, format: 'lcov' },
   { category, path: `${directory}/coverage-final.json`, format: 'istanbul' },
@@ -25,14 +52,14 @@ export const scopedReportDirectories = ['packages/core/coverage-e2e/scopes', 'ap
 
 /** Only durable runner-owned scope paths can be read or linked as evidence. */
 export function scopedReportDescriptor(relative) {
-  const match = /^(packages\/core\/coverage-e2e|apps\/test-react\/coverage-native)\/scopes\/(all|md-[a-z0-9]+(?:-[a-z0-9]+)*)\/(run\.json|results\.json|lcov\.info|coverage-final\.json|coverage-summary\.json)$/.exec(relative || '');
+  const match = /^(packages\/core\/coverage-e2e|apps\/test-react\/coverage-native)\/scopes\/(all|md-[a-z0-9]+(?:-[a-z0-9]+)*)\/(run\.json|run-evidence\.json|results\.json|lcov\.info|coverage-final\.json|coverage-summary\.json)$/.exec(relative || '');
   if (!match) return null;
   const [, directory, scopeId, name] = match;
   const core = directory.startsWith('packages/');
   return { category: core ? 'e2e' : 'component', path: relative, framework: core ? 'jest' : 'playwright',
     base: core ? 'packages/core' : 'apps/test-react/e2e', scopeId, manifestPath: `${directory}/scopes/${scopeId}/run.json`,
     format: name === 'lcov.info' ? 'lcov' : name === 'coverage-final.json' ? 'istanbul' : name === 'coverage-summary.json' ? 'istanbul-summary' : null,
-    kind: name === 'run.json' ? 'run' : name === 'results.json' ? 'execution' : 'measurement' };
+    kind: name === 'run.json' ? 'run' : name === 'run-evidence.json' ? 'run-evidence' : name === 'results.json' ? 'execution' : 'measurement' };
 }
 
 export function parseScopedRun(text, descriptor, knownTags) {
@@ -210,6 +237,21 @@ function resultStatus(status) {
   return 'unknown';
 }
 
+/** Story execution and axe outcomes are independent, including nonblocking violations. */
+export function parseAxeReports(reports) {
+  if (!Array.isArray(reports)) return [];
+  return reports.filter(item => item?.type === 'a11y' && item.version === 1).map(item => {
+    const result = item.result;
+    if (!result || typeof result !== 'object' || Array.isArray(result)) return { status: 'unknown', warning: false, violations: null, incomplete: null, error: false };
+    const error = Object.hasOwn(result, 'error');
+    const violations = Array.isArray(result.violations) ? result.violations.length : null;
+    const incomplete = Array.isArray(result.incomplete) ? result.incomplete.length : null;
+    const failed = error || violations > 0 || item.status === 'failed';
+    return { status: failed ? 'failed' : violations === 0 && incomplete === 0 && item.status === 'passed' ? 'passed' : 'unknown',
+      warning: item.status === 'warning', violations, incomplete, error };
+  });
+}
+
 /** Preserve case-level outcomes; report-wide success never substitutes for them. */
 export function parseExecutionReport(text, descriptor) {
   const report = JSON.parse(text), suites = [];
@@ -223,6 +265,7 @@ export function parseExecutionReport(text, descriptor) {
         title: typeof item.title === 'string' ? item.title : '', line: Number.isSafeInteger(item.location?.line) ? item.location.line : null,
         storyId: typeof item.meta?.storyId === 'string' && item.meta.storyId.length <= 512 ? item.meta.storyId : null,
         status: resultStatus(item.status), flaky: false,
+        ...(descriptor.framework === 'vitest' ? { axeAudits: parseAxeReports(item.meta?.reports) } : {}),
       }));
       // An ordinary failed case already accounts for a failed suite. Keeping
       // the file status too would taint unrelated cases in a shared source file.

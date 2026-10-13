@@ -168,16 +168,18 @@ node apps/native-playground/build-syntax-highlighting.mjs --check
 **Test coverage** has four tabs: **Unit**, **Component**, **End-to-end** and
 **Accessibility**. Each lists matching source files, static declaration counts,
 configuration evidence and copyable local test commands. Component evidence
-includes Storybook and framework tests; accessibility evidence includes relevant
-axe, ARIA, keyboard and focus checks and configured Storybook checks.
+includes Storybook and framework test projects; accessibility evidence distinguishes
+recorded axe audits, related ARIA/keyboard/focus cases, and configuration alone.
 Each tab shows its own measured coverage, saved execution outcomes, missing
 reports, and missing tests. These reports describe the Web library; they do not
 claim native-device test coverage.
 
 The panel reads saved reports; it never runs tests. LCOV and Istanbul reports
 provide component-specific line, branch, function and, when available, statement
-coverage. The latest report supplies percentages, progress bars and covered/total
-counts. Alternative formats and separate runs are not added together.
+coverage. Each runner has its own latest run, percentages and covered/total counts.
+Unit/mock-DOM, Stencil browser, Storybook and framework-project results remain
+separate; their instrumentation can produce different executable denominators.
+Alternative formats and separate runs are not added together.
 Source coverage can come from initialization or use inside another component's
 tests. The panel labels that evidence as indirect execution when the associated
 run has no cases attributed to the selected component. It does not present the
@@ -187,15 +189,26 @@ Jest, Vitest and Playwright result reports supply executed pass/fail/skip counts
 separately from code coverage. Accessibility results include only matching checks,
 not every test in a file that happens to contain an axe scan. Planned tests without
 execution results do not count as passed. Shared-file results are identified.
+Storybook records the configured axe hook's actual reports. A passing story does
+not make its axe audit pass: nonblocking violations, incomplete findings and
+audit errors retain their own outcomes. Related test cases are not audit counts.
+The React, Vue and Svelte component-test project labels identify their actual
+harness; a project name alone does not establish framework-wrapper coverage.
 
-Each result links to its source report and shows when that file was saved; this
-does not prove the run matches the current source revision. Without a matching
-report, the panel retains source declaration counts and labels the missing data.
-Coverage and test outcomes are linked only when a validated run manifest and
-report provenance establish that they belong together. Legacy reports without
-that evidence remain explicitly unlinked, even if their modification times are
-close. File-update timestamps and verified run-completion timestamps have
-different labels. The measured source files are listed beside the raw report.
+The collectors create `run-evidence.json` before execution and seal it afterward
+with a run ID, command, intended test files, start/completion times, exit code,
+input-file fingerprints and SHA-256 hashes of the generated reports. The reader
+links coverage and outcomes only when the saved artifact contents match that run.
+It also compares captured inputs with the current checkout and checks whether
+inputs changed during execution. Git revision is recorded for context; it is not
+used as a substitute for checking uncommitted inputs. Changed test definitions
+cannot be used to reattribute historical cases through today's source.
+
+Each result links to its raw reports and run record; provenance stays in **Run
+details**. Missing output and altered report contents cannot become passing
+results. Legacy reports without a content manifest remain explicitly unlinked,
+even if modification times are close. File-update and run-completion timestamps
+have different labels. The measured source files remain available in the details.
 Failed or incomplete runner attempts with no case output are labeled separately
 from component test results. A build failure does not establish a failed component
 assertion or an executed test suite.
@@ -212,18 +225,20 @@ pnpm native:coverage
 ```
 
 This runs unit coverage, the existing browser suites across the full catalog,
-and the existing Storybook stories and play assertions. Each independent stage
+and the existing Storybook stories, play assertions and configured axe audits. Each independent stage
 still runs when another stage has assertion failures; the command returns a
 failure if any stage fails. Storybook requires a successful fresh isolated core
 build from the browser stage. To run a stage separately:
 
 ```sh
-pnpm --filter @awc-ui/core test:spec:coverage
+node apps/native-playground/scripts/measure-tests.mjs --unit
 node apps/native-playground/scripts/coverage/run-browser.mjs --all
 node apps/storybook/scripts/laboratory-coverage.mjs
 ```
 
-The unit command saves coverage and Jest outcomes in `packages/core/coverage-spec`.
+The unit collector saves paired coverage, Jest outcomes and run evidence in
+`packages/core/coverage-spec`. Running the underlying Jest command directly does
+not create a new Laboratory run record.
 The browser collector runs the existing Stencil and React tests with source maps,
 writing reports to `packages/core/coverage-e2e/scopes/all` and
 `apps/test-react/coverage-native/scopes/all`. Its isolated build leaves the studio's live
@@ -236,6 +251,12 @@ Storybook writes outcomes and source-mapped library coverage to
 `apps/storybook/coverage-stories`. Incidental controls in another component's
 test file do not acquire that component's test outcomes. Structural children may
 have measured code coverage through their parents without owning a story suite.
+The isolated build records its inputs before compilation and hashes its output
+files. Browser and Storybook collectors verify that evidence, including the
+copied Storybook runtime, before and after execution. Stale build inputs or
+changed compiled files cannot be reported as unchanged tested inputs. Storybook
+resolves both component registration and public core utilities from that verified
+runtime. Run records retain the build ID and runtime fingerprint.
 Browser coverage includes unexecuted components using their verified compiled
 JavaScript and source maps. Those sources have zero hits against an executable
 denominator; they are not presented as passing tests or missing measurements.

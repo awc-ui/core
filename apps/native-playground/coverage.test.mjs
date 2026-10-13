@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, rm, symlink, utimes } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, rm, symlink, utimes } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { getComponentCoverage, isCoverageEvidencePath } from './coverage.mjs';
+import { beginTestRun, finishTestRun, evidenceDirectory } from './test-run-evidence.mjs';
 
 async function fixture(t, files = {}) {
   const base = await mkdtemp(path.join(tmpdir(), 'awc-coverage-')), root = path.join(base, 'repo');
@@ -366,6 +367,20 @@ async function reportTime(root, file, value = '2026-10-01T10:00:30Z') {
   const date = new Date(value); await utimes(path.join(root, file), date, date);
 }
 
+async function sealReports(root, directory, options = {}) {
+  const legacy = await readFile(path.join(root, directory, 'run.json'), 'utf8').then(JSON.parse).catch(() => ({}));
+  const { category, framework } = evidenceDirectory(directory);
+  const handle = await beginTestRun({ root, directory, category, framework,
+    label: options.label || `${framework} ${category}`, command: 'test fixture',
+    testFiles: options.testFiles || legacy[category === 'e2e' ? 'e2eTests' : 'componentTests'] || [],
+    tags: options.tags || legacy.tags || ['md-button', 'md-chip'] });
+  for (const name of options.artifacts || ['results.json', 'test-results.json', 'lcov.info', 'coverage-final.json']) {
+    const file = path.join(root, directory, name), bytes = await readFile(file).catch(() => null);
+    if (bytes) await writeFile(file, bytes);
+  }
+  return finishTestRun(handle, { exitCode: options.exitCode ?? (legacy.status === 'failed' ? 1 : 0) });
+}
+
 test('durable single-component and all-component reports coexist and preserve exact attribution', async t => {
   const single = scopePath('md-button'), all = scopePath('all');
   const { root } = await fixture(t, {
@@ -377,6 +392,7 @@ test('durable single-component and all-component reports coexist and preserve ex
     [`${all}/results.json`]: jestResult([['md-button', 'failed'], ['md-chip', 'passed']]),
   });
   for (const file of [`${single}/results.json`, `${single}/lcov.info`, `${all}/results.json`]) await reportTime(root, file);
+  await sealReports(root, single); await sealReports(root, all);
   const button = (await getComponentCoverage(root, 'md-button')).categories.e2e;
   const chip = (await getComponentCoverage(root, 'md-chip')).categories.e2e;
   assert.equal(button.executions.length, 2, 'Runs remain separate, not summed');
@@ -402,6 +418,7 @@ test('source measurements distinguish indirect execution, zero hits, owned outco
     [`${all}/lcov.info`]: `SF:src/components/${group}/${group}.tsx\nDA:1,1\nDA:2,0\nend_of_record\nSF:src/components/md-chip/md-chip.tsx\nDA:1,0\nend_of_record\nSF:src/components/md-button/md-button.tsx\nDA:1,1\nend_of_record\n`,
   });
   for (const file of [`${all}/results.json`, `${all}/lcov.info`]) await reportTime(root, file);
+  await sealReports(root, all);
   const indirect = (await getComponentCoverage(root, group)).categories.e2e;
   const zero = (await getComponentCoverage(root, 'md-chip')).categories.e2e.measurements[0];
   const own = (await getComponentCoverage(root, 'md-button')).categories.e2e.measurements[0];
@@ -438,12 +455,14 @@ test('a measurement cannot borrow outcomes from another family, another scope, s
   await reportTime(root, `${all}/results.json`, '2026-09-01T10:00:00Z');
   await reportTime(root, `${all}/lcov.info`);
   await reportTime(root, `${single}/results.json`, '2026-10-01T11:00:30Z');
+  await sealReports(root, all, { artifacts: ['lcov.info'] });
+  await sealReports(root, single);
   const result = await getComponentCoverage(root, 'md-button');
   const attribution = result.categories.e2e.measurements[0].attribution;
   assert.equal(result.categories.e2e.executions[0].scopeId, 'md-button');
   assert.equal(attribution.kind, 'broader-run'); assert.equal(attribution.componentExecutionPath, null);
   assert.equal(attribution.componentTestCount, null, 'The matching case report was stale; absence of readable outcomes is not a proven zero case count');
-  assert.equal(attribution.runContext.path, `${all}/run.json`);
+  assert.equal(attribution.runContext.path, `${all}/run-evidence.json`);
   assert.equal(attribution.runContext.total, null, 'A manifest alone supplies no invented case totals');
   assert.match(attribution.notes.join(' '), /outcomes could not be verified/);
   assert.equal(result.categories.unit.executions[0].total, 1);
@@ -451,7 +470,7 @@ test('a measurement cannot borrow outcomes from another family, another scope, s
   assert.equal(result.categories.unit.measurements[0].attribution.runContext, null, 'Adjacent file mtimes do not prove legacy run identity');
 });
 
-test('a matching setup failure remains attributable even when no test case outcomes were recorded', async t => {
+test('a matching suite-level failure remains attributable even when no test case outcomes were recorded', async t => {
   const all = scopePath('all');
   const { root } = await fixture(t, {
     [e2eFile('md-button')]: `it('renders', () => {});`,
@@ -460,12 +479,13 @@ test('a matching setup failure remains attributable even when no test case outco
     [`${all}/lcov.info`]: 'SF:src/components/md-button/md-button.tsx\nDA:1,0\nend_of_record\n',
   });
   for (const report of [`${all}/results.json`, `${all}/lcov.info`]) await reportTime(root, report);
+  await sealReports(root, all);
   const entry = (await getComponentCoverage(root, 'md-button')).categories.e2e;
   assert.equal(entry.executions[0].failedSuites, 1);
   assert.equal(entry.measurements[0].attribution.kind, 'component-outcomes');
   assert.equal(entry.measurements[0].attribution.componentExecutionPath, `${all}/results.json`);
   assert.equal(entry.measurements[0].attribution.componentTestCount, 0);
-  assert.match(entry.measurements[0].attribution.notes.join(' '), /suite failed/);
+  assert.match(entry.measurements[0].attribution.notes.join(' '), /suite-level failure/);
 });
 
 test('explicit per-case mounts override a misleading folder without borrowing another component pass', async t => {
@@ -477,6 +497,7 @@ test('explicit per-case mounts override a misleading folder without borrowing an
     [`${all}/lcov.info`]: 'SF:src/components/md-button/md-button.tsx\nDA:1,0\nend_of_record\nSF:src/components/md-chip/md-chip.tsx\nDA:1,1\nend_of_record\n',
   });
   for (const report of [`${all}/results.json`, `${all}/lcov.info`]) await reportTime(root, report);
+  await sealReports(root, all);
   const button = (await getComponentCoverage(root, 'md-button')).categories.e2e;
   const chip = (await getComponentCoverage(root, 'md-chip')).categories.e2e;
   assert.equal(button.testCount, 0); assert.deepEqual(button.executions, []);
@@ -496,7 +517,8 @@ test('failed browser infrastructure replaces an old pass with a zero-case failed
   assert.equal(entry.executionStatus, 'failed');
   assert.equal(entry.executions[0].total, 0);
   assert.equal(entry.executions[0].failed, 0, 'Infrastructure does not fabricate a failed assertion');
-  assert.equal(entry.executions[0].failedSuites, 1);
+  assert.equal(entry.executions[0].failedSuites, 0);
+  assert.equal(entry.executions[0].runnerFailure, true);
   assert.equal(entry.executions[0].scope, 'runner-attempt');
   assert.match(entry.executions[0].notes.join(' '), /Chromium could not start/);
 });
@@ -517,7 +539,8 @@ test('a failed isolated build records failed browser attempts without claiming t
     assert.equal(entry.executionStatus, 'failed', id);
     assert.equal(entry.executions[0].total, 0, id);
     assert.equal(entry.executions[0].failed, 0, id);
-    assert.equal(entry.executions[0].failedSuites, 1, id);
+    assert.equal(entry.executions[0].failedSuites, 0, id);
+    assert.equal(entry.executions[0].runnerFailure, true, id);
     assert.match(entry.executions[0].notes.join(' '), /build failed/);
   }
 });
@@ -749,7 +772,222 @@ test('real checkout maps button source, component, browser and accessibility evi
   assert.ok(result.categories.accessibility.files.length > 0);
   assert.equal(result.librarySnapshot?.scope, 'library');
   for (const category of Object.values(result.categories)) {
-    assert.equal(category.executionStatus, category.executions[0]?.status || 'unknown');
+    assert.ok(['passed', 'failed', 'unknown', 'skipped'].includes(category.executionStatus));
     assert.ok(category.executions.every(run => isCoverageEvidencePath(run.path)));
+    assert.ok(category.runs.every(run => run.verified ? !!run.runId && isCoverageEvidencePath(run.runPath) : run.runId === null));
   }
+});
+
+test('content-verified artifacts pair despite changed mtimes and retain tested-input identity', async t => {
+  const directory = 'packages/core/coverage-spec', source = 'packages/core/src/components/md-button/md-button.spec.ts';
+  const { root } = await fixture(t, {
+    [source]: `it('renders', () => {});`,
+    [`${directory}/lcov.info`]: 'SF:src/components/md-button/md-button.tsx\nDA:1,1\nend_of_record\n',
+    [`${directory}/results.json`]: JSON.stringify({ testResults: [{ name: source, status: 'passed', assertionResults: [{ title: 'renders', status: 'passed' }] }] }),
+  });
+  const evidence = await sealReports(root, directory, { testFiles: [source] });
+  for (const name of ['results.json', 'lcov.info']) await reportTime(root, `${directory}/${name}`, '2000-01-01');
+  const { unit } = (await getComponentCoverage(root, 'md-button')).categories;
+  assert.equal(unit.runs.length, 1);
+  const run = unit.runs[0];
+  assert.equal(run.runId, evidence.runId); assert.equal(run.runPath, `${directory}/run-evidence.json`);
+  assert.equal(run.verified, true); assert.equal(run.source.matchesCurrent, true);
+  assert.equal(run.source.stableDuringRun, true); assert.equal(run.source.files, undefined);
+  assert.equal(run.measurement.attribution.kind, 'component-outcomes');
+  assert.equal(run.measurement.runId, run.execution.runId); assert.equal(run.execution.total, 1);
+  assert.equal(run.reportedAt, evidence.completedAt);
+  assert.ok(isCoverageEvidencePath(run.runPath));
+  assert.equal(isCoverageEvidencePath(`${directory}/run-evidence-private.json`), false);
+});
+
+test('tampered output cannot borrow valid evidence, an old manifest or another report in its directory', async t => {
+  const directory = scopePath('md-button');
+  const { root } = await fixture(t, {
+    [e2eFile('md-button')]: `it('renders', () => {});`,
+    [`${directory}/run.json`]: scopedRun('md-button', ['md-button'], [e2eFile('md-button')]),
+    [`${directory}/results.json`]: jestResult([['md-button', 'passed']]),
+    [`${directory}/lcov.info`]: 'SF:src/components/md-button/md-button.tsx\nDA:1,1\nend_of_record\n',
+  });
+  await sealReports(root, directory);
+  await writeFile(path.join(root, directory, 'results.json'), jestResult([['md-button', 'failed']]));
+  await writeFile(path.join(root, directory, 'coverage-summary.json'), JSON.stringify({ 'src/components/md-button/md-button.tsx': { lines: { total: 10, covered: 10 } } }));
+  const entry = (await getComponentCoverage(root, 'md-button')).categories.e2e;
+  assert.equal(entry.measurements.length, 1, 'Unsealed later artifacts are excluded');
+  assert.equal(entry.executions.length, 1); assert.equal(entry.executions[0].scope, 'runner-attempt');
+  assert.equal(entry.executions[0].total, 0); assert.equal(entry.executionStatus, 'unknown');
+  assert.equal(entry.runs.length, 1); assert.equal(entry.runs[0].verified, true);
+  assert.equal(entry.measurements[0].attribution.componentExecutionPath, null);
+  assert.equal(entry.measurements[0].attribution.componentTestCount, null);
+});
+
+test('a changed implementation retains historical paired results while changed test definitions block reassignment', async t => {
+  for (const changedTest of [false, true]) {
+    const directory = 'packages/core/coverage-spec', source = 'packages/core/src/components/md-button/md-button.spec.ts', implementation = 'packages/core/src/components/md-button/md-button.tsx';
+    const { root } = await fixture(t, {
+      [source]: `it('renders', () => {});`, [implementation]: 'export class Button {}',
+      [`${directory}/lcov.info`]: 'SF:src/components/md-button/md-button.tsx\nDA:1,1\nend_of_record\n',
+      [`${directory}/results.json`]: JSON.stringify({ testResults: [{ name: source, status: 'passed', assertionResults: [{ title: 'renders', status: 'passed' }] }] }),
+    });
+    await sealReports(root, directory, { testFiles: [source] });
+    await writeFile(path.join(root, changedTest ? source : implementation), changedTest ? `it('different behavior', () => {});` : 'export class Button { changed = true; }');
+    const run = (await getComponentCoverage(root, 'md-button')).categories.unit.runs[0];
+    assert.equal(run.verified, true, 'Artifact identity remains verified'); assert.equal(run.source.matchesCurrent, false);
+    assert.equal(run.execution.total, changedTest ? 0 : 1);
+    assert.equal(run.status, changedTest ? 'unknown' : 'passed');
+    assert.equal(run.measurement.attribution.kind, changedTest ? 'broader-run' : 'component-outcomes');
+    if (changedTest) assert.match(run.execution.notes.join(' '), /test definitions have changed/);
+  }
+});
+
+test('Component runners retain their own measurements and outcomes instead of pairing newest unrelated files', async t => {
+  const react = 'apps/test-react/coverage-native', stories = 'apps/storybook/coverage-stories';
+  const reactSource = 'apps/test-react/e2e/button.spec.tsx', storySource = 'apps/storybook/src/stories/MdButton.stories.ts';
+  const { root } = await fixture(t, {
+    [reactSource]: `test('renders', () => {});`,
+    [storySource]: `export default { component: 'md-button' }; export const Primary: Story = {};`,
+    [`${react}/lcov.info`]: 'SF:src/components/md-button/md-button.tsx\nDA:1,1\nDA:2,0\nend_of_record\n',
+    [`${react}/results.json`]: JSON.stringify({ suites: [{ file: 'button.spec.tsx', specs: [{ title: 'renders', tests: [{ status: 'expected', expectedStatus: 'passed', results: [{ status: 'passed' }] }] }] }] }),
+    [`${stories}/lcov.info`]: 'SF:src/components/md-button/md-button.tsx\nDA:1,1\nDA:2,1\nend_of_record\n',
+    [`${stories}/results.json`]: JSON.stringify({ testResults: [{ name: storySource, status: 'failed', assertionResults: [{ title: 'Primary', fullName: 'Primary', status: 'failed' }] }] }),
+  });
+  await sealReports(root, stories, { testFiles: [storySource], label: 'Storybook interactions', exitCode: 1 });
+  await sealReports(root, react, { testFiles: [reactSource], label: 'React harness · React project' });
+  const entry = (await getComponentCoverage(root, 'md-button')).categories.component;
+  assert.equal(entry.runs.length, 2); assert.equal(new Set(entry.runs.map(run => run.runnerKey)).size, 2);
+  assert.equal(entry.executionStatus, 'failed', 'A newer passing React harness does not conceal a failing Storybook run');
+  const byLabel = Object.fromEntries(entry.runs.map(run => [run.label, run]));
+  assert.equal(byLabel['React harness · React project'].measurement.lines.percent, 50);
+  assert.equal(byLabel['React harness · React project'].execution.status, 'passed');
+  assert.equal(byLabel['Storybook interactions'].measurement.lines.percent, 100);
+  assert.equal(byLabel['Storybook interactions'].execution.status, 'failed');
+  for (const run of entry.runs) assert.equal(run.measurement.runId, run.execution.runId);
+});
+
+test('Accessibility preserves each parent runner and excludes ARIA fixture-only checks', async t => {
+  const unit = 'packages/core/coverage-spec', browser = scopePath('md-button');
+  const spec = 'packages/core/src/components/md-button/md-button.spec.ts', e2e = e2eFile('md-button');
+  const { root } = await fixture(t, {
+    [spec]: `it('reflects suppress-expand-icon-flip when set', () => { const fixture = '<md-button aria-expanded="true"></md-button>'; expect(el.hasAttribute('suppress-expand-icon-flip')).toBe(true); });
+      it('exposes the accessible name', () => { expect(el.getAttribute('aria-label')).toBe('Save'); });`,
+    [e2e]: `it('keyboard focus', () => { expect(document.activeElement).toBe(button); });`,
+    [`${unit}/results.json`]: JSON.stringify({ testResults: [{ name: spec, status: 'passed', assertionResults: [
+      { title: 'reflects suppress-expand-icon-flip when set', status: 'passed' }, { title: 'exposes the accessible name', status: 'passed' },
+    ] }] }),
+    [`${browser}/run.json`]: scopedRun('md-button', ['md-button'], [e2e]),
+    [`${browser}/results.json`]: JSON.stringify({ testResults: [{ name: e2e, status: 'failed', assertionResults: [{ title: 'keyboard focus', status: 'failed' }] }] }),
+  });
+  await sealReports(root, browser, { exitCode: 1 });
+  await sealReports(root, unit, { testFiles: [spec] });
+  const entry = (await getComponentCoverage(root, 'md-button')).categories.accessibility;
+  assert.equal(entry.runs.length, 2); assert.equal(entry.executionStatus, 'failed');
+  assert.deepEqual(entry.runs.map(run => run.category).sort(), ['e2e', 'unit']);
+  const mock = entry.runs.find(run => run.category === 'unit').execution;
+  assert.equal(mock.total, 1); assert.equal(mock.environment, 'mock-dom');
+  assert.deepEqual(mock.accessibilityKinds, ['aria-or-semantics']);
+  assert.equal(entry.runs.find(run => run.category === 'e2e').execution.environment, 'browser');
+  assert.deepEqual(entry.measurements, []); assert.deepEqual(entry.audits, []);
+});
+
+test('Storybook axe audit metadata remains separate from story success, configured addons and related checks', async t => {
+  const directory = 'apps/storybook/coverage-stories', source = 'apps/storybook/src/stories/MdButton.stories.ts';
+  const audit = (status, result) => ({ type: 'a11y', version: 1, status, result });
+  const outcomes = [
+    ['NotRun', []], ['Clean', [audit('passed', { violations: [], incomplete: [] })]],
+    ['Warning', [audit('warning', { violations: [{ id: 'color-contrast' }], incomplete: [] })]],
+    ['Review', [audit('passed', { violations: [], incomplete: [{ id: 'color-contrast' }] })]],
+    ['Error', [audit('failed', { error: {} })]],
+  ];
+  const { root } = await fixture(t, {
+    [source]: `export default { component: 'md-button', parameters: { a11y: { test: 'todo' } } }; ${outcomes.map(([title]) => `export const ${title}: Story = {};`).join('\n')}`,
+    [`${directory}/results.json`]: JSON.stringify({ testResults: [{ name: source, status: 'passed', assertionResults: outcomes.map(([title, reports]) => ({ title, fullName: title, status: 'passed', meta: { reports } })) }] }),
+  });
+  await sealReports(root, directory, { testFiles: [source], label: 'Storybook interactions' });
+  const categories = (await getComponentCoverage(root, 'md-button')).categories;
+  assert.equal(categories.component.executionStatus, 'passed'); assert.equal(categories.component.executions[0].total, 5);
+  const run = categories.accessibility.runs[0];
+  assert.equal(run.execution, null, 'Axe records do not invent related play assertions');
+  assert.equal(run.measurement, null); assert.equal(run.status, 'failed');
+  assert.equal(run.axeAudit.total, 4); assert.equal(run.axeAudit.passed, 1); assert.equal(run.axeAudit.failed, 2); assert.equal(run.axeAudit.unknown, 1);
+  assert.equal(run.axeAudit.warning, 1); assert.equal(run.axeAudit.violations, 1); assert.equal(run.axeAudit.incomplete, 1); assert.equal(run.axeAudit.errors, 1);
+  assert.equal(run.axeAudit.runId, categories.component.runs[0].runId);
+  assert.equal(categories.accessibility.executionStatus, 'failed');
+});
+
+test('large verified Storybook reports retain failing cases and axe violations beyond 32 MiB', async t => {
+  const directory = 'apps/storybook/coverage-stories', source = 'apps/storybook/src/stories/MdButton.stories.ts';
+  const { root } = await fixture(t, {
+    [source]: `export default { component: 'md-button' }; export const Broken: Story = {}; export const Warning: Story = {};`,
+    [`${directory}/results.json`]: JSON.stringify({
+      diagnosticPadding: ' '.repeat(33 * 1024 * 1024),
+      testResults: [{ name: source, status: 'failed', assertionResults: [
+        { title: 'Broken', fullName: 'Broken', status: 'failed', failureMessages: ['Recorded failure'] },
+        { title: 'Warning', fullName: 'Warning', status: 'passed', meta: { reports: [{
+          type: 'a11y', version: 1, status: 'warning', result: { violations: [{ id: 'color-contrast' }], incomplete: [] },
+        }] } },
+      ] }],
+    }),
+  });
+  const evidence = await sealReports(root, directory, { testFiles: [source], exitCode: 1 });
+  assert.ok(evidence.artifacts['results.json'].size > 32 * 1024 * 1024);
+  const { component, accessibility } = (await getComponentCoverage(root, 'md-button')).categories;
+  const run = component.runs.find(item => item.runId === evidence.runId);
+  assert.equal(run.verified, true); assert.equal(run.status, 'failed');
+  assert.equal(run.execution.total, 2); assert.equal(run.execution.passed, 1); assert.equal(run.execution.failed, 1);
+  const audits = accessibility.runs.find(item => item.runId === evidence.runId);
+  assert.equal(audits.verified, true); assert.equal(audits.status, 'failed');
+  assert.equal(audits.axeAudit.total, 1); assert.equal(audits.axeAudit.failed, 1); assert.equal(audits.axeAudit.warning, 1);
+});
+
+test('a newer unverified failure stays visible beside an older verified pass from the same runner', async t => {
+  const directory = scopePath('md-button'), newer = 'packages/core/coverage-e2e/results.json';
+  const { root } = await fixture(t, {
+    [e2eFile('md-button')]: `it('renders', () => {});`,
+    [`${directory}/run.json`]: scopedRun('md-button', ['md-button'], [e2eFile('md-button')]),
+    [`${directory}/results.json`]: jestResult([['md-button', 'passed']]), [newer]: jestResult([['md-button', 'failed']]),
+  });
+  const evidence = await sealReports(root, directory);
+  await reportTime(root, newer, new Date(Date.parse(evidence.completedAt) + 60000).toISOString());
+  const entry = (await getComponentCoverage(root, 'md-button')).categories.e2e;
+  assert.equal(entry.executionStatus, 'failed');
+  assert.equal(entry.runs.find(run => run.verified).execution.status, 'passed');
+  assert.equal(entry.runs.find(run => !run.verified).execution.status, 'failed');
+});
+
+test('a running parent run replaces older Accessibility success with an explicit zero-case attempt', async t => {
+  const directory = scopePath('md-button'), old = 'packages/core/coverage-e2e/results.json', file = e2eFile('md-button');
+  const { root } = await fixture(t, {
+    [file]: `it('keyboard focus', () => { expect(document.activeElement).toBe(button); });`,
+    [old]: JSON.stringify({ testResults: [{ name: file, status: 'passed', assertionResults: [{ title: 'keyboard focus', status: 'passed' }] }] }),
+  });
+  await reportTime(root, old, '2000-01-01');
+  const handle = await beginTestRun({ root, directory, category: 'e2e', framework: 'jest', label: 'Stencil browser E2E', command: 'fixture', testFiles: [file], tags: ['md-button'] });
+  const entry = (await getComponentCoverage(root, 'md-button')).categories.accessibility;
+  const run = entry.runs.find(run => run.runId === handle.runId);
+  assert.equal(run.state, 'running'); assert.equal(run.status, 'unknown'); assert.equal(entry.executionStatus, 'unknown');
+  assert.equal(run.execution.scope, 'runner-attempt'); assert.equal(run.execution.total, 0); assert.equal(run.execution.failedSuites, 0);
+  assert.equal(run.axeAudit, null); assert.equal(run.category, 'e2e'); assert.equal(run.execution.environment, 'browser');
+});
+
+test('shared utility helper chains attribute registered real components without expanding fake element fixtures', async t => {
+  const source = 'packages/core/src/utils/form-enter.spec.ts';
+  const { root } = await fixture(t, {
+    [source]: `import { newSpecPage } from '@stencil/core/testing';
+      import { MdButton as Button } from '../components/md-button/md-button';
+      describe('form helper', () => {
+        async function buttonFixture(attributes = '') { return newSpecPage({ components: [Button], html: \`<md-button \${attributes}>Save</md-button>\` }); }
+        async function delayedFixture() { return buttonFixture(); }
+        function fakeFixture() { return document.createElement('md-chip'); }
+        it('waits for the lazy default', async () => { await delayedFixture(); });
+        it('rejects a failed upgrade', async () => { await delayedFixture(); });
+        it('activates an already ready default', async () => { await delayedFixture(); });
+        it('uses a fake utility host', () => { fakeFixture(); });
+      });`,
+    'packages/core/coverage-spec/results.json': JSON.stringify({ testResults: [{ name: source, status: 'passed', assertionResults: [
+      'waits for the lazy default', 'rejects a failed upgrade', 'activates an already ready default', 'uses a fake utility host',
+    ].map(title => ({ title, fullName: `form helper ${title}`, status: 'passed' })) }] }),
+  });
+  const button = (await getComponentCoverage(root, 'md-button')).categories.unit;
+  assert.equal(button.testCount, 3); assert.equal(button.executions[0].total, 3);
+  const chip = (await getComponentCoverage(root, 'md-chip')).categories.unit;
+  assert.equal(chip.testCount, 0); assert.deepEqual(chip.executions, []);
 });

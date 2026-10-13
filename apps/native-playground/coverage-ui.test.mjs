@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { coveragePresentation } from './studio-ui.js';
+import { coveragePresentation, coverageRunViews, renderCoverageRun } from './studio-ui.js';
 
 test('measured coverage uses the latest report without merging separate runs or inferring success', () => {
   const measured = { path: 'latest', lines: { covered: 8, total: 10, percent: 80 } };
@@ -65,7 +65,7 @@ test('configured accessibility and incomplete, skipped or suite-failed runs cann
   }
   const failed = coveragePresentation({ executions: [{ status: 'failed', passed: 0, failed: 0, total: 0, failedSuites: 1 }] });
   assert.equal(failed.executionLabel, 'Failed');
-  assert.equal(failed.executionNote, '1 suite failed before case results');
+  assert.equal(failed.executionNote, '1 suite-level failure recorded');
   assert.equal(failed.testValue, '0');
   assert.equal(failed.testLabel, 'Cases recorded');
   assert.equal(failed.percentage, 'Not measured');
@@ -158,4 +158,90 @@ test('runner infrastructure failures do not claim component case or suite outcom
     assert.match(oldCoverage.contextNote, /runner attempt below recorded no case outcomes/);
     assert.doesNotMatch(oldCoverage.contextNote, /component results below/);
   }
+});
+
+test('each runner keeps its own latest paired reports without hiding other test environments', () => {
+  const react = { runnerKey: 'component:react', runId: 'react-new', label: 'React CT', verified: true, reportedAt: '2026-10-14T12:00:00Z' };
+  const story = { runnerKey: 'component:storybook', runId: 'story', label: 'Storybook', verified: true, reportedAt: '2026-10-14T11:00:00Z' };
+  const views = coverageRunViews({ runs: [story, { ...react, runId: 'react-old', reportedAt: '2026-10-14T10:00:00Z' }, react] });
+  assert.deepEqual(views.map(run => run.runId), ['react-new', 'story']);
+  const a11y = coverageRunViews({ runs: [{ ...react, runnerKey: 'unit:core', execution: { status: 'passed' } },
+    { ...story, runnerKey: 'e2e:core', execution: { status: 'failed' } }] });
+  assert.deepEqual(a11y.map(run => run.execution.status), ['passed', 'failed']);
+});
+
+test('verified paired runs show exact outcomes and compact provenance without legacy warnings', () => {
+  const html = renderCoverageRun({ label: 'Unit · mock DOM', verified: true, runId: 'run-1', runPath: 'packages/core/coverage-spec/run-evidence.json',
+    reportedAt: '2026-10-14T12:00:00Z', source: { matchesCurrent: true, revision: 'abc', digest: 'fingerprint' },
+    measurement: { path: 'unit/lcov.info', lines: { covered: 424, total: 426, percent: 99.53 },
+      attribution: { kind: 'component-outcomes', sourceExecution: 'observed', componentTestCount: 100, componentExecutionPath: 'unit/results.json' } },
+    execution: { path: 'unit/results.json', status: 'passed', passed: 100, failed: 0, skipped: 0, total: 100 },
+  }, 'unit');
+  assert.match(html, /Tested inputs unchanged/);
+  assert.match(html, /Report hashes verified/);
+  assert.match(html, /99\.53%/);
+  assert.match(html, /<b>100<\/b> passed/);
+  assert.match(html, /headline="Run details"/);
+  assert.doesNotMatch(html, /not linked|unlinked report|do not establish/);
+});
+
+test('axe findings remain separate from passing related cases and source changes remain visible', () => {
+  const html = renderCoverageRun({ label: 'Storybook', verified: true, reportedAt: '2026-10-14T12:00:00Z',
+    source: { stableDuringRun: true, matchesCurrent: false, changedFiles: ['component.tsx'] },
+    execution: { path: 'stories/results.json', status: 'passed', passed: 5, failed: 0, skipped: 0, total: 5, environment: 'browser', accessibilityKinds: ['keyboard-or-focus'] },
+    axeAudit: { path: 'stories/results.json', total: 8, passed: 6, failed: 1, unknown: 1, warning: 1, violations: 2, incomplete: 3 },
+  }, 'accessibility');
+  assert.match(html, /Inputs changed since this run/);
+  assert.match(html, /<b>5<\/b> passed/);
+  assert.match(html, /<b>6<\/b> clean/);
+  assert.match(html, /<b>1<\/b> failed/);
+  assert.match(html, /2 recorded rule violations/);
+  assert.doesNotMatch(html, /progress-indicator|13 passed/);
+});
+
+test('incomplete runner attempts never display verified report hashes or fabricated case counts', () => {
+  const html = renderCoverageRun({ label: 'Unit', verified: true, reportedAt: '2026-10-14T12:00:00Z', timestampSource: 'run-startedAt', source: { matchesCurrent: false },
+    execution: { path: 'unit/run-evidence.json', scope: 'runner-attempt', status: 'unknown', total: 0, passed: 0, failed: 0, skipped: 0 },
+  }, 'unit');
+  assert.match(html, /Input verification incomplete/);
+  assert.match(html, /Run started/);
+  assert.match(html, /no case outcomes were recorded/);
+  assert.doesNotMatch(html, /Report hashes verified|<b>0<\/b> passed/);
+});
+
+test('running inputs are not labeled stale and axe errors are not labeled violations', () => {
+  const running = renderCoverageRun({ label: 'Unit', verified: true, state: 'running', reportedAt: '2026-10-14T12:00:00Z',
+    source: { matchesCurrent: false, changedFiles: ['component.tsx'] },
+    execution: { scope: 'runner-attempt', path: 'unit/run-evidence.json', status: 'unknown', total: 0, passed: 0, failed: 0, skipped: 0 },
+  }, 'unit');
+  assert.match(running, /Run in progress; inputs not yet verified/);
+  assert.doesNotMatch(running, /Inputs changed since|Report hashes verified/);
+  const audit = renderCoverageRun({ label: 'Storybook', reportedAt: '2026-10-14T12:00:00Z',
+    axeAudit: { path: 'stories/results.json', passed: 0, failed: 1, unknown: 0, violations: 0, errors: 1 },
+  }, 'accessibility');
+  assert.match(audit, /0 recorded rule violations · 1 audit errors/);
+  assert.doesNotMatch(audit, /with violations/);
+});
+
+test('grouped source measurements with zero hits never claim indirect execution', () => {
+  const html = renderCoverageRun({ label: 'Stencil browser E2E', reportedAt: '2026-10-14T12:00:00Z',
+    measurement: { path: 'browser/lcov.info', lines: { covered: 0, total: 55, percent: 0 },
+      attribution: { kind: 'broader-run', sourceExecution: 'zero-hit', componentTestCount: 0 } },
+  }, 'e2e');
+  assert.match(html, /Source included with zero recorded hits/);
+  assert.match(html, /Source coverage · no execution/);
+  assert.doesNotMatch(html, /Indirect source execution|Indirect source coverage/);
+});
+
+test('new unpaired coverage cannot hide a recorded failure, while new outcomes replace older outcomes', () => {
+  const failed = { key: 'old', runnerKey: 'e2e:core', verified: true, reportedAt: '2026-10-14T11:00:00Z',
+    execution: { status: 'failed' }, measurement: { lines: { covered: 10, total: 20, percent: 50 } } };
+  const newer = { key: 'new', runnerKey: 'e2e:core', verified: false, reportedAt: '2026-10-14T12:00:00Z',
+    measurement: { lines: { covered: 20, total: 20, percent: 100 } } };
+  const separate = coverageRunViews({ runs: [failed, newer] });
+  assert.equal(separate.length, 2);
+  assert.equal(separate[0].measurement.lines.percent, 100);
+  assert.equal(separate[1].execution.status, 'failed');
+  const latestOutcome = { ...newer, measurement: null, execution: { status: 'failed' } };
+  assert.deepEqual(coverageRunViews({ runs: [{ ...failed, execution: { status: 'passed' } }, latestOutcome] }), [latestOutcome]);
 });

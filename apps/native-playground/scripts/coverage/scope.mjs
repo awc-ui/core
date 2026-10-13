@@ -54,7 +54,7 @@ export async function prepareScopeReports(repository, scopeId) {
   const directories = scopeDirectories(repository, scopeId);
   for (const directory of Object.values(directories)) {
     await fs.mkdir(directory, { recursive: true });
-    for (const filename of ['results.json', 'lcov.info', 'run.json']) await fs.rm(path.join(directory, filename), { force: true });
+    for (const filename of ['results.json', 'test-results.json', 'lcov.info', 'coverage-final.json', 'coverage-summary.json', 'run.json', 'run-evidence.json', 'build-evidence.json']) await fs.rm(path.join(directory, filename), { force: true });
     for (const name of ['raw', 'report', 'test-results', 'www', 'components']) await fs.rm(path.join(directory, name), { recursive: true, force: true });
   }
   return directories;
