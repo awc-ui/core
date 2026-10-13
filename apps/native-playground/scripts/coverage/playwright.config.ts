@@ -6,9 +6,12 @@ import { canonicalSourceMap } from './source-maps.cjs';
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const require = createRequire(path.join(repository, 'apps/test-react/package.json'));
 const { defineConfig } = require('@playwright/experimental-ct-react');
-const output = path.join(repository, 'apps/test-react/coverage-native');
+const output = process.env.AWC_COVERAGE_REACT_OUTPUT || path.join(repository, 'apps/test-react/coverage-native');
+const build = process.env.AWC_COVERAGE_E2E_OUTPUT || path.join(repository, 'packages/core/coverage-e2e');
 const tag = process.env.AWC_COVERAGE_COMPONENT || 'md-button';
-if (!/^md-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(tag)) throw new Error('Invalid coverage component tag');
+if (tag !== 'all' && !/^md-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(tag)) throw new Error('Invalid coverage component tag');
+const tags = JSON.parse(process.env.AWC_COVERAGE_TAGS || JSON.stringify([tag]));
+if (!Array.isArray(tags) || !tags.every(value => /^md-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value))) throw new Error('Invalid coverage component tags');
 const matches = JSON.parse(process.env.AWC_COVERAGE_COMPONENT_TESTS || '["button.spec.tsx"]');
 
 export default defineConfig({
@@ -26,7 +29,7 @@ export default defineConfig({
         outputDir: path.join(output, 'report'),
         entryFilter: (entry: any) => /\.js(?:[?#]|$)/.test(entry.url),
         reports: ['v8', 'console-summary', 'lcovonly'],
-        sourceFilter: (source: string) => source.includes(`/src/components/${tag}/`) && /\.tsx?$/.test(source),
+        sourceFilter: (source: string) => tags.some(tag => source.includes(`/src/components/${tag}/`)) && /\.tsx?$/.test(source),
       },
     }],
   ],
@@ -36,7 +39,7 @@ export default defineConfig({
     ctCacheDir: path.join(output, '.cache'),
     ctViteConfig: {
       resolve: { alias: [
-        { find: /^@awc-ui\/core\/components\/(.+)$/, replacement: path.join(repository, 'packages/core/coverage-e2e/components/$1.js') },
+        { find: /^@awc-ui\/core\/components\/(.+)$/, replacement: path.join(build, 'components/$1.js') },
         { find: '@awc-ui/tokens/tokens.css', replacement: path.join(repository, 'packages/tokens/src/tokens.css') },
       ] },
       build: { sourcemap: true, minify: false },

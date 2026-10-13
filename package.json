@@ -108,7 +108,8 @@
     "native:check": "node packages/native-compiler/src/cli.mjs check",
     "native:audit": "node packages/native-compiler/src/cli.mjs audit",
     "native:test": "node --test packages/native-compiler/test/*.test.mjs apps/native-playground/*.test.mjs",
-    "native:playground": "node apps/native-playground/server.mjs"
+    "native:playground": "node apps/native-playground/server.mjs",
+    "native:coverage": "node apps/native-playground/scripts/measure-tests.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.4",

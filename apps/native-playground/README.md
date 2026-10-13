@@ -170,6 +170,9 @@ node apps/native-playground/build-syntax-highlighting.mjs --check
 configuration evidence and copyable local test commands. Component evidence
 includes Storybook and framework tests; accessibility evidence includes relevant
 axe, ARIA, keyboard and focus checks and configured Storybook checks.
+Each tab shows its own measured coverage, saved execution outcomes, missing
+reports, and missing tests. These reports describe the Web library; they do not
+claim native-device test coverage.
 
 The panel reads saved reports; it never runs tests. LCOV and Istanbul reports
 provide component-specific line, branch, function and, when available, statement
@@ -192,18 +195,37 @@ Generate reports with the repository's supported Node version and installed
 Chromium browser:
 
 ```sh
+pnpm native:coverage
+```
+
+This runs unit coverage, the existing browser suites across the full catalog,
+and the existing Storybook stories and play assertions. Each independent stage
+still runs when another stage has assertion failures; the command returns a
+failure if any stage fails. Storybook requires a successful fresh isolated core
+build from the browser stage. To run a stage separately:
+
+```sh
 pnpm --filter @awc-ui/core test:spec:coverage
-node apps/native-playground/scripts/coverage/run-browser.mjs md-button
+node apps/native-playground/scripts/coverage/run-browser.mjs --all
+node apps/storybook/scripts/laboratory-coverage.mjs
 ```
 
 The unit command saves coverage and Jest outcomes in `packages/core/coverage-spec`.
 The browser collector runs the existing Stencil and React tests with source maps,
-writing reports to `packages/core/coverage-e2e` and
-`apps/test-react/coverage-native`. Its isolated build leaves the studio's live
+writing reports to `packages/core/coverage-e2e/scopes/all` and
+`apps/test-react/coverage-native/scopes/all`. Its isolated build leaves the studio's live
 component distribution untouched. Failed assertions remain failed in the saved
 report and produce a nonzero exit code. Use **Refresh** in Test coverage after a run.
-The browser command accepts another component tag when matching suites exist;
-append `--list` to inspect its scope without running tests or replacing reports.
+Replace `--all` with a component tag to measure its existing browser suites. That
+run is saved under `scopes/md-component`, preserving reports for other tags.
+Append `--list` to inspect scope without running tests or replacing reports.
+Storybook writes outcomes and source-mapped library coverage to
+`apps/storybook/coverage-stories`. Incidental controls in another component's
+test file do not acquire that component's test outcomes. Structural children may
+have measured code coverage through their parents without owning a story suite.
+Browser coverage includes unexecuted components using their verified compiled
+JavaScript and source maps. Those sources have zero hits against an executable
+denominator; they are not presented as passing tests or missing measurements.
 
 ## Live native previews
 

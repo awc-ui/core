@@ -183,7 +183,7 @@ test('Playwright reports preserve final retry outcomes and accessibility suite n
   assert.equal(component.executionStatus, 'failed');
   const run = component.executions[0];
   assert.equal(run.total, 4); assert.equal(run.passed, 2); assert.equal(run.failed, 1); assert.equal(run.skipped, 1); assert.equal(run.flaky, 1);
-  assert.equal(run.scope, 'shared-test-files');
+  assert.equal(run.scope, 'component-tests');
   assert.deepEqual(run.sourceFiles, [spec]);
   assert.equal(accessibility.executions[0].total, 1); assert.equal(accessibility.executions[0].passed, 1);
   assert.deepEqual(accessibility.measurements, []);
@@ -253,6 +253,28 @@ test('accessibility includes owned configured stories and positive related decla
   assert.match(configuration.notes.join(' '), /Configuration only/);
 });
 
+test('Storybook accessibility outcomes require matching executable play assertions, not a title or addon configuration', async t => {
+  const file = 'apps/storybook/src/stories/MdButton.stories.ts';
+  const { root } = await fixture(t, {
+    'apps/storybook/.storybook/preview.ts': `export default { parameters: { a11y: { options: { runOnly: ['wcag2a'] } } } };`,
+    [file]: `export default { component: 'md-button' };
+      export const Accessibility: Story = { render: () => '<md-button aria-label="Save">Save</md-button>' };
+      export const KeyboardDemo: Story = { play: async () => { await userEvent.keyboard('{Tab}'); } };
+      export const KeyboardCheck: Story = { name: 'Navigation behavior', play: async () => { await userEvent.keyboard('{Tab}'); expect(document.activeElement).toBe(button); } };`,
+    'apps/storybook/coverage-stories/results.json': JSON.stringify({ testResults: [{ name: file, status: 'failed', assertionResults: [
+      { title: 'Accessibility', fullName: 'Accessibility', status: 'passed', meta: { reports: [] } },
+      { title: 'Keyboard Demo', fullName: 'Keyboard Demo', status: 'passed', meta: { reports: [] } },
+      { title: 'Navigation behavior', fullName: 'Navigation behavior', status: 'failed', meta: { storyId: 'actions-button--keyboard-check', reports: [] } },
+    ] }] }),
+  });
+  const { categories } = await getComponentCoverage(root, 'md-button');
+  assert.equal(categories.component.executions[0].total, 3);
+  assert.equal(categories.accessibility.testCount, 1);
+  assert.equal(categories.accessibility.executions[0].total, 1);
+  assert.equal(categories.accessibility.executionStatus, 'failed');
+  assert.match(categories.accessibility.executions[0].notes.join(' '), /matching source play function/);
+});
+
 test('global historical snapshot stays separate from unavailable component measurements', async t => {
   const { root } = await fixture(t, { 'packages/core/coverage-snapshot.json': JSON.stringify({ generatedAt: '2026-01-01T00:00:00Z', linesFound: 100, linesHit: 90, unitTestCoveragePercent: 99 }) });
   const result = await getComponentCoverage(root, 'md-chip');
@@ -281,6 +303,195 @@ test('cached results are isolated from caller mutation', async t => {
   const { root } = await fixture(t);
   const first = await getComponentCoverage(root, 'md-button'); first.categories.unit.status = 'passed';
   assert.equal((await getComponentCoverage(root, 'md-button')).categories.unit.status, 'unavailable');
+});
+
+const e2eFile = tag => `packages/core/src/components/${tag}/${tag}.e2e.ts`;
+const scopePath = scope => `packages/core/coverage-e2e/scopes/${scope}`;
+const scopedRun = (scopeId, tags, files, extra = {}) => JSON.stringify({ schemaVersion: 1, scopeId, tags,
+  e2eTests: files, componentTests: [], startedAt: '2026-10-01T10:00:00Z', completedAt: '2026-10-01T10:01:00Z',
+  stencilExit: 0, componentExit: null, status: 'passed', errors: [], ...extra });
+const jestResult = outcomes => JSON.stringify({ testResults: outcomes.map(([tag, status]) => ({
+  name: e2eFile(tag), status, assertionResults: [{ title: 'renders', fullName: `${tag} renders`, status }],
+})) });
+async function reportTime(root, file, value = '2026-10-01T10:00:30Z') {
+  const date = new Date(value); await utimes(path.join(root, file), date, date);
+}
+
+test('durable single-component and all-component reports coexist and preserve exact attribution', async t => {
+  const single = scopePath('md-button'), all = scopePath('all');
+  const { root } = await fixture(t, {
+    [e2eFile('md-button')]: `it('renders', () => {});`, [e2eFile('md-chip')]: `it('renders', () => {});`,
+    [`${single}/run.json`]: scopedRun('md-button', ['md-button'], [e2eFile('md-button')]),
+    [`${single}/results.json`]: jestResult([['md-button', 'passed'], ['md-chip', 'failed']]),
+    [`${single}/lcov.info`]: 'SF:src/components/md-button/md-button.tsx\nDA:1,1\nDA:2,0\nend_of_record\nSF:src/components/md-chip/md-chip.tsx\nDA:1,1\nend_of_record\n',
+    [`${all}/run.json`]: scopedRun('all', ['md-button', 'md-chip'], [e2eFile('md-button'), e2eFile('md-chip')], { completedAt: '2026-10-01T10:02:00Z', stencilExit: 1, status: 'failed' }),
+    [`${all}/results.json`]: jestResult([['md-button', 'failed'], ['md-chip', 'passed']]),
+  });
+  for (const file of [`${single}/results.json`, `${single}/lcov.info`, `${all}/results.json`]) await reportTime(root, file);
+  const button = (await getComponentCoverage(root, 'md-button')).categories.e2e;
+  const chip = (await getComponentCoverage(root, 'md-chip')).categories.e2e;
+  assert.equal(button.executions.length, 2, 'Runs remain separate, not summed');
+  assert.equal(button.executionStatus, 'failed'); assert.equal(button.executions[0].total, 1);
+  assert.equal(button.executions[0].scopeId, 'all');
+  assert.equal(button.measurements[0].lines.percent, 50);
+  assert.equal(button.measurements[0].timestampSource, 'run-completedAt');
+  assert.equal(chip.executionStatus, 'passed', 'Another test failure in an all run does not taint this tag');
+  assert.equal(chip.executions.length, 1, 'A single-component manifest excludes foreign recorded cases');
+  assert.equal(chip.measurements.length, 0, 'A single-component manifest excludes foreign coverage files');
+  assert.ok(isCoverageEvidencePath(`${all}/run.json`));
+  assert.ok(isCoverageEvidencePath(`${single}/results.json`));
+  assert.equal(isCoverageEvidencePath(`${single}/report/private.json`), false);
+});
+
+test('failed browser infrastructure replaces an old pass with a zero-case failed attempt', async t => {
+  const scope = scopePath('md-button'), old = 'packages/core/coverage-e2e/results.json';
+  const { root } = await fixture(t, {
+    [e2eFile('md-button')]: `it('renders', () => {});`, [old]: jestResult([['md-button', 'passed']]),
+    [`${scope}/run.json`]: scopedRun('md-button', ['md-button'], [e2eFile('md-button')], { status: 'failed', stencilExit: 1, errors: ['Chromium could not start.'] }),
+  });
+  await reportTime(root, old, '2026-09-01T10:00:00Z');
+  const entry = (await getComponentCoverage(root, 'md-button')).categories.e2e;
+  assert.equal(entry.executionStatus, 'failed');
+  assert.equal(entry.executions[0].total, 0);
+  assert.equal(entry.executions[0].failed, 0, 'Infrastructure does not fabricate a failed assertion');
+  assert.equal(entry.executions[0].failedSuites, 1);
+  assert.equal(entry.executions[0].scope, 'runner-attempt');
+  assert.match(entry.executions[0].notes.join(' '), /Chromium could not start/);
+});
+
+test('a failed isolated build records failed browser attempts without claiming test assertions ran', async t => {
+  const scope = scopePath('md-button'), react = 'apps/test-react/coverage-native/scopes/md-button', source = 'apps/test-react/e2e/button.spec.tsx';
+  const manifest = scopedRun('md-button', ['md-button'], [e2eFile('md-button')], {
+    status: 'failed', stencilExit: null, componentExit: null, componentTests: [source], buildExit: 1, buildCompleted: false,
+    errors: ['Isolated component build failed; browser suites were not started.'],
+  });
+  const { root } = await fixture(t, {
+    [e2eFile('md-button')]: `it('renders', () => {});`, [source]: `test('renders', () => {});`,
+    [`${scope}/run.json`]: manifest, [`${react}/run.json`]: manifest,
+  });
+  const { categories } = await getComponentCoverage(root, 'md-button');
+  for (const id of ['e2e', 'component']) {
+    const entry = categories[id];
+    assert.equal(entry.executionStatus, 'failed', id);
+    assert.equal(entry.executions[0].total, 0, id);
+    assert.equal(entry.executions[0].failed, 0, id);
+    assert.equal(entry.executions[0].failedSuites, 1, id);
+    assert.match(entry.executions[0].notes.join(' '), /build failed/);
+  }
+});
+
+test('running, stale, and malformed scoped reports cannot retain a current passing result', async t => {
+  for (const mode of ['running', 'stale', 'malformed']) {
+    const scope = scopePath('md-button');
+    const { root } = await fixture(t, {
+      [e2eFile('md-button')]: `it('renders', () => {});`,
+      [`${scope}/run.json`]: scopedRun('md-button', ['md-button'], [e2eFile('md-button')], mode === 'running' ? { status: 'running', completedAt: null, stencilExit: null } : {}),
+      [`${scope}/results.json`]: mode === 'malformed' ? '{' : jestResult([['md-button', 'passed']]),
+      [`${scope}/lcov.info`]: 'SF:src/components/md-button/md-button.tsx\nDA:1,1\nend_of_record\n',
+    });
+    await reportTime(root, `${scope}/results.json`, mode === 'stale' ? '2026-09-01T10:00:00Z' : undefined);
+    await reportTime(root, `${scope}/lcov.info`, '2026-09-01T10:00:00Z');
+    const entry = (await getComponentCoverage(root, 'md-button')).categories.e2e;
+    assert.equal(entry.executionStatus, 'unknown', mode);
+    assert.equal(entry.executions[0].total, 0, mode);
+    assert.equal(entry.measurements.length, 0, mode);
+  }
+});
+
+test('incomplete scoped results do not label an entire component run passed', async t => {
+  const scope = scopePath('md-button'), extra = 'packages/core/src/components/md-button/other.e2e.ts';
+  const { root } = await fixture(t, {
+    [e2eFile('md-button')]: `it('renders', () => {});`, [extra]: `it('other behavior', () => {});`,
+    [`${scope}/run.json`]: scopedRun('md-button', ['md-button'], [e2eFile('md-button'), extra], { status: 'failed', stencilExit: 1 }),
+    [`${scope}/results.json`]: jestResult([['md-button', 'passed']]),
+  });
+  await reportTime(root, `${scope}/results.json`);
+  const entry = (await getComponentCoverage(root, 'md-button')).categories.e2e;
+  assert.equal(entry.executions.length, 1);
+  assert.equal(entry.executionStatus, 'unknown');
+  assert.equal(entry.executions[0].passed, 1, 'The case that actually ran retains its recorded result');
+  assert.match(entry.executions[0].notes.join(' '), /did not save case outcomes/);
+});
+
+test('scoped manifests reject foreign tags, invalid source paths and symlink report escapes', async t => {
+  const scope = scopePath('md-button');
+  const { root, base } = await fixture(t, {
+    [e2eFile('md-button')]: `it('renders', () => {});`,
+    [`${scope}/run.json`]: scopedRun('md-button', ['md-chip'], [e2eFile('md-button')]),
+    [`${scope}/results.json`]: jestResult([['md-button', 'passed']]),
+  });
+  await reportTime(root, `${scope}/results.json`);
+  const evil = path.join(base, 'private.json'); await writeFile(evil, jestResult([['md-button', 'passed']]));
+  await mkdir(path.join(root, scopePath('all')), { recursive: true });
+  await symlink(evil, path.join(root, scopePath('all'), 'results.json'));
+  const entry = (await getComponentCoverage(root, 'md-button')).categories.e2e;
+  assert.deepEqual(entry.executions, []);
+  assert.equal(isCoverageEvidencePath('packages/core/coverage-e2e/scopes/../results.json'), false);
+});
+
+test('framework filenames and individual shared cases exclude incidental child tags and unrelated accessibility outcomes', async t => {
+  const own = 'apps/test-react/e2e/button.spec.tsx', shared = 'apps/test-react/e2e/shared.spec.tsx';
+  const item = (title, status = 'passed') => ({ title, tests: [{ status: status === 'passed' ? 'expected' : 'unexpected', expectedStatus: 'passed', results: [{ status }] }] });
+  const { root } = await fixture(t, {
+    [own]: `test('renders', () => { const nested = '<md-chip></md-chip>'; });`,
+    [shared]: `test.describe('md-button', () => { test('keyboard focus', () => {}); }); test.describe('md-chip', () => { test('renders', () => {}); });`,
+    'apps/test-react/coverage-native/results.json': JSON.stringify({ suites: [
+      { file: 'button.spec.tsx', title: 'button.spec.tsx', specs: [item('renders')] },
+      { file: 'shared.spec.tsx', title: 'shared.spec.tsx', suites: [
+        { file: 'shared.spec.tsx', title: 'md-button', specs: [item('keyboard focus', 'failed')] },
+        { file: 'shared.spec.tsx', title: 'md-chip', specs: [item('renders')] },
+      ] },
+    ] }),
+  });
+  const button = (await getComponentCoverage(root, 'md-button')).categories;
+  const chip = (await getComponentCoverage(root, 'md-chip')).categories;
+  assert.equal(button.component.testCount, 2);
+  assert.equal(chip.component.testCount, 1);
+  assert.deepEqual(chip.component.files.map(file => file.path), [shared]);
+  assert.equal(button.component.executions[0].total, 2);
+  assert.equal(button.component.executionStatus, 'failed');
+  assert.equal(chip.component.executions[0].total, 1);
+  assert.equal(chip.component.executionStatus, 'passed');
+  assert.equal(chip.accessibility.executions.length, 0, 'Button focus failure is not a Chip audit');
+});
+
+test('shared core cases resolve referenced literal samples without assigning the library or unused tags', async t => {
+  const shared = 'packages/core/src/components/hidden-attribute.e2e.ts';
+  const scope = scopePath('all');
+  const { root } = await fixture(t, {
+    [shared]: `const UNUSED = ['md-chip']; const SAMPLE = ['md-button']; describe('hidden contract', () => { it('hides sampled hosts', () => { expect(SAMPLE.map(tag => tag)).toEqual([]); }); });`,
+    [`${scope}/run.json`]: scopedRun('all', ['md-button', 'md-chip'], [shared]),
+    [`${scope}/results.json`]: JSON.stringify({ testResults: [{ name: shared, status: 'passed', assertionResults: [{ title: 'hides sampled hosts', fullName: 'hidden contract hides sampled hosts', status: 'passed' }] }] }),
+  });
+  await reportTime(root, `${scope}/results.json`);
+  const button = (await getComponentCoverage(root, 'md-button')).categories.e2e;
+  const chip = (await getComponentCoverage(root, 'md-chip')).categories.e2e;
+  assert.equal(button.testCount, 1);
+  assert.equal(button.executions[0].total, 1);
+  assert.equal(button.executions[0].scope, 'shared-test-files');
+  assert.match(button.files[0].notes.join(' '), /joint assertion/);
+  assert.equal(chip.files.length, 0, 'Unused sample is not source evidence');
+  assert.equal(chip.executions.length, 0, 'Unreferenced tag is not part of the joint assertion');
+  assert.ok(isCoverageEvidencePath(shared));
+  assert.ok(isCoverageEvidencePath('packages/core/src/utils/behavior.e2e.ts'));
+  assert.equal(isCoverageEvidencePath('packages/core/src/utils/private.ts'), false);
+});
+
+test('parameterized shared cases use recorded tag names and do not propagate another case failure', async t => {
+  const shared = 'packages/core/src/utils/components.e2e.ts';
+  const { root } = await fixture(t, {
+    [shared]: `const SAMPLE = ['md-button', 'md-chip']; describe('sampled components', () => { it.each(SAMPLE)('%s renders', tag => { expect(tag); }); });`,
+    'packages/core/coverage-e2e/results.json': JSON.stringify({ testResults: [{ name: shared, status: 'failed', assertionResults: [
+      { title: 'md-button renders', fullName: 'sampled components md-button renders', status: 'failed' },
+      { title: 'md-chip renders', fullName: 'sampled components md-chip renders', status: 'passed' },
+    ] }] }),
+  });
+  const button = (await getComponentCoverage(root, 'md-button')).categories.e2e;
+  const chip = (await getComponentCoverage(root, 'md-chip')).categories.e2e;
+  assert.equal(button.testCount, 1); assert.equal(chip.testCount, 1, 'Static declarations are not expanded');
+  assert.equal(button.executions[0].total, 1); assert.equal(chip.executions[0].total, 1);
+  assert.equal(button.executionStatus, 'failed'); assert.equal(chip.executionStatus, 'passed');
+  assert.equal(chip.executions[0].failedSuites, 0);
 });
 
 test('real checkout maps button source, component, browser and accessibility evidence without inventing per-tag percentages', async () => {

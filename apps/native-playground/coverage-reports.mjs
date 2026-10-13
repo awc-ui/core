@@ -21,6 +21,48 @@ export const executionReports = [
   ].map(file => ({ category: framework === 'angular' ? 'e2e' : 'component', path: file, framework: 'playwright', base: `apps/test-${framework}/e2e` }))),
 ];
 
+export const scopedReportDirectories = ['packages/core/coverage-e2e/scopes', 'apps/test-react/coverage-native/scopes'];
+
+/** Only durable runner-owned scope paths can be read or linked as evidence. */
+export function scopedReportDescriptor(relative) {
+  const match = /^(packages\/core\/coverage-e2e|apps\/test-react\/coverage-native)\/scopes\/(all|md-[a-z0-9]+(?:-[a-z0-9]+)*)\/(run\.json|results\.json|lcov\.info|coverage-final\.json|coverage-summary\.json)$/.exec(relative || '');
+  if (!match) return null;
+  const [, directory, scopeId, name] = match;
+  const core = directory.startsWith('packages/');
+  return { category: core ? 'e2e' : 'component', path: relative, framework: core ? 'jest' : 'playwright',
+    base: core ? 'packages/core' : 'apps/test-react/e2e', scopeId, manifestPath: `${directory}/scopes/${scopeId}/run.json`,
+    format: name === 'lcov.info' ? 'lcov' : name === 'coverage-final.json' ? 'istanbul' : name === 'coverage-summary.json' ? 'istanbul-summary' : null,
+    kind: name === 'run.json' ? 'run' : name === 'results.json' ? 'execution' : 'measurement' };
+}
+
+export function parseScopedRun(text, descriptor, knownTags) {
+  const value = JSON.parse(text);
+  if (!value || value.schemaVersion !== 1 || value.scopeId !== descriptor.scopeId || !['running', 'passed', 'failed'].includes(value.status)) return null;
+  if (!Array.isArray(value.tags) || !value.tags.length || value.tags.length > knownTags.size || value.tags.some(tag => !knownTags.has(tag)) || new Set(value.tags).size !== value.tags.length) return null;
+  if (value.scopeId !== 'all' && (value.tags.length !== 1 || value.tags[0] !== value.scopeId)) return null;
+  const started = Date.parse(value.startedAt), completed = Date.parse(value.completedAt);
+  if (!Number.isFinite(started) || (value.status !== 'running' && (!Number.isFinite(completed) || completed < started))) return null;
+  const filesKey = descriptor.category === 'e2e' ? 'e2eTests' : 'componentTests';
+  if (!Array.isArray(value[filesKey]) || value[filesKey].length > 2000) return null;
+  const files = value[filesKey].map(file => reportSourcePath(file, descriptor.base));
+  const allowed = descriptor.category === 'e2e' ? /^packages\/core\/src\/(?:components|utils)\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+\.e2e\.tsx?$/ : /^apps\/test-react\/e2e\/[a-zA-Z0-9_.-]+\.spec\.tsx?$/;
+  if (files.some(file => !file || !allowed.test(file))) return null;
+  const exitCode = value[descriptor.category === 'e2e' ? 'stencilExit' : 'componentExit'];
+  if (exitCode !== null && exitCode !== undefined && (!Number.isSafeInteger(exitCode) || exitCode < 0 || exitCode > 255)) return null;
+  if (value.buildExit != null && (!Number.isSafeInteger(value.buildExit) || value.buildExit < 0 || value.buildExit > 255)) return null;
+  if (value.buildCompleted != null && typeof value.buildCompleted !== 'boolean') return null;
+  return { scopeId: value.scopeId, tags: value.tags, files: [...new Set(files)], startedAt: new Date(started).toISOString(),
+    completedAt: Number.isFinite(completed) ? new Date(completed).toISOString() : null, status: value.status, exitCode: exitCode ?? null,
+    buildExit: value.buildExit ?? null, buildCompleted: value.buildCompleted ?? null,
+    errors: Array.isArray(value.errors) ? value.errors.filter(error => typeof error === 'string').slice(0, 20).map(error => error.slice(0, 2000)) : [] };
+}
+
+export function reportBelongsToRun(modifiedAt, run) {
+  const timestamp = Date.parse(modifiedAt);
+  // Report creation and manifest completion can share a coarse filesystem tick.
+  return run.status !== 'running' && Number.isFinite(timestamp) && timestamp >= Date.parse(run.startedAt) - 1000 && timestamp <= Date.parse(run.completedAt) + 1000;
+}
+
 /** Report paths are metadata, never arbitrary files to open or code to execute. */
 export function reportSourcePath(value, base = 'packages/core') {
   if (typeof value !== 'string' || value.length > 4096 || value.includes('\0')) return null;
@@ -141,10 +183,15 @@ export function parseExecutionReport(text, descriptor) {
     for (const suite of Array.isArray(report.testResults) ? report.testResults : []) {
       const file = reportSourcePath(suite.name || suite.testFilePath, descriptor.base);
       if (!file || !Array.isArray(suite.assertionResults)) continue;
-      suites.push({ file, failedSuite: suite.status === 'failed', tests: suite.assertionResults.filter(item => item && typeof item === 'object').map(item => ({
+      const tests = suite.assertionResults.filter(item => item && typeof item === 'object').map(item => ({
         name: typeof item.fullName === 'string' ? item.fullName : [...(Array.isArray(item.ancestorTitles) ? item.ancestorTitles : []), item.title || ''].join(' '),
-        title: typeof item.title === 'string' ? item.title : '', status: resultStatus(item.status), flaky: false,
-      })) });
+        title: typeof item.title === 'string' ? item.title : '', line: Number.isSafeInteger(item.location?.line) ? item.location.line : null,
+        storyId: typeof item.meta?.storyId === 'string' && item.meta.storyId.length <= 512 ? item.meta.storyId : null,
+        status: resultStatus(item.status), flaky: false,
+      }));
+      // An ordinary failed case already accounts for a failed suite. Keeping
+      // the file status too would taint unrelated cases in a shared source file.
+      suites.push({ file, failedSuite: suite.status === 'failed' && !tests.some(test => test.status === 'failed'), tests });
     }
   } else {
     const reportedBase = reportSourcePath(report.config?.rootDir);
@@ -159,7 +206,7 @@ export function parseExecutionReport(text, descriptor) {
           const last = Array.isArray(item.results) ? item.results.at(-1) : null;
           const outcome = !last ? 'unknown' : last.status === 'skipped' ? 'skipped' : ['expected', 'flaky'].includes(item.status) ? 'passed' : item.status === 'unexpected' ? 'failed' : item.status === 'skipped' ? 'skipped'
             : last?.status === item.expectedStatus && last.status !== 'skipped' ? 'passed' : resultStatus(last?.status);
-          return { name: [...titles, spec.title || ''].join(' '), title: spec.title || '', status: outcome, flaky: item.status === 'flaky' };
+          return { name: [...titles, spec.title || ''].join(' '), title: spec.title || '', line: Number.isSafeInteger(spec.line) ? spec.line : null, status: outcome, flaky: item.status === 'flaky' };
         });
         if (tests.length) suites.push({ file, failedSuite: false, tests });
       }

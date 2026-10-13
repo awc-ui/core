@@ -496,9 +496,12 @@ test('API copy action copies the associated code block, not all page text', asyn
   t.after(() => prior ? Object.defineProperty(globalThis, 'navigator', prior) : delete globalThis.navigator);
   ui.renderUsage();
   const code = root.querySelector('#usage-api-event-0-code');
-  code.textContent = 'component.addEventListener("mdInput", onInput);';
+  const expected = 'component.addEventListener("mdInput", onInput);';
+  code.textContent = expected;
   await root.querySelector('[data-copy-api-code="usage-api-event-0-code"]').emit('mdClick');
-  assert.deepEqual(copied, [code.textContent]);
+  // Async highlighting can replace the stub's text after the click; assert
+  // against the source present when copying, not the later mutable DOM.
+  assert.deepEqual(copied, [expected]);
 });
 
 test('retired theme defaults cannot remain hidden in Studio appearance state', t => {

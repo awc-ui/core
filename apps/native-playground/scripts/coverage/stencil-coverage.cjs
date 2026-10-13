@@ -1,9 +1,13 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const { randomUUID } = require('node:crypto');
 const { canonicalSourceMap } = require('./source-maps.cjs');
 const root = path.resolve(__dirname, '../../../..');
-const output = path.join(root, 'packages/core/coverage-e2e');
+const output = process.env.AWC_COVERAGE_E2E_OUTPUT || path.join(root, 'packages/core/coverage-e2e');
 let sequence = 0;
+// Jest reuses worker PIDs but reloads this setup module for every suite.
+// A suite token prevents sequence zero from replacing an earlier suite's data.
+const captureId = randomUUID();
 const createPage = global.__NEW_TEST_PAGE__;
 if (typeof createPage !== 'function') throw new Error('Coverage collection requires the Stencil E2E environment.');
 
@@ -30,7 +34,7 @@ global.__NEW_TEST_PAGE__ = async (...args) => {
         return { ...entry.rawScriptCoverage, url: entry.url, source };
       });
       fs.mkdirSync(path.join(output, 'raw'), { recursive: true });
-      fs.writeFileSync(path.join(output, 'raw', `${process.pid}-${sequence++}.json`), JSON.stringify(converted));
+      fs.writeFileSync(path.join(output, 'raw', `${process.pid}-${captureId}-${sequence++}.json`), JSON.stringify(converted));
     }
     return close(...closeArgs);
   };
