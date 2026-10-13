@@ -205,8 +205,7 @@ function renderPreview() {
 function renderNativePreview() {
   const component = state.selected;
   const target = nativePreviewTarget(state.platform);
-  const support = component.support?.[state.platform];
-  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><span class="native-live-badge">Live</span><md-button variant="text" size="xs" id="native-render-button" icon="refresh">Reconnect</md-button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div><p class="snapshot-status" id="native-render-status" role="status" aria-live="polite"></p><p class="snapshot-note" id="native-preview-note"></p><md-accordion-item class="snapshot-details" headline="Fixture &amp; native playground" heading-level="4" region-role="group" density="-3"><p>The native example uses this component’s root properties. Its child content and text may differ from the web reference.</p><p>Live pixels preserve native state. Native accessibility remains in the running ${state.platform === 'android' ? 'Android' : 'macOS'} app; this image does not expose its control tree to the browser.</p>${state.platform === 'android' ? '<p>Live rendering requires the Android emulator and native playground. One Android preview can use the emulator at a time. Capture uses the component’s native window at 2× resolution; separate Popup/Dialog windows and content beyond the capture bounds are outside this preview.</p>' : ''}<p>${support ? `${support.unsupportedProperties?.length || 0} unsupported properties · ${support.unsupportedEvents?.length || 0} unsupported events. Use the property info controls to inspect member support.` : 'Adapter coverage has not been reported.'}</p><code>${escape(target.playground)}</code></md-accordion-item></section>`;
+  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><span class="native-live-badge">Live</span><md-button variant="text" size="xs" id="native-render-button" icon="refresh">Reconnect</md-button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div></section>`;
   studioUI.applyCanvas();
   $('#native-render-button').addEventListener('mdClick', () => scheduleNativeRender(0));
   configureNativeLivePreview();
@@ -237,10 +236,9 @@ function nativeRenderState(kind, message) {
     } else {
       marker.className = 'snapshot-error-symbol'; marker.setAttribute('aria-hidden', 'true'); marker.textContent = '◇';
     }
-    const label = document.createElement('p'); label.textContent = kind === 'loading' ? 'Rendering native component…' : 'Native render unavailable';
+    const label = document.createElement('p'); label.setAttribute('role', 'status'); label.textContent = message;
     frame.append(marker, label);
   }
-  text('#native-render-status', message);
   text('#native-render-button', kind === 'error' ? 'Retry connection' : 'Reconnect');
 }
 
@@ -305,21 +303,16 @@ function subscribeNativeLive(id, onFrame, onError, platform) {
 }
 
 function configureNativeLivePreview() {
-  const target = nativePreviewTarget(state.platform);
   state.activeNativeMode = 'live';
   text('#preview-runtime', 'CONNECTING');
   text('.props-hint', 'Initial properties · editing restarts the native session.');
-  text('#native-preview-note', state.selected.tag === 'md-button' ? `Press and hold to see the native button response; release to activate. Esc cancels and releases keyboard focus. Frames stream directly from ${target.renderer}; hover and pointer position are forwarded.` : 'Click the native view, then type. Esc releases keyboard focus. Clicks and typing are live; dragging, hover and sheets are not validated.');
   if (state.selected.tag === 'md-button' && state.nativeScenario === 'button-behavior') {
-    text('#native-preview-note', 'Edit the native field and press Enter or Submit. Try validation, reset and cancellation, then inspect the submitted data and Events. Form data and link actions stay local. This example runs entirely in the native host.');
     text('.props-hint', 'This linked form demo has fixed actions. Select Button in the library to edit the component.');
   }
   if (state.selected.tag === 'md-button' && state.nativeScenario === 'navigation-events') {
-    text('#native-preview-note', 'Follow a link, open another native context, or go Back. Try cancellation and propagation controls, then inspect the event trace. Routes stay inside this native demo; no external page opens.');
     text('.props-hint', 'This linked navigation demo has fixed actions. Select Button in the library to edit the component.');
   }
   if (state.selected.tag === 'md-button' && state.nativeScenario === 'focus-accessibility') {
-    text('#native-preview-note', 'Click the native preview to give it keyboard input. Tab enters or leaves the group; Left, Right, Home and End move within it without selecting. Enter or Space activates. Escape returns keyboard control to the browser. Native accessibility semantics are tested in the platform app; this image cannot expose them to a browser screen reader.');
     text('.props-hint', 'This linked focus demo has fixed controls. Select Button in the library to edit the component.');
   }
   text('#preview-caption', state.platform === 'android' ? 'Real Android emulator · Jetpack Compose frames and native events' : 'Persistent macOS SwiftUI app · live frames and native events');
@@ -334,7 +327,7 @@ async function chooseNativePreview(payload, request, platform) {
     const status = await readNativeResponse(await fetch(nativeLiveEndpoint('status', platform), { signal: request.signal }));
     if (!request.isCurrent()) return;
     if (status.available) {
-      configureNativeLivePreview(); text('#native-render-status', `Starting a persistent ${target.renderer} session…`);
+      configureNativeLivePreview(); text('#native-render-frame [role="status"]', `Starting a persistent ${target.renderer} session…`);
       nativeLive.setVisible(!document.hidden);
       void nativeLive.start(payload);
       return;
@@ -418,10 +411,6 @@ function presentNativeLiveFrame(image, result, platform) {
 function updateNativeLiveFrameMetadata(result, target) {
   state.liveDisplayedRevision = result.revision; state.liveFrame = result;
   if ($('#preview-runtime').textContent !== target.badge) text('#preview-runtime', target.badge);
-  // Do not announce every poll to screen readers or replace an unchanged image.
-  const scale = Math.round(result.width / result.logicalWidth * 100) / 100;
-  const status = `Live stream · ${scale}× resolution · ${Math.round(result.logicalWidth * 100) / 100} × ${Math.round(result.logicalHeight * 100) / 100} ${target.unit} · ${state.selected.tag}`;
-  if ($('#native-render-status').textContent !== status) text('#native-render-status', status);
 }
 
 function reportNativeLiveError(error) {
@@ -433,7 +422,7 @@ function reportNativeLiveError(error) {
 
 function queueNativeInput(command) {
   const accepted = nativeLive.input(command);
-  if (!accepted) text('#native-render-status', 'Native input is busy or disconnected. Reconnect to start a fresh session.');
+  if (!accepted) toast('Native input is busy or disconnected. Reconnect to start a fresh session.');
   return accepted;
 }
 

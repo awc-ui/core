@@ -56,7 +56,7 @@ Expanded studio keeps the canvas and editable Properties panel together, with
 an explicit exit control and Escape support. When browser fullscreen is
 unavailable, the same workspace expands inside the page. Native previews support
 RTL; grid and measurement controls are enabled only in Web mode. Native pt/dp
-dimensions and source resolution remain in the live-stream status.
+dimensions and source resolution remain available in the preview diagnostics.
 
 **Usage & API**, below the preview, has copyable HTML, React, Angular, Vue, Svelte,
 SwiftUI and Android examples. Selecting a code language is independent of the
@@ -164,7 +164,7 @@ Compose renders into an app-owned private Presentation at two physical pixels
 per logical dp, independent of the emulator screen width. PixelCopy captures
 that native GPU window after committed draws. Both platforms send lossless PNG
 frames over a bounded NDJSON stream; the browser presents decoded frames with
-`requestAnimationFrame` and reports the source resolution. Android sends cached
+`requestAnimationFrame`. Source resolution is available in the preview diagnostics. Android sends cached
 heartbeats while idle, without recapturing or re-encoding the same surface.
 Achievable animation speed depends on the host, component size and tab visibility.
 SwiftUI Retina output is converted to sRGB.
