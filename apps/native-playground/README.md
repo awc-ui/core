@@ -92,14 +92,16 @@ controls show per-platform support, including unsupported native members.
 SwiftUI and Android examples remain available under **Usage & API**.
 
 **AI instructions** provides a Markdown guide for every component. It preserves
-the component's original Web README and appends SwiftUI/iOS integration guidance
-from the current native catalog, generated public wrappers and native support
-policy. The guide includes a typed SwiftUI example, property support, state and
-events, child slots, unsupported methods, native replacements and recorded
+the component's original Web README and appends separate iOS/SwiftUI and
+Android/Jetpack Compose integration sections from the current native catalog,
+generated public wrappers and each platform's own support policy. The guide
+includes Swift and Kotlin examples, package/module setup, property support,
+state and events, child slots, unsupported methods, native replacements and
 verification limits. It distinguishes the local macOS SwiftUI preview from an
-iOS Simulator or device run.
+iOS Simulator or device run and documents the Android module's actual SDK and
+build requirements. A generated field does not imply native adapter support.
 
-Use **Copy** to copy the original Markdown, **Download .md** to save
+Use **Copy** to copy the complete Markdown guide, **Download .md** to save
 `md-component.md`, or **Refresh** to reread the local source files. Guides are
 generated on demand through `GET /api/ai-instructions/<tag>`; the server does not
 rewrite source READMEs or keep 81 duplicate Markdown files. The response contains

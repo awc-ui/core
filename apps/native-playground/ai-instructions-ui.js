@@ -31,7 +31,7 @@ export function createAIInstructionsUI({ getState, notify }) {
         void renderCode(existing.code, guide.markdown, 'markdown');
         return;
       }
-      panel.innerHTML = `<div class="ai-instructions-heading"><div><h2>AI instructions</h2><p>The component guide, with SwiftUI and iOS integration instructions. Copy it into your coding assistant or save the Markdown file.</p></div></div>
+      panel.innerHTML = `<div class="ai-instructions-heading"><div><h2>AI instructions</h2><p>The component guide for Web, iOS with SwiftUI, and Android with Jetpack Compose. Includes integration examples, supported APIs and platform limitations. Copy it into your coding assistant or save the Markdown file.</p></div></div>
         <md-card class="ai-instructions-card" variant="outlined" full-width>
           <div class="ai-instructions-toolbar"><strong>${escape(guide.filename)}</strong><div><md-button id="ai-copy" variant="text" size="xs" icon="content_copy">Copy</md-button><md-button id="ai-download" variant="text" size="xs" icon="download">Download .md</md-button><md-icon-button id="ai-refresh" icon="refresh" aria-label="Refresh AI instructions"></md-icon-button></div></div>
           <pre class="ai-instructions-code" tabindex="0" aria-label="${escape(tag)} Markdown instructions"></pre>

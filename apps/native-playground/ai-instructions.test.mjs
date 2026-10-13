@@ -5,12 +5,13 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getAIInstructions } from './ai-instructions.mjs';
+import { androidInstructionFiles } from './ai-instructions-android.mjs';
 import { handleAIInstructionsRequest, resolveAsset } from './server.mjs';
 
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const nativeSection = markdown => markdown.slice(markdown.indexOf('## SwiftUI / iOS AI instructions'));
+const nativeSection = markdown => markdown.slice(markdown.indexOf('## SwiftUI / iOS AI instructions'), markdown.indexOf('## Android / Jetpack Compose AI instructions'));
 
-test('all 81 source components retain the original README and gain a verified typed SwiftUI guide', async () => {
+test('all 81 source components retain the original README and include separate iOS and Android guides', async () => {
   const catalog = JSON.parse(await readFile(path.join(repository, 'packages/native-compiler/generated/catalog.json'), 'utf8'));
   const source = await readFile(path.join(repository, 'packages/native-ios/Sources/AWCUI/Generated/Components.swift'), 'utf8');
   assert.equal(catalog.components.length, 81);
@@ -37,6 +38,9 @@ test('all 81 source components retain the original README and gain a verified ty
     assert.ok(result.sources.every(file => !path.isAbsolute(file) && !file.split('/').includes('..')));
     assert.ok(result.sources.includes('packages/native-ios/NativeSupport.json'));
     assert.ok(result.sources.includes('packages/native-ios/Sources/AWCUI/Generated/Components.swift'));
+    assert.ok(result.markdown.includes('## Android / Jetpack Compose AI instructions'), component.tag);
+    assert.ok(result.sources.includes('packages/native-android/support.json'));
+    assert.ok(result.sources.includes('packages/native-android/src/main/java/dev/awc/nativeui/generated/Components.kt'));
   }
 });
 
@@ -81,6 +85,7 @@ async function fixture(t, { wrapper = true } = {}) {
     'packages/native-ios/NativeBehavior.md': '# Native behavior',
     'packages/native-ios/NativeFocus.md': '# Native focus',
   };
+  for (const relative of Object.values(androidInstructionFiles)) content[relative] = await readFile(path.join(repository, relative), 'utf8');
   for (const [relative, text] of Object.entries(content)) {
     await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
     await writeFile(path.join(root, relative), text);
@@ -111,9 +116,13 @@ test('README and metadata symlink escapes fail without returning external conten
   await rm(readme); await symlink(outside, readme);
   await assert.rejects(getAIInstructions(root, 'md-button'), error => error.status === 503 && !error.message.includes('PRIVATE_CONTENT'));
   await rm(readme); await writeFile(readme, '# Restored README');
-  const support = path.join(root, 'packages/native-ios/NativeSupport.json');
-  await rm(support); await symlink(outside, support);
-  await assert.rejects(getAIInstructions(root, 'md-button'), error => error.status === 503 && !error.message.includes(base));
+  for (const relative of ['packages/native-ios/NativeSupport.json', androidInstructionFiles.support]) {
+    const support = path.join(root, relative);
+    const original = await readFile(support, 'utf8');
+    await rm(support); await symlink(outside, support);
+    await assert.rejects(getAIInstructions(root, 'md-button'), error => error.status === 503 && !error.message.includes(base));
+    await rm(support); await writeFile(support, original);
+  }
 });
 
 test('API returns Markdown JSON, denies mutation/traversal and keeps internal modules private', async t => {
@@ -138,8 +147,8 @@ test('API returns Markdown JSON, denies mutation/traversal and keeps internal mo
   const missing = await request('/api/ai-instructions/md-button');
   assert.equal(missing.status, 503); assert.equal(missing.value.error, 'AI_INSTRUCTIONS_UNAVAILABLE');
   const appRoot = path.join(root, 'apps/native-playground'); await mkdir(appRoot, { recursive: true });
-  for (const file of ['ai-instructions-ui.js', 'ai-instructions.mjs', 'ai-instructions.test.mjs']) await writeFile(path.join(appRoot, file), '');
+  const internal = ['ai-instructions.mjs', 'ai-instructions.test.mjs', 'ai-instructions-android.mjs', 'ai-instructions-android.test.mjs'];
+  for (const file of ['ai-instructions-ui.js', ...internal]) await writeFile(path.join(appRoot, file), '');
   assert.equal(await resolveAsset('/ai-instructions-ui.js', { appRoot }), await realpath(path.join(appRoot, 'ai-instructions-ui.js')));
-  assert.equal(await resolveAsset('/ai-instructions.mjs', { appRoot }), null);
-  assert.equal(await resolveAsset('/ai-instructions.test.mjs', { appRoot }), null);
+  for (const file of internal) assert.equal(await resolveAsset('/' + file, { appRoot }), null);
 });

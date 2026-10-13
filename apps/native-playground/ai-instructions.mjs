@@ -1,6 +1,7 @@
 import { readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { usageSnippet } from './usage-snippets.js';
+import { androidGuide, androidInstructionFiles } from './ai-instructions-android.mjs';
 
 const files = Object.freeze({
   catalog: 'packages/native-compiler/generated/catalog.json',
@@ -85,6 +86,7 @@ function nativeGuide(component, policy, manifest, wrapper, packageSource) {
     '## SwiftUI / iOS AI instructions',
     `This section is generated from this checkout's native catalog, public Swift API and support policy for ${code(tag)}. The original Markdown above describes the web component; browser APIs and CSS documented there are not automatically available in SwiftUI. Generated API coverage does not imply full behavioral parity.`,
     '### Package and platform',
+    'Run `pnpm native:build` from the repository root before building so the generated native catalog, wrappers and tokens are current. Place ComponentExample in your existing SwiftUI app or WindowGroup; do not add a second @main entry point.',
     `Add the local Swift package at ${code('packages/native-ios')} to your Xcode app and link its ${code('AWCUI')} library product. Import ${code('SwiftUI')} and ${code('AWCUI')}. The package declares iOS ${ios}+ and macOS ${macos}+ and renders native SwiftUI/Canvas without a WebView or JavaScript runtime.`,
     'The studio’s local SwiftUI live preview runs a macOS native host. It is not an iOS Simulator or an iPhone/iPad device run. Build and test the app with an iOS Xcode destination to verify UIKit, hardware-keyboard, VoiceOver, touch and presentation behavior on iOS.',
     '### Public SwiftUI usage',
@@ -99,10 +101,12 @@ function nativeGuide(component, policy, manifest, wrapper, packageSource) {
     rows.length ? table(['Property', 'Swift field type', 'Source default', 'Native support'], rows) : 'This component declares no source properties.',
     `Native policy property names: ${list([...props])}`,
     'The renderer merges source defaults with supplied properties, owns local interaction state and resynchronizes when supplied properties change. Keep application state in @State or your model and update the supported property value when handling the relevant native event. This is not an automatic two-way Binding initializer. For dynamic trees use AWCNativeView(node:) with stable AWCNode IDs; generated wrappers do not expose a custom node ID.',
+    `Generated wrappers and AWCNativeView(tag:) use the component tag as the node ID. Multiple instances of the same tag therefore share that observation ID. For distinct event routing, linked tabs or group members, provide a stable, unique ID, for example ${code(`AWCNativeView(node: AWCNode(id: "stable-unique-id", tag: "${tag}"))`)}. Retain stateful child nodes or their explicit IDs instead of regenerating default UUIDs on every body evaluation.`,
     '### Native events',
     names(component.events).length ? table(['Source event', 'Native adapter'], names(component.events).map(name => [code(name), events.has(name) ? 'Supported' : 'Unsupported / not listed in native policy'])) : 'No source events are declared.',
     `Native policy event names: ${list([...events])}`,
     'onEvent receives AWCEvent with name, tag, nodeID and serializable AWCValue detail; inspect detail.json when integrating. Native payloads can differ from web detail types: DOM references, originalEvent objects and JavaScript callbacks are not transported. Do not infer browser bubbling or cancellation from the web event declaration. The native adapter notes below describe component-specific payloads and exceptions.',
+    'Composed children forward events to the parent observation callback; filter event.tag and event.nodeID before updating application state. AWCEvent also exposes defaultPrevented, propagationPath and optional activation metadata. A canceled native mdClick is still observed: check defaultPrevented before performing host side effects, and use mdChange for committed toggle state.',
     'onEvent is an observation callback, not a place to call a DOM event’s preventDefault(). Where documented, native AWCEventScope / AWCEventTargetScope provide synchronous native event cancellation before an action. See NativeBehavior.md for those explicit scope APIs.',
     '### Children, named slots and methods',
     `Supported native slots: ${list([...slots])}`,
@@ -113,7 +117,7 @@ function nativeGuide(component, policy, manifest, wrapper, packageSource) {
     `Unsupported source methods: ${list([...new Set([...methodNames.filter(name => !supported(policy, 'methods').has(name)), ...names(policy.unsupportedMethods)])])}`,
     'Do not call HTMLElement methods on a SwiftUI view. Drive supported state declaratively (for example, open when supported); use the explicit native form, focus and routing APIs only where documented. Wrap independent sibling AWCNode trees in AWCNativeScope when they need shared radio/tab linkage.',
     '### Native appearance and limitations',
-    'The renderer follows the system appearance. Use .awcTheme(AWCTheme.generated(dark: true)) for an explicit generated theme. Native layout uses SwiftUI; web CSS selectors, parts, style strings and arbitrary TSX/JavaScript do not execute. Material icon names generally map to SF Symbols; md-button bundles its Roboto and Material Symbols fonts.',
+    'The renderer follows the system appearance. Use .awcTheme(AWCTheme.generated(dark: true)) for an explicit generated palette; use .preferredColorScheme(.dark) as well when SwiftUI system controls should follow that appearance. Native layout uses SwiftUI; web CSS selectors, parts, style strings and arbitrary TSX/JavaScript do not execute. Material icon names generally map to SF Symbols; md-button bundles its Roboto and Material Symbols fonts.',
     ...(policy.notes || []).map(note => `- ${note}`),
     ...(manifest.globalNotes || []).map(note => `- ${note}`),
   ].filter(Boolean);
@@ -161,7 +165,7 @@ export async function getAIInstructions(repository, tag) {
     const component = catalog.components?.find(item => item.tag === tag);
     if (!component) throw new AIInstructionsError(404, 'UNKNOWN_COMPONENT', 'Choose a known component tag.');
     const readmePath = `packages/core/src/components/${tag}/readme.md`;
-    const sources = [readmePath, ...Object.values(files)];
+    const sources = [readmePath, ...Object.values(files), ...Object.values(androidInstructionFiles)];
     const content = await Promise.all(sources.map(relative => readSource(root, relative)));
     const byPath = Object.fromEntries(sources.map((relative, index) => [relative, content[index]]));
     const manifest = JSON.parse(byPath[files.support]);
@@ -169,8 +173,9 @@ export async function getAIInstructions(repository, tag) {
     if (!policy) throw new Error('Native support policy is missing.');
     const wrapper = swiftWrapper(byPath[files.wrappers], tag);
     const guide = nativeGuide(component, policy, manifest, wrapper, byPath[files.package]);
+    const composeGuide = androidGuide(component, byPath);
     const provenance = '### Guide sources\n\n' + sources.map(source => `- [${source}](${source})`).join('\n');
-    return { filename: `${tag}.md`, markdown: byPath[readmePath] + '\n\n---\n\n' + guide + '\n\n' + provenance + '\n', sources };
+    return { filename: `${tag}.md`, markdown: byPath[readmePath] + '\n\n---\n\n' + guide + '\n\n---\n\n' + composeGuide + '\n\n' + provenance + '\n', sources };
   } catch (error) {
     if (error instanceof AIInstructionsError) throw error;
     throw new AIInstructionsError(503, 'AI_INSTRUCTIONS_UNAVAILABLE', 'Local component instructions are unavailable. No source files were changed.');
