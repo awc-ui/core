@@ -348,24 +348,24 @@ md-app-bar.app-header {
   --md-app-bar-row-height: 75px;
   --md-app-bar-padding-inline-start: 28px;
   --md-app-bar-padding-inline-end: 28px;
+  --md-app-bar-icon-gap: 0px;
   --md-app-bar-trailing-gap: 8px;
   border-block-end: 1px solid var(--border);
   z-index: 30;
 }
-.studio-brand { display: inline-flex; align-items: center; gap: 8px; margin-inline-end: 16px; color: var(--ink); text-decoration: none; }
+.studio-brand { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); text-decoration: none; }
 .studio-brand strong { font-size: 23px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; }
 .studio-logo { display: block; flex-shrink: 0; width: 36px; height: 36px; }
 .studio-logo-dark, html[data-theme=dark] .studio-logo-light { display: none; }
 html[data-theme=dark] .studio-logo-dark { display: block; }
-.studio-app-title { display: inline-flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 500; }
+.studio-app-title { display: inline-flex; align-items: center; gap: var(--md-sys-spacing-inset-md, 12px); font-size: 18px; font-weight: 500; }
+.studio-brand-divider { --md-divider-color: var(--border); block-size: 24px; align-self: center; }
 .app-header .compiler-status { margin-inline-end: 12px; white-space: nowrap; }
 @media (max-width: 880px) {
   md-app-bar.app-header { --md-app-bar-padding-inline-start: 20px; --md-app-bar-padding-inline-end: 20px; }
-  .studio-brand { margin-inline-end: 4px; }
 }
 @media (max-width: 640px) {
   md-app-bar.app-header { --md-app-bar-row-height: 63px; --md-app-bar-padding-inline-start: 14px; --md-app-bar-padding-inline-end: 14px; --md-app-bar-trailing-gap: 0px; }
-  .studio-brand { margin-inline-end: 0; }
   .studio-brand strong { display: none; }
   .studio-app-title { font-size: 16px; }
 }
