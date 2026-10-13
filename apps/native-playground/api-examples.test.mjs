@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
-import { apiExample } from './api-examples.js';
+import { apiExample, methodExampleArguments } from './api-examples.js';
 import { mergeComponentDocumentation } from './documentation.js';
 
 const frameworks = ['html', 'react', 'angular', 'vue', 'svelte'];
@@ -45,7 +45,7 @@ test('event bindings preserve each wrapper convention and source payload types',
     assert.match(example.code, /CustomEvent<HTMLMdButtonElementEventMap\["mdClick"\]>/);
     assert.doesNotMatch(example.code, /onMdChange=|@mdChange|onmdChange/);
   }
-  for (const framework of frameworks) assert.match(apiExample(button, 'event', 'mdChange', framework).code, /<(?:md-button|MdButton) toggle/);
+  for (const framework of frameworks) assert.match(apiExample(button, 'event', 'mdChange', framework).code, /"toggle": true/);
   const empty = apiExample({ tag: 'md-dialog', events: [{ name: 'mdOpened', detail: { text: 'void' } }] }, 'event', 'mdOpened', 'html');
   assert.match(empty.description, /does not carry a detail payload/);
   assert.doesNotMatch(empty.code, /event\.detail/);
@@ -85,7 +85,8 @@ test('method examples actually await concrete arguments, without undeclared samp
   assert.match(vue, /view\.value\?\.\$el/);
   assert.match(vue, /\$el: HTMLMdNumberFieldElement/);
   const angular = apiExample(component, 'method', 'stepUp', 'angular').code;
-  assert.match(angular, /@ViewChild\(MdNumberField\) view\?: MdNumberField/);
+  assert.match(angular, /@ViewChild\('view'\) view\?: MdNumberField/);
+  assert.match(angular, /<md-number-field #view/);
   assert.match(angular, /await component\.stepUp\(2\)/);
   assert.match(apiExample(component, 'method', 'stepUp', 'svelte').code, /bind:this=\{view\}/);
 });
@@ -99,6 +100,63 @@ test('method arguments support type objects, strings and application-specific un
   const example = apiExample(custom, 'method', 'configure', 'react');
   assert.equal(example.status, 'unknown');
   assert.equal(example.code, null);
+});
+
+test('live method defaults are JSON values from documented signatures and fixture data', () => {
+  const component = { tag: 'md-table', methods: [{ name: 'setSort', parameters: [{ name: 'column', type: 'string' }, { name: 'order', type: 'MdTableSortOrder' }] }, { name: 'getSelection', parameters: [] }] };
+  assert.deepEqual(methodExampleArguments(component, 'setSort'), ['platform', 'asc']);
+  assert.deepEqual(methodExampleArguments(component, 'getSelection'), []);
+  assert.equal(methodExampleArguments(component, 'undocumented'), null);
+  assert.equal(methodExampleArguments({ tag: 'md-custom' }, { name: 'configure', parameters: [{ name: 'app', type: 'ApplicationProvider' }] }), null);
+  assert.equal(methodExampleArguments({ tag: 'md-custom' }, { name: 'loadOptions', parameters: [{ name: 'provider', type: 'ApplicationProvider' }] }), null, 'a matching method name does not infer another component’s contract');
+  const options = methodExampleArguments({ tag: 'md-select' }, { name: 'loadOptions' });
+  assert.equal(options[0][0].value, 'design');
+  options[0][0].value = 'changed';
+  assert.equal(methodExampleArguments({ tag: 'md-select' }, { name: 'loadOptions' })[0][0].value, 'design', 'callers cannot mutate future defaults');
+  assert.deepEqual(methodExampleArguments({ tag: 'md-list' }, { name: 'selectItem', parameters: [{ name: 'index', type: { text: 'number' } }] }), [0]);
+});
+
+test('event and method examples include data, parent composition and source-required interaction flags', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../../packages/core/custom-elements.json', import.meta.url), 'utf8'));
+  const components = new Map(manifest.modules.flatMap(module => module.declarations || []).filter(item => item.tagName).map(item => [item.tagName, mergeComponentDocumentation(item)]));
+  const examples = [
+    ['md-card', 'event', 'mdClick', /"interactive": true/],
+    ['md-card', 'event', 'mdDragStart', /"dragEnabled": true/],
+    ['md-text-field', 'event', 'mdClear', /"clearable": "internal"/],
+    ['md-text-field', 'event', 'mdPasswordToggle', /"passwordToggle": "internal"/],
+    ['md-text-field', 'event', 'mdSearch', /"debounce": 250/],
+    ['md-line-chart', 'event', 'mdMarkerClick', /"showMarks": true/],
+    ['md-line-chart', 'event', 'mdAreaClick', /"area": true/],
+    ['md-bar-chart', 'event', 'mdZoom', /"zoom": "both"/],
+    ['md-select', 'event', 'mdChange', /"value": "mobile"/],
+    ['md-pie-chart', 'event', 'mdSliceClick', /"label": "Android"/],
+    ['md-app-bar', 'event', 'mdSearchInput', /"variant": "search"/],
+    ['md-side-sheet', 'event', 'mdBack', /"showBack": true/],
+    ['md-multi-select', 'event', 'mdClear', /"clearable": true/],
+    ['md-table-row', 'event', 'mdRowExpandedChange', /"expandable": true/],
+    ['md-table', 'event', 'mdSelectionChange', /"selection": "multiple"/],
+    ['md-table', 'event', 'mdPinChange', /await component\.pinColumn\(0, "start"\)/],
+    ['md-table', 'event', 'mdColumnVisibilityChange', /await component\.setColumnVisibility\(0, false\)/],
+    ['md-progress-indicator', 'event', 'mdComplete', /component\.complete = true;/],
+    ['md-select-option', 'event', 'mdSelectOptionChange', /component\.label = "Updated team name";/],
+    ['md-table-row', 'method', 'toggle', /Native Compose components use shared design tokens/],
+    ['md-select', 'method', 'getLabels', /"label": "Design systems"/],
+    ['md-line-chart', 'method', 'setZoom', /"label": "This week"/],
+    ['md-table', 'method', 'setSort', /await component\.setSort\("platform", "asc"\)/],
+    ['md-list-item', 'method', 'expand', /expanded-content/],
+    ['md-stepper', 'method', 'prev', /"active": 1/],
+  ];
+  for (const [tag, kind, member, expected] of examples) for (const framework of frameworks) {
+    const example = apiExample(components.get(tag), kind, member, framework);
+    assert.equal(example.status, 'supported', `${tag}.${member}/${framework}`);
+    assert.match(example.code, expected, `${tag}.${member}/${framework}`);
+  }
+  const row = apiExample(components.get('md-table-row'), 'method', 'toggle', 'html').code;
+  assert.match(row, /<md-table[^>]*><md-table-body><md-table-row/);
+  assert.doesNotMatch(row, /<md-table-head>/, 'selected row is a body row with real expansion controls');
+  const dialog = apiExample(components.get('md-dialog'), 'event', 'mdOpen', 'react').code;
+  assert.match(dialog, /data-awc-action/);
+  assert.match(dialog, /function onRecipeAction/);
 });
 
 test('slots project actual child content and native named slots across all web frameworks', () => {
@@ -175,6 +233,11 @@ test('all source methods and event handlers type-check against the public core d
       const handler = example.code.match(/function on[\s\S]+?\n}/)[0].replace(/function on\w+/, `function event${index++}`);
       declarations.push(handler);
     }
+    for (const [kind, members] of [['event', component.events || []], ['method', component.methods || []]]) for (const member of members) {
+      const html = apiExample(component, kind, member.name, 'html').code;
+      const properties = html.match(/Object\.assign\(component, ([\s\S]*?)\);\n/)[1];
+      declarations.push(`const properties${index++}: Partial<Components.${name}> = ${properties};`);
+    }
   }
   const filename = fileURLToPath(new URL('./api-examples-typecheck.ts', import.meta.url));
   const source = declarations.join('\n');
@@ -193,6 +256,45 @@ test('generated web examples contain syntactically valid scripts in each framewo
     const source = ['html', 'vue', 'svelte'].includes(framework) ? code.match(/<script[^>]*>([\s\S]*?)<\/script>/)[1] : code;
     const file = ts.createSourceFile('example.' + (framework === 'react' ? 'tsx' : 'ts'), source, ts.ScriptTarget.Latest, true, framework === 'react' ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
     assert.deepEqual(file.parseDiagnostics, [], `${framework} ${kind} has valid syntax`);
+  }
+});
+
+test('framework compilers accept every populated source event and method example', async () => {
+  const directory = new URL('../../node_modules/.pnpm/', import.meta.url);
+  const installed = await readdir(directory);
+  async function compiler(name, entry) {
+    const version = installed.filter(item => item.startsWith(name.replaceAll('/', '+') + '@')).sort().at(-1);
+    assert.ok(version, `${name} compiler is installed`);
+    const loaded = await import(new URL(`${version}/node_modules/${name}/${entry}`, directory));
+    return loaded.default ?? loaded;
+  }
+  const [angular, vue, svelte] = await Promise.all([
+    compiler('@angular/compiler', 'fesm2022/compiler.mjs'),
+    compiler('@vue/compiler-sfc', 'dist/compiler-sfc.cjs.js'),
+    compiler('svelte', 'compiler/index.js'),
+  ]);
+  const manifest = JSON.parse(await readFile(new URL('../../packages/core/custom-elements.json', import.meta.url), 'utf8'));
+  const components = manifest.modules.flatMap(module => module.declarations || []).filter(item => item.tagName).map(item => mergeComponentDocumentation(item));
+  for (const component of components) for (const [kind, members] of [['event', component.events], ['method', component.methods]]) for (const member of members || []) {
+    for (const framework of ['react', 'angular', 'vue', 'svelte']) {
+      const { code } = apiExample(component, kind, member.name, framework);
+      const label = `${component.tag}.${member.name}/${framework}`;
+      if (framework === 'react' || framework === 'angular') {
+        const file = ts.createSourceFile('Example.' + (framework === 'react' ? 'tsx' : 'ts'), code, ts.ScriptTarget.Latest, true, framework === 'react' ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+        assert.deepEqual(file.parseDiagnostics, [], label);
+        if (framework === 'angular') {
+          let template;
+          function visit(node) { if (ts.isPropertyAssignment(node) && node.name.getText(file) === 'template') template = node.initializer.text; ts.forEachChild(node, visit); }
+          visit(file);
+          assert.deepEqual(angular.parseTemplate(template, 'Example.html').errors ?? [], [], label);
+        }
+      } else if (framework === 'vue') {
+        const parsed = vue.parse(code, { filename: 'Example.vue' });
+        assert.deepEqual(parsed.errors, [], label);
+        assert.doesNotThrow(() => vue.compileScript(parsed.descriptor, { id: 'example' }), label);
+        assert.deepEqual(vue.compileTemplate({ source: parsed.descriptor.template.content, filename: 'Example.vue', id: 'example' }).errors, [], label);
+      } else assert.doesNotThrow(() => svelte.compile(code, { filename: 'Example.svelte', generate: 'client' }), label);
+    }
   }
 });
 

@@ -369,3 +369,16 @@ html[data-theme=dark] .studio-logo-dark { display: block; }
   .studio-brand strong { display: none; }
   .studio-app-title { font-size: 16px; }
 }
+
+/* Public style controls use the same compact AWC fields as Properties. */
+.component-style-groups{display:grid;gap:10px}
+.component-style-groups>md-accordion-item{--md-accordion-item-content-padding:12px;--md-accordion-item-header-padding:10px 12px;--md-accordion-item-header-min-height:42px}
+.style-group-heading{display:inline-flex;align-items:center;gap:8px;font-size:13px}
+.css-variable-label{font-size:12px;font-weight:600}
+.css-variable-name{font-size:10px;line-height:1.4;color:var(--muted);overflow-wrap:anywhere;margin-bottom:3px}
+.styles-reset{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted)}
+#css-controls [hidden]{display:none!important}
+
+.native-integration-examples{display:grid;gap:10px;margin-bottom:20px}
+
+.component-canvas #preview-content.overlay-open{align-items:flex-start}

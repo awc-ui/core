@@ -13,6 +13,7 @@ public struct AWCNativeView: View {
     @Environment(\.awcGridCellContext) var gridCellContext
     @Environment(\.awcNativeFocusChanged) var nativeFocusChanged
     @Environment(\.layoutDirection) var layoutDirection
+    @Environment(\.awcPreviewEnabled) var previewEnabled
     @State var query = ""
     @State var auxiliaryQuery = ""
     @State var passwordVisible = false

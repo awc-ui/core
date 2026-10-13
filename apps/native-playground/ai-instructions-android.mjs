@@ -1,4 +1,5 @@
 import { usageSnippet } from './usage-snippets.js';
+import { nativeGuideOverview, nativeGuideRecipes } from './ai-instructions-examples.mjs';
 
 export const androidInstructionFiles = Object.freeze({
   support: 'packages/native-android/support.json',
@@ -11,6 +12,11 @@ export const androidInstructionFiles = Object.freeze({
   theme: 'packages/native-android/src/main/java/dev/awc/nativeui/AWCTheme.kt',
   actions: 'packages/native-android/src/main/java/dev/awc/nativeui/AWCNativeActions.kt',
   readme: 'packages/native-android/README.md',
+  inputs: 'packages/native-android/src/main/java/dev/awc/nativeui/AWCInputs.kt',
+  navigation: 'packages/native-android/src/main/java/dev/awc/nativeui/AWCNavigation.kt',
+  overlays: 'packages/native-android/src/main/java/dev/awc/nativeui/AWCOverlays.kt',
+  groups: 'packages/native-android/src/main/java/dev/awc/nativeui/AWCGroups.kt',
+  data: 'packages/native-android/src/main/java/dev/awc/nativeui/AWCData.kt',
 });
 
 const names = entries => (entries || []).map(entry => typeof entry === 'string' ? entry : entry.name).filter(name => typeof name === 'string');
@@ -139,6 +145,7 @@ android {
 }
 dependencies { implementation(project(":native-ui")) }`),
     '### Public Compose usage',
+    nativeGuideOverview(component, policy, 'android'),
     wrapper ? `Use the verified ${code(wrapper.name)} composable and ${code(wrapper.propertyType)} class from ${code(wrapper.namespace)}. They accept properties, Modifier, onEvent and an optional composable slot callback. Place the component inside AWCTheme.`
       : 'No matching generated Kotlin wrapper was verified in this checkout. Use the existing dynamic AWCComponent API below; do not invent a typed composable name.',
     fence(wrapper ? example(wrapper, component.tag, namespace) : usageSnippet(component, {}, 'android')),
@@ -184,5 +191,6 @@ dependencies { implementation(project(":native-ui")) }`),
   paragraphs.push('### Android validation boundary',
     'The studio Android preview runs an actual Compose host on a dedicated emulator and streams native pixels; it is not the local macOS SwiftUI preview. A successful build or streamed image does not establish complete interaction parity, accessibility compliance or behavior on all Android devices. Use emulator/device instrumentation for layouts, touch, IME, keyboard navigation, TalkBack and lifecycle behavior. This generated guide does not run tests or certify those capabilities.',
     `Consult ${code(androidInstructionFiles.support)} for the Android support policy and ${code(androidInstructionFiles.readme)} for native forms, actions, focus, routing, validation and remaining platform differences.`);
+  paragraphs.push(nativeGuideRecipes(component, policy, 'android'));
   return paragraphs.join('\n\n');
 }

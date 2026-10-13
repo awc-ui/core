@@ -20,17 +20,20 @@ import java.time.*
     var open by awcState(p["open"]) { p.bool("open") }
     fun close(cancel: Boolean = false) { if(cancel) emit("mdCancel", null); open = false; emit("mdClose", null) }
     LaunchedEffect(open) { if(open) emit("mdOpen", null) }
+    if (LocalAWCPreviewPresentation.current != null && !open && tag in setOf("md-dialog", "md-bottom-sheet", "md-side-sheet", "md-menu", "md-fab-menu")) {
+        OutlinedButton(onClick = { open = true }, enabled = p.enabled()) { Text("Open " + tag.removePrefix("md-").replace('-', ' ')) }
+    }
     when(tag) {
-        "md-dialog" -> if(open) AlertDialog(
+        "md-dialog" -> if(open) AWCAlertDialog(
             onDismissRequest = { if(p.bool("scrimDismissible", true)) close(true) },
             title = { Text(p.str("headline")) },
             text = { Column { slot?.invoke("") } },
             icon = if(p.str("icon").isNotBlank()) ({ Glyph(p.str("icon")) }) else null,
-            confirmButton = { slot?.invoke("actions"); TextButton(onClick = { close() }) { Text(p.str("okLabel", "OK")) } },
-            dismissButton = { TextButton(onClick = { close(true) }) { Text(p.str("cancelLabel", "Cancel")) } },
+            confirmButton = { slot?.invoke("actions"); TextButton(onClick = { close() }) { Text(p.str("okLabel").ifBlank { "OK" }) } },
+            dismissButton = { TextButton(onClick = { close(true) }) { Text(p.str("cancelLabel").ifBlank { "Cancel" }) } },
             properties = DialogProperties(dismissOnClickOutside = p.bool("scrimDismissible", true), usePlatformDefaultWidth = !p.bool("fullscreen"))
         )
-        "md-bottom-sheet" -> if(open) ModalBottomSheet(onDismissRequest = { if(p.bool("scrimDismissible", true)) close(true) }, dragHandle = if(p.bool("showDragHandle", true)) ({ BottomSheetDefaults.DragHandle() }) else null) {
+        "md-bottom-sheet" -> if(open) AWCModalBottomSheet(onDismissRequest = { if(p.bool("scrimDismissible", true)) close(true) }, dragHandle = if(p.bool("showDragHandle", true)) ({ BottomSheetDefaults.DragHandle() }) else null) {
             Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(p.str("headline"), style = MaterialTheme.typography.headlineSmall)
                 if(p.bool("topDivider")) HorizontalDivider()
@@ -41,7 +44,7 @@ import java.time.*
                 Spacer(Modifier.height(16.dp))
             }
         }
-        "md-side-sheet" -> if(open) Dialog(onDismissRequest = { if(p.bool("scrimDismissible", true)) close(true) }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        "md-side-sheet" -> if(open) AWCDialog(onDismissRequest = { if(p.bool("scrimDismissible", true)) close(true) }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
             Box(Modifier.fillMaxSize(), contentAlignment = if(p.str("side") == "start") Alignment.CenterStart else Alignment.CenterEnd) {
                 Surface(Modifier.fillMaxHeight().fillMaxWidth(.85f), tonalElevation = 4.dp) {
                     Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -57,7 +60,7 @@ import java.time.*
         }
         "md-menu", "md-fab-menu" -> {
             slot?.invoke("anchor")
-            DropdownMenu(expanded = open, onDismissRequest = { close() }) {
+            AWCDropdownMenu(expanded = open, onDismissRequest = { close() }) {
                 if(tag == "md-fab-menu" && p.str("menuLabel").isNotEmpty()) Text(p.str("menuLabel"), Modifier.padding(12.dp))
                 slot?.invoke("")
             }
@@ -92,20 +95,20 @@ import java.time.*
             val state = rememberDatePickerState(initialSelectedDateMillis = initial, selectableDates = object : SelectableDates {
                 override fun isSelectableDate(utcTimeMillis: Long): Boolean { val date = Instant.ofEpochMilli(utcTimeMillis).atZone(ZoneOffset.UTC).toLocalDate(); return (min == null || !date.isBefore(min)) && (max == null || !date.isAfter(max)) }
             })
-            DatePickerDialog(onDismissRequest = { if(p.bool("scrimDismissible", true)) closePicker(true) }, confirmButton = { TextButton(onClick = {
+            AWCDatePickerDialog(onDismissRequest = { if(p.bool("scrimDismissible", true)) closePicker(true) }, confirmButton = { TextButton(onClick = {
                 state.selectedDateMillis?.let { millis -> value = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate().toString(); val detail = mapOf("value" to value, "date" to value); emit("mdSelected", detail); emit("mdChange", detail) }; closePicker()
-            }, enabled = state.selectedDateMillis != null) { Text(p.str("okLabel", "OK")) } }, dismissButton = { TextButton(onClick = { closePicker(true) }) { Text(p.str("cancelLabel", "Cancel")) } }) { DatePicker(state) }
+            }, enabled = state.selectedDateMillis != null) { Text(p.str("okLabel").ifBlank { "OK" }) } }, dismissButton = { TextButton(onClick = { closePicker(true) }) { Text(p.str("cancelLabel").ifBlank { "Cancel" }) } }) { DatePicker(state) }
         }
         "md-time-picker" -> {
             val time = runCatching { LocalTime.parse(value) }.getOrDefault(LocalTime.of(12, 0))
             val state = rememberTimePickerState(time.hour, time.minute, !p.str("format").startsWith("12"))
-            AlertDialog(onDismissRequest = { closePicker(true) }, title = { Text(p.str("headline", "Select time")) }, text = { TimePicker(state) }, confirmButton = { TextButton(onClick = {
+            AWCAlertDialog(onDismissRequest = { closePicker(true) }, title = { Text(p.str("headline", "Select time")) }, text = { TimePicker(state) }, confirmButton = { TextButton(onClick = {
                 val step = p.int("minuteStep", 1).coerceIn(1, 60)
                 val candidate = LocalTime.of(state.hour, (state.minute / step * step).coerceIn(0, 59))
                 val min = runCatching { LocalTime.parse(p.str("min")) }.getOrNull(); val max = runCatching { LocalTime.parse(p.str("max")) }.getOrNull()
                 val valid = if(min != null && max != null && min > max) candidate >= min || candidate <= max else (min == null || candidate >= min) && (max == null || candidate <= max)
                 if(valid) { value = "%02d:%02d".format(candidate.hour, candidate.minute); val date = LocalDate.now().atTime(candidate).atZone(ZoneId.systemDefault()).toInstant().toString(); val detail = mapOf("value" to value, "iso" to "$value:00", "isoDateTime" to date, "date" to date, "hours" to candidate.hour, "minutes" to candidate.minute, "period" to if(candidate.hour >= 12) "PM" else "AM"); emit("mdInput", detail); emit("mdChange", detail); closePicker() }
-            }) { Text(p.str("okLabel", "OK")) } }, dismissButton = { TextButton(onClick = { closePicker(true) }) { Text(p.str("cancelLabel", "Cancel")) } })
+            }) { Text(p.str("okLabel").ifBlank { "OK" }) } }, dismissButton = { TextButton(onClick = { closePicker(true) }) { Text(p.str("cancelLabel").ifBlank { "Cancel" }) } })
         }
         "md-color-picker" -> {
             var color by remember(value) { mutableStateOf(awcColor(value, Color(0xff6750a4))) }
@@ -113,7 +116,7 @@ import java.time.*
                 val r = (c.red * 255).toInt(); val g = (c.green * 255).toInt(); val b = (c.blue * 255).toInt()
                 return if(p.str("format") == "rgb") "rgba($r, $g, $b, ${c.alpha})" else "#%02x%02x%02x".format(r, g, b) + if(p.bool("alpha") && c.alpha < 1f) "%02x".format((c.alpha * 255).toInt()) else ""
             }
-            AlertDialog(onDismissRequest = { if(p.bool("dismissOnOutsideClick", true)) closePicker() }, title = { Text(p.str("ariaLabelProp", "Choose color")) }, text = {
+            AWCAlertDialog(onDismissRequest = { if(p.bool("dismissOnOutsideClick", true)) closePicker() }, title = { Text(p.str("ariaLabelProp", "Choose color")) }, text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Box(Modifier.fillMaxWidth().height(64.dp).background(color))
                     listOf("Red", "Green", "Blue").forEachIndexed { index, channel ->

@@ -1,3 +1,4 @@
+import { recipePropertyValues } from './usage-snippets.js';
 import { encodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, nativeViewportWidth, nativePreviewTarget, nativeLiveEndpoint, createNativeSessionCoordinator, createNativeLiveClient, createNativePointerInput, nativeImagePoint, nativeTextChunks } from './contracts.js';
 import { recipeFor, categoryFor, displayName } from './recipes.js';
 import { mergeComponentDocumentation, memberDocumentation } from './documentation.js';
@@ -9,7 +10,7 @@ import { createComponentNavigation, filterDocumentationNavigation } from './comp
 
 const $ = selector => document.querySelector(selector);
 const state = { components: [], selected: null, platform: 'web', docSection: 'usage', propertiesSection: 'properties', propertiesScroll: {}, snippetLanguage: 'html', props: {}, events: [], catalog: null, ready: false, target: null };
-const documentationUI = createDocumentationUI({ getState: () => state, notify: toast, afterInteraction: syncReferenceState, onAppearanceChange: () => scheduleNativeRender(400), onContentChange: name => { if (state.selected.tag === 'md-button' && name === '') scheduleNativeRender(); }, watchEvents: () => { selectStudioSection('events'); $('.inspector-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
+const documentationUI = createDocumentationUI({ getState: () => state, notify: toast, afterInteraction: syncReferenceState, onAppearanceChange: () => scheduleNativeRender(400), onContentChange: () => scheduleNativeRender(), watchEvents: () => { selectStudioSection('events'); $('.inspector-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
 const studioUI = createStudioUI({ getState: () => state, notify: toast, onLayoutChange: patch => { if ('direction' in patch || 'width' in patch) scheduleNativeRender(); }, onThemeChange: () => scheduleNativeRender(400) });
 const coverageUI = createCoverageUI({ getState: () => state, notify: toast });
 const aiInstructionsUI = createAIInstructionsUI({ getState: () => state, notify: toast });
@@ -33,6 +34,7 @@ function nativeClientFor(platform) {
 }
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const text = (selector, value) => { if ($(selector)) $(selector).textContent = String(value ?? ''); };
+const libraryStatus = (label, status, live = false) => { $('#compiler-status').innerHTML = `<md-status-dot inline size="small" state="${status}"${live ? ' live' : ''}></md-status-dot><span>${escape(label)}</span>`; };
 
 function parseDefault(value) {
   if (value === undefined || value === 'undefined') return undefined;
@@ -88,7 +90,7 @@ async function init() {
     });
     state.ready = runtimeResult.status === 'fulfilled';
     text('#component-count', state.navigation.total);
-    $('#compiler-status').innerHTML = `<i></i>${state.catalog ? 'Library connected' : 'Source manifest only'}`;
+    libraryStatus(state.ready ? state.catalog ? 'Library connected' : 'Source manifest only' : 'Web runtime unavailable', state.ready ? state.catalog ? 'online' : 'away' : 'offline', state.ready && !!state.catalog);
     text('#pipeline-state', state.catalog ? `${generated.size} contracts · ${state.components.reduce((count, component) => count + portabilityFindings(component).total, 0)} findings` : 'Run native:build to inspect output');
     const hashTag = location.hash.slice(1);
     const requestedExample = new URLSearchParams(location.search).get('example');
@@ -101,7 +103,7 @@ async function init() {
   } catch (error) {
     $('#component-list').innerHTML = `<p class="load-error">${escape(error.message)}</p>`;
     $('#preview-content').innerHTML = `<p class="load-error">${escape(error.message)}</p>`;
-    text('#compiler-status', 'Source unavailable');
+    libraryStatus('Source unavailable', 'offline');
   }
 }
 
@@ -149,7 +151,7 @@ function selectComponent(tag) {
   state.selected = component; state.events = []; state.props = {}; state.editedTag = tag; state.editedProps = {};
   state.docSlotValues = {}; state.docCssValues = {}; state.buttonAppearance = {}; state.propertiesScroll = {}; $('#props-search').value = ''; $('#properties-panel').scrollTop = 0;
   for (const prop of component.properties || []) { if (prop.defaultValue !== undefined) state.props[prop.name] = structuredClone(prop.defaultValue); }
-  Object.assign(state.props, recipeFor(tag).props);
+  Object.assign(state.props, recipePropertyValues(component));
   text('#category-label', component.category); text('#tag-label', tag); text('#component-title', component.navigationTitle || displayName(tag)); text('#component-description', component.description);
   text('#props-count', component.properties.length); text('#findings-count', portabilityFindings(component).total); text('#event-count', '0');
   renderNavigation(); renderPreview(); renderProperties(); renderEvents(); if (state.docSection === 'coverage') void coverageUI.load();
@@ -190,24 +192,29 @@ function renderPreview() {
       canvas.innerHTML = `<div class="demo ${recipe.mode}">${recipe.html}</div>`;
       state.target = canvas.querySelector(tag);
       if (state.target) {
-        for (const [name, value] of Object.entries(recipe.props)) state.target[name] = value;
-        for (const prop of state.selected.properties || []) {
-          const name = prop.name.replace(/[A-Z]/g, char => `-${char.toLowerCase()}`);
-          if (!state.target.hasAttribute(name)) continue;
-          const raw = state.target.getAttribute(name);
-          state.props[prop.name] = prop.type === 'boolean' ? raw !== 'false' : prop.type === 'number' ? Number(raw) : raw;
-        }
+        for (const [name, value] of Object.entries(recipePropertyValues(state.selected, recipe))) state.target[name] = value;
         for (const [name, value] of Object.entries(state.editedProps || {})) { state.target[name] = value; if (value === undefined) delete state.props[name]; else state.props[name] = value; }
       }
       recipe.setup?.(canvas); documentationUI.applyOverrides();
       for (const name of new Set(['click', ...(state.selected.events || []).map(event => event.name)])) canvas.addEventListener(name, recordEvent);
       canvas.addEventListener('click', event => { if (event.composedPath().some(element => element?.tagName === 'A')) event.preventDefault(); });
-      state.previewObserver = new ResizeObserver(() => {
+      const overlayTags = new Set(['md-dialog', 'md-bottom-sheet', 'md-side-sheet', 'md-date-picker', 'md-time-picker', 'md-color-picker', 'md-select', 'md-multi-select', 'md-autocomplete', 'md-search']);
+      const anchoredTags = new Set(['md-date-picker', 'md-color-picker', 'md-select', 'md-multi-select', 'md-autocomplete']);
+      let overlayOpen = overlayTags.has(tag) && !!state.target?.open;
+      const resizePreview = () => {
         const demo = canvas.querySelector('.demo');
-        const height = Math.max(310, Math.min(560, Math.ceil(demo?.getBoundingClientRect().height || 0) + 64));
+        canvas.classList.toggle('overlay-open', overlayOpen && anchoredTags.has(tag));
+        const height = Math.max(overlayOpen ? 560 : 310, Math.min(560, Math.ceil(demo?.getBoundingClientRect().height || 0) + 64));
         if (frame.style.height !== `${height}px`) frame.style.height = `${height}px`;
+      };
+      for (const type of ['mdOpen', 'mdClose', 'mdOpenChange']) canvas.addEventListener(type, event => {
+        if (event.target !== state.target || !overlayTags.has(tag)) return;
+        overlayOpen = type === 'mdOpenChange' ? event.detail.open : type === 'mdOpen';
+        resizePreview();
       });
+      state.previewObserver = new ResizeObserver(resizePreview);
       state.previewObserver.observe(canvas.querySelector('.demo'));
+      resizePreview();
       renderProperties(); studioUI.applyCanvas();
     } catch (error) { if (generation === state.previewGeneration) { root.innerHTML = `<p class="load-error">${escape(error.message)}</p>`; } }
   });
@@ -260,10 +267,15 @@ function nativeRenderState(kind, message) {
 
 function scheduleNativeRender(delay = 300) {
   if (!isNativePlatform(state.platform) || !$('#native-render-frame')) return;
+  const recipe = recipeFor(state.selected.tag);
+  const slots = { ...(recipe.text !== undefined ? { '': recipe.text } : {}), ...state.docSlotValues };
+  let payload;
+  try {
+    payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark', { ...studioUI.nativeOptions(), buttonAppearanceDefaults: state.buttonAppearanceDefaults, ...(state.selected.tag === 'md-button' ? { buttonAppearance: state.buttonAppearance } : {}), text: slots[''], slots });
+  } catch (error) { toast(error.message); return; }
   clearTimeout(state.nativeRenderTimer);
   disposeNativePointer(); nativeLive.stop(); state.liveFrame = null; state.liveDisplayedRevision = -1; state.liveImageVersion = (state.liveImageVersion || 0) + 1;
   const request = nativeRequests.start();
-  const payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark', { ...studioUI.nativeOptions(), buttonAppearanceDefaults: state.buttonAppearanceDefaults, ...(state.selected.tag === 'md-button' ? { buttonAppearance: state.buttonAppearance } : {}), text: state.docSlotValues?.[''] });
   if (state.selected.tag === 'md-button' && state.nativeScenario) payload.scenario = state.nativeScenario;
   // Fixed presets retain their native logical viewport when the image fits a
   // narrower card. Responsive mode uses the available width at native scale.
@@ -584,7 +596,7 @@ function renderProperties() {
   }));
   documentationUI.renderUsage(); documentationUI.filterProperties();
   $('#properties-tab').setAttribute('aria-label', `Properties, ${fields.length} declarations`);
-  $('#css-variables-tab').setAttribute('aria-label', `${state.selected?.tag === 'md-button' ? 'Styles' : 'CSS variables'}, ${$('#css-variables-count').textContent} declarations`);
+  $('#css-variables-tab').setAttribute('aria-label', `Styles, ${$('#css-variables-count').textContent} declarations`);
   $('#properties-panel').scrollTop = scrollTop;
   const replacement = focusedId && document.getElementById(focusedId);
   if (replacement && !replacement.disabled) {

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { nativeApiExample } from './native-api-examples.js';
+import { nativeApiExample, nativeUsageExample, nativeThemeExample } from './native-api-examples.js';
 
 const ios = JSON.parse(await readFile(new URL('../../packages/native-ios/NativeSupport.json', import.meta.url))).components;
 const android = JSON.parse(await readFile(new URL('../../packages/native-android/support.json', import.meta.url))).components;
@@ -47,13 +47,15 @@ test('button change updates committed selected state, never offers cancellation'
 test('generic event handling filters the selected event and consumes native payloads', () => {
   const swift = nativeApiExample(component('md-text-field'), 'event', 'mdInput', 'swift');
   assert.equal(swift.status, 'supported');
-  assert.match(swift.code, /guard event\.name == "mdInput"/);
+  assert.match(swift.code, /guard event.tag == "md-text-field", event\.name == "mdInput"/);
+  assert.match(swift.code, /value = event.detail.string/);
   assert.match(swift.code, /lastPayload = event\.detail\.json/);
   assert.match(swift.code, /Text\(lastPayload\)/);
   const kotlin = nativeApiExample(component('md-text-field'), 'event', 'mdInput', 'android');
   assert.match(kotlin.code, /if \(name == "mdInput"\)/);
   assert.match(kotlin.code, /lastPayload = detail\?\.toString\(\)/);
-  assert.match(kotlin.notes.join(' '), /can differ from the source TypeScript/);
+  assert.match(kotlin.code, /value = detail as\? String/);
+  assert.match(kotlin.notes.join(' '), /detail is a string/);
 });
 
 test('slot examples use actual native content assignment and activate conditional button loader', () => {
@@ -112,7 +114,10 @@ test('native appearance examples honor declared field coverage rather than inven
   assert.match(result.code, /labelColor:/);
   assert.doesNotMatch(result.code, /fontSize:|fontWeight:/);
   narrowed.support.ios.appearance.fields = [];
-  assert.equal(nativeApiExample(narrowed, 'cssPart', 'label', 'swift').code, null);
+  const fallback = nativeApiExample(narrowed, 'cssPart', 'label', 'swift');
+  assert.match(fallback.code, /awcTheme/);
+  assert.doesNotMatch(fallback.code, /awcButtonAppearance/);
+  assert.match(fallback.description, /does not target this part/);
 });
 
 test('supported declarative method alternatives show state changes and disclose behavioral differences', () => {
@@ -144,8 +149,10 @@ test('unbridged methods and web parts never produce fake native calls', () => {
       assert.match(result.description, /no public .* method bridge/);
     }
     const part = nativeApiExample(component('md-text-field'), 'cssPart', 'input', platform);
-    assert.equal(part.code, null);
+    assert.equal(part.status, 'unknown');
+    assert.match(part.code, platform === 'swift' ? /awcTheme/ : /AWCTheme\(tokenOverrides/);
     assert.match(part.description, /Web styling hook/);
+    assert.match(part.description, /does not target this part/);
   }
 });
 
@@ -179,4 +186,85 @@ test('invalid native API inputs fail explicitly', () => {
   assert.throws(() => nativeApiExample(component('md-button'), 'event', 'mdClick', 'web'), /platform/);
   assert.throws(() => nativeApiExample(component('md-button'), 'property', 'value', 'swift'), /kind/);
   assert.throws(() => nativeApiExample({ tag: 'bad"code' }, 'event', 'x', 'swift'), /valid component tag/);
+});
+
+test('all 81 catalog components have bounded native starter and theme recipes on both platforms', async () => {
+  const catalog = JSON.parse(await readFile(new URL('../../packages/native-compiler/generated/catalog.json', import.meta.url))).components;
+  assert.equal(catalog.length, 81);
+  for (const item of catalog) for (const platform of platforms) {
+    const result = nativeUsageExample({ ...item, ...component(item.tag) }, platform);
+    assert.ok(result.code, `${platform} ${item.tag}`);
+    assert.match(result.code, platform === 'swift' ? /AWCNativeView\(/ : /AWCComponent\(/);
+    assert.ok(result.code.includes(`"${item.tag}"`), item.tag);
+    assert.doesNotMatch(result.code, /document\.|querySelector|HTMLElement|addEventListener|TODO/);
+    const theme = nativeThemeExample(component(item.tag), platform);
+    assert.match(theme.code, /--md-sys-color-primary/);
+    assert.match(theme.notes.join(' '), /not a mapping of CSS parts/);
+  }
+});
+
+test('native state contracts distinguish scalar, map, array and index payloads', () => {
+  const cases = [
+    ['md-switch', 'mdChange', 'selected', /detail\["selected"\]\.bool/, /get\("selected"\) as\? Boolean/],
+    ['md-checkbox', 'mdChange', 'checked', /detail\["checked"\]\.bool/, /get\("checked"\) as\? Boolean/],
+    ['md-number-field', 'mdInput', 'value', /detail\["value"\]\.number/, /get\("value"\) as\? Number/],
+    ['md-rating', 'mdChange', 'value', /event.detail.number/, /detail as\? Number/],
+    ['md-multi-select', 'mdChange', 'value', /detail.array.map\(\\.string\)/, /detail as\? List<\*>/],
+    ['md-tabs', 'mdTabChange', 'activeTabIndex', /Int\(event.detail\["index"\].number/, /get\("index"\) as\? Number/],
+    ['md-stepper', 'mdStepChange', 'active', /Int\(event.detail\["index"\].number/, /get\("index"\) as\? Number/],
+    ['md-organization-chart', 'mdSelectionChange', 'selectedIds', /detail\["selectedIds"\].array/, /get\("selectedIds"\) as\? List/],
+  ];
+  for (const [tag, event, property, swiftRead, androidRead] of cases) for (const platform of platforms) {
+    const example = nativeApiExample(component(tag), 'event', event, platform);
+    assert.equal(example.status, 'supported');
+    assert.match(example.code, platform === 'swift' ? swiftRead : androidRead, `${tag} ${platform}`);
+    assert.ok(example.code.includes(`"${property}"`));
+    assert.match(example.description, new RegExp(`supported ${property} property`));
+  }
+});
+
+test('data and navigation starters include actual fixtures and multiple actionable native children', () => {
+  for (const platform of platforms) {
+    for (const tag of ['md-line-chart', 'md-area-chart', 'md-bar-chart']) {
+      const example = nativeUsageExample(component(tag), platform);
+      assert.match(example.code, /"series"/);
+      assert.match(example.code, /"data"/);
+      assert.match(example.code, /Weekly activity/);
+    }
+    assert.match(nativeUsageExample(component('md-pie-chart'), platform).code, /Team distribution/);
+    assert.match(nativeUsageExample(component('md-transfer-list'), platform).code, /"items"/);
+    const tabs = nativeUsageExample(component('md-tabs'), platform).code;
+    assert.match(tabs, /Overview/);
+    assert.match(tabs, /Details/);
+    if (platform === 'swift') {
+      assert.match(tabs, /AWCNode\(id: "example-0"/);
+      assert.match(tabs, /AWCNode\(id: "example-1"/);
+    }
+  }
+});
+
+test('declarative method alternatives cover verified selection, option-data, pagination and expansion APIs', () => {
+  for (const platform of platforms) for (const [tag, name, property] of [
+    ['md-date-picker', 'show', 'open'], ['md-time-picker', 'hide', 'open'], ['md-tooltip', 'show', 'open'],
+    ['md-tabs', 'selectTab', 'activeTabIndex'], ['md-navigation-bar', 'select', 'activeIndex'],
+    ['md-stepper', 'next', 'active'], ['md-stepper', 'prev', 'active'],
+    ['md-select', 'loadOptions', 'options'], ['md-multi-select', 'reset', 'value'],
+    ['md-table-pagination', 'goToPage', 'page'], ['md-table-pagination', 'setRowsPerPage', 'rowsPerPage'],
+    ['md-table-row', 'toggle', 'expanded'], ['md-accordion-item', 'toggle', 'expanded'], ['md-radio', 'select', 'checked'],
+  ]) {
+    const example = nativeApiExample(component(tag), 'method', name, platform);
+    assert.equal(example.status, 'native-equivalent', `${tag}.${name} ${platform}`);
+    assert.ok(example.code.includes(`"${property}"`));
+    assert.match(example.description, /no native method bridge/);
+    assert.doesNotMatch(example.code, new RegExp(`\\.${name}\\(`));
+  }
+  assert.equal(nativeApiExample(component('md-color-picker'), 'method', 'show', 'swift').code, null, 'Swift color picker has no declared open property');
+  assert.ok(nativeApiExample(component('md-color-picker'), 'method', 'show', 'android').code);
+});
+
+test('conditional slots request their visible native states', () => {
+  assert.match(nativeApiExample(component('md-switch'), 'slot', 'selected-icon', 'swift').code, /"selected": .bool\(true\)/);
+  assert.match(nativeApiExample(component('md-line-chart'), 'slot', 'loader', 'swift').code, /"loading": .bool\(true\)/);
+  const emptyChart = nativeApiExample(component('md-line-chart'), 'slot', 'empty', 'swift');
+  assert.match(emptyChart.code, /"series": .array\(\[\]\)/);
 });

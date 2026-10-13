@@ -50,32 +50,41 @@ extension AWCNativeView {
             }
             if b("clearable") && !optionSelection.isEmpty { Button(s("clearLabel", "Clear")) { set("value", multiple ? [] : ""); emit("mdChange", p("value")); if node.tag != "md-select" { emit("mdClear") } } }
             support
-        }.sheet(isPresented: Binding(get: { b("open") }, set: { showOverlay($0) })) {
-            NavigationStack {
-                VStack(spacing: 0) {
-                    if b("filterable") || node.tag == "md-autocomplete" || node.tag == "md-multi-select" {
-                        TextField(s("searchPlaceholder", "Search options"), text: $query).textFieldStyle(.roundedBorder).padding()
-                            .onChange(of: query) { _, value in if node.tag == "md-autocomplete" { set("inputValue", .string(value)); emit("mdInput", .string(value)) } }
-                            .onSubmit { if node.tag == "md-autocomplete" && b("freeSolo") && !query.isEmpty { chooseOption(AWCOption(id: query, label: query, disabled: false, icon: "", supportingText: "")) } }
-                    }
-                    if b("loading") { ProgressView(s("loadingText", "Loading…")).padding() }
-                    else if filteredOptions.isEmpty { Text(s(options.isEmpty ? "noOptionsText" : "noResultsText", "No options")).foregroundStyle(.secondary).padding() }
-                    else {
-                        List {
-                            if multiple && b("showSelectAll") { Button(s("selectAllLabel", "Select all")) { let values = Array(filteredOptions.filter { !$0.disabled }.prefix(Int(n("maxSelected") > 0 ? n("maxSelected") : Double(filteredOptions.count)))).map { AWCValue.string($0.id) }; set("value", .array(values)); emit("mdChange", p("value")) } }
-                            ForEach(filteredOptions) { option in
-                                Button { chooseOption(option) } label: {
-                                    HStack {
-                                        symbol(option.icon)
-                                        VStack(alignment: .leading) { Text(option.label).foregroundStyle(.primary); if !option.supportingText.isEmpty { Text(option.supportingText).font(.caption).foregroundStyle(.secondary) } }
-                                        Spacer(); if optionSelection.contains(option.id) { Image(systemName: "checkmark").foregroundStyle(theme.primary) }
-                                    }.contentShape(Rectangle())
-                                }.disabled(option.disabled)
+        }.awcPreviewSheet(isPresented: Binding(get: { b("open") }, set: { showOverlay($0) })) {
+            VStack(spacing: 0) {
+                if previewEnabled {
+                    HStack {
+                        Text(label.isEmpty ? "Select" : label).font(.headline)
+                        Spacer()
+                        Button("Done") { showOverlay(false) }
+                    }.padding()
+                }
+                NavigationStack {
+                    VStack(spacing: 0) {
+                        if b("filterable") || node.tag == "md-autocomplete" || node.tag == "md-multi-select" {
+                            TextField(s("searchPlaceholder", "Search options"), text: $query).textFieldStyle(.roundedBorder).padding()
+                                .onChange(of: query) { _, value in if node.tag == "md-autocomplete" { set("inputValue", .string(value)); emit("mdInput", .string(value)) } }
+                                .onSubmit { if node.tag == "md-autocomplete" && b("freeSolo") && !query.isEmpty { chooseOption(AWCOption(id: query, label: query, disabled: false, icon: "", supportingText: "")) } }
+                        }
+                        if b("loading") { ProgressView(s("loadingText", "Loading…")).padding() }
+                        else if filteredOptions.isEmpty { Text(s(options.isEmpty ? "noOptionsText" : "noResultsText", "No options")).foregroundStyle(.secondary).padding() }
+                        else {
+                            List {
+                                if multiple && b("showSelectAll") { Button(s("selectAllLabel", "Select all")) { let values = Array(filteredOptions.filter { !$0.disabled }.prefix(Int(n("maxSelected") > 0 ? n("maxSelected") : Double(filteredOptions.count)))).map { AWCValue.string($0.id) }; set("value", .array(values)); emit("mdChange", p("value")) } }
+                                ForEach(filteredOptions) { option in
+                                    Button { chooseOption(option) } label: {
+                                        HStack {
+                                            symbol(option.icon)
+                                            VStack(alignment: .leading) { Text(option.label).foregroundStyle(.primary); if !option.supportingText.isEmpty { Text(option.supportingText).font(.caption).foregroundStyle(.secondary) } }
+                                            Spacer(); if optionSelection.contains(option.id) { Image(systemName: "checkmark").foregroundStyle(theme.primary) }
+                                        }.contentShape(Rectangle())
+                                    }.disabled(option.disabled)
+                                }
                             }
                         }
-                    }
-                }.navigationTitle(label.isEmpty ? "Select" : label)
-                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { showOverlay(false) } } }
+                    }.navigationTitle(label.isEmpty ? "Select" : label)
+                    .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { showOverlay(false) } } }
+                }
             }.presentationDetents([.medium, .large])
         }
     }

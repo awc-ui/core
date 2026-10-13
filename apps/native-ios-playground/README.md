@@ -76,19 +76,32 @@ events stay inside that process. Links are disabled in the remote preview.
 This requires a logged-in macOS desktop session with access to WindowServer.
 Restricted processes or headless sessions may permit static snapshots but reject
 interactive window creation. It runs macOS SwiftUI, not an iOS simulator.
-Clicks, held button presses, button hover and text editing are supported; general drag gestures, scrolling, system
-menus, sheets and native accessibility require testing in the full native app.
+Clicks, held button presses, button hover and text editing are supported. Both renderer hosts automatically wrap
+their content in `AWCPreviewScope`: dialogs, bottom/side sheets and option pickers appear inside the captured
+view. Date/time previews use a SwiftUI calendar and time steppers; color previews use RGB sliders. These controls
+write through the same native state and event bindings. Applications outside this scope retain native sheets,
+`DatePicker` and `ColorPicker`. Platform presentation, sheet dragging, general drag gestures, scrolling, alpha
+color editing and native accessibility still require testing in the full native app.
+
+The configure and snapshot requests accept `slots: { "": "Body", "headline": "Title" }` for supported prose slots.
+Each request allows at most 32 keys, 80 UTF-16 code units per name, 4096 UTF-8 bytes per value, and 32768 total value
+bytes. Explicit empty strings clear text. Structural, action and unsupported slots keep their fixture children.
+The default slot takes precedence over legacy Button `text`; Button behavior scenarios keep their own content.
 
 Run the real native interaction check after building:
 
 ```sh
 node apps/native-ios-playground/scripts/test-live-preview.mjs
 node apps/native-ios-playground/scripts/test-live-stream.mjs
+sh packages/native-ios/scripts/test-native-preview.sh
 ```
 
 The check exercises native Chip toggling, persistent state, Unicode text entry,
 Backspace, Enter submission, held button presses, cancellation and event delivery. The Node/browser transport has
 separate tests in `apps/native-playground`.
+The preview suite verifies real overlay/picker interaction, bounded text overrides, and that production views
+still use platform sheets and color controls. Its standalone Swift checks also run with Command Line Tools
+without XCTest.
 
 `md-button` uses source size/density rules, five variant palettes, bundled Roboto
 and Material Symbols, and native press-driven shape morphing. The ripple uses the

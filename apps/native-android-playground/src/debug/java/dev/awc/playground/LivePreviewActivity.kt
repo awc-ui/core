@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import dev.awc.nativeui.AWCComponent
 import dev.awc.nativeui.AWCButtonAppearance
+import dev.awc.nativeui.AWCPreviewScope
 import dev.awc.nativeui.AWCButtonAppearanceScope
 import dev.awc.nativeui.AWCButtonBehaviorDemo
 import dev.awc.nativeui.AWCButtonNavigationDemo
@@ -65,7 +66,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * input is dispatched to this activity's views, never to the Android system.
  */
 class LivePreviewActivity : ComponentActivity() {
-    private data class Configuration(val tag: String, val properties: Map<String, AWCValue>, val dark: Boolean, val width: Double, val scenario: String, val themeTokens: Map<String, String>, val direction: LayoutDirection, val text: String?, val buttonAppearanceDefaults: AWCButtonAppearance, val buttonAppearance: AWCButtonAppearance)
+    private data class Configuration(val tag: String, val properties: Map<String, AWCValue>, val dark: Boolean, val width: Double, val scenario: String, val themeTokens: Map<String, String>, val direction: LayoutDirection, val text: String?, val slots: Map<String, String>, val buttonAppearanceDefaults: AWCButtonAppearance, val buttonAppearance: AWCButtonAppearance)
     private val main = Handler(Looper.getMainLooper())
     private var configuration by mutableStateOf<Configuration?>(null)
     private val previewDensity = 2f
@@ -231,6 +232,7 @@ class LivePreviewActivity : ComponentActivity() {
         val tag = request.optString("tag")
         require(tag in AWCNativeCatalog.tags) { "Unknown native component tag." }
         val text = parseLivePreviewButtonText(request, tag)
+        val slots = parseLivePreviewSlots(request, tag)
         val width = request.optDouble("width", 640.0)
         require(width.isFinite() && width in 320.0..1200.0) { "Width must be finite and between 320 and 1200." }
         val supplied = request.optJSONObject("properties") ?: JSONObject()
@@ -251,7 +253,7 @@ class LivePreviewActivity : ComponentActivity() {
         } else emptyMap()
         val appearanceDefaults = parseLivePreviewButtonAppearance(request, "buttonAppearanceDefaults")
         val appearance = if(tag == "md-button") parseLivePreviewButtonAppearance(request, "buttonAppearance") else AWCButtonAppearance()
-        configuration = Configuration(tag, AWCNativeCatalog.defaults[tag].orEmpty() + fixture(tag) + properties, dark, width, scenario, themeTokens, if(direction == "rtl") LayoutDirection.Rtl else LayoutDirection.Ltr, text, appearanceDefaults, appearance)
+        configuration = Configuration(tag, AWCNativeCatalog.defaults[tag].orEmpty() + fixture(tag) + properties, dark, width, scenario, themeTokens, if(direction == "rtl") LayoutDirection.Rtl else LayoutDirection.Ltr, text, slots, appearanceDefaults, appearance)
         createSurface(width)
         container.setBackgroundColor(themeTokens["--md-sys-color-surface"]?.let(Color::parseColor) ?: if (dark) 0xFF141414.toInt() else Color.WHITE)
     }
@@ -268,13 +270,14 @@ class LivePreviewActivity : ComponentActivity() {
                     AWCTheme(darkTheme = config.dark, tokenOverrides = config.themeTokens) {
                         AWCButtonAppearanceScope(config.buttonAppearanceDefaults) {
                             AWCButtonAppearanceScope(config.buttonAppearance) {
-                                Box(Modifier.fillMaxWidth().heightIn(min = 100.dp, max = nativeSurface.maxLogicalHeight.dp)
-                                    .background(if (config.themeTokens.isEmpty()) androidx.compose.ui.graphics.Color(if (config.dark) 0xFF141414 else 0xFFFFFFFF) else androidx.compose.material3.MaterialTheme.colorScheme.surface)
-                                    .padding(24.dp), contentAlignment = Alignment.Center) {
-                                    if (config.scenario == "button-behavior") AWCButtonBehaviorDemo(config.properties, ::recordEvent)
-                                    else if (config.scenario == "navigation-events") AWCButtonNavigationDemo(config.properties, ::recordEvent)
-                                    else if (config.scenario == "focus-accessibility") AWCButtonAccessibilityDemo(config.properties, ::recordEvent)
-                                    else AWCComponent(config.tag, config.properties, onEvent = ::recordEvent) { slot -> LivePreviewSampleSlot(config.tag, slot, config.scenario, config.text, ::recordEvent) }
+                                AWCPreviewScope(Modifier.fillMaxWidth().heightIn(min = 100.dp, max = nativeSurface.maxLogicalHeight.dp)
+                                    .background(if (config.themeTokens.isEmpty()) androidx.compose.ui.graphics.Color(if (config.dark) 0xFF141414 else 0xFFFFFFFF) else androidx.compose.material3.MaterialTheme.colorScheme.surface)) {
+                                    Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                                        if (config.scenario == "button-behavior") AWCButtonBehaviorDemo(config.properties, ::recordEvent)
+                                        else if (config.scenario == "navigation-events") AWCButtonNavigationDemo(config.properties, ::recordEvent)
+                                        else if (config.scenario == "focus-accessibility") AWCButtonAccessibilityDemo(config.properties, ::recordEvent)
+                                        else AWCComponent(config.tag, previewSlotProperties(config.tag, config.properties, config.slots), onEvent = ::recordEvent) { slot -> LivePreviewSampleSlot(config.tag, slot, config.scenario, config.text, slots = config.slots, onEvent = ::recordEvent) }
+                                    }
                                 }
                             }
                         }
@@ -645,7 +648,8 @@ internal fun parseLivePreviewButtonText(request: JSONObject, tag: String): Strin
 }
 
 @Composable
-internal fun LivePreviewSampleSlot(tag: String, slot: String, scenario: String, text: String?, onEvent: (String, AWCValue) -> Unit) {
-    if (tag == "md-button" && slot.isEmpty() && scenario.isEmpty() && text != null) Text(text)
+internal fun LivePreviewSampleSlot(tag: String, slot: String, scenario: String, text: String?, slots: Map<String, String> = emptyMap(), onEvent: (String, AWCValue) -> Unit) {
+    if (scenario.isEmpty() && slot in slots) Text(slots.getValue(slot))
+    else if (tag == "md-button" && slot.isEmpty() && scenario.isEmpty() && text != null) Text(text)
     else SampleSlot(tag, slot, onEvent)
 }

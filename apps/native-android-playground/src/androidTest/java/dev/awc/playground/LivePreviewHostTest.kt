@@ -15,6 +15,24 @@ import java.util.UUID
 
 /** Exercises real GPU window pixels and local input, without global input or semantics shortcuts. */
 class LivePreviewHostTest {
+    @Test fun dialogOverlayIsInTheStreamAndReceivesLocalPointerInput() = withHost { _, command ->
+        val initial = command(JSONObject().put("command", "configure").put("tag", "md-dialog").put("width", 640)
+            .put("slots", JSONObject().put("", "Live overlay 👋 <b>literal</b>"))
+            .put("properties", JSONObject().put("open", false).put("headline", "Captured dialog").put("scrimDismissible", true)))
+        command(JSONObject().put("command", "click").put("x", 320).put("y", initial.getDouble("logicalHeight") / 2))
+        var open = command(JSONObject().put("command", "frame"))
+        repeat(20) { if(open.getDouble("logicalHeight") < 600) { Thread.sleep(25); open = command(JSONObject().put("command", "frame")) } }
+        assertTrue("The modal must expand the captured native canvas", open.getDouble("logicalHeight") >= 600)
+        val bitmap = decode(open)
+        assertNotEquals("The dialog surface must appear over the in-window scrim", bitmap.getPixel(8, 8), bitmap.getPixel(bitmap.width / 2, bitmap.height / 2))
+        bitmap.recycle()
+        val dismissed = command(JSONObject().put("command", "click").put("x", 4).put("y", 4)).getJSONArray("events")
+        assertTrue((0 until dismissed.length()).any { dismissed.getJSONObject(it).getString("name") == "mdClose" })
+        var closed = command(JSONObject().put("command", "frame"))
+        repeat(20) { if(closed.getDouble("logicalHeight") >= 600) { Thread.sleep(25); closed = command(JSONObject().put("command", "frame")) } }
+        assertTrue("Local pointer dismissal must remove the captured overlay", closed.getDouble("logicalHeight") < 600)
+    }
+
     @Test fun authenticatedRetinaPixelsHeldPointerKeyboardAndDisplayDisposal() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val displays = context.getSystemService(DisplayManager::class.java)

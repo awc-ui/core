@@ -120,7 +120,7 @@ test('same-component docs enrichment and platform switches retain method args an
   assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').value, '["Use a longer value"]');
   assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').disabled, true);
   state.selected = { ...state.selected, tag: 'md-number-field' }; ui.renderUsage();
-  assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').value, '[]');
+  assert.equal(root.querySelector('[data-method-name="setCustomValidity"]').value, '["Please review this value."]');
 });
 
 test('API categories explain their purpose, open the first topic and retain independent help', async t => {
@@ -280,7 +280,7 @@ test('late async method results cannot synchronize a replacement preview', async
 
 test('examples retain inert recipe composition and edited slots across all code languages', async t => {
   const { ui, root, state } = fixture(t);
-  state.selected = { ...state.selected, tag: 'md-button' };
+  state.selected = { ...state.selected, tag: 'md-button', slots: [{ name: '' }], support: { android: { status: 'adapter-implemented', slots: [''] } } };
   state.target.outerHTML = '<md-button class="hydrated runtime-only" tabindex="-1">Runtime mutated</md-button>';
   state.docSlotValues = { '': 'Current slot label' };
   ui.renderUsage();
@@ -325,7 +325,7 @@ test('concise props retain explicit defaults, fixture values and changed structu
 });
 
 test('AWC field events edit slot examples and filter properties; browser input events do not duplicate actions', async t => {
-  const { ui, root, cssRoot, state, search, doc } = fixture(t, { slots: [{ name: '' }], cssProperties: [{ name: '--md-color' }] });
+  const { ui, root, cssRoot, state, search, doc } = fixture(t, { tag: 'md-button', slots: [{ name: '' }], cssProperties: [{ name: '--md-color' }] });
   state.platform = 'ios';
   ui.renderUsage();
   assert.match(root.innerHTML, /<md-text-field[^>]+data-slot-index/);
@@ -385,7 +385,7 @@ test('method invocation recognizes iframe Elements by nodeType and ignores plain
 });
 
 test('slot overrides use the target document and preserve unrelated named slots', t => {
-  const { ui, state } = fixture(t);
+  const { ui, state } = fixture(t, { tag: 'md-card', slots: [{ name: '' }] });
   const removed = [], appended = [], properties = [];
   const text = { nodeType: 3, remove: () => removed.push('text') };
   const leading = { nodeType: 1, getAttribute: () => 'leading-icon', remove: () => removed.push('leading') };
@@ -512,4 +512,59 @@ test('retired theme defaults cannot remain hidden in Studio appearance state', t
   const { state } = fixture(t, { tag: 'md-button' });
   assert.deepEqual(state.buttonAppearanceDefaults, {});
   assert.deepEqual(removed, ['awc-studio-button-appearance']);
+});
+
+test('Styles search opens matching groups and Reset clears all edits without replacing mounted inputs', async t => {
+  const { ui, cssRoot, state } = fixture(t, { tag: 'md-card', cssProperties: [{ name: '--md-card-container-color' }, { name: '--md-card-gap' }] });
+  ui.renderUsage();
+  const color = cssRoot.querySelector('#css-0'), gap = cssRoot.querySelector('#css-1');
+  await color.emit('mdInput', { detail: '#006A6A' });
+  await gap.emit('mdInput', { detail: '8px' });
+  assert.equal(cssRoot.querySelector('#styles-edit-count').textContent, '2 overrides');
+  const search = cssRoot.querySelector('#styles-search'); search.value = 'gap'; await search.emit('mdInput');
+  assert.equal(cssRoot.querySelector('[data-style-field="0"]').hidden, true);
+  assert.equal(cssRoot.querySelector('[data-style-field="1"]').hidden, false);
+  assert.equal(cssRoot.querySelector('[data-style-group="Layout"]').expanded, true);
+  await cssRoot.querySelector('#reset-css-styles').emit('mdClick');
+  assert.deepEqual(state.docCssValues, { '--md-card-container-color': '', '--md-card-gap': '' });
+  assert.equal(cssRoot.querySelector('#css-0'), color);
+  assert.equal(cssRoot.querySelector('#styles-edit-count').textContent, 'Using component defaults');
+  assert.equal(cssRoot.querySelector('#reset-css-styles').disabled, true);
+});
+
+test('structural slot overrides are not offered or applied to the interactive preview', t => {
+  const { ui, root, state } = fixture(t, { tag: 'md-tabs', slots: [{ name: '' }] });
+  const removed = [], appended = [];
+  state.target.childNodes = [{ nodeType: 1, getAttribute: () => '', remove: () => removed.push(true) }];
+  state.target.append = node => appended.push(node);
+  state.docSlotValues = { '': 'Must not erase tabs' };
+  ui.renderUsage(); ui.applyOverrides();
+  assert.equal(root.querySelectorAll('[data-slot-index]').length, 0);
+  assert.match(root.innerHTML, /child components remain interactive/);
+  assert.deepEqual(removed, []); assert.deepEqual(appended, []);
+});
+
+test('oversized slot drafts keep the last valid content and do not restart the native preview', async t => {
+  const { ui, root, state, contentChanges } = fixture(t, { tag: 'md-button', slots: [{ name: '' }] });
+  state.platform = 'android'; ui.renderUsage();
+  const input = root.querySelector('[data-slot-index="0"]');
+  await input.emit('mdInput', { detail: 'Valid content' });
+  await input.emit('mdInput', { detail: 'ă'.repeat(2049) });
+  assert.equal(input.error, true); assert.match(input.errorText, /4096 UTF-8/);
+  assert.equal(state.docSlotValues[''], 'Valid content');
+  assert.deepEqual(contentChanges, [['', 'Valid content']]);
+  await input.emit('mdInput', { detail: '' });
+  assert.equal(input.error, false); assert.equal(state.docSlotValues[''], '');
+  assert.deepEqual(contentChanges.at(-1), ['', '']);
+});
+
+test('default-slot editing clears only the competing label, preserving unrelated titles', async t => {
+  const { ui, root, state } = fixture(t, { tag: 'md-list-item', slots: [{ name: '' }] });
+  state.props = { headline: 'Fixture title', supportingText: 'Keep this explanation' };
+  state.target.childNodes = []; state.target.append = () => {};
+  ui.renderUsage();
+  await root.querySelector('[data-slot-index="0"]').emit('mdInput', { detail: 'Edited title' });
+  assert.equal(state.props.headline, ''); assert.equal(state.target.headline, '');
+  assert.equal(state.editedProps.headline, '');
+  assert.equal(state.props.supportingText, 'Keep this explanation');
 });

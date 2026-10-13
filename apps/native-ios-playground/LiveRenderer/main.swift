@@ -21,6 +21,7 @@ private struct PreviewRequest: Decodable {
     let phase: String?
     let enabled: Bool?
     let text: String?
+    let slots: [String: String]?
     let key: String?
     let modifiers: [String]?
 }
@@ -165,7 +166,7 @@ private struct PreviewRoot: View {
         else { AWCNativeView(node: node, onEvent: onEvent) }
     }
     var body: some View {
-        example
+        AWCPreviewScope { example }
             .padding(24)
             .frame(width: width, alignment: .center)
             .frame(minHeight: 100, alignment: .center)
@@ -272,6 +273,8 @@ private final class NativeSession {
                 node.children.append(.text(text))
             }
         }
+        try AWCPreviewSlots.validate(request.slots ?? [:])
+        if request.scenario == nil { node = try AWCPreviewSlots.applying(request.slots ?? [:], to: node) }
         tag = requestedTag
         let newHost = NSHostingView(rootView: PreviewRoot(node: node, width: logicalWidth, dark: request.dark ?? false, onEvent: events.append, pointerState: pointerState, scenario: request.scenario, themeTokens: request.themeTokens ?? [:], direction: request.direction ?? "ltr", buttonAppearance: AWCButtonAppearance(values: request.buttonAppearanceDefaults ?? [:]).merging(.init(values: request.buttonAppearance ?? [:]))))
         // The window is realized outside every display, never activated, and never made key.

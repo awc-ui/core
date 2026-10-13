@@ -29,7 +29,9 @@ AWC_WEB_DIST=/absolute/path/to/core/dist node apps/native-playground/server.mjs
 The generated native catalog supplies adapter support metadata. If that artifact
 is missing, the studio falls back to the core custom elements manifest.
 Refresh after regeneration.
-Native previews additionally require the platform hosts described below.
+Native previews additionally require the platform hosts described below. The
+header uses the library’s inline `md-status-dot`: a live pulse indicates the Web
+runtime and native catalog are connected; reduced-motion preferences are respected.
 
 ## Explore components
 
@@ -40,8 +42,12 @@ including the same exclusions for parts documented with their parent. All 81
 source contracts remain available by direct component URL. `/` focuses search;
 search matches documented titles, tags and groups.
 
-The right configuration panel separates **Properties** and **CSS variables** into
-tabs with declaration counts. Properties provides typed scalar, boolean, enum
+The right configuration panel separates **Properties** and **Styles** into
+tabs with declaration counts. Styles groups every declared public CSS hook into
+surface, text, icons, layout, interaction and motion sections, with readable labels,
+search and Reset styles. CSS values retain units and variable expressions; invalid
+edits keep the last valid preview. Clearing an override restores its fixture value.
+Properties provides typed scalar, boolean, enum
 and JSON editors, reset, and a property search. Mixed literal unions retain their actual types,
 including values such as `false`. Info controls explain source types, defaults,
 usage and native support. Hover, focus or tap for help; use Escape or click
@@ -73,6 +79,10 @@ composed children, and omit unchanged defaults unless the fixture or an explicit
 edit supplies them. Web framework examples use the repository's public AWC
 packages; native examples use `AWCNativeView`/`AWCNode` and `AWCComponent`.
 Generated examples use inert recipe markup, never hydrated preview markup.
+Menu, dialog, sheet and snackbar launch/close handlers are included in copied Web
+examples. Opening a picker or overlay expands the Web canvas and closing it
+restores the compact preview. Native framework tabs also provide complete content,
+state and theme examples for each component, using its actual adapter policy.
 
 Code examples, payload types, theme code, Markdown instructions and test commands use local Shiki syntax
 highlighting in light and dark mode. Copy preserves the original source exactly.
@@ -81,8 +91,8 @@ existing workspace dependencies with `node apps/native-playground/build-syntax-h
 
 API sections document events and payloads, slots, methods, CSS parts, and
 data/callback types. CSS variables are editable in their own tab in the right
-configuration panel; `md-button` names this tab **Styles**. Its shared appearance
-editor has 22 color, typography, spacing, icon, loader and interaction fields.
+configuration panel. `md-button` also has a shared appearance
+editor with 22 color, typography, spacing, icon, loader and interaction fields.
 Edits apply to the current button; blank fields use component defaults.
 Reset style clears these local overrides. The former Studio-wide appearance
 defaults are retired, including their saved browser values. Web CSS overrides remain in a separate accordion.
@@ -93,8 +103,11 @@ scalable sp; the Swift adapter uses fixed point sizes.
 
 Slot text and Web CSS edits update the relevant
 examples and the live Web preview. Public web methods accept JSON argument
-arrays. Native fixtures keep their own children; editing documentation slots does
-not rewrite those fixtures. Native snippets preserve AWC children and slot text,
+arrays with source-backed sample arguments. Text editors are offered only for
+plain-content slots; structural, icon and action slots keep their child components.
+Supported text edits also update the native previews, including empty content.
+The transport bounds each slot to 4096 UTF-8 bytes and preserves literal markup
+as text. Native snippets preserve AWC children and supported slot text,
 while HTML layout CSS and recipe setup callbacks require native layout or state
 in the consuming app. Callbacks and object references remain application code.
 
@@ -114,7 +127,7 @@ the component's original Web README and appends separate iOS/SwiftUI and
 Android/Jetpack Compose integration sections from the current native catalog,
 generated public wrappers and each platform's own support policy. The guide
 includes Swift and Kotlin examples, package/module setup, property support,
-state and events, child slots, unsupported methods, native replacements and
+state and events, per-member native recipes, child slots, unsupported methods, native replacements and
 verification limits. It distinguishes the local macOS SwiftUI preview from an
 iOS Simulator or device run and documents the Android module's actual SDK and
 build requirements. A generated field does not imply native adapter support.
@@ -250,9 +263,16 @@ uses one per emulator. Reconnect creates a fresh view after expiry or an error.
 Slow consumers retain the latest picture and a bounded event batch instead of
 accumulating animation latency.
 
-General dragging, scrolling, separate native windows and system menus are not
-fully validated by this transport. Android Popup/Dialog windows are outside the
-Activity capture, and long content is limited to the visible emulator surface.
+The hosts wrap native content in `AWCPreviewScope` so dialogs, sheets and option
+menus stay inside the captured surface. SwiftUI preview date, time and color
+controls also render in that surface. Production apps retain their native
+presentation behavior unless they explicitly opt into the preview scope.
+Initial recipe properties and supported plain text are shared with the Web
+fixture, including when a native component URL is opened directly.
+
+General dragging, scrolling, separate system windows and OS menu placement are
+not fully validated by this transport. Preview menus are centered and sheets
+use a bounded viewport; long content is limited to the visible surface.
 Streamed pixels do not expose the native accessibility tree to browser assistive
 technology. Use the native apps for complete platform interaction and
 accessibility testing. Text rasterization remains platform-dependent; a working

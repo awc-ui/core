@@ -24,6 +24,7 @@ struct SnapshotRenderer {
         let dark: Bool
         let width: Double?
         let text: String?
+        let slots: [String: String]?
         let buttonAppearanceDefaults: [String: AWCValue]?
         let buttonAppearance: [String: AWCValue]?
     }
@@ -91,7 +92,8 @@ struct SnapshotRenderer {
             node.children.removeAll { ($0.slot ?? "").isEmpty }
             node.children.append(.text(text))
         }
-        let view = AWCNativeView(node: node)
+        node = try AWCPreviewSlots.applying(request.slots ?? [:], to: node)
+        let view = AWCPreviewScope { AWCNativeView(node: node) }
             .padding(24).frame(width: width, alignment: .leading)
             .frame(minHeight: 100, alignment: .topLeading)
             .background(request.dark ? Color(white: 0.08) : .white)
@@ -101,6 +103,7 @@ struct SnapshotRenderer {
         let host = NSHostingView(rootView: view)
         let window = try mount(host, width: width)
         defer { window.close() }
+        RunLoop.current.run(until: Date().addingTimeInterval(0.10))
         let measuredHeight = host.fittingSize.height
         guard measuredHeight.isFinite, measuredHeight > 0 else {
             throw RenderFailure(message: "Component produced invalid native layout dimensions.")
@@ -131,7 +134,7 @@ struct SnapshotRenderer {
             for tag in AWCComponentCatalog.tags {
                 let view = VStack(alignment: .leading, spacing: 18) {
                     Text(tag).font(.title2.bold())
-                    AWCNativeView(node: AWCExamples.node(for: tag))
+                    AWCPreviewScope { AWCNativeView(node: AWCExamples.node(for: tag)) }
                 }.padding(24).frame(width: 640).background(dark ? Color(white: 0.08) : .white)
                     .environment(\.colorScheme, dark ? .dark : .light).awcTheme(.generated(dark: dark))
                 let host = NSHostingView(rootView: view)

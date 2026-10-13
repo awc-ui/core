@@ -1,17 +1,21 @@
+import { editableTextSlot, nativeTextSlot, nativeContentSlots, defaultSlotMaskingProperty } from './content-slots.js';
 import { memberDocumentation, eventPayloadDocumentation } from './documentation.js';
-import { usageSnippet, snippetLanguages } from './usage-snippets.js';
+import { usageSnippet, snippetLanguages, recipePropertyValues } from './usage-snippets.js';
 import { recipeFor } from './recipes.js';
 import { usageBrandIcon } from './brand-icons.js';
 import { renderCode } from './syntax-highlighting.js';
 import { createButtonAppearanceUI } from './button-appearance-ui.js';
 import { BUTTON_APPEARANCE_FIELDS, buttonAppearanceCSS } from './button-appearance.js';
-import { apiExample } from './api-examples.js';
+import { apiExample, methodExampleArguments } from './api-examples.js';
+import { nativeUsageExample, nativeThemeExample } from './native-api-examples.js';
+import { createComponentStylesUI } from './component-styles-ui.js';
+import { createCSSOverrideApplier } from './component-styles.js';
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const prose = value => escape(value).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 const categoryDescriptions = {
   Events: 'Events notify your application about interactions or changes proposed by a component. In Web, listen with `addEventListener` and read `event.detail`; cancelable events can prevent their default action. Native adapters use their documented callback contracts.',
-  Slots: 'Slots are insertion points for child content. The default slot accepts unnamed content; named Web slots use the `slot` attribute. Native adapters provide their supported content equivalents. The editors below change plain text.',
+  Slots: 'Slots are insertion points for child content. The default slot accepts unnamed content; named Web slots use the `slot` attribute. Native adapters provide their supported content equivalents. Text editors update labels and prose; structural and interactive slots retain their component composition.',
   Methods: 'Methods are actions you can call on a component, such as focusing an input or checking validity. Each method documents its arguments and return value. Run them against the Web preview with a JSON argument array; native method availability depends on the adapter.',
   'CSS parts': 'CSS parts are named elements exposed from a Web component’s shadow DOM. Style them with `component-tag::part(name)` without depending on private markup. CSS selectors do not apply directly to SwiftUI or Jetpack Compose.',
 };
@@ -26,12 +30,12 @@ const codeLanguageLabels = { javascript: 'JavaScript', typescript: 'TypeScript',
 
 /** Explicit fixture/edited values plus values that actually differ from defaults. */
 export function snippetProperties(state) {
-  const recipe = recipeFor(state.selected.tag);
+  const recipe = recipeFor(state.selected.tag), fixture = recipePropertyValues(state.selected, recipe);
   const edited = state.editedTag === state.selected.tag ? state.editedProps || {} : {};
   const declared = new Map((state.selected.properties || []).map(property => [property.name, property]));
   return Object.fromEntries(Object.entries(state.props || {}).filter(([name, value]) => {
     if (!declared.has(name) || value === undefined) return false;
-    if (Object.hasOwn(recipe.props, name) || Object.hasOwn(edited, name)) return true;
+    if (Object.hasOwn(fixture, name) || Object.hasOwn(edited, name)) return true;
     const property = declared.get(name);
     return JSON.stringify(value) !== JSON.stringify(property.defaultValue);
   }));
@@ -39,6 +43,8 @@ export function snippetProperties(state) {
 
 export function createDocumentationUI({ getState, watchEvents, notify, afterInteraction, onContentChange, onAppearanceChange }) {
   const appearanceUI = createButtonAppearanceUI({ getState, onChange: () => { applyOverrides(); updateSnippet(); onAppearanceChange?.(); } });
+  const applyCSS = createCSSOverrideApplier();
+  const stylesUI = createComponentStylesUI({ getState, infoButton, onChange: () => { if (getState().platform === 'web') applyOverrides(); updateSnippet(); } });
   let activeTooltip, sequence = 0, renderedTag, renderGeneration = 0, snippetLanguage = 'html';
   const listeners = [];
   const listen = (target, name, callback, options) => {
@@ -117,7 +123,7 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
     template.innerHTML = recipe.html;
     const target = template.content.querySelector(state.selected.tag);
     if (target) applyOverrides(target, false);
-    return usageSnippet(state.selected, snippetProperties(state), snippetLanguage, { html: template.innerHTML, buttonAppearanceDefaults: state.buttonAppearanceDefaults, buttonAppearance: state.buttonAppearance, ...(Object.hasOwn(state.docSlotValues || {}, '') ? { text: state.docSlotValues[''] } : {}) });
+    return usageSnippet(state.selected, snippetProperties(state), snippetLanguage, { html: template.innerHTML, sourceHtml: recipe.html, slots: state.docSlotValues, buttonAppearanceDefaults: state.buttonAppearanceDefaults, buttonAppearance: state.buttonAppearance, ...(Object.hasOwn(state.docSlotValues || {}, '') ? { text: state.docSlotValues[''] } : {}) });
   }
   function updateSnippet() {
     const code = document.querySelector('#usage-snippet');
@@ -129,8 +135,23 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
   }
   function setSlotValue(name, value) {
     const state = getState();
+    if (!editableTextSlot(state.selected, name)) return;
+    const editors = [...(document.querySelector('#usage-docs')?.querySelectorAll('[data-slot-index]') || [])].filter(input => state.selected.slots[Number(input.dataset.slotIndex)].name === name);
+    const textEditor = name === '' ? document.querySelector('#component-text') : null;
+    if (textEditor) editors.push(textEditor);
+    try { nativeContentSlots({ ...state.docSlotValues, [name]: value }); }
+    catch (error) { editors.forEach(input => { input.error = true; input.errorText = error.message; }); return; }
+    editors.forEach(input => { input.error = false; });
     state.docSlotValues ||= {};
     state.docSlotValues[name] = value;
+    const masking = name === '' && defaultSlotMaskingProperty(state.selected.tag);
+    if (masking) {
+      state.props[masking] = '';
+      if (state.editedTag !== state.selected.tag) { state.editedTag = state.selected.tag; state.editedProps = {}; }
+      state.editedProps ||= {}; state.editedProps[masking] = '';
+      const propertyEditor = document.querySelector(`#prop-${masking}`);
+      if (propertyEditor) propertyEditor.value = '';
+    }
     if (state.platform === 'web') applyOverrides();
     const textInput = document.querySelector('#component-text');
     if (name === '' && textInput && textInput.value !== value) textInput.value = value;
@@ -142,8 +163,9 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
   }
   function textControl() {
     const state = getState();
-    if (recipeFor(state.selected.tag).text === undefined) return '';
-    return `<div class="prop-control text" data-search="text label content default slot string"><div class="prop-heading"><label class="prop-label" for="component-text"><code>Text</code></label>${infoButton('slot', { name: '' })}<span class="prop-type">content</span></div><md-text-field id="component-text" aria-label="Text" aria-describedby="component-text-note" variant="outlined" density="-3" value="${escape(slotValue(''))}"></md-text-field><p class="prop-note" id="component-text-note">Visible button label. Updates the preview and usage examples.</p></div>`;
+    const recipe = recipeFor(state.selected.tag);
+    if (recipe.text === undefined) return '';
+    return `<div class="prop-control text" data-search="text label content default slot string"><div class="prop-heading"><label class="prop-label" for="component-text"><code>${escape(recipe.textLabel || 'Text')}</code></label>${infoButton('slot', { name: '' })}<span class="prop-type">content</span></div><md-text-field id="component-text" aria-label="Text" aria-describedby="component-text-note" variant="outlined" density="-3" value="${escape(slotValue(''))}"></md-text-field><p class="prop-note" id="component-text-note">${escape(recipe.textDescription || 'Visible content. Updates the preview and usage examples.')}</p></div>`;
   }
   function bindTextControl() {
     const input = document.querySelector('#component-text');
@@ -156,6 +178,9 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
     if (!target) return;
     if (includeAppearance) appearanceUI.apply(target);
     for (const [name, value] of Object.entries(state.docSlotValues || {})) {
+      if (!editableTextSlot(state.selected, name)) continue;
+      const masking = name === '' && defaultSlotMaskingProperty(state.selected.tag);
+      if (masking) { target[masking] = ''; target.removeAttribute?.(masking); }
       for (const child of [...target.childNodes]) {
         const slot = child.nodeType === 1 ? child.getAttribute('slot') || '' : '';
         if (slot === name) child.remove();
@@ -164,7 +189,14 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
       content.textContent = value; target.append(content);
     }
     const appearance = includeAppearance && state.selected.tag === 'md-button' ? buttonAppearanceCSS(state.buttonAppearance, state.buttonAppearanceDefaults) : {};
-    for (const [name, value] of Object.entries(state.docCssValues || {})) { if (value) target.style.setProperty(name, value); else if (Object.hasOwn(appearance, name)) target.style.setProperty(name, appearance[name]); else target.style.removeProperty(name); }
+    applyCSS(target, state.docCssValues, appearance, state.selected.tag === 'md-button' ? BUTTON_APPEARANCE_FIELDS.map(field => field.cssProperty) : []);
+  }
+  function slotEditor(slot, index) {
+    const state = getState(), component = state.selected;
+    if (!editableTextSlot(component, slot.name)) return '<p class="prop-note">Use the composition above for this slot. Its icons, controls or child components remain interactive in the preview.</p>';
+    const native = state.platform !== 'web' && nativeTextSlot(component, slot.name, state.platform);
+    const destination = state.platform === 'web' ? 'Web preview and usage code' : native ? 'native preview and usage code' : 'Web usage code';
+    return `<div class="usage-try-it"><p>Try plain text in the ${destination}. Clear the field to render empty content.</p><md-text-field id="slot-${index}" data-slot-index="${index}" label="${escape(slot.name || 'Default')} slot text" aria-label="${escape(slot.name || 'Default')} slot text" placeholder="Use fixture content" value="${escape(slotValue(slot.name))}" density="-2" variant="outlined"></md-text-field></div>`;
   }
   function memberRow(kind, member, content = '') {
     const state = getState(), doc = memberDocumentation(state.selected, kind, member, documentationPlatform());
@@ -173,6 +205,13 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
   }
   function codeCard({ id, title, description, language, code, payload }) {
     return `<md-card id="${id}" class="usage-code-card" variant="filled" full-width density="-3"${payload ? ` data-usage-payload="${escape(payload)}"` : ''}><div class="usage-code-card-heading"><h4 id="${id}-title">${escape(title)}</h4><div class="usage-code-card-actions"><span class="usage-code-language">${escape(codeLanguageLabels[language] || language)}</span><md-icon-button icon="content_copy" size="xs" data-copy-api-code="${id}-code" aria-label="Copy ${escape(title)}"></md-icon-button></div></div><p class="usage-code-description">${prose(description)}</p><pre id="${id}-code" class="usage-code-body" data-code-language="${language}" tabindex="0" aria-labelledby="${id}-title">${escape(code)}</pre></md-card>`;
+  }
+  function nativeIntegration() {
+    if (!['swift', 'android'].includes(snippetLanguage)) return '';
+    return `<div class="native-integration-examples">${[
+      ['state', 'Native content & state', nativeUsageExample(getState().selected, snippetLanguage)],
+      ['theme', 'Native theme colors', nativeThemeExample(getState().selected, snippetLanguage)],
+    ].filter(([, , example]) => example.code).map(([key, title, example]) => `<md-accordion-item id="usage-native-${key}" data-usage-disclosure headline="${title}" heading-level="3" density="-3">${codeCard({ id: `usage-native-${key}-example`, ...example })}${example.notes?.length ? `<ul class="usage-api-notes">${example.notes.map(note => `<li>${prose(note)}</li>`).join('')}</ul>` : ''}</md-accordion-item>`).join('')}</div>`;
   }
   function memberExample(kind, member, index) {
     const example = apiExample(getState().selected, kind, member, snippetLanguage);
@@ -192,36 +231,15 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
       ${payload.empty ? '' : `<md-accordion-item id="usage-type-${index}" data-usage-disclosure class="usage-type-disclosure" headline="Type definition" heading-level="4" density="-3">${codeCard({ id: `usage-payload-${index}`, title: 'Type definition', description: `The TypeScript contract for \`${event.name}\` event detail.`, language: 'typescript', code: payload.definition, payload: event.name })}</md-accordion-item>`}
       </div>`;
   }
-  let renderedCssKey;
   function renderCssVariables(styles) {
-    const state = getState(), root = document.querySelector('#css-controls');
-    const button = state.selected.tag === 'md-button';
-    document.querySelector('#css-variables-tab').label = button ? 'Styles' : 'CSS variables';
-    document.querySelector('#css-variables-count').textContent = String(button ? BUTTON_APPEARANCE_FIELDS.length : styles.length);
+    const state = getState(), button = state.selected.tag === 'md-button';
+    document.querySelector('#css-variables-tab').label = 'Styles';
+    document.querySelector('#css-variables-count').textContent = String(button ? BUTTON_APPEARANCE_FIELDS.length : new Set(styles.map(style => style.name)).size);
     appearanceUI.render();
     document.querySelector('#css-variables-note').textContent = styles.length
       ? `Overrides update web framework examples${state.platform === 'web' ? ' and this Web preview' : ''}.`
       : 'No public CSS variables declared.';
-    const key = JSON.stringify([state.selected.tag, state.platform, styles]);
-    if (key !== renderedCssKey) {
-      renderedCssKey = key;
-      const controls = styles.map((item, index) => `<div class="css-variable-control"><div class="css-variable-heading"><code>${escape(item.name)}</code>${infoButton('cssProperty', item)}</div><md-text-field id="css-${index}" data-css-index="${index}" aria-label="${escape(item.name)} value" placeholder="Inherited value" value="${escape(state.docCssValues?.[item.name] || '')}" density="-3" variant="outlined"></md-text-field></div>`).join('');
-      root.innerHTML = button ? `<md-accordion-item headline="Web CSS overrides" heading-level="3" density="-3"><div class="css-variable-fields">${controls}</div></md-accordion-item>` : controls;
-      root.querySelectorAll('[data-css-index]').forEach(input => input.addEventListener('mdInput', event => {
-        if (event.target !== input) return;
-        const state = getState();
-        state.docCssValues ||= {};
-        state.docCssValues[styles[Number(input.dataset.cssIndex)].name] = typeof event.detail === 'string' ? event.detail : input.value;
-        if (state.platform === 'web') applyOverrides();
-        updateSnippet();
-      }));
-    }
-    // Keep mounted editors on ordinary preview refreshes so the active input,
-    // caret survive. Reset still synchronizes their values.
-    root.querySelectorAll('[data-css-index]').forEach(input => {
-      const value = state.docCssValues?.[styles[Number(input.dataset.cssIndex)].name] || '';
-      if (input.value !== value) input.value = value;
-    });
+    stylesUI.render(styles);
   }
   function renderUsage() {
     const state = getState(), component = state.selected, web = state.platform === 'web';
@@ -249,13 +267,14 @@ export function createDocumentationUI({ getState, watchEvents, notify, afterInte
     const events = component.events || [], slots = component.slots || [], methods = component.methods || [], styles = component.cssProperties || [], parts = component.cssParts || [];
     root.innerHTML = `<div class="usage-intro"><h2>Usage &amp; API</h2><p>Choose your framework to see how to render this component, handle events, add content and customize its appearance.</p></div>
       <section class="usage-example" aria-label="Live usage example"><div class="usage-code-heading"><md-tabs id="usage-language-tabs" variant="secondary" tab-width="auto" active-tab-index="${snippetLanguages.findIndex(language => language.id === snippetLanguage)}" aria-label="Code language">${snippetLanguages.map(language => `<md-tab id="usage-language-${language.id}" label="${escape(language.label)}" data-snippet-language="${language.id}" inline-icon${language.id === 'android' ? ' icon="android"' : ''}>${usageBrandIcon(language.id)}</md-tab>`).join('')}</md-tabs></div><md-card class="usage-snippet-card" variant="outlined" full-width><div class="usage-snippet-actions"><md-button type="button" id="copy-usage" variant="text" size="xs" icon="content_copy" aria-label="Copy usage code">Copy</md-button></div><pre id="usage-snippet" class="usage-code" tabindex="0" aria-label="Usage code"></pre></md-card></section>
+      ${nativeIntegration()}
       <div class="api-reference"><div class="usage-api-toolbar"><div><h3>API examples</h3><p>Practical recipes for each API. Changing the framework updates every example.</p></div><md-select id="api-framework" label="Framework" aria-label="API examples framework" value="${snippetLanguage}" variant="outlined" density="-2">${snippetLanguages.map(language => `<md-select-option value="${language.id}">${language.id === 'swift' ? 'SwiftUI / iOS' : escape(language.label)}</md-select-option>`).join('')}</md-select></div>
       ${section('Events', events, events.map((event, index) => memberRow('event', event, memberExample('event', event, index) + eventPayload(event, index))).join(''), events.length ? '<md-button type="button" id="watch-usage-events" class="usage-action" variant="tonal" size="xs" density="0" icon="bolt">Watch live events</md-button>' : '')}
-      ${section('Slots', slots, slots.map((slot, index) => memberRow('slot', slot, memberExample('slot', slot, index) + `<div class="usage-try-it"><p>Try plain text${web ? ' in the Web preview' : ' in the usage example'}. ${component.tag === 'md-button' && !slot.name ? 'This also updates the native button label.' : ''}</p><md-text-field id="slot-${index}" data-slot-index="${index}" label="${escape(slot.name || 'Default')} slot text" aria-label="${escape(slot.name || 'Default')} slot text" placeholder="Use fixture content" value="${escape(slotValue(slot.name))}" density="-2" variant="outlined"></md-text-field></div>`)).join(''))}
+      ${section('Slots', slots, slots.map((slot, index) => memberRow('slot', slot, memberExample('slot', slot, index) + slotEditor(slot, index))).join(''))}
       ${section('Methods', methods, methods.map((method, index) => {
         const doc = memberDocumentation(component, 'method', method, documentationPlatform());
         const signature = method.signature || `${method.name}(${method.params || (method.parameters || []).map(p => `${p.name}: ${p.type?.text || p.type || 'unknown'}`).join(', ')})`;
-        return memberRow('method', method, `<code class="usage-signature">${escape(signature)}</code>${doc.returnType && doc.returnType !== 'inferred' ? `<p>Returns <code>${escape(doc.returnType)}</code></p>` : ''}${memberExample('method', method, index)}<div class="usage-try-it"><p>${web ? 'Try this method in the Web preview. Supply arguments as a JSON array.' : 'Switch the preview to Web to try this source method.'}</p><md-text-field id="method-${index}" data-method-args="${index}" data-method-name="${escape(method.name)}" label="Arguments (JSON array)" value="${escape(methodArguments.get(method.name) ?? '[]')}" density="-2" variant="outlined" ${web ? '' : 'disabled'}></md-text-field><md-button type="button" class="usage-action" variant="tonal" size="xs" data-run-method="${index}" ${web ? '' : 'disabled'}>Run ${escape(method.name)}</md-button><output class="usage-result" id="method-result-${index}" aria-live="polite"></output></div>`);
+        return memberRow('method', method, `<code class="usage-signature">${escape(signature)}</code>${doc.returnType && doc.returnType !== 'inferred' ? `<p>Returns <code>${escape(doc.returnType)}</code></p>` : ''}${memberExample('method', method, index)}<div class="usage-try-it"><p>${web ? 'Try this method in the Web preview. Supply arguments as a JSON array.' : 'Switch the preview to Web to try this source method.'}</p><md-text-field id="method-${index}" data-method-args="${index}" data-method-name="${escape(method.name)}" label="Arguments (JSON array)" value="${escape(methodArguments.get(method.name) ?? JSON.stringify(methodExampleArguments(component, method) ?? []))}" density="-2" variant="outlined" ${web ? '' : 'disabled'}></md-text-field><md-button type="button" class="usage-action" variant="tonal" size="xs" data-run-method="${index}" ${web ? '' : 'disabled'}>Run ${escape(method.name)}</md-button><output class="usage-result" id="method-result-${index}" aria-live="polite"></output></div>`);
       }).join(''))}
       ${section('CSS parts', parts, parts.map((part, index) => memberRow('cssPart', part, memberExample('cssPart', part, index))).join(''))}
       ${(component.dataTypes?.length || component.callableProps?.length) ? section('Data & callback types', [...(component.dataTypes || []), ...(component.callableProps || [])], [...(component.dataTypes || []).map(type => ['dataType', type]), ...(component.callableProps || []).map(type => ['callableProp', type])].map(([kind, type], index) => memberRow(kind, type, codeCard({ id: `usage-data-type-${index}`, title: type.name, description: kind === 'callableProp' ? 'The function signature accepted by this callback property.' : 'The TypeScript declaration used by this component.', language: 'typescript', code: type.body || type.type?.text || type.type || '' }))).join('')) : ''}</div>`;

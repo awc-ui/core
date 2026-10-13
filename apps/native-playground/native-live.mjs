@@ -1,3 +1,4 @@
+import { nativeContentSlots } from './content-slots.js';
 import { spawn } from 'node:child_process';
 import { access } from 'node:fs/promises';
 import { constants } from 'node:fs';
@@ -286,7 +287,7 @@ export function createNativeLiveRenderer({
         children.delete(session);
         stop(session, failure(502, 'LIVE_PROCESS_EXITED', 'The native preview process exited. Start it again.'));
       });
-      return await enqueue(session, { command: 'configure', tag: request.tag, properties: request.properties, dark: request.dark, width: request.width, ...(request.scenario ? { scenario: request.scenario } : {}), ...(request.text !== undefined ? { text: request.text } : {}), ...nativeThemeOptions(request) });
+      return await enqueue(session, { command: 'configure', tag: request.tag, properties: request.properties, dark: request.dark, width: request.width, ...(request.scenario ? { scenario: request.scenario } : {}), ...(request.text !== undefined ? { text: request.text } : {}), ...nativeThemeOptions(request), ...nativeContentSlots(request.slots) });
     } catch (error) {
       const safeError = error instanceof RenderError ? error : failure(502, 'LIVE_PROCESS_FAILED', 'The native preview process could not start.');
       stop(session, safeError);

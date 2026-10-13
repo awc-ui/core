@@ -2,6 +2,26 @@
 
 An experimental Jetpack Compose library for all 81 AWC source component tags. It contains native controls and Canvas rendering, with generated source contracts and theme tokens. It does not embed a browser.
 
+## Laboratory presentation
+
+The debug live-preview host wraps its selected component in `AWCPreviewScope`.
+Inside this explicit preview-only scope, dialogs, sheets, menus, and date/time/color
+pickers render native Compose content in the captured view hierarchy. Pointer,
+keyboard, and text commands therefore reach the same content that the browser sees.
+Outside the scope, production adapters continue using their normal platform
+dialog and popup windows.
+
+The preview canvas expands while a modal is open; menus are centered and sheets
+use a fixed viewport. System-window placement, platform scrims, and sheet dragging
+are not reproduced. This scope is for isolated component tooling, not production
+modal navigation. Keyboard Escape and existing native actions dismiss previews.
+
+The host's optional `slots` JSON map accepts literal text (including empty strings)
+for explicitly supported text slots. It preserves structural fixtures such as tab
+items, table rows, menus and action buttons. Limits are 32 entries, 80 characters
+per name, 4096 UTF-8 bytes per value, and 32768 bytes in total. The older button
+`text` field remains supported; an explicit default-slot override takes priority.
+
 ## Integration
 
 The Android playground includes this Gradle module as `:native-ui`. Run the native compiler from the repository root before building so `generated/Components.kt`, `ComponentCatalog.kt`, and `Tokens.kt` exist.

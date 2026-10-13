@@ -1,5 +1,7 @@
 import { memberDocumentation } from './documentation.js';
 import { nativeApiExample } from './native-api-examples.js';
+import { usageSnippet } from './usage-snippets.js';
+import { recipeFor } from './recipes.js';
 
 const languages = { html: 'html', react: 'tsx', angular: 'typescript', vue: 'vue', svelte: 'svelte', swift: 'swift', android: 'kotlin' };
 const collections = { event: 'events', slot: 'slots', method: 'methods', cssPart: 'cssParts' };
@@ -25,45 +27,78 @@ export function apiExample(component = {}, kind, member, framework = 'html') {
   if (kind === 'cssPart') return partExample(tag, doc, framework);
   if (kind === 'slot') return slotExample(tag, doc, framework);
   if (!/^[A-Za-z][A-Za-z0-9]*$/.test(name)) return unknown('This member requires a custom binding; no verified example is available.', framework);
-  if (kind === 'event') return eventExample(tag, doc, framework);
-  return methodExample(tag, doc, framework);
+  if (kind === 'event') return eventExample(component, tag, doc, framework);
+  return methodExample(component, tag, doc, framework);
 }
 
-// A cancelable DOM flag does not establish a component default action. Stencil
-// defaults that flag to true even for several post-commit notifications. Only
-// demonstrate cancellation where the source explicitly checks defaultPrevented.
-const cancellationActions = {
-  'md-button:mdClick': 'Veto this activation before its side effects.',
-  'md-switch:mdInput': 'Prevent the internal toggle before state changes.',
-  'md-breadcrumb-item:mdSelect': 'Prevent the default link navigation.',
-  'md-chip:mdRemove': 'Keep the chip from removing itself.',
-  'md-stepper:mdBeforeChange': 'Veto the step change before it commits.',
-};
-function eventBody(tag, doc) {
-  const detail = text(doc.detail) || text(doc.payload?.detail) || doc.type.replace(/^CustomEvent<([\s\S]+)>$/, '$1');
-  const empty = /^(?:void|undefined|never)$/.test(detail.trim());
-  const fields = (doc.payloadFields || []).filter(field => typeof field.name === 'string' && !/\b(?:MouseEvent|KeyboardEvent|PointerEvent|HTMLElement|Element)\b/.test(text(field.type))).slice(0, 3);
-  const access = fields.length ? fields.map(field => `event.detail[${literal(field.name)}]`).join(', ') : 'event.detail';
-  const cancellation = cancellationActions[`${tag}:${doc.name}`];
-  return `console.log(${empty ? literal(doc.name) : access});${cancellation && doc.cancelable !== false ? `\n// event.preventDefault(); // ${cancellation}` : ''}`;
+// Prerequisites come from the source implementations: the focused API must
+// have a visible control/data path that can actually exercise its behavior.
+function apiRecipe(tag, kind, member) {
+  const source = recipeFor(tag);
+  const recipe = { ...source, props: { ...source.props } };
+  const props = recipe.props;
+  if (tag === 'md-button' && member === 'mdChange') props.toggle = true;
+  if (tag === 'md-card') {
+    if (member === 'mdClick') props.interactive = true;
+    if (member.startsWith('mdDrag')) props.dragEnabled = true;
+  }
+  if (tag === 'md-avatar') {
+    if (member === 'mdLoad') props.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect width="64" height="64" fill="%236750a4"/%3E%3C/svg%3E';
+    if (member === 'mdError') props.src = 'data:image/png;base64,broken-image';
+  }
+  if (tag === 'md-chip' && member === 'mdRemove') Object.assign(props, { variant: 'input', removable: true });
+  if (tag === 'md-app-bar' && member.startsWith('mdSearch')) props.variant = 'search';
+  if (tag === 'md-breadcrumbs') Object.assign(props, { maxItems: 2, itemsBeforeCollapse: 1, itemsAfterCollapse: 1 });
+  if (tag === 'md-accordion' && /Reorder|Drag/.test(member)) props.reorderable = true;
+  if (tag === 'md-accordion-item' && member === 'mdItemRequestReorder') recipe.html = recipe.html.replace('<md-accordion>', '<md-accordion reorderable>');
+  if (tag === 'md-list' && member === 'mdReorder') props.reorderable = true;
+  if (tag === 'md-list-item') {
+    if (member === 'mdItemRequestReorder') recipe.html = recipe.html.replace('<md-list ', '<md-list reorderable ');
+    if (['mdExpand', 'toggle', 'expand', 'collapse'].includes(member)) {
+      props.expandable = true;
+      recipe.html = recipe.html.replace(/(<md-list-item[^>]*>)/, '$1<p slot="expanded-content">Shared components, tokens, and documentation.</p>');
+    }
+  }
+  if (tag === 'md-text-field') {
+    if (member === 'mdSearch') props.debounce = 250;
+    if (member === 'mdClear') props.clearable = 'internal';
+    if (member === 'mdPasswordToggle') Object.assign(props, { type: 'password', passwordToggle: 'internal' });
+    if (member === 'mdSpeechResult') props.speechToText = 'external';
+  }
+  if (tag === 'md-multi-select' && member === 'mdClear') props.clearable = true;
+  if (tag === 'md-side-sheet' && member === 'mdBack') props.showBack = true;
+  if (tag === 'md-navigation-rail-tab' && member === 'mdSubmenuToggle') recipe.html = recipe.html.replace(/(<md-navigation-rail-tab[^>]*>)/, '$1<md-menu slot="submenu"><md-menu-item headline="Recent workspaces"></md-menu-item><md-menu-item headline="All workspaces"></md-menu-item></md-menu>');
+  if (tag === 'md-search') {
+    if (member === 'mdClear' || member === 'mdTrailingIconClick') props.value = 'Design';
+    if (member === 'mdVoice' || member === 'startVoice' || member === 'stopVoice') props.voiceSearch = true;
+  }
+  if (/^md-(?:area|line|bar)-chart$/.test(tag) && ['mdZoom', 'setZoom', 'resetZoom'].includes(member)) props.zoom = 'both';
+  if (/^md-(?:area|line)-chart$/.test(tag) && member === 'mdMarkerClick') props.showMarks = true;
+  if (tag === 'md-line-chart' && member === 'mdAreaClick') props.area = true;
+  if (tag === 'md-table-pagination' && member === 'mdPageChange') props.rowsPerPage = 1;
+  if (kind === 'method') {
+    if (tag === 'md-select' || tag === 'md-multi-select') {
+      if (member === 'setQuery') { props.filterable = true; props.open = true; }
+    }
+    if (member === 'close' || member === 'hide' || member === 'closeMenu' || member === 'whenClosed') props.open = true;
+    if (member === 'collapse' && ['md-list-item', 'md-navigation-rail'].includes(tag)) props.expanded = true;
+    if (member === 'prev' && tag === 'md-stepper') props.active = 1;
+  }
+  return recipe;
 }
 
-function eventExample(tag, doc, framework) {
-  const name = pascal(tag), handler = `on${doc.name[0].toUpperCase()}${doc.name.slice(1)}`;
-  const content = tag === 'md-button' ? 'Continue' : '';
-  const attributes = tag === 'md-button' && doc.name === 'mdChange' ? ' toggle' : '';
+function eventExample(component, tag, doc, framework) {
   const detail = text(doc.detail) || text(doc.payload?.detail) || doc.type;
   const empty = /^(?:CustomEvent<)?(?:void|undefined|never)>?$/.test(detail.trim());
-  const body = eventBody(tag, doc);
-  // Generated global event maps preserve custom payload types without assuming
-  // every referenced source interface is exported from the package entry point.
-  const signature = `function ${handler}(event: CustomEvent<HTML${name}ElementEventMap[${literal(doc.name)}]>) {\n${indent(body)}\n}`;
-  let code;
-  if (framework === 'html') code = `<${tag}${attributes} id="api-example">${content}</${tag}>\n\n<script type="module">\nimport "@awc-ui/core/components/${tag}";\n\nawait customElements.whenDefined(${literal(tag)});\nconst component = document.querySelector("#api-example");\ncomponent.addEventListener(${literal(doc.name)}, event => {\n${indent(body)}\n});\n</script>`;
-  else if (framework === 'react') code = `"use client";\nimport { ${name} } from "@awc-ui/react";\nimport type {} from "@awc-ui/core";\n\n${signature}\n\nexport function EventExample() {\n  return <${name}${attributes} ${handler}={${handler}}>${content}</${name}>;\n}`;
-  else if (framework === 'vue') code = `<script setup lang="ts">\nimport { ${name} } from "@awc-ui/vue";\nimport type {} from "@awc-ui/core";\n\n${signature}\n</script>\n\n<template>\n  <${name}${attributes} @${doc.name}="${handler}">${content}</${name}>\n</template>`;
-  else if (framework === 'svelte') code = `<script lang="ts">\n  import type {} from "@awc-ui/svelte";\n  import "@awc-ui/core/components/${tag}";\n\n${indent(signature)}\n</script>\n\n<${tag}${attributes} on${doc.name}={${handler}}>${content}</${tag}>`;
-  else code = `import { Component } from "@angular/core";\nimport { ${name} } from "@awc-ui/angular";\nimport type {} from "@awc-ui/core";\n\n@Component({\n  selector: "app-event-example",\n  standalone: true,\n  imports: [${name}],\n  template: '<${tag}${attributes} (${doc.name})="${handler}($event)">${content}</${tag}>',\n})\nexport class EventExample {\n${indent(signature.replace(/^function /, ''))}\n}`;
+  const recipe = apiRecipe(tag, 'event', doc.name);
+  const properties = recipe.props;
+  // These notifications have no built-in UI trigger: expose their public
+  // mutator beside the handler so the example can emit the selected event.
+  const triggerMethod = tag === 'md-table' ? ({ mdPinChange: 'pinColumn', mdColumnVisibilityChange: 'setColumnVisibility' })[doc.name] : null;
+  let focusMethod = triggerMethod ? { name: triggerMethod, arguments: methodArguments[triggerMethod] } : undefined;
+  if (tag === 'md-progress-indicator' && doc.name === 'mdComplete') focusMethod = { name: 'complete', arguments: [], action: 'set-property', value: true };
+  if (tag === 'md-select-option' && doc.name === 'mdSelectOptionChange') focusMethod = { name: 'label', arguments: [], action: 'set-property', value: 'Updated team name' };
+  const code = usageSnippet({ ...component, tag, events: [{ name: doc.name }] }, properties, framework, { html: recipe.html, focusEvent: doc, focusMethod });
   const notes = ['Load @awc-ui/core/css/tokens.css once in your application entry.'];
   if (tag === 'md-button' && doc.name === 'mdChange') notes.push('Enable toggle on the button to emit mdChange when selection changes.');
   if (doc.name === 'mdChange' && ['md-button', 'md-switch', 'md-autocomplete', 'md-color-picker', 'md-number-field', 'md-slider'].includes(tag)) {
@@ -71,66 +106,86 @@ function eventExample(tag, doc, framework) {
     notes.push(`This notification observes a committed change. Calling preventDefault() here does not undo that change.${veto}`);
   }
   if (framework === 'svelte') notes.push('Uses Svelte 5 event properties; event names are case-sensitive.');
+  if (tag === 'md-card' && doc.name.startsWith('mdDrag')) notes.push('Drag the card surface with the primary pointer; movement past the threshold starts the drag sequence.');
+  if (tag === 'md-text-field' && doc.name === 'mdSpeechResult') notes.push('External speech mode reports the microphone control state; connect your speech-recognition service in this handler.');
+  if (tag === 'md-search' && doc.name === 'mdVoice') notes.push('Voice input requires a browser with speech recognition and microphone permission.');
+  if (tag === 'md-avatar' && doc.name === 'mdError') notes.push('The deliberately invalid image exercises the error handler and the initials fallback.');
+  if (tag === 'md-progress-indicator' && doc.name === 'mdComplete') notes.push('Set complete after mounting to start the completion animation; reaching value 100 alone does not emit mdComplete.');
   return result(`Handle ${doc.name}`, empty ? `Handle ${doc.name}; this event does not carry a detail payload.` : `Bind ${doc.name} and read its event.detail payload in this handler.`, code, languages[framework], notes);
 }
 
 const methodArguments = {
-  loadOptions: '[{ value: "design", label: "Design systems" }]',
-  getLabels: '["design"]', setQuery: '"design"', setCustomValidity: '"Please review this value."',
-  setMenuIcon: '"close"', setZoom: '0, 4', stepUp: '2', stepDown: '2',
-  setComboboxElement: 'null', setVirtualProvider: 'null',
-  setSort: '"name", "asc"', pinColumn: '0, "start"', setColumnVisibility: '0, false',
-  setRowsPerPage: '10', goToPage: '1', drill: '0, "down"',
+  loadOptions: [[{ value: 'design', label: 'Design systems' }, { value: 'mobile', label: 'Mobile apps' }]],
+  getLabels: [['design']], setQuery: ['design'], setCustomValidity: ['Please review this value.'],
+  setMenuIcon: ['close'], setZoom: [0, 4], stepUp: [2], stepDown: [2],
+  setComboboxElement: [null], setVirtualProvider: [null],
+  setSort: ['platform', 'asc'], pinColumn: [0, 'start'], setColumnVisibility: [0, false],
+  setRowsPerPage: [1], goToPage: [0], drill: [0, 'down'],
 };
+const methodArgumentTags = {
+  loadOptions: ['md-select', 'md-multi-select', 'md-autocomplete'],
+  getLabels: ['md-select', 'md-multi-select', 'md-autocomplete'],
+  setQuery: ['md-select', 'md-multi-select'],
+  setCustomValidity: ['md-autocomplete', 'md-checkbox', 'md-date-picker', 'md-multi-select', 'md-number-field', 'md-otp-field', 'md-radio', 'md-select', 'md-switch', 'md-text-field'],
+  setMenuIcon: ['md-fab'], setZoom: ['md-area-chart', 'md-bar-chart', 'md-line-chart'],
+  stepUp: ['md-number-field'], stepDown: ['md-number-field'],
+  setComboboxElement: ['md-menu'], setVirtualProvider: ['md-menu'],
+  setSort: ['md-table'], pinColumn: ['md-table'], setColumnVisibility: ['md-table'],
+  setRowsPerPage: ['md-table-pagination'], goToPage: ['md-table-pagination'],
+  drill: ['md-bar-chart', 'md-pie-chart'],
+};
+const unsupportedParameter = Symbol('application-specific parameter');
 function parameterValue(parameter) {
   const type = text(parameter.type).trim();
-  if (type === 'number') return '0';
-  if (type === 'boolean') return 'true';
-  if (type === 'string') return '"Example"';
-  if (/^(?:readonly\s+)?string\[\]$/.test(type)) return '["example"]';
-  if (/^(?:readonly\s+)?number\[\]$/.test(type)) return '[0]';
-  if (/^['"]([^'"\\]*)['"](?:\s*\||$)/.test(type)) return literal(type.match(/^['"]([^'"\\]*)['"]/)[1]);
-  if (/(?:^|\|)\s*null\s*(?:\||$)/.test(type)) return 'null';
-  return null;
+  if (type === 'number') return 0;
+  if (type === 'boolean') return true;
+  if (type === 'string') return 'Example';
+  if (/^(?:readonly\s+)?string\[\]$/.test(type)) return ['example'];
+  if (/^(?:readonly\s+)?number\[\]$/.test(type)) return [0];
+  if (/^['"]([^'"\\]*)['"](?:\s*\||$)/.test(type)) return type.match(/^['"]([^'"\\]*)['"]/)[1];
+  if (/(?:^|\|)\s*null\s*(?:\||$)/.test(type)) return null;
+  return unsupportedParameter;
 }
-function argumentsFor(tag, doc) {
-  if (Object.hasOwn(methodArguments, doc.name)) return methodArguments[doc.name];
-  if (doc.name === 'setFocus' && tag === 'md-list-item') return '{ preventScroll: true }';
-  if (doc.name === 'show' && tag === 'md-menu') return '{ autoFocus: true }';
+/** JSON arguments for live method controls. Null means the application must supply them. */
+export function methodExampleArguments(component = {}, method) {
+  const tag = component.tag || component.tagName;
+  const name = typeof method === 'string' ? method : method?.name;
+  if (!/^md-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(tag || '') || !/^[A-Za-z][A-Za-z0-9]*$/.test(name || '')) return null;
+  const declarations = component.methods ?? component.members?.filter(member => member.kind === 'method') ?? [];
+  if (typeof method === 'string' && !declarations.some(item => (typeof item === 'string' ? item : item.name) === name)) return null;
+  const doc = memberDocumentation(component, 'method', method, 'web');
+  if (Object.hasOwn(methodArguments, doc.name) && methodArgumentTags[doc.name]?.includes(tag)) return JSON.parse(JSON.stringify(methodArguments[doc.name]));
+  if (doc.name === 'setFocus' && tag === 'md-list-item') return [{ preventScroll: true }];
+  if (doc.name === 'show' && tag === 'md-menu') return [{ autoFocus: true }];
   const parameters = doc.parameters ?? doc.params ?? [];
   if (!Array.isArray(parameters)) return null;
   const values = [];
   for (const parameter of parameters) {
     if (parameter.optional || parameter.default !== undefined) break;
     const value = parameterValue(parameter);
-    if (value === null) return null;
+    if (value === unsupportedParameter) return null;
     values.push(value);
   }
-  return values.join(', ');
+  return values;
 }
 
-function methodExample(tag, doc, framework) {
-  const name = pascal(tag), args = argumentsFor(tag, doc);
-  if (args === null) return unknown('This method needs an application-specific argument. Construct it from the parameter type shown above before calling the method.', framework);
-  const returnType = text(doc.returns?.type) || text(doc.returns) || text(doc.return?.type) || text(doc.returnType);
-  const hasResult = returnType && !/^(?:Promise<\s*)?(?:void|undefined)(?:\s*>)?$/.test(returnType.trim());
-  const call = `${hasResult ? 'const result = ' : ''}await component.${doc.name}(${args});${hasResult ? '\nconsole.log(result);' : ''}`;
-  const body = `await customElements.whenDefined(${literal(tag)});\n${call}`;
-  const content = tag === 'md-button' ? 'Continue' : '';
-  let code;
-  if (framework === 'html') code = `<${tag} id="api-example">${content}</${tag}>\n<button id="run-api" type="button">Run ${doc.name}</button>\n\n<script type="module">\nimport "@awc-ui/core/components/${tag}";\n\ndocument.querySelector("#run-api").addEventListener("click", async () => {\n  await customElements.whenDefined(${literal(tag)});\n  /** @type {HTML${name}Element | null} */\n  const component = document.querySelector("#api-example");\n  if (!component) return;\n${indent(call)}\n});\n</script>`;
-  else if (framework === 'react') code = `"use client";\nimport { useRef } from "react";\nimport { ${name} } from "@awc-ui/react";\nimport type {} from "@awc-ui/core";\n\nexport function MethodExample() {\n  const ref = useRef<HTML${name}Element>(null);\n  async function run() {\n    const component = ref.current;\n    if (!component) return;\n${indent(body, 4)}\n  }\n  return <>\n    <${name} ref={ref}>${content}</${name}>\n    <button type="button" onClick={run}>Run ${doc.name}</button>\n  </>;\n}`;
-  else if (framework === 'vue') code = `<script setup lang="ts">\nimport { ref } from "vue";\nimport { ${name} } from "@awc-ui/vue";\nimport type {} from "@awc-ui/core";\n\nconst view = ref<{ $el: HTML${name}Element } | null>(null);\nasync function run() {\n  const component = view.value?.$el;\n  if (!component) return;\n${indent(body)}\n}\n</script>\n\n<template>\n  <${name} ref="view">${content}</${name}>\n  <button type="button" @click="run">Run ${doc.name}</button>\n</template>`;
-  else if (framework === 'svelte') code = `<script lang="ts">\n  import type {} from "@awc-ui/svelte";\n  import "@awc-ui/core/components/${tag}";\n\n  let view: HTML${name}Element | undefined = $state();\n  async function run() {\n    const component = view;\n    if (!component) return;\n${indent(body, 4)}\n  }\n</script>\n\n<${tag} bind:this={view}>${content}</${tag}>\n<button type="button" onclick={run}>Run ${doc.name}</button>`;
-  else code = `import { Component, ViewChild } from "@angular/core";\nimport { ${name} } from "@awc-ui/angular";\n\n@Component({\n  selector: "app-method-example",\n  standalone: true,\n  imports: [${name}],\n  template: \`\n    <${tag}>${content}</${tag}>\n    <button type="button" (click)="run()">Run ${doc.name}</button>\n  \`,\n})\nexport class MethodExample {\n  @ViewChild(${name}) view?: ${name};\n  async run() {\n    const component = this.view;\n    if (!component) return;\n${indent(body, 4)}\n  }\n}`;
+function methodExample(component, tag, doc, framework) {
+  const argumentValues = methodExampleArguments(component, doc);
+  if (argumentValues === null) return unknown('This method needs an application-specific argument. Construct it from the parameter type shown above before calling the method.', framework);
+  const args = argumentValues.map(literal).join(', ');
+  const recipe = apiRecipe(tag, 'method', doc.name);
+  const code = usageSnippet({ ...component, tag, events: [] }, recipe.props, framework, { html: recipe.html, focusMethod: { ...doc, arguments: argumentValues } });
   const notes = ['Run in the browser after the element is mounted. Registration is awaited; the public method returns a promise.'];
   if (framework === 'vue') notes.push('The Vue ref is a wrapper instance; $el is the underlying custom element.');
   if (framework === 'angular') notes.push('The Angular wrapper proxies this method to the underlying custom element.');
-  if (['setZoom', 'drill', 'setSort', 'pinColumn', 'setColumnVisibility', 'selectItem', 'selectTab', 'focusTab', 'goTo', 'goToPage'].includes(doc.name)) notes.push('Use the populated component from the main Usage example; choose indices or column keys present in your data.');
-  if (doc.name === 'getLabels' || doc.name === 'setQuery') notes.push('Load the options first with await component.loadOptions(...); use values present in your option data.');
+  if (['setZoom', 'setSort', 'pinColumn', 'setColumnVisibility', 'selectItem', 'selectTab', 'focusTab', 'goTo', 'goToPage'].includes(doc.name)) notes.push('Indices and column keys refer to the populated sample above; use values present in your own data.');
+  if (doc.name === 'drill') notes.push('This arms the next data change. After awaiting drill(), assign the next data (pie) or series and xAxis (bar) to animate the transition.');
+  if (doc.name === 'getLabels' || doc.name === 'setQuery') notes.push('This sample supplies options up front; use values present in your own option data.');
   if (doc.name === 'setCustomValidity') notes.push('Pass an empty string to clear the custom validation error.');
   if (doc.name === 'setComboboxElement' || doc.name === 'setVirtualProvider') notes.push('Passing null clears the existing integration. Supply your element or provider to attach one.');
   if (doc.name === 'whenClosed') notes.push('Call after showing the overlay; the promise resolves when its current close lifecycle finishes.');
+  if (doc.name === 'moveSelectedRight' || doc.name === 'moveSelectedLeft') notes.push('Select one or more items on the corresponding side before running the move method.');
+  if (doc.name === 'startVoice' || doc.name === 'stopVoice') notes.push('Voice input requires browser speech-recognition support and microphone permission. Start recognition before stopping it.');
   return result(`Call ${doc.name}()`, `Get the mounted component reference and await ${doc.name}(${args}).`, code, languages[framework], notes);
 }
 

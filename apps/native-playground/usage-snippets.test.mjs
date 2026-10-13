@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { usageSnippet, snippetLanguages } from './usage-snippets.js';
+import { usageSnippet, snippetLanguages, recipePropertyValues } from './usage-snippets.js';
 import { recipeFor } from './recipes.js';
 
 const button = {
@@ -345,8 +345,9 @@ test('real TSX, Angular, Vue and Svelte compilers accept all 81 composed example
   }
 });
 
-test('all 81 selected fixture prop objects typecheck against the actual public core interfaces', async () => {
+test('all 81 selected fixture attributes and prop objects typecheck against the actual public core interfaces', async () => {
   const ts = (await import('typescript')).default;
+  const { mergeComponentDocumentation } = await import('./documentation.js');
   const manifest = JSON.parse(await readFile(new URL('../../packages/core/custom-elements.json', import.meta.url), 'utf8'));
   const components = manifest.modules.flatMap(module => module.declarations ?? []).filter(component => component.tagName);
   const filename = fileURLToPath(new URL('GeneratedUsageProperties.ts', import.meta.url));
@@ -354,7 +355,12 @@ test('all 81 selected fixture prop objects typecheck against the actual public c
   let source = `import type { Components } from ${JSON.stringify(core)};\n`;
   for (const component of components) {
     const declared = new Set((component.members ?? []).filter(member => member.kind === 'field').map(member => member.name));
-    const values = Object.fromEntries(Object.entries(recipeFor(component.tagName).props).filter(([key]) => declared.has(key)));
+    const recipe = recipeFor(component.tagName);
+    assert.deepEqual(Object.keys(recipe.props).filter(key => !declared.has(key)), [], `${component.tagName} has no undeclared fixture props`);
+    const values = recipePropertyValues(component, recipe);
+    assert.deepEqual(recipePropertyValues(mergeComponentDocumentation(component), recipe), values, `${component.tagName} behaves identically with normalized catalog metadata`);
+    assert.deepEqual(Object.keys(values).filter(key => !declared.has(key)), [], `${component.tagName} extracts only declared values`);
+    for (const [key, value] of Object.entries(recipe.props)) assert.deepEqual(values[key], value, `${component.tagName}.${key} retains explicit fixture precedence`);
     const name = component.tagName.split('-').map(part => part[0].toUpperCase() + part.slice(1)).join('');
     source += `export const ${name}: Partial<Components.${name}> = ${JSON.stringify(values)};\n`;
   }
@@ -366,6 +372,43 @@ test('all 81 selected fixture prop objects typecheck against the actual public c
   assert.deepEqual(errors.map(diagnostic => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')), []);
 });
 
+test('recipe property extraction gives native-first routes the selected component authored state', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../../packages/core/custom-elements.json', import.meta.url), 'utf8'));
+  const components = new Map(manifest.modules.flatMap(module => module.declarations ?? []).filter(component => component.tagName).map(component => [component.tagName, component]));
+  const accordion = recipePropertyValues(components.get('md-accordion-item'));
+  assert.equal(accordion.headline, 'A shared design language');
+  assert.equal(accordion.supportingText, 'Built for every surface');
+  assert.equal(accordion.expanded, true);
+  assert.equal(recipePropertyValues(components.get('md-segmented-button')).label, 'Day');
+  assert.equal(recipePropertyValues(components.get('md-fab-menu-item')).label, 'New document');
+  assert.equal(recipePropertyValues(components.get('md-list-item')).headline, 'Design systems');
+  assert.deepEqual(recipePropertyValues(components.get('md-table-row')), { value: 'android', expandable: true, clickable: true }, 'does not inherit the parent table selection, columns, or label');
+  assert.deepEqual(recipePropertyValues(components.get('md-table-pagination')), { count: 2, rowsPerPage: 1 }, 'explicit recipe value wins over its authored rows-per-page=5 attribute');
+  const chart = recipePropertyValues(components.get('md-line-chart'));
+  assert.equal(chart.heightProp, '260px');
+  assert.equal(chart.series[0].data[3], 42);
+  assert.equal(chart.noAnimation, true);
+  const density = recipePropertyValues(components.get('md-accordion-item'), { html: '<md-accordion-item density="-2" heading-level="4" expanded="false" headline="A &amp; B"></md-accordion-item>', props: {} });
+  assert.deepEqual(density, { density: -2, headingLevel: 4, expanded: false, headline: 'A & B' });
+});
+
+test('recipe properties preserve declared primitive, literal and JSON types without executing authored text', () => {
+  const component = { tag: 'md-example', properties: [
+    { name: 'expanded', type: { text: 'boolean' } }, { name: 'choice', type: 'true | false' },
+    { name: 'density', type: '0 | -1 | -2' }, { name: 'label', type: 'string' },
+    { name: 'heightProp', attribute: 'height', type: 'string' },
+    { name: 'settings', type: 'Record<string, unknown> | null' }, { name: 'data', type: 'number[]' },
+    { name: 'maybeText', type: 'string | number' }, { name: 'formatter', type: '(value: string) => string' },
+  ] };
+  const recipe = { html: '<div label="Parent"><md-example expanded choice density="-2" label="001" height="260px" settings=\'{"enabled":true,"items":[1,null]}\' data="[1,2,3]" maybe-text="hello" formatter="danger()" undeclared="no"><md-example label="Child"></md-example></md-example><md-example label="Sibling"></md-example></div>', props: { expanded: false, undeclared: 'no', data: [9, 8] } };
+  const values = recipePropertyValues(component, recipe);
+  assert.deepEqual(values, { expanded: false, choice: true, density: -2, label: '001', heightProp: '260px', settings: { enabled: true, items: [1, null] }, data: [9, 8], maybeText: 'hello' });
+  values.data.push(7);
+  assert.deepEqual(recipe.props.data, [9, 8], 'structured fixture values are cloned');
+  assert.deepEqual(recipePropertyValues(component, { html: '<md-example expanded="false" density="bad" data="danger()" label="original"></md-example>', props: { label: undefined } }), { expanded: false }, 'invalid source and explicit unset values are omitted');
+  assert.throws(() => recipePropertyValues({ tag: '<script>' }), /valid component tag/);
+});
+
 test('plain recipe text tolerates quoted angle brackets, entities and explicit empty content', () => {
   const html = '<md-button data-note="a > b" title="x < y">A &#x1f600; &amp; B</md-button>';
   assert.ok(usageSnippet(button, {}, 'ios', { html }).includes('children: [.text("A 😀 & B")]'));
@@ -374,4 +417,120 @@ test('plain recipe text tolerates quoted angle brackets, entities and explicit e
   const values = Object.freeze({ selected: false, payload: Object.freeze({ list: Object.freeze([1, null]) }) });
   for (const platform of ['web', 'ios', 'android']) assert.ok(usageSnippet(button, values, platform).includes('md-button'));
   assert.deepEqual(values.payload.list, [1, null]);
+});
+
+test('copied overlay controls execute in HTML and every framework instead of leaving setup placeholders', async () => {
+  const [dom, ts] = await Promise.all([compilerPackage('@stencil/core', 'mock-doc/index.cjs'), import('typescript').then(module => module.default)]);
+  for (const tag of ['md-menu', 'md-menu-item', 'md-sub-menu-item', 'md-dialog', 'md-bottom-sheet', 'md-side-sheet', 'md-snackbar']) {
+    const recipe = recipeFor(tag), component = { tag, events: [] };
+    for (const language of ['html', 'react', 'angular', 'vue', 'svelte']) {
+      const code = usageSnippet(component, recipe.props, language, { html: recipe.html });
+      const label = `${tag}/${language}`;
+      assert.doesNotMatch(code, /Wire the recipe launch\/close/, label);
+      assert.match(code, /onRecipeAction/, label);
+      const document = dom.createDocument(`<div data-awc-example="">${recipe.html}</div>`);
+      const triggers = [...document.querySelectorAll('[data-awc-action]')];
+      if (language === 'html') {
+        const script = code.match(/<script type="module">([\s\S]*?)<\/script>/)[1].replace(/^import .*;$/gm, '');
+        const actual = dom.createDocument(code);
+        const context = vm.createContext({ document: actual, customElements: { whenDefined: async () => {} }, console: { log() {} } });
+        await new vm.Script(`(async () => { ${script}\n})()`).runInContext(context);
+        for (const trigger of actual.querySelectorAll('[data-awc-action]')) {
+          const target = actual.getElementById(trigger.getAttribute('data-awc-target'));
+          target.open = trigger.getAttribute('data-awc-action') === 'close';
+          trigger.dispatchEvent(new dom.MockMouseEvent('click'));
+          assert.equal(target.open, trigger.getAttribute('data-awc-action') !== 'close', label);
+        }
+        continue;
+      }
+      const bindings = { react: /onClick=\{onRecipeAction\}/, angular: /\(click\)="onRecipeAction\(\$event\)"/, vue: /@click="onRecipeAction"/, svelte: /onclick=\{onRecipeAction\}/ };
+      assert.match(code, bindings[language], label);
+      assert.match(code, /<div data-awc-example="">/, 'React must receive a string-valued data attribute');
+      const script = ['vue', 'svelte'].includes(language) ? code.match(/<script[^>]*>([\s\S]*?)<\/script>/)[1] : code;
+      const file = ts.createSourceFile(language === 'react' ? 'Example.tsx' : 'Example.ts', script, ts.ScriptTarget.Latest, true, language === 'react' ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+      let handler;
+      function visit(node) {
+        if ((ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) && node.name?.getText(file) === 'onRecipeAction') handler = node.getText(file);
+        ts.forEachChild(node, visit);
+      }
+      visit(file);
+      assert.ok(handler, label);
+      if (!handler.startsWith('function')) handler = 'function ' + handler;
+      const output = ts.transpileModule(handler, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+      const context = vm.createContext({});
+      const run = new vm.Script(output + '\nonRecipeAction;').runInContext(context);
+      for (const trigger of triggers) {
+        const target = document.getElementById(trigger.getAttribute('data-awc-target'));
+        target.open = trigger.getAttribute('data-awc-action') === 'close';
+        run({ currentTarget: trigger });
+        assert.equal(target.open, trigger.getAttribute('data-awc-action') !== 'close', label);
+      }
+    }
+  }
+});
+
+test('native text-slot edits preserve unsupported slots, structural children and explicitly empty text', () => {
+  const sourceHtml = '<md-accordion-item><span slot="headline">Original headline</span><p>Original body</p><md-button slot="actions">Save</md-button><span slot="unsupported">Keep me</span></md-accordion-item>';
+  const component = { tag: 'md-accordion-item', support: { ios: { slots: ['', 'headline', 'actions'] }, android: { slots: ['', 'headline', 'actions'] } } };
+  const slots = { '': '', headline: 'Updated "headline"', actions: 'Would erase the button', unsupported: 'Not implemented' };
+  for (const platform of ['swift', 'android']) {
+    const code = usageSnippet(component, {}, platform, { html: '<md-accordion-item>Web-only edits</md-accordion-item>', sourceHtml, slots });
+    assert.match(code, /Updated \\"headline\\"/);
+    assert.doesNotMatch(code, /Original headline|Original body|Web-only edits|Would erase|Not implemented/);
+    assert.match(code, /md-button/);
+    assert.match(code, /Save/);
+    assert.match(code, /Keep me/);
+    assert.match(code, platform === 'swift' ? /\.text\(""\)/ : /Text\(""\)/);
+  }
+  const structural = { tag: 'md-tabs', support: { ios: { slots: [''] }, android: { slots: [''] } } };
+  for (const platform of ['swift', 'android']) {
+    const code = usageSnippet(structural, {}, platform, { sourceHtml: '<md-tabs><md-tab label="Overview"></md-tab></md-tabs>', slots: { '': 'Not a tab' } });
+    assert.match(code, /md-tab/);
+    assert.match(code, /Overview/);
+    assert.doesNotMatch(code, /Not a tab/);
+  }
+  const unavailable = { tag: 'md-button', support: { ios: { slots: [''], unsupportedSlots: [''] }, android: { status: 'missing-adapter', slots: [''] } } };
+  for (const platform of ['swift', 'android']) assert.doesNotMatch(usageSnippet(unavailable, {}, platform, { sourceHtml: '<md-button>Keep original</md-button>', slots: { '': 'Reject edit' } }), /Reject edit/);
+});
+
+test('accepted native default-slot edits clear only the selected component property that masks its text', () => {
+  const masks = {
+    'md-segmented-button': 'label', 'md-fab-menu-item': 'label', 'md-select-option': 'label',
+    'md-split-button': 'label', 'md-chip': 'label', 'md-list-item': 'headline', 'md-snackbar': 'message',
+  };
+  for (const [tag, mask] of Object.entries(masks)) for (const platform of ['swift', 'android']) for (const value of ['Updated content', '']) {
+    const component = { tag, support: { ios: { slots: [''] }, android: { slots: [''] } } };
+    const properties = { [mask]: 'Property fallback', disabled: false };
+    const sourceHtml = `<div><${tag} ${mask}="Attribute fallback">Original content</${tag}><${tag} ${mask}="Keep sibling"></${tag}></div>`;
+    const code = usageSnippet(component, properties, platform, { sourceHtml, slots: { '': value } });
+    assert.doesNotMatch(code, /Property fallback|Attribute fallback|Original content/, `${tag}/${platform} does not mask the edited slot`);
+    assert.match(code, /Keep sibling/, 'an unselected sibling retains its own label');
+    assert.match(code, new RegExp(platform === 'swift' ? `"${mask}": \\.string\\(""\\)` : `"${mask}" to ""`));
+    assert.ok(code.includes(platform === 'swift' ? `.text(${JSON.stringify(value)})` : `Text(${JSON.stringify(value)})`), `${tag}/${platform} retains explicit text, including empty content`);
+    assert.deepEqual(properties, { [mask]: 'Property fallback', disabled: false }, 'snippet generation does not mutate the supplied property object');
+  }
+});
+
+test('native slot edits preserve region titles and preserve property precedence when the edit is rejected or unrelated', () => {
+  for (const tag of ['md-accordion-item', 'md-bottom-sheet', 'md-dialog', 'md-side-sheet', 'md-step']) for (const platform of ['swift', 'android']) {
+    const field = tag === 'md-step' ? 'label' : 'headline';
+    const component = { tag, support: { ios: { slots: [''] }, android: { slots: [''] } } };
+    const code = usageSnippet(component, { [field]: 'Keep region title' }, platform, { sourceHtml: `<${tag}>Body</${tag}>`, slots: { '': 'Edited body' } });
+    assert.match(code, /Keep region title/);
+    assert.match(code, /Edited body/);
+  }
+  const cases = [
+    { slots: { '': 'Rejected edit' }, support: { slots: [''], unsupportedSlots: [''] }, content: 'Original content' },
+    { slots: { '': 'Rejected edit' }, support: { slots: [''], status: 'missing-adapter' }, content: 'Original content' },
+    { slots: { '': 123 }, support: { slots: [''] }, content: 'Original content' },
+    { slots: { '': 'Rejected edit' }, support: { slots: [''] }, content: '<md-button>Structural child</md-button>' },
+    { slots: { 'supporting-text': 'New supporting text' }, support: { slots: ['', 'supporting-text'] }, content: 'Original content' },
+  ];
+  for (const { slots, support, content } of cases) for (const platform of ['swift', 'android']) {
+    const component = { tag: 'md-list-item', support: { ios: support, android: support } };
+    const code = usageSnippet(component, { headline: 'Keep headline' }, platform, { sourceHtml: `<md-list-item>${content}</md-list-item>`, slots });
+    assert.match(code, /Keep headline/);
+    assert.doesNotMatch(code, /Rejected edit/);
+    assert.match(code, /Original content|Structural child/);
+  }
 });

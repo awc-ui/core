@@ -3,8 +3,9 @@ import path from 'node:path';
 import { usageSnippet } from './usage-snippets.js';
 import { androidGuide, androidInstructionFiles } from './ai-instructions-android.mjs';
 import { buttonAppearanceGuide } from './button-appearance-guide.mjs';
+import { nativeGuideOverview, nativeGuideRecipes } from './ai-instructions-examples.mjs';
 
-const files = Object.freeze({
+export const swiftInstructionFiles = Object.freeze({
   catalog: 'packages/native-compiler/generated/catalog.json',
   support: 'packages/native-ios/NativeSupport.json',
   wrappers: 'packages/native-ios/Sources/AWCUI/Generated/Components.swift',
@@ -15,7 +16,16 @@ const files = Object.freeze({
   nativeReadme: 'packages/native-ios/README.md',
   behavior: 'packages/native-ios/NativeBehavior.md',
   focus: 'packages/native-ios/NativeFocus.md',
+  actions: 'packages/native-ios/Sources/AWCUI/Actions.swift',
+  inputs: 'packages/native-ios/Sources/AWCUI/Inputs.swift',
+  options: 'packages/native-ios/Sources/AWCUI/Options.swift',
+  containers: 'packages/native-ios/Sources/AWCUI/Containers.swift',
+  overlays: 'packages/native-ios/Sources/AWCUI/Overlays.swift',
+  data: 'packages/native-ios/Sources/AWCUI/DataViews.swift',
+  charts: 'packages/native-ios/Sources/AWCUI/Charts.swift',
+  theme: 'packages/native-ios/Sources/AWCUI/Theme.swift',
 });
+const files = swiftInstructionFiles;
 
 export class AIInstructionsError extends Error {
   constructor(status, code, message) { super(message); this.status = status; this.code = code; }
@@ -90,6 +100,7 @@ function nativeGuide(component, policy, manifest, wrapper, packageSource) {
     'Run `pnpm native:build` from the repository root before building so the generated native catalog, wrappers and tokens are current. Place ComponentExample in your existing SwiftUI app or WindowGroup; do not add a second @main entry point.',
     `Add the local Swift package at ${code('packages/native-ios')} to your Xcode app and link its ${code('AWCUI')} library product. Import ${code('SwiftUI')} and ${code('AWCUI')}. The package declares iOS ${ios}+ and macOS ${macos}+ and renders native SwiftUI/Canvas without a WebView or JavaScript runtime.`,
     'The studio’s local SwiftUI live preview runs a macOS native host. It is not an iOS Simulator or an iPhone/iPad device run. Build and test the app with an iOS Xcode destination to verify UIKit, hardware-keyboard, VoiceOver, touch and presentation behavior on iOS.',
+    nativeGuideOverview(component, policy, 'swift'),
     '### Public SwiftUI usage',
     wrapper ? `Use the verified ${code(wrapper.name)} view and ${code(wrapper.propertyType)} property struct. Its initializer accepts ${code('properties')}, ${code('children: [AWCNode]')} and ${code('onEvent: (AWCEvent) -> Void')}.`
       : 'No matching generated typed wrapper was found in this checkout. Use the verified dynamic API below; do not invent a wrapper name.',
@@ -152,6 +163,7 @@ struct ToggleExample: View {
   paragraphs.push('### Verification recorded by the adapter',
     ...Object.entries(manifest.verification || {}).map(([name, evidence]) => `- ${name}: ${evidence}`),
     'These are recorded implementation/verification notes, not a new test run. This guide does not certify iOS device behavior or complete web parity.');
+  paragraphs.push(nativeGuideRecipes(component, policy, 'swift'));
   return paragraphs.join('\n\n');
 }
 

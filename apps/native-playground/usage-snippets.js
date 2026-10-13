@@ -1,4 +1,8 @@
 import { BUTTON_APPEARANCE_FIELDS, normalizeButtonAppearance, buttonAppearanceCSS } from './button-appearance.js';
+import { nativeTextSlotSupported } from './native-api-examples.js';
+import { defaultSlotMaskingProperty } from './content-slots.js';
+import { recipeFor } from './recipes.js';
+import { propertyEditor, parsePropertyInput } from './property-controls.js';
 
 export const snippetLanguages = Object.freeze([
   { id: 'html', label: 'HTML', language: 'html' },
@@ -10,10 +14,54 @@ export const snippetLanguages = Object.freeze([
   { id: 'android', label: 'Android', language: 'kotlin' },
 ].map(Object.freeze));
 
+/** Selected fixture values, available before any Web preview has mounted.
+ * Reads authored attributes as declared property types, then applies the
+ * recipe's JSON properties. Parent and sibling properties never leak in.
+ */
+export function recipePropertyValues(component, recipe = recipeFor(component?.tag ?? component?.tagName ?? '')) {
+  const tag = component?.tag ?? component?.tagName;
+  if (typeof tag !== 'string' || !/^md-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(tag)) throw new TypeError('A valid component tag is required.');
+  const properties = component.properties ?? component.props ?? (component.members ?? []).filter(member => member.kind === 'field' && !['private', 'protected'].includes(member.privacy));
+  const fields = properties.map(property => typeof property === 'string' ? { name: property } : property).filter(property => typeof property?.name === 'string');
+  const attrs = recipeTree(tag, recipe?.html).selected.attrs;
+  const values = {};
+  for (const property of fields) {
+    const name = property.name;
+    const declaredAttribute = component.attributes?.find(attribute => attribute.fieldName === name || (!attribute.fieldName && attribute.name === name));
+    const rawName = typeof property.attribute === 'string' ? property.attribute : declaredAttribute?.name ?? name.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`);
+    if (property.attribute === false || property.attribute === null || !Object.hasOwn(attrs, rawName.toLowerCase())) continue;
+    const raw = attrs[rawName.toLowerCase()];
+    const field = { ...declaredAttribute, ...property, type: property.type || declaredAttribute?.type };
+    const editor = propertyEditor(component, field, attributeValue(rawName, raw));
+    if (editor.kind === 'readonly') continue;
+    try {
+      // Stencil boolean attributes treat the literal "false" as false.
+      const booleanPresence = raw === null && editor.schema?.some(item => item.kind === 'boolean' || item.kind === 'literal' && item.value === true);
+      let value;
+      try { value = parsePropertyInput(editor, booleanPresence ? 'true' : raw ?? '', raw !== 'false'); }
+      catch (error) {
+        if (editor.kind !== 'json' || !editor.schema?.some(item => item.kind === 'string' || item.kind === 'literal' && typeof item.value === 'string')) throw error;
+        value = parsePropertyInput(editor, JSON.stringify(raw ?? ''), false);
+      }
+      if (value !== undefined) Object.defineProperty(values, name, { value, enumerable: true, configurable: true, writable: true });
+    } catch {
+      // An invalid authored attribute cannot become executable source or an
+      // incorrectly typed native value. Explicit recipe properties may fix it.
+    }
+  }
+  const declared = new Set(fields.map(property => property.name));
+  for (const [name, value] of Object.entries(recipe?.props ?? {})) {
+    if (!declared.has(name)) continue;
+    if (value === undefined) delete values[name];
+    else Object.defineProperty(values, name, { value, enumerable: true, configurable: true, writable: true });
+  }
+  return jsonValue(values);
+}
+
 /** Copyable examples for the public framework, SwiftUI and Compose APIs.
  * `html` is trusted local recipe markup. Property values are JSON data, never code.
  */
-export function usageSnippet(component, properties = {}, platform = 'web', { html, text, buttonAppearance, buttonAppearanceDefaults } = {}) {
+export function usageSnippet(component, properties = {}, platform = 'web', { html, sourceHtml, text, slots, buttonAppearance, buttonAppearanceDefaults, focusEvent, focusMethod } = {}) {
   const tag = component?.tag;
   if (typeof tag !== 'string' || !/^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/.test(tag)) throw new TypeError('A valid component tag is required.');
   platform = ({ web: 'html', ios: 'swift' })[platform] ?? platform;
@@ -22,7 +70,12 @@ export function usageSnippet(component, properties = {}, platform = 'web', { htm
   const filtered = Object.fromEntries(Object.entries(properties ?? {}).filter(([key, value]) => value !== undefined && (!declared || declared.has(key))));
   const values = jsonValue(filtered);
   const events = [...new Set((component.events ?? []).map(event => typeof event === 'string' ? event : event.name).filter(name => typeof name === 'string' && name.length))];
-  const tree = recipeTree(tag, html, text);
+  const native = platform === 'swift' || platform === 'android';
+  const nativeSlots = native && slots && typeof slots === 'object' && !Array.isArray(slots);
+  // Native edits start from the authored composition. A Web-only slot edit in
+  // `html` must not erase children that the native adapter still needs.
+  const tree = recipeTree(tag, native && typeof sourceHtml === 'string' ? sourceHtml : html, nativeSlots ? undefined : text);
+  if (nativeSlots) applyNativeSlotText(tree, component, slots, platform, values);
   const appearance = { defaults: normalizeButtonAppearance(buttonAppearanceDefaults), local: normalizeButtonAppearance(tag === 'md-button' ? buttonAppearance : undefined) };
   if (platform === 'swift') return swiftSnippet(tag, values, tree, appearance);
   if (platform === 'android') return kotlinSnippet(tag, values, tree, appearance);
@@ -30,8 +83,8 @@ export function usageSnippet(component, properties = {}, platform = 'web', { htm
   if (Object.keys(appearance.local).length) tree.selected.attrs.style = [css(appearance.local, appearance.defaults), tree.selected.attrs.style].filter(Boolean).join('; ');
   if (Object.keys(appearance.defaults).length) tree.nodes = [{tag: 'div', attrs: {style: css(appearance.defaults)}, children: tree.nodes}];
   const markup = tree.nodes.map(node => renderHTML(node)).join('');
-  if (platform === 'html') return webSnippet(tag, values, events, markup);
-  return frameworkSnippet(tag, values, events, tree, platform);
+  if (platform === 'html') return webSnippet(tag, values, events, markup, recipeActions(tree), focusEvent, focusMethod);
+  return frameworkSnippet(tag, values, events, tree, platform, focusEvent, focusMethod);
 }
 
 function jsonValue(value, seen = new Set()) {
@@ -67,6 +120,26 @@ const pascal = tag => tag.split('-').map(part => part[0].toUpperCase() + part.sl
 const custom = node => node.tag?.startsWith('md-');
 const walk = nodes => nodes.flatMap(node => [node, ...walk(node.children ?? [])]);
 const appearanceEntries = value => BUTTON_APPEARANCE_FIELDS.filter(field => Object.hasOwn(value, field.name)).map(field => [field.name, value[field.name]]);
+
+function applyNativeSlotText(tree, component, slots, platform, properties) {
+  for (const [rawName, value] of Object.entries(slots)) {
+    const name = rawName === '(default)' ? '' : rawName;
+    if (typeof value !== 'string' || !nativeTextSlotSupported(component, name, platform)) continue;
+    const children = tree.selected.children.filter(child => (child.attrs?.slot || '') === name);
+    // Plain text cannot replace a structural component, even if its outer slot
+    // also accepts text in other compositions. Preserve such children intact.
+    if (walk(children).some(custom)) continue;
+    tree.selected.children = tree.selected.children.filter(child => (child.attrs?.slot || '') !== name);
+    tree.selected.children.push({ tag: 'span', attrs: name ? { slot: name } : {}, children: [{ text: value, explicitText: true }] });
+    // Some adapters prefer a label/headline/message property to the default
+    // slot. An accepted text edit owns that region, including an empty edit.
+    const mask = !name && defaultSlotMaskingProperty(component.tag ?? component.tagName);
+    if (mask) {
+      delete tree.selected.attrs[mask];
+      properties[mask] = '';
+    }
+  }
+}
 
 // A small, non-executing parser for authored recipe fragments. It is deliberately
 // independent of document/DOMParser so generation is identical in Node and the UI.
@@ -144,10 +217,62 @@ const plainReactNames = { class: 'className', for: 'htmlFor', tabindex: 'tabInde
 function expressionName(name) { return /^[A-Za-z_$][\w$]*$/.test(name) ? `properties.${name}` : `properties[${jsLiteral(name)}]`; }
 function frameworkText(text) { return htmlText(text).replace(/\{/g, '&#123;').replace(/\}/g, '&#125;').replace(/@/g, '&#64;'); }
 
-function frameworkSnippet(tag, values, events, tree, platform) {
+// Source recipes declare finite open/close/toggle actions as data, so the live
+// preview and copied examples keep the same interaction without serializing JS.
+function recipeActions(tree) {
+  const nodes = walk(tree.nodes);
+  return nodes.filter(node => ['open', 'close', 'toggle'].includes(node.attrs?.['data-awc-action'])
+    && /^[A-Za-z][A-Za-z0-9_-]*$/.test(node.attrs?.['data-awc-target'] || '')
+    && nodes.some(target => target.attrs?.id === node.attrs['data-awc-target']));
+}
+function recipeActionHandler(typed = true, classMethod = false) {
+  const signature = typed ? 'event: { currentTarget: EventTarget | null }' : 'event';
+  return `${classMethod ? '' : 'function '}onRecipeAction(${signature}) {\n  const trigger = event.currentTarget${typed ? ' as HTMLElement | null' : ''};\n  const id = trigger?.getAttribute("data-awc-target");\n  if (!id || !/^[A-Za-z][A-Za-z0-9_-]*$/.test(id)) return;\n  const target = trigger?.closest("[data-awc-example]")?.querySelector${typed ? '<HTMLElement & { open: boolean }>' : ''}("#" + id);\n  if (!target) return;\n  const action = trigger?.getAttribute("data-awc-action");\n  if (action === "open") target.open = true;\n  else if (action === "close") target.open = false;\n  else if (action === "toggle") target.open = !target.open;\n}`;
+}
+
+// A DOM cancelable flag alone does not establish a cancelable component action.
+// These source implementations explicitly inspect the emitted event's flag.
+const cancellationActions = {
+  'md-button:mdClick': 'Veto this activation before its side effects.',
+  'md-switch:mdInput': 'Prevent the internal toggle before state changes.',
+  'md-breadcrumb-item:mdSelect': 'Prevent the default link navigation.',
+  'md-chip:mdRemove': 'Keep the chip from removing itself.',
+  'md-stepper:mdBeforeChange': 'Veto the step change before it commits.',
+};
+function focusedEventHandler(tag, event) {
+  if (!event || !/^[A-Za-z][A-Za-z0-9]*$/.test(event.name || '')) return null;
+  const typeText = value => typeof value === 'string' ? value : value?.text || '';
+  const detail = (typeText(event.detail) || typeText(event.payload?.detail) || typeText(event.type)).replace(/^CustomEvent<([\s\S]+)>$/, '$1');
+  const empty = /^(?:void|undefined|never)$/.test(detail.trim());
+  const fields = (event.payloadFields || []).filter(field => typeof field.name === 'string' && !/\b(?:MouseEvent|KeyboardEvent|PointerEvent|HTMLElement|Element)\b/.test(typeText(field.type))).slice(0, 3);
+  const access = fields.length ? fields.map(field => `event.detail[${jsLiteral(field.name)}]`).join(', ') : 'event.detail';
+  const cancellation = cancellationActions[`${tag}:${event.name}`];
+  return {
+    name: `on${event.name[0].toUpperCase()}${event.name.slice(1)}`,
+    type: `CustomEvent<HTML${pascal(tag)}ElementEventMap[${jsLiteral(event.name)}]>`,
+    body: `console.log(${empty ? jsLiteral(event.name) : access});${cancellation && event.cancelable !== false ? `\n// event.preventDefault(); // ${cancellation}` : ''}`,
+  };
+}
+
+function focusedMethodHandler(method) {
+  if (!method || !/^[A-Za-z][A-Za-z0-9]*$/.test(method.name || '') || !Array.isArray(method.arguments)) return null;
+  // A few notifications are driven by a public property rather than a method.
+  if (method.action === 'set-property') return { name: method.name, body: `component.${method.name} = ${jsLiteral(jsonValue(method.value))};` };
+  const typeText = value => typeof value === 'string' ? value : value?.text || '';
+  const returnType = typeText(method.returns?.type) || typeText(method.returns) || typeText(method.return?.type) || typeText(method.returnType);
+  const hasResult = returnType && !/^(?:Promise<\s*)?(?:void|undefined)(?:\s*>)?$/.test(returnType.trim());
+  const args = jsonValue(method.arguments).map(value => jsLiteral(value)).join(', ');
+  return { name: method.name, body: `${hasResult ? 'const result = ' : ''}await component.${method.name}(${args});${hasResult ? '\nconsole.log(result);' : ''}` };
+}
+
+function frameworkSnippet(tag, values, events, tree, platform, focusEvent, focusMethod) {
   const names = [...new Set(walk(tree.nodes).filter(custom).map(node => pascal(node.tag)))].sort();
   const tags = [...new Set(walk(tree.nodes).filter(custom).map(node => node.tag))].sort();
   const usedStyle = platform === 'react' && walk(tree.nodes).some(node => node.attrs?.style);
+  const actions = recipeActions(tree);
+  const focused = focusedEventHandler(tag, focusEvent);
+  const method = focusedMethodHandler(focusMethod);
+  const handlerName = focused?.name || 'onEvent';
   const render = node => {
     // Angular decodes character entities before parsing interpolation, so
     // escaping braces alone still evaluates a label such as {{ action() }}.
@@ -169,33 +294,45 @@ function frameworkSnippet(tag, values, events, tree, platform) {
       return value === null ? raw : `${raw}="${frameworkText(value)}"`;
     });
     if (node.selected) {
+      if (method) attributes.push(({ react: 'ref={ref}', vue: 'ref="view"', svelte: 'bind:this={view}', angular: '#view' })[platform]);
       if (platform === 'react' || platform === 'svelte') attributes.push('{...properties}');
       else if (platform === 'vue') attributes.push('v-bind="properties"');
       else for (const key of Object.keys(values)) attributes.push(`[${key}]="${htmlText(expressionName(key))}!"`);
       for (const event of events) {
         if (!/^[A-Za-z][A-Za-z0-9]*$/.test(event)) continue;
-        if (platform === 'react') attributes.push(`on${event[0].toUpperCase() + event.slice(1)}={onEvent}`);
-        else if (platform === 'svelte') attributes.push(`on${event}={onEvent}`);
-        else if (platform === 'vue') attributes.push(`@${event}="onEvent"`);
-        else attributes.push(`(${event})="onEvent($event)"`);
+        if (platform === 'react') attributes.push(`on${event[0].toUpperCase() + event.slice(1)}={${handlerName}}`);
+        else if (platform === 'svelte') attributes.push(`on${event}={${handlerName}}`);
+        else if (platform === 'vue') attributes.push(`@${event}="${handlerName}"`);
+        else attributes.push(`(${event})="${handlerName}($event)"`);
       }
+    }
+    if (actions.includes(node)) {
+      if (platform === 'react') attributes.push('onClick={onRecipeAction}');
+      else if (platform === 'svelte') attributes.push('onclick={onRecipeAction}');
+      else if (platform === 'vue') attributes.push('@click="onRecipeAction"');
+      else attributes.push('(click)="onRecipeAction($event)"');
     }
     const opening = `<${name}${attributes.length ? ' ' + attributes.join(' ') : ''}`;
     if (voidTags.has(node.tag)) return opening + (platform === 'react' ? ' />' : '>');
     return `${opening}>${node.children.map(render).join('')}</${name}>`;
   };
-  const markup = tree.nodes.map(render).join('\n');
-  const eventHandler = events.length ? '\nfunction onEvent(event: CustomEvent) {\n  console.log(event.type, event.detail);\n}\n' : '';
+  const runBinding = { react: 'onClick={run}', vue: '@click="run"', svelte: 'onclick={run}', angular: '(click)="run()"' }[platform];
+  const rendered = tree.nodes.map(render).join('\n') + (method ? `\n<button type="button" ${runBinding}>Run ${method.name}</button>` : '');
+  const markup = actions.length ? `<div data-awc-example="">\n${indent(rendered, 2)}\n</div>` : rendered;
+  const eventMethod = `${handlerName}(event: ${focused?.type || 'CustomEvent'}) {\n${indent(focused?.body || 'console.log(event.type, event.detail);')}\n}`;
+  const eventHandler = (events.length ? `\nfunction ${eventMethod}\n` : '') + (actions.length ? `\n${recipeActionHandler()}\n` : '');
   const type = `Partial<Components.${pascal(tag)}>`;
   const core = 'import type { Components } from "@awc-ui/core";\nimport "@awc-ui/core/css/tokens.css";';
   const setup = `// Client-side example. Install @awc-ui/${platform} and @awc-ui/core.\n// Load tokens.css once in your application entry.\n`;
-  const note = walk(tree.nodes).some(node => Object.keys(node.attrs ?? {}).some(key => /^data-(?:open|close)$/.test(key)) || node.attrs?.id === 'demo-menu-trigger' || node.attrs?.id === 'demo-fab-anchor')
-    ? '// Wire the recipe launch/close controls to your application\'s open state.\n' : '';
-  if (platform === 'react') return `"use client";\n\n${setup}import { useState${usedStyle ? ', type CSSProperties' : ''} } from "react";\nimport { ${names.join(', ')} } from "@awc-ui/react";\n${core}\n${eventHandler}\nexport function ComponentExample() {\n  const [properties] = useState<${type}>(${jsLiteral(values, true)});\n${note ? indent(note.trimEnd(), 2) + '\n' : ''}  return (\n    <>\n${indent(markup, 6)}\n    </>\n  );\n}`;
-  if (platform === 'vue') return `<script setup lang="ts">\n${setup}import { reactive } from "vue";\nimport { ${names.join(', ')} } from "@awc-ui/vue";\n${core}\n\nconst properties = reactive<${type}>(${jsLiteral(values, true)});\n${eventHandler}${note}</script>\n\n<template>\n${indent(markup, 2)}\n</template>`;
-  if (platform === 'svelte') return `<script lang="ts">\n${indent(setup + 'import type {} from "@awc-ui/svelte";\n' + core + '\n' + tags.map(name => `import "@awc-ui/core/components/${name}";`).join('\n'), 2)}\n\n  let properties: ${type} = $state(${jsLiteral(values, true)});\n${eventHandler ? indent(eventHandler.trim(), 2) + '\n' : ''}${note ? indent(note.trim(), 2) + '\n' : ''}</script>\n\n${markup}`;
+  const name = pascal(tag);
+  const runMethod = method ? `async ${platform === 'angular' ? '' : 'function '}run() {\n  const component = ${{ react: 'ref.current', vue: 'view.value?.$el', svelte: 'view', angular: 'this.view' }[platform]};\n  if (!component) return;\n  await customElements.whenDefined(${jsLiteral(tag)});\n${indent(method.body)}\n}` : '';
+  const methodSetup = !method ? '' : platform === 'react' ? `  const ref = useRef<HTML${name}Element>(null);\n${indent(runMethod)}\n` : platform === 'vue' ? `\nconst view = ref<{ $el: HTML${name}Element } | null>(null);\n${runMethod}\n` : platform === 'svelte' ? `  let view: HTML${name}Element | undefined = $state();\n${indent(runMethod)}\n` : `  @ViewChild('view') view?: ${name};\n${indent(runMethod)}\n`;
+  const note = '';
+  if (platform === 'react') return `"use client";\n\n${setup}import { useState${method ? ', useRef' : ''}${usedStyle ? ', type CSSProperties' : ''} } from "react";\nimport { ${names.join(', ')} } from "@awc-ui/react";\n${core}\n${eventHandler}\nexport function ComponentExample() {\n  const [properties] = useState<${type}>(${jsLiteral(values, true)});\n${methodSetup}${note ? indent(note.trimEnd(), 2) + '\n' : ''}  return (\n    <>\n${indent(markup, 6)}\n    </>\n  );\n}`;
+  if (platform === 'vue') return `<script setup lang="ts">\n${setup}import { reactive${method ? ', ref' : ''} } from "vue";\nimport { ${names.join(', ')} } from "@awc-ui/vue";\n${core}\n\nconst properties = reactive<${type}>(${jsLiteral(values, true)});\n${eventHandler}${methodSetup}${note}</script>\n\n<template>\n${indent(markup, 2)}\n</template>`;
+  if (platform === 'svelte') return `<script lang="ts">\n${indent(setup + 'import type {} from "@awc-ui/svelte";\n' + core + '\n' + tags.map(name => `import "@awc-ui/core/components/${name}";`).join('\n'), 2)}\n\n  let properties: ${type} = $state(${jsLiteral(values, true)});\n${eventHandler ? indent(eventHandler.trim(), 2) + '\n' : ''}${methodSetup}${note ? indent(note.trim(), 2) + '\n' : ''}</script>\n\n${markup}`;
   const template = markup.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
-  return `${setup}import { Component } from "@angular/core";\nimport { ${names.join(', ')} } from "@awc-ui/angular";\n${core}\n\n@Component({\n  selector: "app-component-example",\n  standalone: true,\n  imports: [${names.join(', ')}],\n  template: \`\n${indent(template, 4)}\n  \`,\n})\nexport class ComponentExample {\n  properties: ${type} = ${jsLiteral(values, true)};\n${events.length ? '\n  onEvent(event: CustomEvent) {\n    console.log(event.type, event.detail);\n  }\n' : ''}${note ? indent(note.trim(), 2) + '\n' : ''}}`;
+  return `${setup}import { Component${method ? ', ViewChild' : ''} } from "@angular/core";\nimport { ${names.join(', ')} } from "@awc-ui/angular";\n${core}\n\n@Component({\n  selector: "app-component-example",\n  standalone: true,\n  imports: [${names.join(', ')}],\n  template: \`\n${indent(template, 4)}\n  \`,\n})\nexport class ComponentExample {\n  properties: ${type} = ${jsLiteral(values, true)};\n${methodSetup}${events.length ? '\n' + indent(eventMethod) + '\n' : ''}${actions.length ? '\n' + indent(recipeActionHandler(true, true), 2) + '\n' : ''}}`;
 }
 
 // Escape HTML parser delimiters even though these are JavaScript string/object
@@ -206,11 +343,15 @@ function jsLiteral(value, pretty = false) {
     .replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
     .replace(/"__proto__":/g, '["__proto__"]:');
 }
-function indent(value, spaces) { return value.split('\n').map(line => ' '.repeat(spaces) + line).join('\n'); }
-function webSnippet(tag, properties, events, html, text) {
-  const markup = typeof html === 'string' && html.trim() ? html.trim() : `<${tag}>${htmlText(text)}</${tag}>`;
-  const listeners = events.length ? `\nfor (const name of ${jsLiteral(events)}) {\n  component.addEventListener(name, event => {\n    console.log(name, event.detail);\n  });\n}\n` : '\n';
-  return `<div id="awc-example">\n${indent(markup, 2)}\n</div>\n\n<script type="module">\nimport "@awc-ui/core/define";\nimport "@awc-ui/core/css/tokens.css";\n\nawait customElements.whenDefined(${jsLiteral(tag)});\nconst component = document.querySelector(${jsLiteral(`#awc-example ${tag}`)});\n${listeners}\nObject.assign(component, ${jsLiteral(properties, true)});\n</script>`;
+function indent(value, spaces = 2) { return value.split('\n').map(line => ' '.repeat(spaces) + line).join('\n'); }
+function webSnippet(tag, properties, events, html, actions = [], focusEvent, focusMethod) {
+  const method = focusedMethodHandler(focusMethod);
+  const markup = (typeof html === 'string' && html.trim() ? html.trim() : `<${tag}></${tag}>`) + (method ? `\n<button id="run-api" type="button">Run ${method.name}</button>` : '');
+  const focused = focusedEventHandler(tag, focusEvent);
+  const listeners = focused ? `\nfunction ${focused.name}(event) {\n${indent(focused.body)}\n}\ncomponent.addEventListener(${jsLiteral(focusEvent.name)}, ${focused.name});\n` : events.length ? `\nfor (const name of ${jsLiteral(events)}) {\n  component.addEventListener(name, event => {\n    console.log(name, event.detail);\n  });\n}\n` : '\n';
+  const interactions = actions.length ? `\n${recipeActionHandler(false)}\n\nfor (const trigger of document.querySelectorAll("#awc-example [data-awc-action]")) {\n  trigger.addEventListener("click", onRecipeAction);\n}\n` : '';
+  const run = method ? `\ndocument.querySelector("#run-api").addEventListener("click", async () => {\n${indent(method.body)}\n});\n` : '';
+  return `<div id="awc-example"${actions.length ? ' data-awc-example' : ''}>\n${indent(markup, 2)}\n</div>\n\n<script type="module">\nimport "@awc-ui/core/define";\nimport "@awc-ui/core/css/tokens.css";\n\nawait customElements.whenDefined(${jsLiteral(tag)});\nconst component = document.querySelector(${jsLiteral(`#awc-example ${tag}`)});\n${listeners}\nObject.assign(component, ${jsLiteral(properties, true)});\n${interactions}${run}</script>`;
 }
 
 function nativeString(value, language) {

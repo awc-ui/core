@@ -1,3 +1,4 @@
+import { nativeContentSlots } from './content-slots.js';
 import { nativeThemeOptions } from './native-theme-options.js';
 
 // Browser-safe contract helpers. Literal parsing never evaluates source code.
@@ -69,7 +70,7 @@ export function createLatestRequest() {
 }
 
 export function nativeRenderRequest(tag, properties, dark, options = {}) {
-  return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640, ...nativeThemeOptions(options), ...(tag === 'md-button' && typeof options.text === 'string' ? { text: options.text } : {}) };
+  return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640, ...nativeThemeOptions(options), ...nativeContentSlots(options.slots), ...(tag === 'md-button' && typeof options.text === 'string' ? { text: options.text } : {}) };
 }
 
 /** A native request must remain valid before the preview's CSS/layout is ready. */

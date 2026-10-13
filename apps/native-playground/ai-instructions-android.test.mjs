@@ -29,6 +29,9 @@ test('all 81 Android guides verify actual typed wrappers and their Kotlin proper
     assert.match(guide, /Android theme, rendering and limitations/);
     assert.match(guide, /is not the local macOS SwiftUI preview/);
     assert.match(guide, /does not run tests or certify/);
+    assert.match(guide, /Working Compose example/);
+    assert.match(guide, /Per-member native recipes/);
+    assert.match(guide, /Native theme recipe/);
   }
 });
 

@@ -123,15 +123,19 @@ extension AWCNativeView {
             }
             if b("clearable") && !s("value").isEmpty { Button(s("clearLabel", "Clear")) { set("value", ""); emit("mdChange", ["value": "", "date": .null]) } }
             support
-        }.sheet(isPresented: Binding(get: { b("open") }, set: { value in if !value { emit("mdCancel") }; showOverlay(value) })) {
+        }.awcPreviewSheet(isPresented: Binding(get: { b("open") }, set: { value in if !value { emit("mdCancel") }; showOverlay(value) })) {
             VStack(alignment: .leading, spacing: 20) {
                 Text(s("headline", label)).font(.title2.bold())
-                DatePicker(label.isEmpty ? "Value" : label, selection: temporalBinding, in: dateBounds, displayedComponents: node.tag == "md-time-picker" ? .hourAndMinute : .date)
-                    .datePickerStyle(.graphical)
+                if previewEnabled {
+                    AWCPreviewTemporalPicker(selection: temporalBinding, bounds: dateBounds, timeOnly: node.tag == "md-time-picker")
+                } else {
+                    DatePicker(label.isEmpty ? "Value" : label, selection: temporalBinding, in: dateBounds, displayedComponents: node.tag == "md-time-picker" ? .hourAndMinute : .date)
+                        .datePickerStyle(.graphical)
+                }
                 HStack {
-                    Button(s("cancelLabel", "Cancel")) { emit("mdCancel"); showOverlay(false) }
+                    Button(s("cancelLabel").isEmpty ? "Cancel" : s("cancelLabel")) { emit("mdCancel"); showOverlay(false) }
                     Spacer()
-                    Button(s("okLabel", "OK")) { if s("value").isEmpty { temporalBinding.wrappedValue = Date() }; emit("mdChange", temporalDetail); showOverlay(false) }.buttonStyle(AWCActionStyle(primary: true, theme: theme))
+                    Button(s("okLabel").isEmpty ? "OK" : s("okLabel")) { if s("value").isEmpty { temporalBinding.wrappedValue = Date() }; emit("mdChange", temporalDetail); showOverlay(false) }.buttonStyle(AWCActionStyle(primary: true, theme: theme))
                 }
             }.padding(24).presentationDetents([.medium, .large])
         }
@@ -163,11 +167,16 @@ extension AWCNativeView {
     }
     var colorPicker: some View {
         VStack(alignment: .leading, spacing: 12) {
-            ColorPicker(s("ariaLabelProp", "Color"), selection: Binding(get: { Color(awcHex: s("value", "#6750A4")) }, set: { color in
+            let selection = Binding(get: { Color(awcHex: s("value", "#6750A4")) }, set: { color in
                 let resolved = color.resolve(in: EnvironmentValues())
-                let hex = String(format: "#%02X%02X%02X", Int(resolved.red * 255), Int(resolved.green * 255), Int(resolved.blue * 255))
+                let hex = String(format: "#%02X%02X%02X", Int((resolved.red * 255).rounded()), Int((resolved.green * 255).rounded()), Int((resolved.blue * 255).rounded()))
                 set("value", .string(hex)); emit("mdInput", ["value": .string(hex)]); emit("mdChange", ["value": .string(hex)])
-            }), supportsOpacity: b("alpha"))
+            })
+            if previewEnabled {
+                AWCPreviewColorPicker(selection: selection, label: s("ariaLabelProp").isEmpty ? "Color" : s("ariaLabelProp"))
+            } else {
+                ColorPicker(s("ariaLabelProp", "Color"), selection: selection, supportsOpacity: b("alpha"))
+            }
             if b("showHex", true) { Text(s("value", "#6750A4")).font(.body.monospaced()) }
             HStack { ForEach(a("presets"), id: \.self) { value in Button { set("value", value); emit("mdInput", ["value": value]); emit("mdChange", ["value": value]) } label: { Circle().fill(Color(awcHex: value.string)).frame(width: 32, height: 32) }.accessibilityLabel(value.string) } }
         }

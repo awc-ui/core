@@ -4,7 +4,7 @@ import { readFile, mkdtemp, mkdir, writeFile, rm, symlink, realpath } from 'node
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getAIInstructions } from './ai-instructions.mjs';
+import { getAIInstructions, swiftInstructionFiles } from './ai-instructions.mjs';
 import { androidInstructionFiles } from './ai-instructions-android.mjs';
 import { handleAIInstructionsRequest, resolveAsset } from './server.mjs';
 
@@ -35,6 +35,9 @@ test('all 81 source components retain the original README and include separate i
     assert.match(guide, /Native events/);
     assert.match(guide, /Children, named slots and methods/);
     assert.match(guide, /Native appearance and limitations/);
+    assert.match(guide, /Working SwiftUI example/);
+    assert.match(guide, /Per-member native recipes/);
+    assert.match(guide, /Native theme recipe/);
     assert.ok(result.sources.every(file => !path.isAbsolute(file) && !file.split('/').includes('..')));
     assert.ok(result.sources.includes('packages/native-ios/NativeSupport.json'));
     assert.ok(result.sources.includes('packages/native-ios/Sources/AWCUI/Generated/Components.swift'));
@@ -85,6 +88,7 @@ async function fixture(t, { wrapper = true } = {}) {
     'packages/native-ios/NativeBehavior.md': '# Native behavior',
     'packages/native-ios/NativeFocus.md': '# Native focus',
   };
+  for (const relative of Object.values(swiftInstructionFiles)) if (!(relative in content)) content[relative] = await readFile(path.join(repository, relative), 'utf8');
   for (const relative of Object.values(androidInstructionFiles)) content[relative] = await readFile(path.join(repository, relative), 'utf8');
   for (const [relative, text] of Object.entries(content)) {
     await mkdir(path.dirname(path.join(root, relative)), { recursive: true });

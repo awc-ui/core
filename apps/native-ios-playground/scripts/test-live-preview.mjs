@@ -9,7 +9,7 @@ const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 const renderer = createNativeLiveRenderer({repoRoot});
 const selected = frame => frame.events.find(event => event.name === 'mdSelect')?.detail.selected;
 const buttonRequest = properties => ({tag:'md-button',properties:{size:'md',variant:'filled',shape:'round',shapeMorph:true,ripple:false,icon:'',toggle:true,selected:false,...properties},dark:false,width:640});
-const pointer = (sessionId, phase, x=80, y=50) => renderer.input(sessionId,{command:'pointer',phase,x,y});
+const pointer = (sessionId, phase, x=320, y=50) => renderer.input(sessionId,{command:'pointer',phase,x,y});
 const noEvents = (frame, message) => assert.deepEqual(frame.events,[],message);
 const assertToggle = (frame, expected) => {
   assert.deepEqual(frame.events.map(event=>event.name),['mdClick','mdChange'],'One native button release must emit exactly mdClick followed by mdChange.');
@@ -20,12 +20,12 @@ const assertToggle = (frame, expected) => {
 try {
   assert.equal((await renderer.status()).available,true,'Build AWCLivePreview on macOS before running this check.');
   const initial = await renderer.create({tag:'md-chip',properties:{variant:'filter',selectable:true,selected:false,removable:false},dark:false,width:640});
-  const first = await renderer.input(initial.sessionId,{command:'click',x:100,y:40});
+  const first = await renderer.input(initial.sessionId,{command:'click',x:320,y:50});
   assert.equal(selected(first),true,'A native click must select the Chip.');
   assert.notEqual(first.imageUrl,initial.imageUrl,'Native selection must change the rendered frame.');
   const idle = await renderer.frame(initial.sessionId);
   assert.equal(idle.events.length,0,'Polling must not duplicate events or activate the component.');
-  const second = await renderer.input(initial.sessionId,{command:'click',x:100,y:40});
+  const second = await renderer.input(initial.sessionId,{command:'click',x:320,y:50});
   assert.equal(selected(second),false,'Native state must persist and toggle back on the second click.');
   renderer.close(initial.sessionId);
 
@@ -89,7 +89,7 @@ try {
     const frame = await renderer.create(buttonRequest({[blocked]:true}));
     noEvents(await pointer(frame.sessionId,'down'),`${blocked} must suppress native press activation.`);
     noEvents(await pointer(frame.sessionId,'up'),`${blocked} must suppress release activation and toggle changes.`);
-    noEvents(await renderer.input(frame.sessionId,{command:'click',x:80,y:50}),`${blocked} must also suppress legacy click activation.`);
+    noEvents(await renderer.input(frame.sessionId,{command:'click',x:320,y:50}),`${blocked} must also suppress legacy click activation.`);
     renderer.close(frame.sessionId);
   }
 

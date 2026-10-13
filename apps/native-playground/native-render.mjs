@@ -1,3 +1,4 @@
+import { nativeContentSlots } from './content-slots.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { access, mkdir, readFile, writeFile, rename, unlink, stat } from 'node:fs/promises';
@@ -32,7 +33,7 @@ export function validateRenderRequest(value, tags) {
   }
   depth(props);
   let themeOptions;
-  try { themeOptions = nativeThemeOptions(value); }
+  try { themeOptions = { ...nativeThemeOptions(value), ...nativeContentSlots(value.slots) }; }
   catch (error) { throw new RenderError(400, error.code || 'INVALID_THEME', error.message); }
   return {tag:value.tag,properties:canonical(props),dark:value.dark??false,width:Math.round(Math.min(1200,Math.max(320,value.width??640))),...(value.scenario ? {scenario:value.scenario} : {}),...(value.text !== undefined ? {text:value.text} : {}),...themeOptions};
 }
