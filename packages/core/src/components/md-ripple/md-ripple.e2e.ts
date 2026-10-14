@@ -31,9 +31,12 @@ describe('md-ripple browser behavior', () => {
     const page = await newE2EPage();
     await page.setContent(surface);
     const ripple = await page.find('md-ripple');
-    await ripple.callMethod('trigger');
-    const center = await page.evaluate(() => {
-      const wave = document.querySelector('md-ripple')!.shadowRoot!.querySelector('.md-ripple__wave') as HTMLElement;
+    // Inspect within the same browser task so a busy worker cannot miss the
+    // short-lived wave between the trigger and a second protocol roundtrip.
+    const center = await page.evaluate(async () => {
+      const host = document.querySelector('md-ripple')!;
+      await host.trigger();
+      const wave = host.shadowRoot!.querySelector('.md-ripple__wave') as HTMLElement;
       const radius = parseFloat(wave.style.width) / 2;
       return { x: parseFloat(wave.style.left) + radius, y: parseFloat(wave.style.top) + radius };
     });
@@ -54,8 +57,11 @@ describe('md-ripple browser behavior', () => {
     expect(await waves(page)).toBe(0);
     await ripple.setProperty('disabled', false);
     await page.waitForChanges();
-    await ripple.callMethod('trigger');
-    expect(await waves(page)).toBe(1);
+    expect(await page.evaluate(async () => {
+      const host = document.querySelector('md-ripple')!;
+      await host.trigger();
+      return host.shadowRoot!.querySelectorAll('.md-ripple__wave').length;
+    })).toBe(1);
     await waitForRemoval(page);
   });
 
@@ -67,8 +73,11 @@ describe('md-ripple browser behavior', () => {
     await ripple.callMethod('trigger');
     expect(await waves(page)).toBe(0);
     await page.evaluate(() => document.querySelector<HTMLElement>('#settings')!.style.setProperty('--md-sys-ripple-enabled', '1'));
-    await ripple.callMethod('trigger');
-    expect(await waves(page)).toBe(1);
+    expect(await page.evaluate(async () => {
+      const host = document.querySelector('md-ripple')!;
+      await host.trigger();
+      return host.shadowRoot!.querySelectorAll('.md-ripple__wave').length;
+    })).toBe(1);
     await waitForRemoval(page);
   });
 });
