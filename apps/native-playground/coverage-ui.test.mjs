@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { coveragePresentation, coverageRunViews, renderCoverageRun } from './studio-ui.js';
+import { coveragePresentation, coverageRunViews, coverageRagStatus, renderCoverageRun, renderCoverageContent } from './studio-ui.js';
 
 test('measured coverage uses the latest report without merging separate runs or inferring success', () => {
   const measured = { path: 'latest', lines: { covered: 8, total: 10, percent: 80 } };
@@ -170,72 +170,73 @@ test('each runner keeps its own latest paired reports without hiding other test 
   assert.deepEqual(a11y.map(run => run.execution.status), ['passed', 'failed']);
 });
 
-test('verified paired runs show exact outcomes and compact provenance without legacy warnings', () => {
-  const html = renderCoverageRun({ label: 'Unit · mock DOM', verified: true, runId: 'run-1', runPath: 'packages/core/coverage-spec/run-evidence.json',
-    reportedAt: '2026-10-14T12:00:00Z', source: { matchesCurrent: true, revision: 'abc', digest: 'fingerprint' },
+test('coverage bands match reporter boundaries and reject missing or invalid percentages', () => {
+  for (const percent of [0, 32.74, 49.99]) assert.deepEqual(coverageRagStatus(percent), { color: 'error', label: 'Red' });
+  for (const percent of [50, 79.83, 79.99]) assert.deepEqual(coverageRagStatus(percent), { color: 'warning', label: 'Amber' });
+  for (const percent of [80, 99.53, 100]) assert.deepEqual(coverageRagStatus(percent), { color: 'success', label: 'Green' });
+  for (const percent of [null, undefined, NaN, Infinity, -1, 101, '80']) assert.equal(coverageRagStatus(percent), null);
+});
+
+test('coverage-only cards use library meters and retain exact counts without test outcomes or provenance sections', () => {
+  const html = renderCoverageRun({ label: 'Unit', verified: true, runId: 'run-1', runPath: 'unit/run-evidence.json',
+    reportedAt: '2026-10-14T12:00:00Z', source: { matchesCurrent: true },
     measurement: { path: 'unit/lcov.info', lines: { covered: 424, total: 426, percent: 99.53 },
-      attribution: { kind: 'component-outcomes', sourceExecution: 'observed', componentTestCount: 100, componentExecutionPath: 'unit/results.json' } },
-    execution: { path: 'unit/results.json', status: 'passed', passed: 100, failed: 0, skipped: 0, total: 100 },
+      branches: { covered: 61, total: 71, percent: 85.92 }, functions: { covered: 9, total: 9, percent: 100 } },
+    execution: { path: 'unit/results.json', status: 'failed', passed: 79, failed: 1, skipped: 0, total: 80 },
   }, 'unit');
-  assert.match(html, /Tested inputs unchanged/);
-  assert.match(html, /Report hashes verified/);
-  assert.match(html, /99\.53%/);
-  assert.match(html, /<b>100<\/b> passed/);
-  assert.match(html, /headline="Run details"/);
-  assert.doesNotMatch(html, /not linked|unlinked report|do not establish/);
+  assert.match(html, /<md-meter[^>]+value="99.53" color="success"[^>]+value-text="99.53% · Green"/);
+  assert.match(html, /424 of 426 covered/);
+  assert.match(html, /61 of 71 covered/);
+  assert.match(html, /9 of 9 covered/);
+  assert.doesNotMatch(html, /Test cases|passed|failed|Run details|Run completed|Report hashes|Test results|Run record|progress-indicator|<a /);
 });
 
-test('axe findings remain separate from passing related cases and source changes remain visible', () => {
-  const html = renderCoverageRun({ label: 'Storybook', verified: true, reportedAt: '2026-10-14T12:00:00Z',
-    source: { stableDuringRun: true, matchesCurrent: false, changedFiles: ['component.tsx'] },
-    execution: { path: 'stories/results.json', status: 'passed', passed: 5, failed: 0, skipped: 0, total: 5, environment: 'browser', accessibilityKinds: ['keyboard-or-focus'] },
-    axeAudit: { path: 'stories/results.json', total: 8, passed: 6, failed: 1, unknown: 1, warning: 1, violations: 2, incomplete: 3 },
-  }, 'accessibility');
-  assert.match(html, /Inputs changed since this run/);
-  assert.match(html, /<b>5<\/b> passed/);
-  assert.match(html, /<b>6<\/b> clean/);
-  assert.match(html, /<b>1<\/b> failed/);
-  assert.match(html, /2 recorded rule violations/);
-  assert.doesNotMatch(html, /progress-indicator|13 passed/);
-  const changedBuild = renderCoverageRun({ label: 'Storybook', verified: true, reportedAt: '2026-10-14T12:00:00Z',
-    source: { stableDuringRun: true, matchesCurrent: false, changedFiles: [], buildInputsMatchCurrent: false },
+test('accessibility outcomes never become a fabricated coverage percentage', () => {
+  const entry = { runs: [{ label: 'Storybook', axeAudit: { total: 8, passed: 6, failed: 1, unknown: 1 },
+    execution: { total: 5, passed: 5 } }] };
+  const html = renderCoverageContent(entry, 'accessibility');
+  assert.match(html, /A coverage percentage is not measured for accessibility checks/);
+  assert.doesNotMatch(html, /md-meter|75%|100%|passed|failed/);
+});
+
+test('unmeasured and zero-location values stay neutral while measured zero coverage is red', () => {
+  const missing = renderCoverageContent({ runs: [] }, 'component');
+  assert.match(missing, /No coverage measurement available/);
+  assert.doesNotMatch(missing, /md-meter|0%|Coverage thresholds/);
+  const html = renderCoverageRun({ label: 'E2E', verified: true, source: { matchesCurrent: true }, measurement: {
+    lines: { covered: 0, total: 55, percent: 0 }, branches: { covered: 0, total: 0, percent: null },
+  } }, 'e2e');
+  assert.match(html, /value="0" color="error"/);
+  assert.match(html, /0 of 55 covered/);
+  assert.match(html, /No locations/);
+  assert.equal((html.match(/<md-meter/g) || []).length, 1);
+});
+
+test('coverage keeps a concise warning when saved measurements no longer match the inputs', () => {
+  const base = { verified: true, measurement: { lines: { covered: 1, total: 2, percent: 50 } } };
+  assert.match(renderCoverageRun({ ...base, source: { changedFiles: ['component.tsx'] } }, 'unit'), /inputs have changed/);
+  assert.match(renderCoverageRun({ ...base, source: { buildInputsMatchCurrent: false } }, 'unit'), /build inputs could not be verified/);
+  assert.match(renderCoverageRun({ ...base, verified: false }, 'unit'), /unverified report/);
+  const running = renderCoverageRun({ state: 'running' }, 'unit');
+  assert.match(running, /Coverage measurement in progress/);
+  assert.doesNotMatch(running, /md-meter|inputs have changed/);
+});
+
+test('coverage panel retains source files and runnable commands without the threshold legend', () => {
+  const html = renderCoverageContent({ files: [{ path: 'test.spec.ts' }], commands: [{ command: 'run tests' }],
+    runs: [{ runnerKey: 'component:storybook', label: 'Storybook', verified: true, source: { matchesCurrent: true },
+      measurement: { lines: { covered: 3, total: 4, percent: 75 } } },
+    { runnerKey: 'component:react', label: 'React', verified: true, source: { matchesCurrent: true },
+      measurement: { lines: { covered: 4, total: 4, percent: 100 } } }],
   }, 'component');
-  assert.match(changedBuild, /Build inputs changed or could not be verified/);
-  assert.doesNotMatch(changedBuild, /Tested inputs unchanged/);
-});
-
-test('incomplete runner attempts never display verified report hashes or fabricated case counts', () => {
-  const html = renderCoverageRun({ label: 'Unit', verified: true, reportedAt: '2026-10-14T12:00:00Z', timestampSource: 'run-startedAt', source: { matchesCurrent: false },
-    execution: { path: 'unit/run-evidence.json', scope: 'runner-attempt', status: 'unknown', total: 0, passed: 0, failed: 0, skipped: 0 },
-  }, 'unit');
-  assert.match(html, /Input verification incomplete/);
-  assert.match(html, /Run started/);
-  assert.match(html, /no case outcomes were recorded/);
-  assert.doesNotMatch(html, /Report hashes verified|<b>0<\/b> passed/);
-});
-
-test('running inputs are not labeled stale and axe errors are not labeled violations', () => {
-  const running = renderCoverageRun({ label: 'Unit', verified: true, state: 'running', reportedAt: '2026-10-14T12:00:00Z',
-    source: { matchesCurrent: false, changedFiles: ['component.tsx'] },
-    execution: { scope: 'runner-attempt', path: 'unit/run-evidence.json', status: 'unknown', total: 0, passed: 0, failed: 0, skipped: 0 },
-  }, 'unit');
-  assert.match(running, /Run in progress; inputs not yet verified/);
-  assert.doesNotMatch(running, /Inputs changed since|Report hashes verified/);
-  const audit = renderCoverageRun({ label: 'Storybook', reportedAt: '2026-10-14T12:00:00Z',
-    axeAudit: { path: 'stories/results.json', passed: 0, failed: 1, unknown: 0, violations: 0, errors: 1 },
-  }, 'accessibility');
-  assert.match(audit, /0 recorded rule violations · 1 audit errors/);
-  assert.doesNotMatch(audit, /with violations/);
-});
-
-test('grouped source measurements with zero hits never claim indirect execution', () => {
-  const html = renderCoverageRun({ label: 'Stencil browser E2E', reportedAt: '2026-10-14T12:00:00Z',
-    measurement: { path: 'browser/lcov.info', lines: { covered: 0, total: 55, percent: 0 },
-      attribution: { kind: 'broader-run', sourceExecution: 'zero-hit', componentTestCount: 0 } },
-  }, 'e2e');
-  assert.match(html, /Source included with zero recorded hits/);
-  assert.match(html, /Source coverage · no execution/);
-  assert.doesNotMatch(html, /Indirect source execution|Indirect source coverage/);
+  assert.match(html, /Storybook/); assert.match(html, /React/);
+  assert.match(html, /color="warning"/); assert.match(html, /color="success"/);
+  assert.match(html, /href="\/repo\/test.spec.ts"/);
+  assert.match(html, /run tests/);
+  assert.match(html, /Source files/);
+  assert.match(html, /Run locally/);
+  assert.match(html, /data-copy-command="0"/);
+  assert.doesNotMatch(html, /coverage-legend|Coverage thresholds|Red &lt; 50%/);
 });
 
 test('new unpaired coverage cannot hide a recorded failure, while new outcomes replace older outcomes', () => {
@@ -247,6 +248,10 @@ test('new unpaired coverage cannot hide a recorded failure, while new outcomes r
   assert.equal(separate.length, 2);
   assert.equal(separate[0].measurement.lines.percent, 100);
   assert.equal(separate[1].execution.status, 'failed');
+  const compact = renderCoverageContent({ runs: [failed, newer] }, 'e2e');
+  assert.equal((compact.match(/coverage-report-card/g) || []).length, 1);
+  assert.match(compact, /100%/);
+  assert.doesNotMatch(compact, /10 of 20 covered/);
   const latestOutcome = { ...newer, measurement: null, execution: { status: 'failed' } };
   assert.deepEqual(coverageRunViews({ runs: [{ ...failed, execution: { status: 'passed' } }, latestOutcome] }), [latestOutcome]);
 });

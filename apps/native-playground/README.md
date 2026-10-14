@@ -167,12 +167,13 @@ node apps/native-playground/build-syntax-highlighting.mjs --check
 
 **Test coverage** has four tabs: **Unit**, **Component**, **End-to-end** and
 **Accessibility**. Each lists matching source files, static declaration counts,
-configuration evidence and copyable local test commands. Component evidence
-includes Storybook and framework test projects; accessibility evidence distinguishes
-recorded axe audits, related ARIA/keyboard/focus cases, and configuration alone.
-Each tab shows its own measured coverage, saved execution outcomes, missing
-reports, and missing tests. These reports describe the Web library; they do not
-claim native-device test coverage.
+configuration evidence and copyable local test commands below compact coverage
+cards. Library `md-meter` components use the existing Istanbul/Monocart bands:
+red below 50%, amber from 50% to below 80%, green from 80%. These colors describe
+coverage, not whether tests passed. Missing measurements stay neutral.
+Accessibility has no measured code-coverage percentage, so its tab says so rather
+than converting audit outcomes into one. These reports describe the Web library,
+not native-device test coverage.
 
 The panel reads saved reports; it never runs tests. LCOV and Istanbul reports
 provide component-specific line, branch, function and, when available, statement
@@ -181,9 +182,8 @@ Unit/mock-DOM, Stencil browser, Storybook and framework-project results remain
 separate; their instrumentation can produce different executable denominators.
 Alternative formats and separate runs are not added together.
 Source coverage can come from initialization or use inside another component's
-tests. The panel labels that evidence as indirect execution when the associated
-run has no cases attributed to the selected component. It does not present the
-percentage as behavioral validation or invent a component pass count.
+tests. The evidence model retains that attribution. The panel does not present
+the percentage as behavioral validation or invent a component pass count.
 
 Jest, Vitest and Playwright result reports supply executed pass/fail/skip counts
 separately from code coverage. Accessibility results include only matching checks,
@@ -204,11 +204,13 @@ inputs changed during execution. Git revision is recorded for context; it is not
 used as a substitute for checking uncommitted inputs. Changed test definitions
 cannot be used to reattribute historical cases through today's source.
 
-Each result links to its raw reports and run record; provenance stays in **Run
-details**. Missing output and altered report contents cannot become passing
-results. Legacy reports without a content manifest remain explicitly unlinked,
-even if modification times are close. File-update and run-completion timestamps
-have different labels. The measured source files remain available in the details.
+Raw reports and run records remain saved on disk, with provenance and test
+outcomes available through `/api/coverage/:tag`. They are omitted from the compact
+coverage cards. Missing output and altered report contents cannot become passing
+results. Legacy reports without a content manifest remain unverified, even if
+modification times are close. The panel retains a concise notice for unverified
+measurements or changed inputs. File-update and run-completion timestamps remain
+distinct in the evidence model, along with measured source paths.
 Failed or incomplete runner attempts with no case output are labeled separately
 from component test results. A build failure does not establish a failed component
 assertion or an executed test suite.
