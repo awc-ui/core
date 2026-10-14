@@ -1,12 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { expect, waitFor } from 'storybook/test';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { html } from 'lit';
 import { t } from '../i18n';
 
 /** Shadow-piercing + hydration helpers for play(): testing-library queries can't
  *  cross shadow roots, and a Stencil component must be `.hydrated` before it can
  *  be driven (the anchor click-toggle is wired in `componentDidLoad`). */
-type FabMenuEl = HTMLElement & { open: boolean };
+type FabMenuEl = HTMLElement & {
+  open: boolean;
+  quick: boolean;
+  show(): Promise<void>;
+  close(): Promise<void>;
+  whenClosed(): Promise<void>;
+};
 const getMenu = async (canvasElement: HTMLElement): Promise<FabMenuEl> => {
   const menu = canvasElement.querySelector('md-fab-menu') as FabMenuEl;
   await waitFor(() => expect(menu.classList.contains('hydrated')).toBe(true));
@@ -917,6 +923,265 @@ export const KeyboardNavigation: Story = {
       await waitFor(() => expect(menu.open).toBe(false));
       expect(closed).toBe(true);
       await new Promise((r) => setTimeout(r, 300));
+    });
+  },
+};
+
+export const AutomaticPlacement: Story = {
+  render: () => html`
+    <div style="min-height: 500px;">
+      <md-fab id="fab-auto" icon="add" aria-label="Create" style="position: fixed; right: 32px; top: 32px;"></md-fab>
+      <md-fab-menu anchor="fab-auto" placement="auto" quick>
+        <md-fab-menu-item icon="edit" label="Note"></md-fab-menu-item>
+        <md-fab-menu-item icon="upload" label="Upload"></md-fab-menu-item>
+      </md-fab-menu>
+    </div>
+  `,
+  play: async ({ canvasElement, step }) => {
+    const menu = await getMenu(canvasElement);
+    const fab = await getFab(canvasElement);
+    const container = menu.shadowRoot!.querySelector<HTMLElement>('.md-fab-menu__container')!;
+
+    await step('Near the viewport top, actions open below the anchor', async () => {
+      await menu.show();
+      await waitFor(() => expect(menu.classList.contains('md-fab-menu--down')).toBe(true));
+      await waitFor(() => expect(container.getBoundingClientRect().top).toBeCloseTo(fab.getBoundingClientRect().bottom + 8, 0));
+      expect(container.style.bottom).toBe('');
+      await menu.close();
+      await menu.whenClosed();
+    });
+    await step('Moving to the viewport bottom changes the next opening to upward', async () => {
+      fab.style.top = 'auto';
+      fab.style.bottom = '32px';
+      await menu.show();
+      await waitFor(() => expect(menu.classList.contains('md-fab-menu--up')).toBe(true));
+      await waitFor(() => expect(container.getBoundingClientRect().bottom).toBeCloseTo(fab.getBoundingClientRect().top - 8, 0));
+      expect(container.style.top).toBe('');
+      await menu.close();
+      await menu.whenClosed();
+    });
+  },
+};
+
+export const PointerFocus: Story = {
+  render: () => html`
+    <div style=${WRAPPER}>
+      <button id="pointer-start" style="margin-right: 32px;">Start here</button>
+      <md-fab id="fab-pointer" icon="add" aria-label="Create"></md-fab>
+      <md-fab-menu anchor="fab-pointer" quick>
+        <md-fab-menu-item icon="edit" label="Note"></md-fab-menu-item>
+        <md-fab-menu-item icon="upload" label="Upload"></md-fab-menu-item>
+      </md-fab-menu>
+    </div>
+  `,
+  play: async ({ canvasElement, step }) => {
+    const menu = await getMenu(canvasElement);
+    const fab = await getFab(canvasElement);
+    const items = itemsOf(menu);
+    const start = canvasElement.querySelector<HTMLButtonElement>('#pointer-start')!;
+
+    await step('A first pointer activation opens without stealing focus into the actions', async () => {
+      start.focus();
+      await userEvent.click(fab);
+      await waitFor(() => expect(menu.open).toBe(true));
+      await waitFor(() => expect(items[0].getAttribute('tabindex')).toBe('0'));
+      expect(document.activeElement).toBe(fab);
+      expect(items.some(item => item === document.activeElement)).toBe(false);
+      await menu.close();
+      await menu.whenClosed();
+    });
+    await step('Clicking an already focused anchor moves focus into the menu', async () => {
+      expect(document.activeElement).toBe(fab);
+      await userEvent.click(fab);
+      await waitFor(() => expect(document.activeElement).toBe(items[0]));
+      expect(items[1].getAttribute('tabindex')).toBe('-1');
+      await menu.close();
+      await menu.whenClosed();
+      expect(document.activeElement).toBe(fab);
+    });
+  },
+};
+
+export const ProgrammaticLifecycle: Story = {
+  render: () => html`
+    <div style=${WRAPPER}>
+      <md-fab id="fab-lifecycle" icon="add" aria-label="Create"></md-fab>
+      <md-fab-menu anchor="fab-lifecycle">
+        <md-fab-menu-item icon="edit" label="Note"></md-fab-menu-item>
+        <md-fab-menu-item icon="upload" label="Upload"></md-fab-menu-item>
+      </md-fab-menu>
+    </div>
+  `,
+  play: async ({ canvasElement, step }) => {
+    const menu = await getMenu(canvasElement);
+    const fab = await getFab(canvasElement);
+    let opens = 0, closes = 0;
+    const onOpen = () => { opens++; };
+    const onClose = () => { closes++; };
+    menu.addEventListener('mdOpen', onOpen);
+    menu.addEventListener('mdClose', onClose);
+    try {
+      await step('Repeated show calls preserve one opening cycle', async () => {
+        await menu.show();
+        await waitFor(() => expect(fab.getAttribute('aria-expanded')).toBe('true'));
+        await menu.show();
+        expect(menu.open).toBe(true);
+        expect(opens).toBe(1);
+      });
+      await step('Reopening during animated close cancels that close', async () => {
+        let settled = false;
+        const completion = menu.whenClosed().then(() => { settled = true; });
+        await menu.close();
+        await waitFor(() => expect(menu.classList.contains('md-fab-menu--closing')).toBe(true));
+        expect(settled).toBe(false);
+        await menu.show();
+        await waitFor(() => expect(menu.classList.contains('md-fab-menu--closing')).toBe(false));
+        // Wait beyond the cancelled close timer to catch a delayed unwanted close.
+        await new Promise(resolve => setTimeout(resolve, 220));
+        expect(menu.open).toBe(true);
+        expect(closes).toBe(0);
+        expect(opens).toBe(1);
+        expect(settled).toBe(false);
+        await menu.close();
+        await menu.close();
+        await completion;
+        expect(menu.open).toBe(false);
+        expect(closes).toBe(1);
+        expect(fab.getAttribute('aria-expanded')).toBe('false');
+        expect(itemsOf(menu).every(item => item.getAttribute('tabindex') === '-1')).toBe(true);
+      });
+      await step('Quick close has the same completion and event contract', async () => {
+        menu.quick = true;
+        await menu.show();
+        await menu.close();
+        await menu.whenClosed();
+        await menu.close();
+        expect(menu.open).toBe(false);
+        expect(opens).toBe(2);
+        expect(closes).toBe(2);
+      });
+    } finally {
+      menu.removeEventListener('mdOpen', onOpen);
+      menu.removeEventListener('mdClose', onClose);
+      menu.quick = false;
+    }
+  },
+};
+
+export const LiveTypeahead: Story = {
+  render: () => html`
+    <div style=${WRAPPER}>
+      <md-fab id="fab-live-labels" icon="add" aria-label="Create"></md-fab>
+      <md-fab-menu anchor="fab-live-labels" quick>
+        <md-fab-menu-item icon="edit" label="Note"></md-fab-menu-item>
+        <md-fab-menu-item icon="folder" label="Cedar folder"></md-fab-menu-item>
+        <md-fab-menu-item icon="photo" label="Photo"></md-fab-menu-item>
+        <md-fab-menu-item icon="upload">Upload file</md-fab-menu-item>
+      </md-fab-menu>
+    </div>
+  `,
+  play: async ({ canvasElement, step }) => {
+    const menu = await getMenu(canvasElement);
+    const fab = await getFab(canvasElement);
+    const items = itemsOf(menu);
+    await step('Typeahead uses a live framework property and accumulates characters', async () => {
+      (items[2] as HTMLElement & { label: string }).label = 'Camera';
+      fab.click();
+      await waitFor(() => expect(document.activeElement).toBe(items[0]));
+      key(items[0], 'c');
+      expect(document.activeElement).toBe(items[1]);
+      key(items[1], 'a');
+      await waitFor(() => expect(document.activeElement).toBe(items[2]));
+      expect(items[0].getAttribute('tabindex')).toBe('-1');
+    });
+    await step('After the search buffer expires, slotted text is searchable', async () => {
+      await new Promise(resolve => setTimeout(resolve, 350));
+      key(items[2], 'u');
+      await waitFor(() => expect(document.activeElement).toBe(items[3]));
+      expect(items[2].getAttribute('tabindex')).toBe('-1');
+    });
+    await step('Unmatched text and shortcut modifiers preserve focus', async () => {
+      key(items[3], 'z');
+      expect(document.activeElement).toBe(items[3]);
+      for (const modifier of ['ctrlKey', 'altKey', 'metaKey']) {
+        // Start with an empty buffer: without the modifier guard, n selects Note.
+        await new Promise(resolve => setTimeout(resolve, 350));
+        items[3].dispatchEvent(new KeyboardEvent('keydown', { key: 'n', [modifier]: true, bubbles: true, composed: true }));
+        expect(document.activeElement).toBe(items[3]);
+      }
+      key(items[3], 'n');
+      expect(document.activeElement).toBe(items[0]);
+      await menu.close();
+      await menu.whenClosed();
+    });
+  },
+};
+
+export const CustomAnchor: Story = {
+  render: () => html`
+    <div style=${WRAPPER}>
+      <span id="custom-fab-anchor" role="button" tabindex="0" style="padding: 16px; border: 1px solid currentColor; border-radius: 16px;">Create</span>
+      <md-fab-menu anchor="custom-fab-anchor" quick>
+        <md-fab-menu-item icon="edit" label="Note"></md-fab-menu-item>
+        <md-fab-menu-item icon="upload" label="Upload"></md-fab-menu-item>
+      </md-fab-menu>
+    </div>
+  `,
+  play: async ({ canvasElement, step }) => {
+    const menu = await getMenu(canvasElement);
+    const anchor = canvasElement.querySelector<HTMLElement>('#custom-fab-anchor')!;
+    for (const activation of ['Enter', ' ']) {
+      await step(`${activation === ' ' ? 'Space' : activation} activates an anchor without native button behavior`, async () => {
+        anchor.focus();
+        key(anchor, 'ArrowRight');
+        expect(menu.open).toBe(false);
+        key(anchor, activation);
+        await waitFor(() => expect(document.activeElement).toBe(itemsOf(menu)[0]));
+        expect(anchor.getAttribute('aria-expanded')).toBe('true');
+        expect(anchor.getAttribute('aria-controls')).toBe(menu.id);
+        // Custom anchors have no setMenuIcon method; morphing must still settle.
+        await waitFor(() => expect(anchor.hasAttribute('data-icon-morphing')).toBe(false));
+        key(itemsOf(menu)[0], 'Escape');
+        await menu.whenClosed();
+        expect(menu.open).toBe(false);
+        expect(document.activeElement).toBe(anchor);
+        expect(anchor.getAttribute('aria-expanded')).toBe('false');
+      });
+    }
+  },
+};
+
+export const CancelOpening: Story = {
+  render: () => html`
+    <div style=${WRAPPER}>
+      <md-fab id="fab-cancel-opening" icon="add" aria-label="Create"></md-fab>
+      <md-fab-menu anchor="fab-cancel-opening" quick>
+        <md-fab-menu-item icon="edit" label="Note"></md-fab-menu-item>
+      </md-fab-menu>
+    </div>
+  `,
+  play: async ({ canvasElement, step }) => {
+    const menu = await getMenu(canvasElement);
+    const fab = await getFab(canvasElement);
+    await step('A consumer can cancel in mdOpen without leaving pending focus or a morphed anchor', async () => {
+      const cancel = () => { void menu.close(); };
+      menu.addEventListener('mdOpen', cancel, { once: true });
+      fab.focus();
+      await menu.show();
+      await menu.whenClosed();
+      expect(menu.open).toBe(false);
+      expect(menu.getAttribute('aria-hidden')).toBe('true');
+      expect(itemsOf(menu)[0].getAttribute('tabindex')).toBe('-1');
+      expect(document.activeElement).toBe(fab);
+      expect(fab.hasAttribute('data-shape')).toBe(false);
+      expect(fab.getAttribute('aria-expanded')).toBe('false');
+    });
+    await step('The next opening remains functional after cancellation', async () => {
+      fab.click();
+      await waitFor(() => expect(document.activeElement).toBe(itemsOf(menu)[0]));
+      expect(menu.open).toBe(true);
+      await menu.close();
+      await menu.whenClosed();
     });
   },
 };

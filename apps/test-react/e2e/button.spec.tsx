@@ -1,5 +1,5 @@
 import { test, expect } from './coverage';
-import type { Page } from '@playwright/experimental-ct-react';
+import type { Locator, Page } from '@playwright/experimental-ct-react';
 import AxeBuilder from '@axe-core/playwright';
 
 declare global {
@@ -15,6 +15,40 @@ async function waitForComponent(page: Page) {
     const el = document.querySelector('md-button');
     return el && el.shadowRoot && el.shadowRoot.querySelector('.md-button__label');
   }, null, { timeout: 10_000 });
+}
+
+type ButtonEvents = {
+  activations: Array<{
+    value: string; toggle: boolean; selected: boolean; href: string; target: string;
+    originalType: string; bubbles: boolean; composed: boolean; cancelable: boolean;
+  }>;
+  changes: Array<{ value: string; selected: boolean }>;
+  clicks: Array<{ defaultPrevented: boolean }>;
+};
+type ObservedButton = HTMLElement & { testEvents: ButtonEvents };
+
+async function recordButtonEvents(button: Locator) {
+  await button.evaluate((element) => {
+    const host = element as ObservedButton;
+    host.testEvents = { activations: [], changes: [], clicks: [] };
+    host.addEventListener('mdClick', (event) => {
+      const { value, toggle, selected, href, target, originalEvent } = (event as CustomEvent).detail;
+      host.testEvents.activations.push({
+        value, toggle, selected, href, target, originalType: originalEvent.type,
+        bubbles: event.bubbles, composed: event.composed, cancelable: event.cancelable,
+      });
+    });
+    host.addEventListener('mdChange', (event) => host.testEvents.changes.push((event as CustomEvent).detail));
+    // Observe after the component's handler, so cancellation and bubbling are
+    // checked together instead of inspecting the custom event in isolation.
+    host.parentElement!.addEventListener('click', (event) => {
+      if (event.composedPath().includes(host)) host.testEvents.clicks.push({ defaultPrevented: event.defaultPrevented });
+    });
+  });
+}
+
+async function buttonEvents(button: Locator) {
+  return button.evaluate((element) => (element as ObservedButton).testEvents);
 }
 
 test.describe('md-button', () => {
@@ -88,6 +122,250 @@ test.describe('md-button', () => {
     });
 
     expect(clicked).toBe(true);
+  });
+
+  test.describe('React activation contracts', () => {
+    test('a canceled toggle retains state and bubbles the click; later activations report the committed value', async ({ mount, page }) => {
+      const button = await mount(<md-button toggle value="bookmark">Bookmark</md-button>);
+      await waitForComponent(page);
+      await recordButtonEvents(button);
+      await button.evaluate((el) => el.addEventListener('mdClick', (event) => event.preventDefault(), { once: true }));
+
+      await button.click();
+      await expect(button).toHaveAttribute('aria-pressed', 'false');
+      await expect(button).not.toHaveClass(/md-button--selected/);
+      expect(await buttonEvents(button)).toEqual({
+        activations: [{
+          value: 'bookmark', toggle: true, selected: true, href: '', target: '_self',
+          originalType: 'click', bubbles: true, composed: true, cancelable: true,
+        }],
+        changes: [], clicks: [{ defaultPrevented: true }],
+      });
+
+      await button.click();
+      await expect(button).toHaveAttribute('aria-pressed', 'true');
+      await expect(button).toHaveClass(/md-button--selected/);
+      await button.click();
+      await expect(button).toHaveAttribute('aria-pressed', 'false');
+      await expect(button).not.toHaveClass(/md-button--selected/);
+      const events = await buttonEvents(button);
+      expect(events.activations.map(event => event.selected)).toEqual([true, true, false]);
+      expect(events.changes).toEqual([{ value: 'bookmark', selected: true }, { value: 'bookmark', selected: false }]);
+      expect(events.clicks).toEqual([{ defaultPrevented: true }, { defaultPrevented: false }, { defaultPrevented: false }]);
+    });
+
+    for (const key of ['Enter', 'Space']) {
+      test(`real ${key} activation toggles once and clears its pressed state`, async ({ mount, page }) => {
+        const button = await mount(<md-button toggle value="favorite">Favorite</md-button>);
+        await waitForComponent(page);
+        await recordButtonEvents(button);
+        await button.focus();
+        await page.keyboard.down(key);
+        await expect(button).toHaveClass(/md-button--pressing/);
+        await expect(button).toHaveAttribute('aria-pressed', 'true');
+        await page.keyboard.up(key);
+        await expect(button).not.toHaveClass(/md-button--pressing/);
+        await expect(button).not.toHaveClass(/md-button--pressed(?:\s|$)/);
+        const events = await buttonEvents(button);
+        expect(events.activations).toHaveLength(1);
+        expect(events.changes).toEqual([{ value: 'favorite', selected: true }]);
+        await expect(button).toBeFocused();
+      });
+    }
+
+    test('pointer release, leaving, and cancellation clear press feedback without extra activation', async ({ mount, page }) => {
+      const button = await mount(<md-button>Press feedback</md-button>);
+      await waitForComponent(page);
+      await recordButtonEvents(button);
+      await button.hover();
+      await page.mouse.down();
+      await expect(button).toHaveClass(/md-button--pressed(?:\s|$)/);
+      await page.mouse.up();
+      await expect(button).not.toHaveClass(/md-button--pressing/);
+      expect((await buttonEvents(button)).activations).toHaveLength(1);
+
+      await button.hover();
+      await page.mouse.down();
+      await expect(button).toHaveClass(/md-button--pressing/);
+      await page.mouse.move(1000, 600);
+      await expect(button).not.toHaveClass(/md-button--pressing/);
+      await page.mouse.up();
+      expect((await buttonEvents(button)).activations).toHaveLength(1);
+
+      await button.update(<md-button shape-morph={false}>Press feedback</md-button>);
+      await button.hover();
+      await page.mouse.down();
+      await expect(button).toHaveClass(/md-button--pressing/);
+      await expect(button).not.toHaveClass(/md-button--pressed(?:\s|$)/);
+      // Browsers emit pointercancel when a gesture becomes scrolling. Dispatch
+      // that public event rather than reaching into the component's handlers.
+      await button.dispatchEvent('pointercancel', { pointerId: 1, pointerType: 'mouse', bubbles: true });
+      await expect(button).not.toHaveClass(/md-button--pressing/);
+      await page.mouse.move(1000, 600);
+      await page.mouse.up();
+      expect((await buttonEvents(button)).activations).toHaveLength(1);
+    });
+
+    for (const state of ['soft-disabled', 'loading']) {
+      test(`${state} refuses pointer and keyboard activation, then becomes usable after React updates`, async ({ mount, page }) => {
+        const button = await mount(<md-button {...{ [state]: true }} toggle>Unavailable</md-button>);
+        await waitForComponent(page);
+        await recordButtonEvents(button);
+        await button.focus();
+        await page.keyboard.press('Enter');
+        // Disabled styling can remove pointer hit testing. Delivered pointer
+        // events must still be harmless (e.g. a press already in flight).
+        await button.dispatchEvent('pointerdown', { pointerType: 'mouse', bubbles: true });
+        await button.evaluate((el) => (el as HTMLElement).click());
+        await expect(button).not.toHaveClass(/md-button--pressing/);
+        await expect(button).toHaveAttribute('aria-pressed', 'false');
+        expect((await buttonEvents(button)).activations).toEqual([]);
+        expect((await buttonEvents(button)).changes).toEqual([]);
+
+        await button.update(<md-button {...{ [state]: false }} toggle>Available</md-button>);
+        await expect(button).toHaveAttribute('aria-disabled', 'false');
+        await button.click();
+        await expect(button).toHaveAttribute('aria-pressed', 'true');
+        expect((await buttonEvents(button)).activations).toHaveLength(1);
+        expect((await buttonEvents(button)).changes).toEqual([{ value: '', selected: true }]);
+      });
+    }
+
+    test('submit runs native constraint validation and can be canceled before submitting', async ({ mount, page }) => {
+      const form = await mount(
+        <form>
+          <label>Email<input name="email" type="email" required defaultValue="" /></label>
+          <md-button type="submit">Save</md-button>
+        </form>,
+      );
+      await waitForComponent(page);
+      await form.evaluate((el) => {
+        const observed = el as HTMLFormElement & { submissions: unknown[]; invalidCount: number };
+        observed.submissions = [];
+        observed.invalidCount = 0;
+        observed.addEventListener('invalid', () => observed.invalidCount++, true);
+        observed.addEventListener('submit', (event) => {
+          event.preventDefault();
+          observed.submissions.push(Object.fromEntries(new FormData(observed)));
+        });
+      });
+      const button = form.locator('md-button');
+      await button.click();
+      expect(await form.evaluate((el: any) => ({ submissions: el.submissions, invalid: el.invalidCount }))).toEqual({ submissions: [], invalid: 1 });
+      await expect(form.getByLabel('Email')).toBeFocused();
+      await form.getByLabel('Email').fill('reader@example.test');
+      await button.click();
+      expect(await form.evaluate((el: any) => el.submissions)).toEqual([{ email: 'reader@example.test' }]);
+
+      await button.evaluate((el) => el.addEventListener('mdClick', (event) => event.preventDefault(), { once: true }));
+      await button.click();
+      expect(await form.evaluate((el: any) => el.submissions)).toEqual([{ email: 'reader@example.test' }]);
+    });
+
+    test('reset restores the form default value only when activation is accepted', async ({ mount, page }) => {
+      const form = await mount(
+        <form>
+          <label>Title<input name="title" defaultValue="Original" /></label>
+          <md-button type="reset">Reset</md-button>
+        </form>,
+      );
+      await waitForComponent(page);
+      await form.evaluate((el: any) => {
+        el.resets = 0;
+        el.addEventListener('reset', () => el.resets++);
+      });
+      const button = form.locator('md-button');
+      await form.getByLabel('Title').fill('Edited');
+      await button.evaluate((el) => el.addEventListener('mdClick', (event) => event.preventDefault(), { once: true }));
+      await button.click();
+      await expect(form.getByLabel('Title')).toHaveValue('Edited');
+      expect(await form.evaluate((el: any) => el.resets)).toBe(0);
+      await button.click();
+      await expect(form.getByLabel('Title')).toHaveValue('Original');
+      expect(await form.evaluate((el: any) => el.resets)).toBe(1);
+    });
+
+    test('pointer link activation uses the native anchor once and respects cancellation', async ({ mount, page }) => {
+      const button = await mount(<md-button href="#react-button-target" target="">Read</md-button>);
+      await waitForComponent(page);
+      await recordButtonEvents(button);
+      await page.evaluate(() => {
+        const original = window.open;
+        (window as any).buttonWindowOpens = 0;
+        window.open = (...args) => { (window as any).buttonWindowOpens++; return original.apply(window, args); };
+      });
+      await expect(button.locator('a')).not.toHaveAttribute('target');
+      await expect(button.locator('a')).not.toHaveAttribute('rel');
+      await button.evaluate((el) => el.addEventListener('mdClick', (event) => event.preventDefault(), { once: true }));
+      await button.click();
+      expect(new URL(page.url()).hash).toBe('');
+      expect((await buttonEvents(button)).clicks).toEqual([{ defaultPrevented: true }]);
+      await button.click();
+      await expect(page).toHaveURL(/#react-button-target$/);
+      expect(await page.evaluate(() => (window as any).buttonWindowOpens)).toBe(0);
+      expect((await buttonEvents(button)).activations).toHaveLength(2);
+    });
+
+    test('programmatic link activation opens one protected browsing context', async ({ mount, page, context }) => {
+      await context.route('**/react-button-destination', (route) => route.fulfill({ contentType: 'text/html', body: '<title>Button destination</title>' }));
+      const button = await mount(<md-button href="/react-button-destination" target="_blank">Read</md-button>);
+      await waitForComponent(page);
+      await recordButtonEvents(button);
+      const pages: Page[] = [];
+      context.on('page', (opened) => pages.push(opened));
+      const opened = context.waitForEvent('page');
+      await button.evaluate((el) => (el as HTMLElement).click());
+      const destination = await opened;
+      try {
+        await expect(destination).toHaveTitle('Button destination');
+        expect(await destination.evaluate(() => window.opener)).toBeNull();
+        expect(pages).toHaveLength(1);
+        expect((await buttonEvents(button)).activations).toHaveLength(1);
+        expect(new URL(page.url()).pathname).not.toBe('/react-button-destination');
+      } finally {
+        await destination.close();
+      }
+    });
+
+    test('an unsafe href neither executes script nor falls through to form submission', async ({ mount, page }) => {
+      const form = await mount(
+        <form>
+          <md-button type="submit" href="javascript:window.buttonUnsafeActivated=true">Unsafe destination</md-button>
+        </form>,
+      );
+      await waitForComponent(page);
+      await form.evaluate((el: any) => {
+        el.submissions = 0;
+        el.addEventListener('submit', (event: Event) => { event.preventDefault(); el.submissions++; });
+      });
+      const button = form.locator('md-button');
+      await recordButtonEvents(button);
+      await expect(button.locator('a')).toHaveCount(0);
+      await button.click();
+      expect(await page.evaluate(() => (window as any).buttonUnsafeActivated)).toBeUndefined();
+      expect(await form.evaluate((el: any) => el.submissions)).toBe(0);
+      expect((await buttonEvents(button)).activations).toHaveLength(1);
+    });
+
+    test('React adds and removes named icon slots with the corresponding layout state', async ({ mount, page }) => {
+      const button = await mount(<md-button>Continue</md-button>);
+      await waitForComponent(page);
+      await expect(button).not.toHaveClass(/md-button--with-(?:leading|trailing)-icon/);
+      await button.update(
+        <md-button>
+          <span slot="leading-icon" aria-hidden="true">★</span>
+          Continue
+          <span slot="trailing-icon" aria-hidden="true">→</span>
+        </md-button>,
+      );
+      await expect(button).toHaveClass(/md-button--with-leading-icon/);
+      await expect(button).toHaveClass(/md-button--with-trailing-icon/);
+      expect(await button.evaluate((el) => [...el.shadowRoot!.querySelectorAll<HTMLSlotElement>('slot[name]')].map(slot => slot.assignedElements().map(node => node.textContent)))).toEqual([['★'], ['→']]);
+      await button.update(<md-button>Continue</md-button>);
+      await expect(button).not.toHaveClass(/md-button--with-(?:leading|trailing)-icon/);
+      expect(await button.evaluate((el) => [...el.shadowRoot!.querySelectorAll<HTMLSlotElement>('slot[name]')].map(slot => slot.assignedElements().length))).toEqual([0, 0]);
+      await expect(button).toHaveText('Continue');
+    });
   });
 
   /* ==============================================================
