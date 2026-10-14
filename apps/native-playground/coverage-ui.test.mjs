@@ -191,12 +191,54 @@ test('coverage-only cards use library meters and retain exact counts without tes
   assert.doesNotMatch(html, /Test cases|passed|failed|Run details|Run completed|Report hashes|Test results|Run record|progress-indicator|<a /);
 });
 
-test('accessibility outcomes never become a fabricated coverage percentage', () => {
-  const entry = { runs: [{ label: 'Storybook', axeAudit: { total: 8, passed: 6, failed: 1, unknown: 1 },
+test('accessibility displays recorded scan and case totals separately, including review-needed scans', () => {
+  const entry = { runs: [{ label: 'Storybook', axeAudit: { total: 25, passed: 1, failed: 0, unknown: 24 },
     execution: { total: 5, passed: 5 } }] };
   const html = renderCoverageContent(entry, 'accessibility');
-  assert.match(html, /A coverage percentage is not measured for accessibility checks/);
-  assert.doesNotMatch(html, /md-meter|75%|100%|passed|failed/);
+  assert.match(html, /Automated axe scans/);
+  assert.match(html, /Accessibility test cases/);
+  assert.match(html, /<b>25<\/b> total/);
+  assert.match(html, /<b>1<\/b> passed/);
+  assert.match(html, /<b>0<\/b> failed/);
+  assert.match(html, /<b>24<\/b> need review/);
+  assert.match(html, /data-status="unknown">Needs review/);
+  assert.match(html, /<b>5<\/b> total/);
+  assert.match(html, /<b>5<\/b> passed/);
+  assert.doesNotMatch(html, /md-meter|75%|100%|<b>30<\/b> total|percentage is not measured/);
+});
+
+test('passing interaction cases cannot hide failed axe scans', () => {
+  const html = renderCoverageRun({ label: 'Storybook', axeAudit: { total: 31, passed: 0, failed: 1, unknown: 30 },
+    execution: { total: 6, passed: 6, failed: 0 },
+  }, 'accessibility');
+  assert.match(html, /Automated axe scans<\/span><strong data-status="failed">Failed/);
+  assert.match(html, /<b>1<\/b> failed/);
+  assert.match(html, /<b>30<\/b> need review/);
+  assert.match(html, /Accessibility test cases<\/span><strong data-status="passed">Passed/);
+});
+
+test('accessibility only counts recorded outcomes, retaining skipped, incomplete and flaky cases', () => {
+  const configured = renderCoverageContent({ testCount: 65, files: [{ path: 'example.stories.ts', testCount: 65 }], runs: [] }, 'accessibility');
+  assert.match(configured, /No accessibility results recorded/);
+  assert.doesNotMatch(configured, /<b>65<\/b> total|passed|failed/);
+  const html = renderCoverageRun({ label: 'React', execution: { total: 5, passed: 2, failed: 0, skipped: 1, unknown: 2, flaky: 1 } }, 'accessibility');
+  assert.match(html, /data-status="unknown">Incomplete/);
+  assert.match(html, /<b>1<\/b> skipped/);
+  assert.match(html, /<b>2<\/b> incomplete/);
+  assert.match(html, /<b>1<\/b> flaky/);
+  assert.doesNotMatch(html, /Automated axe scans/);
+});
+
+test('runner and suite failures do not fabricate failed accessibility case counts', () => {
+  const attempt = renderCoverageRun({ label: 'Browser', execution: { scope: 'runner-attempt', status: 'failed', total: 0 } }, 'accessibility');
+  assert.match(attempt, /Runner failed · No test case results recorded/);
+  assert.doesNotMatch(attempt, /<b>0<\/b> passed|<b>0<\/b> failed/);
+  const suite = renderCoverageRun({ label: 'Browser', execution: { total: 0, passed: 0, failed: 0, failedSuites: 1 } }, 'accessibility');
+  assert.match(suite, /data-status="failed">Failed/);
+  assert.match(suite, /1 suite-level failure recorded/);
+  assert.match(suite, /<b>0<\/b> failed/);
+  const running = renderCoverageRun({ label: 'Browser', state: 'running', execution: { scope: 'runner-attempt', status: 'unknown' } }, 'accessibility');
+  assert.match(running, /Run in progress · No test case results recorded/);
 });
 
 test('unmeasured and zero-location values stay neutral while measured zero coverage is red', () => {
@@ -222,7 +264,7 @@ test('coverage keeps a concise warning when saved measurements no longer match t
   assert.doesNotMatch(running, /md-meter|inputs have changed/);
 });
 
-test('coverage panel retains source files and runnable commands without the threshold legend', () => {
+test('coverage panel retains source files without commands or the threshold legend', () => {
   const html = renderCoverageContent({ files: [{ path: 'test.spec.ts' }], commands: [{ command: 'run tests' }],
     runs: [{ runnerKey: 'component:storybook', label: 'Storybook', verified: true, source: { matchesCurrent: true },
       measurement: { lines: { covered: 3, total: 4, percent: 75 } } },
@@ -232,11 +274,8 @@ test('coverage panel retains source files and runnable commands without the thre
   assert.match(html, /Storybook/); assert.match(html, /React/);
   assert.match(html, /color="warning"/); assert.match(html, /color="success"/);
   assert.match(html, /href="\/repo\/test.spec.ts"/);
-  assert.match(html, /run tests/);
   assert.match(html, /Source files/);
-  assert.match(html, /Run locally/);
-  assert.match(html, /data-copy-command="0"/);
-  assert.doesNotMatch(html, /coverage-legend|Coverage thresholds|Red &lt; 50%/);
+  assert.doesNotMatch(html, /coverage-legend|Coverage thresholds|Red &lt; 50%|Run locally|run tests|data-copy-command/);
 });
 
 test('new unpaired coverage cannot hide a recorded failure, while new outcomes replace older outcomes', () => {

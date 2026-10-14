@@ -167,13 +167,14 @@ node apps/native-playground/build-syntax-highlighting.mjs --check
 
 **Test coverage** has four tabs: **Unit**, **Component**, **End-to-end** and
 **Accessibility**. Each lists matching source files, static declaration counts,
-configuration evidence and copyable local test commands below compact coverage
-cards. Library `md-meter` components use the existing Istanbul/Monocart bands:
+and configuration evidence below compact coverage cards. Library `md-meter` components use the existing Istanbul/Monocart bands:
 red below 50%, amber from 50% to below 80%, green from 80%. These colors describe
 coverage, not whether tests passed. Missing measurements stay neutral.
-Accessibility has no measured code-coverage percentage, so its tab says so rather
-than converting audit outcomes into one. These reports describe the Web library,
-not native-device test coverage.
+Accessibility shows recorded totals and pass/fail status by runner, separating
+automated axe scans from accessibility test cases. Incomplete scans need review;
+skipped, incomplete and flaky cases remain visible. These counts are not converted
+into a coverage percentage. These reports describe the Web library, not
+native-device test coverage.
 
 The panel reads saved reports; it never runs tests. LCOV and Istanbul reports
 provide component-specific line, branch, function and, when available, statement

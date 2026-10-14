@@ -231,10 +231,36 @@ export function coverageRagStatus(percent) {
   return { color: 'success', label: 'Green' };
 }
 
-const accessibilityCoverageNote = 'A coverage percentage is not measured for accessibility checks.';
+function renderAccessibilityRun(run) {
+  const heading = run.label || 'Accessibility checks';
+  const rows = [];
+  const resultRow = (record, label, audit = false) => {
+    const failed = record.failed > 0 || record.failedSuites > 0 || record.errors > 0 || record.status === 'failed';
+    const total = Number.isSafeInteger(record.total) ? record.total : null;
+    const complete = total > 0 && record.passed === total && !record.unknown && !record.skipped && !record.flaky && record.status !== 'unknown';
+    const state = failed ? 'failed' : complete ? 'passed' : 'unknown';
+    const status = failed ? 'Failed' : complete ? 'Passed' : record.skipped === total && total > 0 ? 'Skipped' : audit ? 'Needs review' : 'Incomplete';
+    return `<div class="coverage-accessibility-row"><div class="coverage-check-heading"><span>${label}</span><strong data-status="${state}">${status}</strong></div>
+      <div class="coverage-run-counts"><span><b>${total ?? '—'}</b> total</span><span><b>${record.passed ?? 0}</b> passed</span><span><b>${record.failed ?? 0}</b> failed</span>${record.unknown ? `<span><b>${record.unknown}</b> ${audit ? 'need review' : 'incomplete'}</span>` : ''}${record.skipped ? `<span><b>${record.skipped}</b> skipped</span>` : ''}${record.flaky ? `<span><b>${record.flaky}</b> flaky</span>` : ''}</div>
+      ${record.failedSuites ? `<p class="coverage-run-description">${record.failedSuites} suite-level failure${record.failedSuites === 1 ? '' : 's'} recorded.</p>` : ''}${record.errors ? `<p class="coverage-run-description">${record.errors} audit error${record.errors === 1 ? '' : 's'} recorded.</p>` : ''}</div>`;
+  };
+  if (run.axeAudit) rows.push(resultRow(run.axeAudit, 'Automated axe scans', true));
+  if (run.execution?.scope === 'runner-attempt') {
+    rows.push(`<p class="coverage-run-description">${run.state === 'running' ? 'Run in progress' : run.execution.status === 'failed' ? 'Runner failed' : 'Runner incomplete'} · No test case results recorded.</p>`);
+  } else if (run.execution) {
+    const environment = run.execution.environment === 'mock-dom' ? ' · Mock DOM' : '';
+    rows.push(resultRow(run.execution, `Accessibility test cases${environment}`));
+  }
+  if (!rows.length) return '';
+  const sourceNote = !run.verified ? 'Saved results · unverified report'
+    : run.state !== 'running' && !run.source?.matchesCurrent ? 'Saved results · tested inputs changed or could not be verified' : '';
+  return `<section class="coverage-run-group coverage-accessibility" aria-label="${escape(heading)}"><md-card class="coverage-report-card" variant="outlined" full-width density="-1">
+    <h3>${escape(heading)}</h3>${sourceNote ? `<p class="coverage-run-description">${sourceNote}</p>` : ''}${rows.join('')}
+  </md-card></section>`;
+}
 
 export function renderCoverageRun(run, category) {
-  if (category === 'accessibility') return `<p class="coverage-empty">${accessibilityCoverageNote}</p>`;
+  if (category === 'accessibility') return renderAccessibilityRun(run);
   const { measurement, metrics } = coveragePresentation({ measurements: run.measurement ? [run.measurement] : [] }, category);
   const heading = run.label || 'Source coverage';
   const sourceNote = !measurement ? '' : !run.verified ? 'Saved measurement · unverified report'
@@ -259,20 +285,20 @@ export function renderCoverageContent(entry, category) {
   // Older supplemental outcomes must not duplicate the latest runner's coverage.
   const seen = new Set();
   const runs = coverageRunViews(entry).filter(run => {
+    if (category === 'accessibility') return true;
     const key = run.runnerKey || run.key || run;
     if (seen.has(key)) return false;
     seen.add(key); return true;
   });
-  const reports = category === 'accessibility' ? `<p class="coverage-empty">${accessibilityCoverageNote}</p>`
-    : runs.map(run => renderCoverageRun(run, category)).join('') || '<p class="coverage-empty">No coverage measurement available.</p>';
-  const files = entry.files || [], commands = entry.commands || [];
+  const reports = runs.map(run => renderCoverageRun(run, category)).join('')
+    || `<p class="coverage-empty">${category === 'accessibility' ? 'No accessibility results recorded.' : 'No coverage measurement available.'}</p>`;
+  const files = entry.files || [];
   const sourceRow = file => `<md-list-item type="link" href="/repo/${escape(file.path)}" target="_blank" leading-icon="description" trailing-icon="open_in_new" supporting-text="${escape(file.kind === 'storybook-a11y-configuration' ? 'Configuration only' : `${file.testCount ?? 0} ${file.countKind === 'static-story-exports' ? 'story' : 'test'} declarations`)}" density="-2"><code slot="headline">${escape(file.path)}</code></md-list-item>`;
   return `${reports}
-    <h3>Source files</h3>${files.length ? `<md-list class="coverage-source-list" label="Component test sources" density="-2">${files.map(sourceRow).join('<md-divider></md-divider>')}</md-list>` : '<p class="usage-empty">No test sources are attributed to this component in this category.</p>'}
-    ${commands.length ? `<h3>Run locally</h3>${commands.map((command, index) => `<md-card class="coverage-command-card" variant="filled" full-width density="-1"><div class="coverage-command-content"><p>${escape(command.label)}</p><code data-command-code="${index}">${escape(command.command)}</code></div><md-icon-button data-copy-command="${index}" icon="content_copy" size="sm" aria-label="Copy ${escape(command.label)} command"></md-icon-button></md-card>`).join('')}` : ''}`;
+    <h3>Source files</h3>${files.length ? `<md-list class="coverage-source-list" label="Component test sources" density="-2">${files.map(sourceRow).join('<md-divider></md-divider>')}</md-list>` : '<p class="usage-empty">No test sources are attributed to this component in this category.</p>'}`;
 }
 
-export function createCoverageUI({ getState, notify }) {
+export function createCoverageUI({ getState }) {
   let category = 'unit', currentTag, result, generation = 0;
   async function load(refresh = false) {
     const tag = getState().selected?.tag, root = $('#coverage-panel');
@@ -292,13 +318,11 @@ export function createCoverageUI({ getState, notify }) {
     if (!result) return;
     const keys = Object.keys(coverageCategories);
     const selected = result.categories[category];
-    $('#coverage-panel').innerHTML = `<div class="coverage-heading"><div><h2>Test coverage</h2><p>Measured Web source coverage for <code>${escape(result.tag)}</code>.</p></div><md-button id="coverage-refresh" variant="text" size="sm" icon="refresh">Refresh</md-button></div>
+    $('#coverage-panel').innerHTML = `<div class="coverage-heading"><div><h2>Test coverage</h2><p>${category === 'accessibility' ? 'Recorded accessibility checks' : 'Measured Web source coverage'} for <code>${escape(result.tag)}</code>.</p></div><md-button id="coverage-refresh" variant="text" size="sm" icon="refresh">Refresh</md-button></div>
       <md-tabs id="coverage-tabs" variant="secondary" tab-width="auto" active-tab-index="${keys.indexOf(category)}" aria-label="Coverage category">${keys.map(key => `<md-tab label="${escape(result.categories[key].label)}"></md-tab>`).join('')}</md-tabs>
       <div class="coverage-body">${renderCoverageContent(selected, category)}</div>`;
-    $('#coverage-panel').querySelectorAll('[data-command-code]').forEach(code => renderCode(code, selected.commands[Number(code.dataset.commandCode)].command, 'bash'));
     $('#coverage-refresh').addEventListener('mdClick', () => load(true));
     $('#coverage-tabs').addEventListener('mdTabChange', event => { if (event.target !== $('#coverage-tabs')) return; category = keys[event.detail.index] || 'unit'; render(); });
-    $('#coverage-panel').querySelectorAll('[data-copy-command]').forEach(button => button.addEventListener('mdClick', async () => { try { await navigator.clipboard.writeText(selected.commands[Number(button.dataset.copyCommand)].command); notify('Test command copied'); } catch { notify('Clipboard unavailable'); } }));
   }
   return { load };
 }

@@ -391,4 +391,9 @@ html[data-theme=dark] .studio-logo-dark { display: block; }
 .coverage-run-group{margin:0 0 14px}
 .coverage-measurements{margin:4px 0 0;gap:24px}
 .coverage-empty{font-size:11px;line-height:1.6;color:var(--muted);margin:0}
+.coverage-check-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:12px}
+.coverage-accessibility-row+.coverage-accessibility-row{border-top:1px solid var(--border);padding-top:12px}
+.coverage-accessibility .coverage-run-counts{font-size:11px;gap:8px 18px;margin:6px 0 0}
+.coverage-accessibility [data-status=passed]{color:var(--md-sys-color-success)}
+.coverage-accessibility [data-status=unknown]{color:var(--md-sys-color-warning)}
 @media(max-width:640px){.coverage-report-card{--md-card-padding:14px}.coverage-measurements{gap:20px}}
