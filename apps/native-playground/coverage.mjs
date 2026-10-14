@@ -713,7 +713,7 @@ async function buildInventory(root) {
       entry.runs = groupedRuns(entry);
       entry.executionStatus = latestRunnerStatus(entry.runs);
       entry.status = entry.measurements.length ? 'measured' : entry.files.length ? 'evidence-only' : 'unavailable';
-      if (!entry.measurements.length) entry.notes.push('No component-specific measured coverage report is available in this checkout.');
+      if (entry.id !== 'accessibility' && !entry.measurements.length) entry.notes.push('No component-specific measured coverage report is available in this checkout.');
       if (!entry.executions.length && !entry.audits.length) entry.notes.push('No component-specific test outcomes are recorded in the indexed reports.');
       if (!entry.files.length) entry.notes.push('No component-specific test declarations were found in the indexed test directories. Source coverage may still be recorded by broader runs.');
     }

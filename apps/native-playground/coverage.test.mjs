@@ -886,6 +886,7 @@ test('Accessibility preserves each parent runner and excludes ARIA fixture-only 
   assert.deepEqual(mock.accessibilityKinds, ['aria-or-semantics']);
   assert.equal(entry.runs.find(run => run.category === 'e2e').execution.environment, 'browser');
   assert.deepEqual(entry.measurements, []); assert.deepEqual(entry.audits, []);
+  assert.doesNotMatch(entry.notes.join(' '), /No component-specific measured coverage report/, 'Accessibility reports outcomes rather than a code coverage percentage');
 });
 
 test('Storybook axe audit metadata remains separate from story success, configured addons and related checks', async t => {
