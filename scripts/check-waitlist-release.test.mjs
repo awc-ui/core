@@ -11,7 +11,7 @@ const valid = {
 };
 
 test("each provider attribution defaults off and can only accompany the production public form", () => {
-  for (const provider of ["META", "REDDIT", "GOOGLE"]) {
+  for (const provider of ["META", "REDDIT", "GOOGLE", "LINKEDIN"]) {
     const flag = `PUBLIC_${provider}_MEASUREMENT_ENABLED`;
     assert.deepEqual(checkWaitlistRelease({ ...valid, [flag]: "true" }), { enabled: true });
     for (const value of [undefined, "", "false"]) {

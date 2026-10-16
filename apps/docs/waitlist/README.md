@@ -14,7 +14,7 @@ creation in this feature.
 ## Optional advertising measurement
 
 Measurement is separate from email consent. The browser asks before loading the
-existing Google Ads tag or retaining enabled Meta, Reddit, or Google click attribution. Rejecting advertising
+existing Google Ads tag or retaining enabled Meta, Reddit, Google, or LinkedIn click attribution. Rejecting advertising
 does not affect signup or the launch offer. No browser signup conversion fires:
 the public API deliberately gives identical replies for new, duplicate,
 suppressed, and honeypot requests.
@@ -135,8 +135,8 @@ No provider receives email, email hashes, subscriber IDs, raw IP addresses, or
 private URLs from these server adapters. The Google tag remains a separate,
 consented browser integration with the limitations described above.
 
-Consent wording is `advertising-2026-10-07-v2`. Previously accepted versions are
-not silently expanded to cover Reddit or the new Google server integration:
+Consent wording is `advertising-2026-10-17-v3`. Previously accepted versions are
+not silently expanded to cover the additional server integrations:
 the browser withdraws the old capability and asks again. Declining does not
 change signup, early-offer eligibility, or transactional email. After consent,
 the browser retains only valid click IDs in secure first-party cookies whose
@@ -257,6 +257,54 @@ References: [Reddit direct integration](https://ads-api.reddit.com/docs/v3/guide
 [Google ingestion REST](https://developers.google.com/data-manager/api/reference/rest/v1/events/ingest),
 [Google asynchronous diagnostics](https://developers.google.com/data-manager/api/devguides/diagnostics),
 [Google transaction ID semantics](https://developers.google.com/data-manager/api/devguides/events/google-ads/offline/upgrade).
+
+## LinkedIn signup measurement
+
+LinkedIn is an optional fourth server provider, disabled by default. It uses
+only a consented `li_fat_id` from the landing URL, stored as `_awc_li_fat_id` for
+the remaining consent period. There is no email, hashed email, IP, name, user
+agent, private URL, browser Insight Tag, or browser signup event in this path.
+The public form response remains identical for new, duplicate, suppressed and
+honeypot requests. Only a fresh subscriber insert can queue the conversion.
+
+Apply `202610170001_linkedin_measurement.sql` after the existing migrations.
+It extends the provider allowlist without replaying old subscribers or changing
+their jobs. Existing unique subscriber/provider, stable random event IDs,
+withdrawal checks, bounded retries and identifier cleanup also apply to LinkedIn.
+Consent version `advertising-2026-10-17-v3` requires a new choice before LinkedIn
+attribution; previous choices are not silently upgraded.
+
+In Campaign Manager, enable enhanced conversion tracking so LinkedIn adds
+`li_fat_id`, and create a **Conversions API / Direct API** signup conversion.
+An Insight Tag configuration may exist in the account without installing its
+browser script. The account's partner ID `11125353` is not a CAPI conversion ID.
+Associate the Direct API conversion with the Website Conversions ad set.
+
+Production Functions runtime configuration (not public build settings):
+
+| Variable | Value |
+| --- | --- |
+| `LINKEDIN_CAPI_ENABLED` | `true` only when ready to deliver |
+| `LINKEDIN_CONVERSION_ID` | Numeric ID of the Direct API signup conversion |
+| `LINKEDIN_CAPI_ACCESS_TOKEN` | Secret Direct API token generated in Campaign Manager |
+| `LINKEDIN_API_VERSION` | Supported version in YYYYMM format; verified against `202609` |
+
+The public build variable is `PUBLIC_LINKEDIN_MEASUREMENT_ENABLED`; keep it
+`false` until the source, consent wording, migration and runtime are ready. PR
+builds force it off. Requests go only to LinkedIn's fixed conversion endpoint
+with `LINKEDIN_FIRST_PARTY_ADS_TRACKING_UUID`, event ID, original event time and
+the configured conversion URN. Changing the conversion ID fails pending jobs
+closed; rotating credentials does not change event identity.
+
+HTTP 201 means ingestion acceptance, not proven matching or attribution. Only
+matched events can optimize delivery. Check a genuine authorized new signup in
+Campaign Manager before starting the ad set. Do not invent click IDs or replay
+historical subscribers to populate the conversion. Missing click attribution
+leaves signup and email working normally and creates no LinkedIn job.
+
+References: [Direct API setup](https://www.linkedin.com/help/lms/answer/a1711116),
+[LinkedIn CAPI](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api?view=li-lms-2026-09),
+[event schema](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api-schema?view=li-lms-2026-09).
 
 ## Activation is deliberately separate from deploying code
 

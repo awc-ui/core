@@ -1,4 +1,4 @@
-const VERSION = "advertising-2026-10-07-v2";
+const VERSION = "advertising-2026-10-17-v3";
 const CHOICE_KEY = "awc:advertising:choice";
 const REVOKE_PREFIX = "awc:advertising:revoke:";
 const MAX_AGE = 90 * 24 * 60 * 60 * 1000;
@@ -6,7 +6,7 @@ const TOKEN = /^[A-Za-z0-9_-]{43}$/;
 const GOOGLE_ID = "AW-18474243980";
 const validClick = (value: string) => value.length > 0 && value.length <= 500 && !/[^A-Za-z0-9_-]/.test(value);
 const GOOGLE_CLICKS = ["gclid", "gbraid", "wbraid"] as const;
-const CLICK_COOKIES = ["_awc_rdt_cid", ...GOOGLE_CLICKS.map((key) => `_awc_${key}`)];
+const CLICK_COOKIES = ["_awc_rdt_cid", "_awc_li_fat_id", ...GOOGLE_CLICKS.map((key) => `_awc_${key}`)];
 
 type Choice = {
   version: string;
@@ -24,6 +24,7 @@ type Measurement = {
   gclid?: string;
   gbraid?: string;
   wbraid?: string;
+  li_fat_id?: string;
 };
 type AdvertisingWindow = Window & {
   awcAdvertising?: { signupMeasurement(): Measurement | undefined };
@@ -43,6 +44,7 @@ export function initializeAdvertisingConsent(): void {
   const googleEnabled = production && config.dataset.google === "true";
   const redditEnabled = production && config.dataset.reddit === "true";
   const googleMeasurementEnabled = production && config.dataset.googleMeasurement === "true";
+  const linkedinEnabled = production && config.dataset.linkedin === "true";
   let forcedOff = new URLSearchParams(location.search).get("awc_advertising") === "off";
   const win = window as AdvertisingWindow;
   let choice: Choice | undefined;
@@ -177,6 +179,11 @@ export function initializeAdvertisingConsent(): void {
       expireCookie("_awc_rdt_cid");
       if (clicks.length === 1 && validClick(clicks[0])) saveCookie("_awc_rdt_cid", clicks[0]);
     }
+    if (linkedinEnabled && params.has("li_fat_id")) {
+      const clicks = params.getAll("li_fat_id");
+      expireCookie("_awc_li_fat_id");
+      if (clicks.length === 1 && validClick(clicks[0])) saveCookie("_awc_li_fat_id", clicks[0]);
+    }
     if (googleMeasurementEnabled) {
       const clicks = GOOGLE_CLICKS.flatMap((key) => params.getAll(key).map((value) => ({ key, value })));
       if (clicks.length > 0) {
@@ -228,7 +235,7 @@ export function initializeAdvertisingConsent(): void {
   root.innerHTML = `<section class="awc-advertising-panel" aria-labelledby="awc-advertising-title" aria-describedby="awc-advertising-description" hidden>
     <div class="awc-advertising-copy">
       <h2 id="awc-advertising-title" tabindex="-1">Advertising preferences</h2>
-      <p id="awc-advertising-description">Allow Google Ads, Meta and Reddit to use advertising identifiers to measure ads and waitlist signups. Joining works either way.</p>
+      <p id="awc-advertising-description">Allow Google Ads, Meta, Reddit and LinkedIn to use advertising identifiers to measure ads and waitlist signups. Joining works either way.</p>
       <p class="awc-advertising-details">Your choice lasts up to 90 days. <a href="/privacy/#advertising-measurement" aria-label="Read about advertising and your data">Details</a></p>
     </div>
     <div class="awc-advertising-actions"><button type="button" aria-label="Reject advertising" data-advertising-reject>Reject</button><button type="button" aria-label="Accept advertising" data-advertising-accept>Accept</button></div>
@@ -358,7 +365,7 @@ export function initializeAdvertisingConsent(): void {
     signupMeasurement() {
       const stored = rawChoice();
       if (forcedOff || !valid(stored) || stored.decision !== "accepted" || stored.token !== choice?.token) return;
-      const identifiers: Partial<Pick<Measurement, "fbp" | "fbc" | "rdt_cid" | "gclid" | "gbraid" | "wbraid">> = {};
+      const identifiers: Partial<Pick<Measurement, "fbp" | "fbc" | "rdt_cid" | "gclid" | "gbraid" | "wbraid" | "li_fat_id">> = {};
       if (metaEnabled) {
         const fbp = identifier(cookie("_fbp"), "fbp");
         const fbc = identifier(cookie("_fbc"), "fbc");
@@ -368,6 +375,10 @@ export function initializeAdvertisingConsent(): void {
       if (redditEnabled) {
         const click = capturedClick("rdt_cid");
         if (click) identifiers.rdt_cid = click;
+      }
+      if (linkedinEnabled) {
+        const click = capturedClick("li_fat_id");
+        if (click) identifiers.li_fat_id = click;
       }
       if (googleMeasurementEnabled) {
         const clicks = GOOGLE_CLICKS.filter((key) => cookie(`_awc_${key}`) !== undefined);

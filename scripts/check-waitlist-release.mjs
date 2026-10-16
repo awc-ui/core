@@ -10,6 +10,7 @@ export function checkWaitlistRelease(env = process.env) {
     ["PUBLIC_META_MEASUREMENT_ENABLED", "Meta"],
     ["PUBLIC_REDDIT_MEASUREMENT_ENABLED", "Reddit"],
     ["PUBLIC_GOOGLE_MEASUREMENT_ENABLED", "Google"],
+    ["PUBLIC_LINKEDIN_MEASUREMENT_ENABLED", "LinkedIn"],
   ];
   for (const [name, value] of [
     ["PUBLIC_WAITLIST_ENABLED", enabled],

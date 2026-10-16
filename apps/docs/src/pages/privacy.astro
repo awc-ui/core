@@ -9,7 +9,9 @@ const redditEnabled = import.meta.env.PROD && import.meta.env.CONTEXT === 'produ
   import.meta.env.PUBLIC_REDDIT_MEASUREMENT_ENABLED === 'true';
 const googleMeasurementEnabled = import.meta.env.PROD && import.meta.env.CONTEXT === 'production' &&
   import.meta.env.PUBLIC_GOOGLE_MEASUREMENT_ENABLED === 'true';
-const serverMeasurementEnabled = metaEnabled || redditEnabled || googleMeasurementEnabled;
+const linkedinEnabled = import.meta.env.PROD && import.meta.env.CONTEXT === 'production' &&
+  import.meta.env.PUBLIC_LINKEDIN_MEASUREMENT_ENABLED === 'true';
+const serverMeasurementEnabled = metaEnabled || redditEnabled || googleMeasurementEnabled || linkedinEnabled;
 const signupEnabled = import.meta.env.PUBLIC_WAITLIST_ENABLED === 'true' ||
   (import.meta.env.PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED === 'true' &&
     import.meta.env.CONTEXT === 'production');
@@ -57,10 +59,15 @@ if (signupEnabled && !ready) {
       ) : (
         <p>Google server signup measurement is currently disabled. We do not store Google ad click IDs in our _awc_ cookies or attach them to signup requests while it is disabled. The separately consented Google tag described above is unaffected.</p>
       )}
+      {linkedinEnabled ? (
+        <p>With your permission, when the current link contains one valid LinkedIn ad click ID (li_fat_id), we store it in the _awc_li_fat_id cookie. After a new waitlist signup is saved, our server queues one signup conversion for LinkedIn with that click ID, the event time and a random event ID. We do not send your email address, an email hash, name, raw IP address or private link to LinkedIn. Duplicate signups do not create another conversion. No LinkedIn browser tag is loaded. See <a href="https://www.linkedin.com/legal/privacy-policy">LinkedIn's Privacy Policy</a>.</p>
+      ) : (
+        <p>LinkedIn signup measurement is currently disabled. We do not store LinkedIn ad click IDs or attach them to signup requests while it is disabled.</p>
+      )}
       <p>Your choice and a random code used to withdraw permission are stored on this device for up to 90 days. Advertising cookies created by this site are limited to that period; returning to the site does not renew your choice. When the period ends, we ask again. These preferences are specific to this browser. Necessary storage used to remember a rejection or retry a withdrawal is used only to respect your choice.</p>
       {serverMeasurementEnabled && <p>Pending server conversion events are retried for at most 24 hours. We clear their advertising identifiers when delivery finishes, fails, expires or is cancelled. Active consent records last up to 90 days. A withdrawal linked to a recorded consent is retained as a hashed record for up to 180 days to prevent a delayed request from restoring permission. Withdrawal codes without an associated signup expire after 24 hours. Minimal completed event records are removed after 30 days; routine cleanup runs hourly. Provider retention after receipt is governed by the provider's terms.</p>}
       <p>When you reject after accepting, we stop new optional measurement, remove this site's advertising cookies and reload the page if needed to unload the Google tag. A withdrawal request also cancels server conversion events that have not yet been sent. If your connection is unavailable, your browser keeps this withdrawal code and retries on a later visit or when connectivity returns. A request already in flight or data already received by a provider cannot be recalled by this control; contact us for an erasure request. Clearing browser storage can remove an unsent withdrawal request, so contact us if you need help.</p>
-      <p>Google and, when enabled, Meta and Reddit may process advertising data outside the European Economic Area. Their linked privacy terms explain processing and international transfer safeguards. This optional processing relies on your consent; withdrawing it does not affect processing that already took place lawfully.</p>
+      <p>Google and, when enabled, Meta, Reddit and LinkedIn may process advertising data outside the European Economic Area. Their linked privacy terms explain processing and international transfer safeguards. This optional processing relies on your consent; withdrawing it does not affect processing that already took place lawfully.</p>
       <h2>Your choices and rights</h2>
       <p>You may withdraw email consent at any time using the unsubscribe link. This does not affect previous lawful processing or remove your early offer eligibility. You can request access, correction, erasure, restriction, or portability where applicable, and object to processing based on legitimate interests. Contact us using the address above; we may need to verify the request to protect your information.</p>
       <p>You can also complain to your local data protection authority. In Romania, this is <a href="https://www.dataprotection.ro/">ANSPDCP</a>. We do not make decisions with legal or similarly significant effects about you solely through automated processing.</p>
