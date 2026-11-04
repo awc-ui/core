@@ -72,7 +72,7 @@ full constraint-validation API and its own supporting/error line.
 
 | Event | Detail | Notes |
 |---|---|---|
-| `mdChange` | `{ checked, indeterminate }` | User activation only (click / `Space`). Bubbles and is composed |
+| `mdChange` | `{ checked, indeterminate }` | User activation only (click / `Space` — a held Space toggles once; key repeats are ignored). Bubbles and is composed |
 | `mdValidityChange` | `{ valid, validationMessage, flags }` | Only when validity **changes**; `composed: false` — does **not** cross shadow boundaries |
 
 **Methods** — all async: `getValidity()`, `checkValidity()`,
@@ -108,6 +108,9 @@ full constraint-validation API and its own supporting/error line.
 - `error-text` exists because a checkbox otherwise has nowhere to show a failed
   `required` except the browser's transient balloon.
 - `value-missing-label` is a prop, not a hardcoded string, so you localize it.
+- Under `prefers-reduced-motion: reduce` the colour and press-squish
+  transitions and the glyph entrance are removed (the press still squishes,
+  instantly); the `md-ripple` wave keeps running, per md-ripple's policy.
 - **The mark is a Material Symbols glyph, not an SVG path** — `check` when
   checked, `remove` when `indeterminate`, at `FILL 1 / wght 600`. It is drawn
   with `--md-sys-icon-font-family` (default `Material Symbols Outlined`); if

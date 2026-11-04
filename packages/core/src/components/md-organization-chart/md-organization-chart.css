@@ -228,41 +228,68 @@
 
 /*
  * THE RUN: one L-shaped box from the drop to the riser, drawn exactly the way
- * the grey connectors are — a top border for the horizontal, a side border for
- * the vertical, and a radius joining them — so it owns its own corner instead of
- * overlaying somebody else's. `measureTrail()` sizes it and says which end turns
- * down; the other end is the drop, whose vertical already closes that corner.
+ * the grey connectors are — one border along the bus, one border down the
+ * riser, and a radius joining them — so it owns its own corner instead of
+ * overlaying somebody else's.
+ *
+ * `measureTrail()` measures the bus axis (x in a vertical tree, y in a
+ * horizontal one) from the drop's and the riser's USED borders and names the
+ * PHYSICAL sides and corner to draw (`data-trail-run`, `data-trail-elbow`):
+ * logical names cannot work here, because which physical side the riser is on
+ * depends on where the selected child sits, not on the reading direction. The
+ * other axis is the riser's own length, the level gap, from the bus.
  */
 .md-org-chart__group[data-trail-run]::after {
   content: '';
   position: absolute;
-  /* The bus is not at the group's top edge — the group pads `--_level-gap` above
-     it for the drop to fall through. */
+  box-sizing: border-box;
+  /* Vertical tree: the bus is not at the group's top edge — the group pads
+     `--_level-gap` above it for the drop to fall through. */
   top: var(--_level-gap);
+  height: var(--_level-gap);
   left: var(--_trail-x);
   width: var(--_trail-w);
-  height: var(--_level-gap);
-  border-top: var(--_connector-width) solid var(--_selected-color);
-  box-sizing: border-box;
+  border: 0 solid var(--_selected-color);
 }
 
-.md-org-chart__group[data-trail-dir='end']::after {
-  border-right: var(--_connector-width) solid var(--_selected-color);
+/* Horizontal tree: the bus is the group's inline-start padding edge and the
+   risers run inline-forward from it. */
+:host([orientation='horizontal']) .md-org-chart__group[data-trail-run]::after {
+  top: var(--_trail-y);
+  height: var(--_trail-h);
+  left: auto;
+  width: auto;
+  inset-inline-start: var(--_level-gap);
+  inline-size: var(--_level-gap);
 }
 
-.md-org-chart__group[data-trail-dir='start']::after {
-  border-left: var(--_connector-width) solid var(--_selected-color);
+.md-org-chart__group[data-trail-run~='top']::after {
+  border-top-width: var(--_connector-width);
+}
+.md-org-chart__group[data-trail-run~='right']::after {
+  border-right-width: var(--_connector-width);
+}
+.md-org-chart__group[data-trail-run~='bottom']::after {
+  border-bottom-width: var(--_connector-width);
+}
+.md-org-chart__group[data-trail-run~='left']::after {
+  border-left-width: var(--_connector-width);
 }
 
 /* Rounded only at the outermost child, where the bus itself ends and turns
-   down. In between it is a square T, and a curve there pulls away from the
-   straight grey bus and lets it show through the corner. */
-.md-org-chart__group[data-trail-elbow][data-trail-dir='end']::after {
-  border-start-end-radius: var(--_elbow);
+   into the riser. In between it is a square T, and a curve there pulls away
+   from the straight grey bus and lets it show through the corner. */
+.md-org-chart__group[data-trail-elbow~='top-left']::after {
+  border-top-left-radius: var(--_elbow);
 }
-
-.md-org-chart__group[data-trail-elbow][data-trail-dir='start']::after {
-  border-start-start-radius: var(--_elbow);
+.md-org-chart__group[data-trail-elbow~='top-right']::after {
+  border-top-right-radius: var(--_elbow);
+}
+.md-org-chart__group[data-trail-elbow~='bottom-left']::after {
+  border-bottom-left-radius: var(--_elbow);
+}
+.md-org-chart__group[data-trail-elbow~='bottom-right']::after {
+  border-bottom-right-radius: var(--_elbow);
 }
 
 /* Roots have no incoming connector. */
@@ -420,6 +447,22 @@
 .md-org-chart__node--selected > .md-org-chart__state-layer {
   opacity: 0.08;
   background: var(--_selected-color);
+}
+
+/*
+ * A NODE'S OWN ACCENT (`accent` in the data) replaces the shared selected
+ * colour for that node only — its selected ring, selected tint and ripple —
+ * and rings its avatar. `--_accent` is set inline on the node card from the
+ * data; the class is only present when the node has one, so every other node
+ * keeps `--md-org-chart-selected-color` and no ring.
+ */
+.md-org-chart__node--accent {
+  --_selected-color: var(--_accent);
+}
+
+.md-org-chart__node--accent > .md-org-chart__avatar {
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--_accent);
 }
 
 .md-org-chart__avatar {
@@ -587,6 +630,24 @@
   border-block-start: var(--_line);
 }
 
+/*
+ * Horizontal tree: the drop and the risers are block-axis borders there (the
+ * inline-start borders are the vertical bus), so the trail tints those. After
+ * the horizontal connector rules on purpose: same specificity, later wins. The
+ * bus half an on-path `::after` carries stays grey — it leads on to the next
+ * sibling, which is not on the trail; the run draws the stretch that is.
+ */
+:host([orientation='horizontal']) .md-org-chart__group[data-trail]::before {
+  border-block-start-color: var(--_selected-color);
+}
+:host([orientation='horizontal']) .md-org-chart__branch--on-path::after {
+  border-inline-start-color: var(--_connector-color);
+  border-block-start-color: var(--_selected-color);
+}
+:host([orientation='horizontal']) .md-org-chart__branch--on-path:last-child::before {
+  border-block-end-color: var(--_selected-color);
+}
+
 /* Toggler hangs on the node's inline-end edge (over the outgoing drop),
    vertically centred — instead of the bottom edge in vertical mode. */
 :host([orientation='horizontal']) .md-org-chart__toggle-tip {
@@ -598,7 +659,9 @@
 
 /* Give the overhanging inline-end toggler room instead of the block-end room. */
 :host([orientation='horizontal']) .md-org-chart__viewport {
-  padding: 8px calc(var(--_toggle-size) / 2 + 10px) 8px 8px;
+  /* Logical: the togglers hang over the inline END, which is the left in RTL. */
+  padding-block: 8px;
+  padding-inline: 8px calc(var(--_toggle-size) / 2 + 10px);
 }
 
 /* Enter animation grows from the inline-start (parent) side. */
@@ -617,6 +680,23 @@
   transform-origin: left center;
 }
 
+/* Transforms are physical: in RTL the parent sits on the right, so the group
+   grows in from there. */
+@keyframes md-org-chart-grow-h-rtl {
+  from {
+    opacity: 0;
+    transform: translateX(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+:host([orientation='horizontal']:dir(rtl)) .md-org-chart__group {
+  animation-name: md-org-chart-grow-h-rtl;
+  transform-origin: right center;
+}
+
 /* ── Reduced motion ───────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -625,7 +705,9 @@
   .md-org-chart__state-layer {
     transition: none;
   }
-  .md-org-chart__group {
+  .md-org-chart__group,
+  :host([orientation='horizontal']) .md-org-chart__group,
+  :host([orientation='horizontal']:dir(rtl)) .md-org-chart__group {
     animation: none;
   }
 }

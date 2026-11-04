@@ -1,0 +1,209 @@
+{
+ "tag": "md-radio",
+ "case": "soft-disabled",
+ "request": {
+  "tag": "md-radio",
+  "properties": {
+   "aria-label": "Shared workspace",
+   "softDisabled": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "actions": [
+        "AXPress"
+       ],
+       "description": "Shared workspace",
+       "enabled": false,
+       "expanded": false,
+       "focused": false,
+       "frame": [
+        296,
+        32,
+        48,
+        48
+       ],
+       "identifier": "example-md-radio",
+       "invalid": "false",
+       "required": false,
+       "role": "AXRadioButton",
+       "roleDescription": "radio button",
+       "selected": false,
+       "value": false
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      112
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    112
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "1687E5C1-4887-4C36-A134-FD00DEEDE226",
+    "properties": {
+     "text": "Receive project updates"
+    },
+    "tag": "#text"
+   }
+  ],
+  "id": "example-md-radio",
+  "properties": {
+   "aria-label": "Shared workspace",
+   "checked": false,
+   "density": 0,
+   "disabled": false,
+   "name": "",
+   "required": false,
+   "softDisabled": true,
+   "value": "updates",
+   "valueMissingLabel": "Please select one of these options."
+  },
+  "tag": "md-radio"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Shared workspace",
+    "frame": [
+     296,
+     32,
+     48,
+     48
+    ],
+    "identifier": "example-md-radio",
+    "role": "AXRadioButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Shared workspace",
+    "frame": [
+     296,
+     32,
+     48,
+     48
+    ],
+    "identifier": "example-md-radio",
+    "role": "AXRadioButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 48,
+     "width": 48,
+     "x": 296,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "active": false,
+     "checked": false,
+     "containerX": 14,
+     "focusRing": false,
+     "focusVisible": false,
+     "focused": false,
+     "hostHeight": 48,
+     "hover": false,
+     "iconSize": 20,
+     "innerColor": [
+      0.40392154455184937,
+      0.3137255012989044,
+      0.6431372761726379,
+      1
+     ],
+     "innerScale": 0,
+     "innerSize": 10,
+     "layerColor": [
+      0.10980392247438431,
+      0.10588235408067703,
+      0.12156864255666733,
+      1
+     ],
+     "layerOpacity": -1,
+     "outerColor": [
+      0.10980392247438431,
+      0.10588235408067703,
+      0.12156864255666733,
+      0.3803921639919281
+     ],
+     "outerFill": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "pressed": false,
+     "renderTime": 1031528788.2082086,
+     "scale": 1,
+     "stateLayerSize": 40,
+     "support": "",
+     "supportWidth": 0,
+     "supportX": 0,
+     "supportY": 0,
+     "tabindex": 0,
+     "touch": 48,
+     "valueMissing": false,
+     "waveOpacity": 0,
+     "waveScale": null
+    },
+    "name": "md-radio"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

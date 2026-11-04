@@ -3387,3 +3387,58 @@ export const DynamicReconfiguration: Story = {
     </md-list>
   `,
 };
+
+export const DynamicPoliciesAndExpandedRows: Story = {
+  render: () => html`<md-list selection-mode="multi-select" interaction-mode="multi-action" style="width:360px"><md-list-item type="button" headline="Folder" expandable><button slot="trailing">More</button><md-list-item slot="expanded-content" headline="Nested document" value="nested"></md-list-item></md-list-item><md-divider></md-divider><md-list-item headline="Archive" value="archive"></md-list-item></md-list>`,
+  play: async ({ canvasElement }) => {
+    const list = await getMdList(canvasElement) as HTMLMdListElement;
+    const parent = list.querySelector('md-list-item') as HTMLMdListItemElement;
+    await waitFor(() => expect(parent.classList.contains('hydrated')).toBe(true));
+    let activated = 0; parent.addEventListener('mdItemClick', () => activated++);
+    (parent.querySelector('button') as HTMLElement).click(); expect(activated).toBe(0);
+    await parent.expand(); await waitFor(() => expect(parent.expanded).toBe(true));
+    await parent.collapse(); await waitFor(() => expect(parent.expanded).toBe(false));
+    await parent.toggle(); await waitFor(() => expect(parent.expanded).toBe(true));
+    list.reorderable = true; list.roleOverride = 'menu';
+    await waitFor(() => expect(parent.reorderable).toBe(true));
+    await waitFor(() => expect(list.querySelector('md-divider')!.hasAttribute('aria-hidden')).toBe(false));
+    list.roleOverride = ''; list.selectionMode = 'none'; list.reorderable = false;
+    await waitFor(() => expect(list.getAttribute('role')).toBe('list'));
+    await waitFor(() => expect(parent.reorderable).toBe(false));
+    const late = document.createElement('md-list-item'); late.type = 'button'; late.headline = 'Late action'; list.append(late);
+    await waitFor(() => expect(late.classList.contains('hydrated')).toBe(true));
+    await late.setFocus(); key(late, 'Home'); await waitFor(() => expect(document.activeElement).toBe(parent));
+    key(parent, 'End'); await waitFor(() => expect(document.activeElement).toBe(late));
+  },
+};
+
+export const PointerReorderBothDirections: Story = {
+  render: () => html`<md-list reorderable style="width:320px" label="Reorder files">
+    <md-list-item type="button" headline="Alpha"></md-list-item><md-list-item type="button" headline="Beta"></md-list-item><md-list-item type="button" headline="Gamma"></md-list-item>
+  </md-list>`,
+  play: async ({ canvasElement }) => {
+    const list = await getMdList(canvasElement);
+    await waitFor(() => rowsOf(list).forEach(row => expect(row.shadowRoot?.querySelector('[data-list-drag-handle]')).not.toBeNull()));
+    const events: Array<{ from: number; to: number; order: number[] }> = [];
+    list.addEventListener('mdReorder', event => events.push((event as CustomEvent).detail));
+    for (const [from, to] of [[0, 2], [2, 0]]) {
+      const rows = rowsOf(list); const handle = rows[from].shadowRoot!.querySelector('[data-list-drag-handle]') as HTMLElement;
+      const start = handle.getBoundingClientRect(); const end = rows[to].getBoundingClientRect();
+      const clientX = start.x + start.width / 2; const clientY = start.y + start.height / 2;
+      // Native pointer events preserve the composed path across the shadow
+      // handle; userEvent's text-selection Range cannot span those DOM trees.
+      const drag = (target: Element, type: string, y: number) => target.dispatchEvent(new PointerEvent(type, {
+        bubbles: true, composed: true, cancelable: true, pointerId: 7, button: 0, buttons: type === 'pointerup' ? 0 : 1, clientX, clientY: y,
+      }));
+      drag(handle, 'pointerdown', clientY);
+      const targetY = end.y + end.height / 2 + (to > from ? 10 : -10);
+      drag(list, 'pointermove', targetY); drag(list, 'pointerup', targetY);
+      await waitFor(() => expect(rowsOf(list).map(row => row.getAttribute('headline')))
+        .toEqual(to === 2 ? ['Beta', 'Gamma', 'Alpha'] : ['Alpha', 'Beta', 'Gamma']));
+      for (const row of rowsOf(list)) {
+        expect(row.style.transform).toBe(''); expect(row.classList.contains('md-list-item--dragged')).toBe(false);
+      }
+    }
+    expect(events).toEqual([{ from: 0, to: 2, order: [1, 2, 0] }, { from: 2, to: 0, order: [0, 1, 2] }]);
+  },
+};

@@ -14,6 +14,28 @@ test('syntax highlighting serves only its public helper, selected bundle and lic
   for (const asset of ['/build-syntax-highlighting.mjs', '/syntax-highlighting.test.mjs', '/syntax-vendor/../server.mjs']) assert.equal(await resolveAsset(asset), null, asset);
 });
 
+test('preview frame startup serves its lifecycle module without exposing the test source', async () => {
+  for (const asset of ['/preview-frame.html', '/preview-frame.js']) assert.ok(await resolveAsset(asset), asset);
+  assert.equal(await resolveAsset('/preview-frame.test.mjs'), null);
+});
+
+test('every local module imported by the laboratory browser entry is actually served', async () => {
+  const pending = ['/app.js'], visited = new Set();
+  while (pending.length) {
+    const route = pending.pop();
+    if (visited.has(route)) continue;
+    visited.add(route);
+    const file = await resolveAsset(route);
+    assert.ok(file, `A missing browser asset would block startup: ${route}`);
+    const source = await readFile(file, 'utf8');
+    for (const match of source.matchAll(/(?:from\s*|import\s*)['"](\.\/[^'"]+\.js)['"]/g)) {
+      pending.push(path.posix.join(path.posix.dirname(route), match[1]));
+    }
+  }
+  assert.ok(visited.has('/button-configuration.js'));
+  assert.equal(await resolveAsset('/button-configuration.test.mjs'), null);
+});
+
 test('Studio branding serves the exact canonical Astro Docs logo assets', async () => {
   for (const name of ['md3-logo-light.svg', 'md3-logo-dark.svg']) {
     const canonical = await realpath(new URL(`../docs/src/assets/${name}`, import.meta.url));
@@ -70,7 +92,7 @@ test('an explicitly configured web build can live outside the checkout', async (
 test('browser documentation modules are served without opening nearby internal modules', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'awc-native-doc-modules-'));
   try {
-    const allowed = ['documentation.js', 'documentation-ui.js', 'brand-icons.js', 'usage-snippets.js', 'property-controls.js', 'studio.css', 'studio-ui.js', 'canvas-tools.js', 'canvas-tools.css', 'canvas-inspector.js', 'canvas-inspector.css', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'];
+    const allowed = ['documentation.js', 'documentation-ui.js', 'brand-icons.js', 'usage-snippets.js', 'property-controls.js', 'studio.css', 'studio-backdrop.css', 'studio-architecture.svg', 'studio-ui.js', 'canvas-tools.js', 'canvas-tools.css', 'canvas-inspector.js', 'canvas-inspector.css', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'];
     const denied = ['documentation.test.mjs', 'documentation-ui.test.js', 'usage-snippets.mjs', 'canvas-tools.test.mjs', 'canvas-inspector.test.mjs', 'server.mjs', 'native-live.mjs', 'coverage.mjs', 'theme-vendor/private.js', 'theme-vendor/awc-theme.js.map', 'build-studio-theme.mjs'];
     for (const file of [...allowed, ...denied]) { await mkdir(path.dirname(path.join(root, file)), { recursive: true }); await writeFile(path.join(root, file), 'export {};'); }
     for (const file of allowed) assert.equal(await resolveAsset(`/${file}`, { appRoot: root }), await realpath(path.join(root, file)), file);

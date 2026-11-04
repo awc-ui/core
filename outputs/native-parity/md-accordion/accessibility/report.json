@@ -1,0 +1,304 @@
+{
+ "tag": "md-accordion",
+ "at": "2026-10-29T11:11:41.032Z",
+ "rows": [
+  {
+   "case": "default",
+   "web": {
+    "elements": [
+     "heading:A shared design language Built for every surface",
+     "button:A shared design language Built for every surface",
+     "region:A shared design language Built for every surface",
+     "heading:Native by design Platform-specific implementations",
+     "button:Native by design Platform-specific implementations"
+    ],
+    "texts": [
+     "Colors, spacing, shapes, and component contracts come from the same AWC source."
+    ],
+    "focus": [
+     "button:A shared design language Built for every surface",
+     "button:Native by design Platform-specific implementations"
+    ],
+    "contrast": {
+     "measured": 9,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "heading:A shared design language Built for every surface",
+      "button:A shared design language Built for every surface {\"expanded\":\"true\"}",
+      "group:A shared design language Built for every surface",
+      "heading:Native by design Platform-specific implementations",
+      "button:Native by design Platform-specific implementations"
+     ],
+     "texts": [
+      "Colors, spacing, shapes, and component contracts come from the same AWC source."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:A shared design language Built for every surface",
+      "button:Native by design Platform-specific implementations",
+      "button:A shared design language Built for every surface",
+      "button:Native by design Platform-specific implementations",
+      "button:A shared design language Built for every surface"
+     ],
+     "findings": [],
+     "contrastMeasured": 5
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "heading:A shared design language Built for every surface",
+      "button:A shared design language Built for every surface {\"expanded\":\"true\"}",
+      "heading:Native by design Platform-specific implementations",
+      "button:Native by design Platform-specific implementations {\"expanded\":\"false\"}"
+     ],
+     "texts": [
+      "Colors, spacing, shapes, and component contracts come from the same AWC source."
+     ],
+     "focus": [
+      "button:A shared design language Built for every surface",
+      "button:Native by design Platform-specific implementations",
+      "∅",
+      "button:A shared design language Built for every surface",
+      "button:Native by design Platform-specific implementations"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "heading:A shared design language Built for every surface",
+      "button:A shared design language Built for every surface {\"expanded\":\"true\"}",
+      "heading:Native by design Platform-specific implementations",
+      "button:Native by design Platform-specific implementations {\"expanded\":\"false\"}"
+     ],
+     "texts": [
+      "Colors, spacing, shapes, and component contracts come from the same AWC source."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:A shared design language Built for every surface",
+      "button:Native by design Platform-specific implementations",
+      "button:A shared design language Built for every surface",
+      "button:Native by design Platform-specific implementations",
+      "button:A shared design language Built for every surface"
+     ],
+     "findings": [],
+     "contrastMeasured": 9,
+     "atf": {
+      "elements": 24,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "exclusive",
+   "web": {
+    "elements": [
+     "heading:A shared design language Built for every surface",
+     "button:A shared design language Built for every surface",
+     "region:A shared design language Built for every surface",
+     "heading:Native by design Platform-specific implementations",
+     "button:Native by design Platform-specific implementations"
+    ],
+    "texts": [
+     "Colors, spacing, shapes, and component contracts come from the same AWC source."
+    ],
+    "focus": [
+     "button:A shared design language Built for every surface",
+     "button:Native by design Platform-specific implementations"
+    ],
+    "contrast": {
+     "measured": 9,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "heading:A shared design language Built for every surface",
+      "button:A shared design language Built for every surface {\"expanded\":\"true\"}",
+      "group:A shared design language Built for every surface",
+      "heading:Native by design Platform-specific implementations",
+      "button:Native by design Platform-specific implementations"
+     ],
+     "texts": [
+      "Colors, spacing, shapes, and component contracts come from the same AWC source."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:A shared design language Built for every surface",
+      "button:Native by design Platform-specific implementations",
+      "button:A shared design language Built for every surface",
+      "button:Native by design Platform-specific implementations",
+      "button:A shared design language Built for every surface"
+     ],
+     "findings": [],
+     "contrastMeasured": 5
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "heading:A shared design language Built for every surface",
+      "button:A shared design language Built for every surface {\"expanded\":\"true\"}",
+      "heading:Native by design Platform-specific implementations",
+      "button:Native by design Platform-specific implementations {\"expanded\":\"false\"}"
+     ],
+     "texts": [
+      "Colors, spacing, shapes, and component contracts come from the same AWC source."
+     ],
+     "focus": [
+      "button:A shared design language Built for every surface",
+      "button:Native by design Platform-specific implementations",
+      "∅",
+      "button:A shared design language Built for every surface",
+      "button:Native by design Platform-specific implementations"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "heading:A shared design language Built for every surface",
+      "button:A shared design language Built for every surface {\"expanded\":\"true\"}",
+      "heading:Native by design Platform-specific implementations",
+      "button:Native by design Platform-specific implementations {\"expanded\":\"false\"}"
+     ],
+     "texts": [
+      "Colors, spacing, shapes, and component contracts come from the same AWC source."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:A shared design language Built for every surface",
+      "button:Native by design Platform-specific implementations",
+      "button:A shared design language Built for every surface",
+      "button:Native by design Platform-specific implementations",
+      "button:A shared design language Built for every surface"
+     ],
+     "findings": [],
+     "contrastMeasured": 9,
+     "atf": {
+      "elements": 24,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -130,6 +130,9 @@
 }
 :host([full-height]) .md-skeleton__shape {
   block-size: 100%;
+  /* Percentage height is auto when the host only has a minimum height.
+     Preserve the same fallback on the painted shape, not just its host. */
+  min-block-size: var(--_h);
 }
 /* A full-height circular: the HOST becomes a square sized off the row height
    (aspect-ratio derives the width), and the shape fills it as a circle — so it
@@ -167,8 +170,7 @@
 
 /* RTL: taper the OPPOSITE end so the truncation visually anchors
    to the start of the paragraph regardless of direction. */
-:host([dir="rtl"]) .md-skeleton__line--tapered,
-:host-context([dir="rtl"]) .md-skeleton__line--tapered {
+:host(:dir(rtl)) .md-skeleton__line--tapered {
   margin-inline-end: auto;
 }
 
@@ -225,18 +227,16 @@
 }
 
 /* RTL: flip the wave so it sweeps in the reading direction. */
-:host([dir="rtl"].md-skeleton--anim-wave) .md-skeleton__shape::after,
-:host([dir="rtl"].md-skeleton--anim-wave) .md-skeleton__line::after,
-:host-context([dir="rtl"]).md-skeleton--anim-wave .md-skeleton__shape::after,
-:host-context([dir="rtl"]).md-skeleton--anim-wave .md-skeleton__line::after {
+:host(:dir(rtl)) .md-skeleton__shape::after,
+:host(:dir(rtl)) .md-skeleton__line::after {
   animation-direction: reverse;
 }
 
 /* ==========================================================
    4. REDUCED MOTION
-   We still convey "loading" — a single dim → bright cycle at
-   1/3 amplitude, paced 2× slower so it's a clear cue without
-   strobing.
+   The component removes its pulse/wave class when the preference
+   changes. CSS also suppresses the entrance and shimmer immediately.
+   The slower pulse is a fallback while that state update is pending.
    ========================================================== */
 @media (prefers-reduced-motion: reduce) {
   :host {

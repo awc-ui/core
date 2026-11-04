@@ -1,0 +1,94 @@
+{
+ "tag": "md-split-button",
+ "case": "expanded",
+ "elements": [
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    245.33333333333331,
+    380,
+    99.66666666666669,
+    40
+   ],
+   "interactive": true,
+   "label": "Publish",
+   "traits": [
+    "button"
+   ]
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    347,
+    380,
+    48,
+    40
+   ],
+   "hint": "Menu button",
+   "interactive": true,
+   "label": "More actions",
+   "traits": [
+    "button"
+   ],
+   "value": "Expanded"
+  }
+ ],
+ "focus": [
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     245.33333333333331,
+     380,
+     99.66666666666669,
+     40
+    ],
+    "interactive": true,
+    "label": "Publish",
+    "traits": [
+     "button"
+    ]
+   }
+  },
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     347,
+     380,
+     48,
+     40
+    ],
+    "hint": "Menu button",
+    "interactive": true,
+    "label": "More actions",
+    "traits": [
+     "button"
+    ],
+    "value": "Expanded"
+   }
+  },
+  {}
+ ],
+ "id": "md-split-button/expanded",
+ "image": {
+  "scale": 3,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "ios": "26.3.1",
+ "platform": "ios"
+}

@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="dev.awc.playground.LivePreviewInspectionTest" tests="6" failures="4" errors="0" skipped="0" time="13.764" timestamp="2026-10-20T19:26:38" hostname="localhost">
+  <properties>
+    <property name="device" value="AwcNative(AVD) - 16" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="captureKeepsStableRootButDropsChangedPartsAndTheirDescendants" classname="dev.awc.playground.LivePreviewInspectionTest" time="0.01" />
+  <testcase name="loadingHooksAndShortComponentsStayCenteredInTheirActualCapturedSurface" classname="dev.awc.playground.LivePreviewHostTest" time="3.679">
+    <failure>java.lang.AssertionError: {"error":"A native session can only be configured once."} expected:&lt;200&gt; but was:&lt;400&gt;
+at org.junit.Assert.fail(Assert.java:89)
+at org.junit.Assert.failNotEquals(Assert.java:835)
+at org.junit.Assert.assertEquals(Assert.java:120)
+at dev.awc.playground.LivePreviewHostTest.withHost$lambda$0$1(LivePreviewHostTest.kt:576)
+at dev.awc.playground.LivePreviewHostTest.$r8$lambda$t6DYtuaPQE_Jq7jVhc22QUyoZHQ(Unknown Source:0)
+at dev.awc.playground.LivePreviewHostTest$$ExternalSyntheticLambda17.invoke(D8$$SyntheticClass:0)
+at dev.awc.playground.LivePreviewHostTest.loadingHooksAndShortComponentsStayCenteredInTheirActualCapturedSurface$lambda$5(LivePreviewHostTest.kt:553)
+at dev.awc.playground.LivePreviewHostTest.$r8$lambda$wn-uGcGEakmuO2lwHhJPbOO83dc(Unknown Source:0)
+at dev.awc.playground.LivePreviewHostTest$$ExternalSyntheticLambda16.invoke(D8$$SyntheticClass:0)
+at dev.awc.playground.LivePreviewHostTest.withHost(LivePreviewHostTest.kt:574)
+at dev.awc.playground.LivePreviewHostTest.loadingHooksAndShortComponentsStayCenteredInTheirActualCapturedSurface(LivePreviewHostTest.kt:550)
+</failure>
+  </testcase>
+  <testcase name="segmentedContextUsesRealOrderedSelectionTypedSlotsAndCommittedFrameMeasurements" classname="dev.awc.playground.LivePreviewHostTest" time="3.461" />
+  <testcase name="all84BrowserFixturesMatchActualGeometryClippingThemesAndRgbaPaint" classname="dev.awc.playground.NativeLoadingIndicatorParityTest" time="4.468">
+    <failure>java.lang.AssertionError: light/hidden-contained has no fabricated bounds
+at org.junit.Assert.fail(Assert.java:89)
+at org.junit.Assert.assertTrue(Assert.java:42)
+at dev.awc.playground.NativeLoadingIndicatorParityTest.all84BrowserFixturesMatchActualGeometryClippingThemesAndRgbaPaint(NativeLoadingIndicatorParityTest.kt:86)
+</failure>
+  </testcase>
+  <testcase name="semanticLabelIsIndeterminatePoliteAndFocusIsExplicitWithActualPaint" classname="dev.awc.playground.NativeLoadingIndicatorParityTest" time="0.831">
+    <failure>java.lang.AssertionError: Failed to assert the following: (Focused = 'true')
+Semantics of the node:
+Node #162 at (l=72.0, t=72.0, r=168.0, b=168.0)px
+ContentDescription = '[Loading records]'
+LiveRegion = 'Polite'
+ProgressBarRangeInfo = 'ProgressBarRangeInfo(current=0.0, range=0.0..0.0, steps=0)'
+MergeDescendants = 'true'
+Selector used: (ContentDescription = 'Loading records' (ignoreCase: false))
+
+at androidx.compose.ui.test.AssertionsKt.assert(Assertions.kt:264)
+at androidx.compose.ui.test.AssertionsKt.assert$default(Assertions.kt:254)
+at androidx.compose.ui.test.AssertionsKt.assertIsFocused(Assertions.kt:117)
+at dev.awc.playground.NativeLoadingIndicatorParityTest.semanticLabelIsIndeterminatePoliteAndFocusIsExplicitWithActualPaint(NativeLoadingIndicatorParityTest.kt:141)
+</failure>
+  </testcase>
+  <testcase name="actualMorphMovesWhileReducedMotionKeepsCircleAndPulsesAndForcedPaletteIsExplicit" classname="dev.awc.playground.NativeLoadingIndicatorParityTest" time="0.846">
+    <failure>java.lang.AssertionError: expected:&lt;Color(0.06666667, 0.13333334, 0.2, 1.0, sRGB IEC61966-2.1)&gt; but was:&lt;Color(1.0, 0.0, 0.0, 1.0, sRGB IEC61966-2.1)&gt;
+at org.junit.Assert.fail(Assert.java:89)
+at org.junit.Assert.failNotEquals(Assert.java:835)
+at org.junit.Assert.assertEquals(Assert.java:120)
+at org.junit.Assert.assertEquals(Assert.java:146)
+at dev.awc.playground.NativeLoadingIndicatorParityTest.actualMorphMovesWhileReducedMotionKeepsCircleAndPulsesAndForcedPaletteIsExplicit(NativeLoadingIndicatorParityTest.kt:170)
+</failure>
+  </testcase>
+</testsuite>

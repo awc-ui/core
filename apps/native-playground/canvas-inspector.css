@@ -3,6 +3,7 @@
 .canvas-inspector-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0}
 .canvas-inspector-heading>div{min-width:0;display:grid;gap:3px}.canvas-inspector-heading strong{font-size:12px;font-weight:500}.canvas-inspector-heading code{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--md-sys-color-on-surface-variant)}
 .canvas-inspector-heading md-button{flex-shrink:0}
+.canvas-inspector-heading md-button[hidden],.canvas-measure-overlay[hidden]{display:none!important}
 .canvas-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 16px;margin:4px 0}
 .canvas-metrics>div{min-width:0;border-inline-start:2px solid var(--md-sys-color-outline-variant);padding-inline-start:7px}
 .canvas-metrics dt{font-size:10px;line-height:1.5;color:var(--md-sys-color-on-surface-variant)}.canvas-metrics dd{margin:3px 0 0;font:11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere;color:var(--md-sys-color-on-surface)}
@@ -11,6 +12,7 @@
 .canvas-inspector-font{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .canvas-measure-overlay,.canvas-measure-overlay *{box-sizing:border-box;pointer-events:none!important;user-select:none}
 .canvas-measure-overlay{overflow:hidden;contain:strict;color-scheme:light}
+.canvas-measure-native-image{position:absolute;overflow:hidden}
 .canvas-measure-bounds,.canvas-measure-padding,.canvas-measure-margin,.canvas-measure-label{position:absolute}
 .canvas-measure-bounds{border:1px solid #3b82f6;background:rgb(59 130 246 / 5%)}
 .canvas-measure-padding{background:rgb(34 164 110 / 19%)}.canvas-measure-margin{background:repeating-linear-gradient(135deg,rgb(220 146 59 / 24%) 0 3px,rgb(220 146 59 / 9%) 3px 6px)}

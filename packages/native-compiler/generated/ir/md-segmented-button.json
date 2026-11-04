@@ -182,7 +182,7 @@
     },
     {
       "name": "icon",
-      "description": "Custom icon (replaces icon prop)"
+      "description": "Additional icon content alongside the built-in icon or checkmark"
     }
   ],
   "cssParts": [
@@ -193,6 +193,14 @@
     {
       "name": "label",
       "description": "Label text"
+    },
+    {
+      "name": "checkmark",
+      "description": "Checkmark icon (selected)"
+    },
+    {
+      "name": "icon",
+      "description": "Icon element"
     }
   ],
   "cssProperties": [
@@ -391,19 +399,19 @@
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Window access requires a native adapter.",
-      "line": 64
+      "line": 68
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
-      "line": 111
+      "line": 115
     },
     {
       "code": "CANCELABLE_EVENT",
       "severity": "warning",
       "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
-      "line": 4
+      "line": 8
     }
   ],
   "source": {
@@ -411,7 +419,7 @@
     "styleUrl": "md-segmented-button.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "168c864659e55963d7f688af0ef3c45163119927b1d8e146cd74dfdb3ea6e257"
+    "sha256": "df7048d41e17670cc9c57d872891da11b833c6ee14fd927e945e9c4d7a2c5182"
   },
   "styles": [
     {
@@ -1416,11 +1424,17 @@
       "properties": [
         "value",
         "selected",
+        "disabled",
+        "softDisabled",
         "icon",
         "label",
         "noCheckmark",
-        "disabled",
-        "softDisabled"
+        "ripple",
+        "segmentIndex",
+        "segmentTotal",
+        "segmentDensity",
+        "segmentMultiselect",
+        "density"
       ],
       "events": [
         "mdSegmentClick"
@@ -1430,26 +1444,49 @@
         "",
         "icon"
       ],
-      "unsupportedProperties": [
-        "ripple",
-        "segmentIndex",
-        "segmentTotal",
-        "segmentDensity",
-        "segmentMultiselect",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
+      "notes": [
+        "Dedicated native segmented renderer matches source density, typography, checkmark reservations, additive named icon slot, joined corners/outline, ripple and disabled/focus states. All thirteen properties remain usable in standalone composition; a real parent set owns the four segment context properties.",
+        "Standalone activation proposes mdSegmentClick {value, selected} without mutating controlled selected. Enter/Space use the native responder, arrows follow authored order, hard-disabled is excluded and soft-disabled remains focusable. Native radio/checkbox accessibility exposes actual checked state.",
+        "Public AWCNode.symbol and AWCNode.slotText preserve typed icon and explicit blank element slots. ASCII whitespace collapses for visible nowrap labels while raw accessible names and NBSP are preserved. Seven typed style hooks support inherited defaults and nodeID-targeted local overrides.",
+        "Actual macOS SwiftUI/AppKit geometry, palette, slot, event, keyboard, nested-set, removal/reinsertion and density checks passed against 35 measured Web fixtures; see audits/md-segmented-button.md. Native font rounding is bounded and checked separately from equal-column/seam placement. No iOS SDK/device execution is available."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "checkmark",
+        "icon",
+        "label"
+      ],
+      "appearance": {
+        "api": "AWCSegmentedButtonAppearance / View.awcSegmentedButtonAppearance",
+        "fields": [
+          "containerColor",
+          "selectedContainerColor",
+          "labelColor",
+          "selectedLabelColor",
+          "outlineColor",
+          "cornerRadius",
+          "iconSize"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "density",
         "disabled",
         "icon",
         "label",
+        "noCheckmark",
+        "ripple",
+        "segmentDensity",
+        "segmentIndex",
+        "segmentMultiselect",
+        "segmentTotal",
         "selected",
         "softDisabled",
         "value"
@@ -1462,22 +1499,58 @@
         "",
         "icon"
       ],
-      "unsupportedProperties": [
-        "noCheckmark",
-        "ripple",
-        "segmentIndex",
-        "segmentTotal",
-        "segmentDensity",
-        "segmentMultiselect",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native segment preserves controlled standalone proposals, retained checkmark space, additive named icon content and all seven typed appearance hooks. The supporting set commits selection by child identity, synchronizes parent-owned properties and exposes actual ordered state. Native font shaping and physical-pixel rounding replace browser rendering; runtime acceptance is recorded separately."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "checkmark",
+        "icon",
+        "label"
+      ],
+      "appearance": {
+        "api": "AWCSegmentedButtonAppearance / AWCSegmentedButtonAppearanceScope",
+        "fields": [
+          "containerColor",
+          "selectedContainerColor",
+          "labelColor",
+          "selectedLabelColor",
+          "outlineColor",
+          "cornerRadius",
+          "iconSize"
+        ]
+      },
+      "nativeEquivalents": {
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Compose authored layout-tree traversal / AWCSegmentedButtonSetStateScope",
+          "description": "Native descendants retain authored identity and order for parent synchronization, exact selection and keyboard movement.",
+          "limitations": [
+            "Arbitrary DOM queries are replaced by native layout-tree registration."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionTargetScope / onEvent",
+          "description": "Synchronous native event phases preserve selection proposals, propagation stops and parent commit ordering. Cancellation does not undo the set commit.",
+          "limitations": [
+            "DOM events are not fabricated. Set onEvent detail is the source values array; scoped rawDetail preserves the same array; segmentedSelectionValues exposes typed values."
+          ]
+        },
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "AWCSlotText / AWCSearchableLabelScope / native content composition",
+          "description": "Native authored labels and explicit accessible names replace document text and development-time name validation.",
+          "limitations": [
+            "Compose content is not a DOM and cannot expose arbitrary textContent. Authored native content retains its own accessibility semantics."
+          ]
+        }
+      }
     }
   }
 }

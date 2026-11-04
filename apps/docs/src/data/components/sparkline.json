@@ -196,6 +196,16 @@
       "body": "number | null"
     },
     {
+      "name": "MdChartColorRole",
+      "kind": "type",
+      "body": "| 'primary' | 'secondary' | 'tertiary' | 'error' | 'primary-container' | 'secondary-container' | 'tertiary-container' | 'error-container' | 'surface-variant' /* Semantic status roles. Deliberately NOT part of the default categorical cycle: these carry meaning, so they are opt-in per series rather than something an auto-palette can hand out to an arbitrary category. */ | 'success' | 'warning' | 'info' | 'success-container' | 'warning-container' | 'info-container'"
+    },
+    {
+      "name": "MdChartCurve",
+      "kind": "type",
+      "body": "| 'linear' | 'smooth' | 'monotone' | 'step' | 'step-before' | 'step-middle'"
+    },
+    {
       "name": "MdSparklineReferenceArea",
       "kind": "interface",
       "extends": "",

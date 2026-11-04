@@ -490,6 +490,22 @@
 :host([density='-4']) { --md-sys-density-scale: -4; }
 
 /* ==========================================================
+   REDUCED MOTION
+   The surface neither scales nor fades in or out. Placed after every rule that
+   sets the surface transform/transition (base, open, closing, quick) so it wins
+   on source order at equal specificity. md-menu-item / md-sub-menu-item drop
+   their own row motion the same way.
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .md-menu__surface,
+  :host(.md-menu--open) .md-menu__surface,
+  :host(.md-menu--closing) .md-menu__surface {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ==========================================================
    HIDDEN
    `[hidden]` is a UA-stylesheet rule, and every `:host` display
    declaration above is an AUTHOR rule — author origin beats UA, so without

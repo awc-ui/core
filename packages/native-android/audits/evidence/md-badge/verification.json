@@ -1,0 +1,13 @@
+{
+  "startedAt": "2026-10-20T18:27:30.556585+00:00",
+  "completedAt": "2026-10-20T18:28:48.319605+00:00",
+  "inputsChanged": [],
+  "sourceInputCount": 105,
+  "fixtureCount": 75,
+  "nestedDensitySubcases": 8,
+  "deviceTests": 7,
+  "failures": 0,
+  "unitTests": 79,
+  "emojiBoundary": "value-33 uses native Noto emoji width36.952dp rather than Web32px; actual glyph+padding/anchor relationship is asserted",
+  "command": "JAVA_HOME=/Users/ionut-valentinmitrache/Library/Java/JavaVirtualMachines/openjdk-23.0.1/Contents/Home ANDROID_HOME=/Users/ionut-valentinmitrache/Documents/Codex/2026-10-07/p/work/android-sdk ANDROID_SERIAL=emulator-5554 ./gradlew :native-ui:testDebugUnitTest :app:connectedDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=dev.awc.playground.NativeBadgeParityTest,dev.awc.playground.LivePreviewHostTest#badgeUsesTheReal48dpNotificationParentAndNestedTypedAppearanceInCapturedPixels,dev.awc.playground.LivePreviewHostTest#fabMenuMethodsStayIndependentOfStreamingAndCorrelateActualLifecycleAndItemEvents,dev.awc.playground.NativeIconButtonParityTest#registryReplacementSelectedFallbackAndAdornmentSizingFollowSource' --console=plain"
+}

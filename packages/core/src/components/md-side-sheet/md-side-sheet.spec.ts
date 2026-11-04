@@ -1,6 +1,18 @@
 import { newSpecPage } from '@stencil/core/testing';
 import { MdSideSheet } from './md-side-sheet';
 
+const mountedSheets: MdSideSheet[] = [];
+beforeEach(() => {
+  const loaded = MdSideSheet.prototype.componentDidLoad;
+  jest.spyOn(MdSideSheet.prototype, 'componentDidLoad').mockImplementation(function(this: MdSideSheet) {
+    mountedSheets.push(this); return loaded.call(this);
+  });
+});
+afterEach(() => {
+  mountedSheets.splice(0).reverse().forEach(sheet => sheet.disconnectedCallback());
+  jest.restoreAllMocks();
+});
+
 describe('md-side-sheet', () => {
   async function create(html: string) {
     return newSpecPage({

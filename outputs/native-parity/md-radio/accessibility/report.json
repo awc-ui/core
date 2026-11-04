@@ -1,0 +1,541 @@
+{
+ "tag": "md-radio",
+ "at": "2026-10-29T11:11:42.528Z",
+ "rows": [
+  {
+   "case": "unchecked",
+   "web": {
+    "elements": [
+     "radio:Shared workspace"
+    ],
+    "texts": [],
+    "focus": [
+     "radio:Shared workspace"
+    ],
+    "contrast": {
+     "measured": 1,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "radio:Shared workspace {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "radio:Shared workspace",
+      "radio:Shared workspace"
+     ],
+     "findings": [],
+     "contrastMeasured": 1
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "checkbox:Shared workspace {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "focus": [
+      "checkbox:Shared workspace",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "radio:Shared workspace {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "radio:Shared workspace",
+      "radio:Shared workspace"
+     ],
+     "findings": [],
+     "contrastMeasured": 1,
+     "atf": {
+      "elements": 11,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "checked",
+   "web": {
+    "elements": [
+     "radio:Shared workspace"
+    ],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 1,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "radio:Shared workspace {\"selected\":\"true\",\"checked\":\"true\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 1
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "checkbox:Shared workspace {\"selected\":\"true\",\"checked\":\"true\"}"
+     ],
+     "texts": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "radio:Shared workspace {\"checked\":\"true\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 1,
+     "atf": {
+      "elements": 11,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "disabled",
+   "web": {
+    "elements": [
+     "radio:Shared workspace"
+    ],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 0,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "radio:Shared workspace {\"disabled\":\"true\",\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "∅",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "checkbox:Shared workspace {\"disabled\":\"true\",\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "focus": [
+      "∅",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "radio:Shared workspace {\"disabled\":\"true\",\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "∅",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0,
+     "atf": {
+      "elements": 11,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "soft-disabled",
+   "web": {
+    "elements": [
+     "radio:Shared workspace"
+    ],
+    "texts": [],
+    "focus": [
+     "radio:Shared workspace"
+    ],
+    "contrast": {
+     "measured": 0,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "radio:Shared workspace {\"disabled\":\"true\",\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "radio:Shared workspace",
+      "radio:Shared workspace"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "checkbox:Shared workspace {\"disabled\":\"true\",\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "focus": [
+      "checkbox:Shared workspace",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "radio:Shared workspace {\"disabled\":\"true\",\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "radio:Shared workspace",
+      "radio:Shared workspace"
+     ],
+     "findings": [],
+     "contrastMeasured": 0,
+     "atf": {
+      "elements": 11,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "required",
+   "web": {
+    "elements": [
+     "radio:Shared workspace"
+    ],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 1,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "radio:Shared workspace {\"required\":\"true\",\"invalid\":\"true\",\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "state",
+       "web": {
+        "role": "radio",
+        "name": "Shared workspace",
+        "states": {
+         "invalid": "true",
+         "checked": "false"
+        }
+       },
+       "native": {
+        "role": "radio",
+        "name": "Shared workspace",
+        "states": {
+         "required": "true",
+         "invalid": "true",
+         "checked": "false"
+        }
+       },
+       "detail": "radio \"Shared workspace\" required: ∅ → true",
+       "status": "expected",
+       "reason": "The Web source sets aria-required=\"true\" on the control; Chrome does not report required for checkbox/radio/switch roles in its tree. macOS exposes AXRequired as the source declares (iOS has no required channel)."
+      }
+     ],
+     "contrastMeasured": 1
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "checkbox:Shared workspace {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "radio:Shared workspace {\"checked\":\"false\",\"invalid\":\"true\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 1,
+     "atf": {
+      "elements": 11,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

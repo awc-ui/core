@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "deviceMethods": 11,
+  "originalGeometryConfigurations": 122,
+  "freshDefaultPaletteConfigurations": 122,
+  "supplementalGeometryConfigurations": 48,
+  "supplementalPaintConfigurations": 48,
+  "regressions": "NativeControlAlphaTest and NativeButtonInspectionTest",
+  "sourceFiles": {
+    "packages/native-android/src/main/java/dev/awc/nativeui/NativeSnackbar.kt": "73d935d03a1c12600f42d7c9fcecaefd7b66d2ffde3be7e614dddbbaf09e96b9",
+    "packages/native-android/src/main/java/dev/awc/nativeui/NativeIconButton.kt": "3e88da076cb77312553ebeca906e90ea56fe667a2834c64435f62c54b1a4b30b",
+    "packages/native-android/src/main/java/dev/awc/nativeui/NativeSourceText.kt": "59101594e9e42c24ddc6d42e5e39669468eea0f978b2ce236520aadb7489e1e4",
+    "apps/native-android-playground/src/androidTest/java/dev/awc/playground/NativeSnackbarParityTest.kt": "c5e40e5ff9fd5052e7f75a9930bd3bea16d6fbcc7a212245638a0168712c1073",
+    "apps/native-android-playground/src/androidTest/java/dev/awc/playground/NativeSnackbarPartsTest.kt": "c1bc727e53af0ec585f50702cf03b927518b1a3e98616e0f7c1c42b848e28858"
+  },
+  "evidence": {
+    "renderer.xml": "246c29499cb6afd6e1a773491239f9de76892790285be486de7fe5b4667505a4",
+    "extra-parts-light.json": "59e9892c3fe3ba5e8a38c41ca931265f68e7e278cc31341406d21822d3ea4070",
+    "extra-parts-dark.json": "3daf54f736fefacf40ee525db643ce2826269ef0264bda649a2483f124d66b5b",
+    "renderer.log": "2fe34cc1a80101fe1d920142551a82f892db97e861acf1030485658bfcacd93b"
+  }
+}

@@ -264,7 +264,7 @@
     "styleUrl": "md-table-row.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "081ee4b71aaa0be323f4009e81b5aa10128094ae3a7bcd444cb4146e8b6e79d6"
+    "sha256": "f9b8a12233330ad77b07b3e6a49d013f9c5800a1b1230ea48693a9eb34341c96"
   },
   "styles": [
     {
@@ -885,6 +885,16 @@
           "property": "background-color",
           "value": "Highlight",
           "important": false
+        },
+        {
+          "property": "color",
+          "value": "HighlightText",
+          "important": false
+        },
+        {
+          "property": "forced-color-adjust",
+          "value": "none",
+          "important": false
         }
       ]
     },
@@ -895,6 +905,11 @@
         {
           "property": "--_cell-color",
           "value": "HighlightText",
+          "important": false
+        },
+        {
+          "property": "--md-table-cell-sticky-bg",
+          "value": "Highlight",
           "important": false
         }
       ]
@@ -936,70 +951,88 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
+        "rowgroup",
         "selected",
+        "disabled",
         "selectable",
         "clickable",
         "value",
         "expandable",
         "expanded",
-        "highlight",
-        "disabled"
+        "highlight"
       ],
       "events": [
         "mdRowClick",
         "mdRowSelectionChange",
         "mdRowExpandedChange"
       ],
-      "methods": [],
+      "methods": [
+        "toggle"
+      ],
       "slots": [
         "",
         "expanded"
       ],
-      "unsupportedProperties": [
-        "rowgroup"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "toggle"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
+      "notes": [
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Selection (checkbox cell), clickable rows, expansion with the expanded slot, highlight, disabled, and the three events.",
+        "toggle() through AWCTableController.toggleRow(rowID). Hooks through AWCTableRowAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcTableRowAppearance(AWCTableRowAppearance)",
+        "fields": [
+          "hoverColor"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "clickable",
+        "rowgroup",
+        "selected",
         "disabled",
+        "selectable",
+        "clickable",
+        "value",
         "expandable",
         "expanded",
-        "selectable",
-        "selected",
-        "value"
+        "highlight"
       ],
       "events": [
         "mdRowClick",
-        "mdRowExpandedChange",
-        "mdRowSelectionChange"
+        "mdRowSelectionChange",
+        "mdRowExpandedChange"
       ],
-      "methods": [],
+      "methods": [
+        "toggle"
+      ],
       "slots": [
         "",
         "expanded"
       ],
-      "unsupportedProperties": [
-        "rowgroup",
-        "highlight"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "toggle"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Selection (checkbox cell), clickable rows, expansion with the expanded slot, highlight, disabled, and the three events.",
+        "toggle() through AWCTableController.toggleRow(rowID). Hooks through AWCTableRowAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCTableRowAppearanceScope(AWCTableRowAppearance)",
+        "fields": [
+          "hoverColor"
+        ]
+      }
     }
   }
 }

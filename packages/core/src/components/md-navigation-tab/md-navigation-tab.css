@@ -11,24 +11,24 @@
      - Badge             (small dot or large numeric capsule)
 
    PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
-     --md-navigation-tab-active-indicator-color
+     --md-navigation-tab-active-indicator-color   Active indicator (pill) colour
      --md-navigation-tab-active-indicator-width   (default 56px)
      --md-navigation-tab-active-indicator-height  (default 32px)
      --md-navigation-tab-active-indicator-shape   (default full-rounded)
-     --md-navigation-tab-active-icon-color
-     --md-navigation-tab-inactive-icon-color
-     --md-navigation-tab-active-label-color
-     --md-navigation-tab-inactive-label-color
+     --md-navigation-tab-active-icon-color   Icon colour of the active destination
+     --md-navigation-tab-inactive-icon-color   Icon colour of inactive destinations
+     --md-navigation-tab-active-label-color   Label colour of the active destination
+     --md-navigation-tab-inactive-label-color   Label colour of inactive destinations
      --md-navigation-tab-label-font            (label-medium font shorthand)
      --md-navigation-tab-label-font-weight     (active label weight; defaults 600)
      --md-navigation-tab-icon-size             (default 24px)
      --md-navigation-tab-padding-block-start   (default 5px — centers 54px content in 64px bar)
      --md-navigation-tab-padding-block-end     (default 5px)
-     --md-navigation-tab-hover-state-layer-color
-     --md-navigation-tab-focus-state-layer-color
-     --md-navigation-tab-pressed-state-layer-color
-     --md-navigation-tab-badge-color
-     --md-navigation-tab-badge-on-color
+     --md-navigation-tab-hover-state-layer-color   State-layer colour on hover
+     --md-navigation-tab-focus-state-layer-color   State-layer colour on keyboard focus
+     --md-navigation-tab-pressed-state-layer-color   State-layer colour while pressed
+     --md-navigation-tab-badge-color   Badge colour
+     --md-navigation-tab-badge-on-color   Badge text colour
      --md-navigation-tab-disabled-opacity      (default 0.38)
    ========================================================== */
 
@@ -417,9 +417,11 @@
 
 /* When `labelBehavior="selected"` keep the label slot in the layout
    but hide it visually for inactive tabs so heights stay constant. */
+/* Visually hidden only: `visibility: hidden` also removed the label from the
+   accessibility tree, leaving inactive destinations of a label-behavior="selected" bar
+   without an accessible name (the icon glyph is aria-hidden). Opacity keeps it named. */
 .md-navigation-tab__label--hidden {
   opacity: 0;
-  visibility: hidden;
 }
 
 /* When `labelBehavior="none"` is applied on the host the label is

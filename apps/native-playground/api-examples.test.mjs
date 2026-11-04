@@ -162,8 +162,9 @@ test('event and method examples include data, parent composition and source-requ
 test('slots project actual child content and native named slots across all web frameworks', () => {
   for (const framework of frameworks) {
     const icon = apiExample(button, 'slot', 'leading-icon', framework);
-    assert.match(icon.code, /<svg slot="leading-icon"/);
-    assert.match(icon.code, /<path/);
+    assert.match(icon.code, /leading-icon/);
+    assert.match(icon.code, /material-symbols-outlined/);
+    assert.match(icon.code, /favorite/);
     assert.doesNotMatch(icon.code, /#leading-icon|v-slot|<slot/);
     const content = apiExample(button, 'slot', '', framework);
     assert.match(content.code, /Continue/);
@@ -172,7 +173,13 @@ test('slots project actual child content and native named slots across all web f
     assert.match(tabs.code, framework === 'react' || framework === 'vue' ? /<MdTab label="Overview"/ : /<md-tab label="Overview"/);
     if (framework !== 'html' && framework !== 'svelte') assert.match(tabs.code, /import \{ MdTabs, MdTab \}/);
   }
-  assert.match(apiExample(button, 'slot', 'leading-icon', 'react').code, /strokeWidth=/);
+  assert.match(apiExample(button, 'slot', 'leading-icon', 'react').code, /style=\{/);
+  for (const framework of frameworks) {
+    const loader = apiExample({ ...button, slots: [...button.slots, { name: 'loader' }] }, 'slot', 'loader', framework);
+    assert.match(loader.code, /md-progress-indicator|MdProgressIndicator/);
+    assert.match(loader.code, /loading/);
+    assert.match(loader.code, /circular/);
+  }
 });
 
 test('CSS part examples target the selected part and explain stylesheet scope', () => {
@@ -312,4 +319,29 @@ test('verified wrapper APIs and button styling hooks remain aligned with source'
   assert.match(css, /--md-loading-indicator-shape-size: var\(--_loading-size\)/);
   assert.match(css, /--md-loading-indicator-color: var\(--_loading-color\)/);
   assert.match(css, /\.md-button__anchor \{[\s\S]*?display: flex/);
+});
+
+test('icon slot examples render real symbols and activate selected content on every Web framework', () => {
+  const icon = { tag: 'md-icon-button', slots: [{ name: '' }, { name: 'selected' }] };
+  for (const framework of frameworks) for (const name of ['', 'selected']) {
+    const example = apiExample(icon, 'slot', name, framework);
+    assert.match(example.code, /material-symbols-outlined|materialSymbolsOutlined/);
+    assert.match(example.code, /favorite/);
+    assert.match(example.code, /aria-label/);
+    assert.match(example.code, /--md-icon-button-icon-size/);
+    assert.doesNotMatch(example.code, /Custom content|<svg/);
+    if (name) {
+      assert.match(example.code, /"toggle": true/);
+      assert.match(example.code, /"selected": true/);
+    }
+  }
+});
+
+test('icon mdClick explicitly describes committed state and never suggests vetoing the activation', () => {
+  const icon = { tag: 'md-icon-button', events: [{ name: 'mdClick', cancelable: true, detail: '{ selected: boolean }' }] };
+  for (const framework of frameworks) {
+    const example = apiExample(icon, 'event', 'mdClick', framework);
+    assert.doesNotMatch(example.code, /preventDefault/);
+    assert.match(example.notes.join(' '), /Navigation and toggle occur before/);
+  }
 });

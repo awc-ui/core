@@ -1,0 +1,152 @@
+{
+ "tag": "md-avatar",
+ "case": "initials",
+ "request": {
+  "tag": "md-avatar",
+  "properties": {
+   "initials": "AM",
+   "name": ""
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      120
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    120
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-avatar",
+  "properties": {
+   "alt": "",
+   "colorFromName": true,
+   "crossorigin": "",
+   "density": 0,
+   "initials": "AM",
+   "label": "",
+   "loading": "lazy",
+   "name": "",
+   "shape": "circle",
+   "size": "large",
+   "src": ""
+  },
+  "tag": "md-avatar"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 56,
+     "width": 56,
+     "x": 292,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "background": [
+      0.8645490407943726,
+      0.8462744951248169,
+      0.8744313716888428,
+      1
+     ],
+     "color": [
+      0.3074509799480438,
+      0.286588191986084,
+      0.3530980050563812,
+      1
+     ],
+     "initials": "AM",
+     "label": null,
+     "mode": "initials",
+     "outline": 0,
+     "palette": 7,
+     "radii": [
+      [
+       28,
+       28
+      ],
+      [
+       28,
+       28
+      ],
+      [
+       28,
+       28
+      ],
+      [
+       28,
+       28
+      ]
+     ],
+     "role": "presentation",
+     "size": 56
+    },
+    "name": "md-avatar"
+   },
+   {
+    "bounds": {
+     "height": 26,
+     "width": 37,
+     "x": 301.5,
+     "y": 47
+    },
+    "id": "component.initials",
+    "metrics": {
+     "fontSize": 22.400000000000002,
+     "fontWeight": 500,
+     "letterSpacing": 1.12,
+     "text": "AM"
+    },
+    "name": "initials",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

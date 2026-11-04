@@ -134,6 +134,11 @@
       "initializer": "false"
     },
     {
+      "name": "rippleMounted",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
       "name": "hasSlottedTrailingIcon",
       "type": "inferred",
       "initializer": "false"
@@ -497,15 +502,8 @@
                 "value": ""
               },
               {
-                "kind": "element",
-                "tag": "md-ripple",
-                "attributes": [
-                  {
-                    "name": "disabled",
-                    "value": "this.disabled"
-                  }
-                ],
-                "children": []
+                "kind": "expression",
+                "source": "this.rippleMounted && <md-ripple disabled={this.disabled}></md-ripple>"
               },
               {
                 "kind": "text",
@@ -903,22 +901,28 @@
   },
   "diagnostics": [
     {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 136
+    },
+    {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 160
+      "line": 185
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 160
+      "line": 185
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 165
+      "line": 190
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -932,7 +936,7 @@
     "styleUrl": "md-accordion-item.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "2b7d7d227a4d3913e2941695f1ce005f51382e8eea7b68ae27c0a78ed1995a20"
+    "sha256": "d29cabf199f489e81c554c57b306e22c94cef672676d394b5385d302fc471411"
   },
   "styles": [
     {
@@ -1021,17 +1025,42 @@
         },
         {
           "property": "--_collapse-duration",
-          "value": "var(--md-accordion-item-collapse-duration, var(--md-sys-motion-duration-short4, 200ms))",
+          "value": "var(--md-accordion-item-collapse-duration, var(--md-sys-motion-duration-medium1, 250ms))",
           "important": false
         },
         {
           "property": "--_expand-easing",
-          "value": "var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))",
+          "value": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
           "important": false
         },
         {
           "property": "--_collapse-easing",
-          "value": "var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15))",
+          "value": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_motion-duration",
+          "value": "var(--_collapse-duration)",
+          "important": false
+        },
+        {
+          "property": "--_motion-easing",
+          "value": "var(--_collapse-easing)",
+          "important": false
+        },
+        {
+          "property": "--_effects-duration",
+          "value": "min(var(--_motion-duration), var(--md-sys-motion-spring-effects-default-duration, 200ms))",
+          "important": false
+        },
+        {
+          "property": "--_effects-easing",
+          "value": "var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.8, 0.34, 1))",
+          "important": false
+        },
+        {
+          "property": "--_current-shape",
+          "value": "var(--_container-shape)",
           "important": false
         },
         {
@@ -1076,7 +1105,7 @@
         },
         {
           "property": "border-radius",
-          "value": "var(--_container-shape)",
+          "value": "var(--_current-shape)",
           "important": false
         },
         {
@@ -1096,18 +1125,13 @@
         },
         {
           "property": "transition",
-          "value": "border-radius var(--_expand-duration) var(--_expand-easing),\n    background-color var(--_expand-duration) var(--_expand-easing),\n    box-shadow var(--_expand-duration) var(--_expand-easing)",
-          "important": false
-        },
-        {
-          "property": "will-change",
-          "value": "border-radius",
+          "value": "border-radius var(--_motion-duration) var(--_motion-easing),\n    border-color var(--_effects-duration) var(--_effects-easing),\n    background-color var(--_effects-duration) var(--_effects-easing),\n    box-shadow var(--_effects-duration) var(--_effects-easing)",
           "important": false
         }
       ]
     },
     {
-      "selector": ":host-context(md-accordion.md-accordion--filled.md-accordion--elevation-1)",
+      "selector": ":host([data-accordion-variant=\"filled\"][data-accordion-elevation=\"1\"])",
       "context": null,
       "declarations": [
         {
@@ -1123,7 +1147,7 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion.md-accordion--filled.md-accordion--elevation-2)",
+      "selector": ":host([data-accordion-variant=\"filled\"][data-accordion-elevation=\"2\"])",
       "context": null,
       "declarations": [
         {
@@ -1139,7 +1163,7 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion.md-accordion--filled.md-accordion--elevation-3)",
+      "selector": ":host([data-accordion-variant=\"filled\"][data-accordion-elevation=\"3\"])",
       "context": null,
       "declarations": [
         {
@@ -1155,7 +1179,7 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion.md-accordion--filled.md-accordion--elevation-4)",
+      "selector": ":host([data-accordion-variant=\"filled\"][data-accordion-elevation=\"4\"])",
       "context": null,
       "declarations": [
         {
@@ -1171,7 +1195,7 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion.md-accordion--filled.md-accordion--elevation-5)",
+      "selector": ":host([data-accordion-variant=\"filled\"][data-accordion-elevation=\"5\"])",
       "context": null,
       "declarations": [
         {
@@ -1187,7 +1211,7 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion.md-accordion--outlined)",
+      "selector": ":host([data-accordion-variant=\"outlined\"])",
       "context": null,
       "declarations": [
         {
@@ -1207,7 +1231,17 @@
       "context": null,
       "declarations": [
         {
-          "property": "border-radius",
+          "property": "--_motion-duration",
+          "value": "var(--_expand-duration)",
+          "important": false
+        },
+        {
+          "property": "--_motion-easing",
+          "value": "var(--_expand-easing)",
+          "important": false
+        },
+        {
+          "property": "--_current-shape",
           "value": "calc(var(--_container-shape) + var(--md-sys-shape-morph-enabled, 1) * (var(--_container-shape-expanded) - var(--_container-shape)))",
           "important": false
         },
@@ -1224,17 +1258,17 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion.md-accordion--outlined)",
+      "selector": ":host([data-accordion-variant=\"outlined\"])",
       "context": null,
       "declarations": [
         {
           "property": "--_container-shape",
-          "value": "0",
+          "value": "0px",
           "important": false
         },
         {
           "property": "--_container-shape-expanded",
-          "value": "0",
+          "value": "0px",
           "important": false
         },
         {
@@ -1366,12 +1400,12 @@
         },
         {
           "property": "border-radius",
-          "value": "var(--_container-shape)",
+          "value": "var(--_current-shape)",
           "important": false
         },
         {
           "property": "transition",
-          "value": "background-color var(--_expand-duration) var(--_expand-easing),\n    color var(--_spring-duration) var(--_spring-easing),\n    border-radius var(--_expand-duration) var(--_expand-easing)",
+          "value": "background-color var(--_effects-duration) var(--_effects-easing),\n    color var(--_effects-duration) var(--_effects-easing),\n    border-radius var(--_motion-duration) var(--_motion-easing)",
           "important": false
         }
       ]
@@ -1407,7 +1441,7 @@
         },
         {
           "property": "transition",
-          "value": "opacity var(--md-sys-motion-spring-effects-default-duration, 200ms) var(--_state-easing)",
+          "value": "opacity var(--_effects-duration) var(--_effects-easing),\n    background-color var(--_effects-duration) var(--_effects-easing)",
           "important": false
         }
       ]
@@ -1461,12 +1495,12 @@
         },
         {
           "property": "border-start-start-radius",
-          "value": "var(--_container-shape-expanded)",
+          "value": "var(--_current-shape)",
           "important": false
         },
         {
           "property": "border-start-end-radius",
-          "value": "var(--_container-shape-expanded)",
+          "value": "var(--_current-shape)",
           "important": false
         },
         {
@@ -1612,7 +1646,7 @@
         },
         {
           "property": "transition",
-          "value": "opacity var(--_spring-duration) var(--_spring-easing),\n    transform var(--_spring-duration) var(--_spring-easing),\n    color var(--_spring-duration) var(--_spring-easing)",
+          "value": "opacity var(--_effects-duration) var(--_effects-easing),\n    transform var(--_spring-duration) var(--_spring-easing),\n    color var(--_effects-duration) var(--_effects-easing)",
           "important": false
         }
       ]
@@ -1686,7 +1720,7 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion[reorderable]) .md-accordion-item__drag-handle",
+      "selector": ":host([data-accordion-reorderable]) .md-accordion-item__drag-handle",
       "context": null,
       "declarations": [
         {
@@ -1788,7 +1822,7 @@
         },
         {
           "property": "transition",
-          "value": "background-color var(--_spring-duration) var(--_spring-easing)",
+          "value": "background-color var(--_effects-duration) var(--_effects-easing)",
           "important": false
         }
       ]
@@ -1872,7 +1906,7 @@
         },
         {
           "property": "transition",
-          "value": "inline-size var(--_spring-duration) var(--_spring-easing),\n    opacity var(--_spring-duration) var(--_spring-easing),\n    background-color var(--_expand-duration) var(--_expand-easing)",
+          "value": "inline-size var(--_spring-duration) var(--_spring-easing),\n    opacity var(--_effects-duration) var(--_effects-easing),\n    background-color var(--_effects-duration) var(--_effects-easing)",
           "important": false
         }
       ]
@@ -1910,7 +1944,7 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion.md-accordion--floating-dragging)\n  .md-accordion-item__chassis-handle-bar",
+      "selector": ":host([data-accordion-dragging])\n  .md-accordion-item__chassis-handle-bar",
       "context": null,
       "declarations": [
         {
@@ -2082,7 +2116,7 @@
         },
         {
           "property": "transition",
-          "value": "color var(--_spring-duration) var(--_spring-easing),\n    transform var(--_spring-duration) var(--_spring-easing)",
+          "value": "color var(--_effects-duration) var(--_effects-easing),\n    transform var(--_motion-duration) var(--_spring-easing)",
           "important": false
         }
       ]
@@ -2129,7 +2163,7 @@
         },
         {
           "property": "transition",
-          "value": "font-variation-settings var(--_spring-duration) var(--_spring-easing)",
+          "value": "font-variation-settings var(--_effects-duration) var(--_effects-easing)",
           "important": false
         }
       ]
@@ -2304,7 +2338,7 @@
         },
         {
           "property": "transition",
-          "value": "transform var(--_spring-duration) var(--_spring-easing),\n    color var(--_spring-duration) var(--_spring-easing)",
+          "value": "transform var(--_motion-duration) var(--_spring-easing),\n    color var(--_effects-duration) var(--_effects-easing)",
           "important": false
         }
       ]
@@ -2326,28 +2360,6 @@
       ]
     },
     {
-      "selector": ":host([dir=\"rtl\"]) .md-accordion-item__trailing,\n:host-context([dir=\"rtl\"]) .md-accordion-item__trailing",
-      "context": null,
-      "declarations": [
-        {
-          "property": "transform",
-          "value": "none",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": ":host([dir=\"rtl\"].md-accordion-item--expanded) .md-accordion-item__trailing,\n:host-context([dir=\"rtl\"]).md-accordion-item--expanded .md-accordion-item__trailing",
-      "context": null,
-      "declarations": [
-        {
-          "property": "transform",
-          "value": "rotate(180deg)",
-          "important": false
-        }
-      ]
-    },
-    {
       "selector": ".md-accordion-item__panel",
       "context": null,
       "declarations": [
@@ -2363,7 +2375,7 @@
         },
         {
           "property": "transition",
-          "value": "grid-template-rows var(--_collapse-duration) var(--_collapse-easing),\n    opacity var(--_collapse-duration) var(--_collapse-easing)",
+          "value": "grid-template-rows var(--_motion-duration) var(--_motion-easing),\n    opacity var(--_effects-duration) var(--_effects-easing)",
           "important": false
         },
         {
@@ -2385,11 +2397,6 @@
         {
           "property": "opacity",
           "value": "1",
-          "important": false
-        },
-        {
-          "property": "transition",
-          "value": "grid-template-rows var(--_expand-duration) var(--_expand-easing),\n    opacity var(--_expand-duration) var(--_expand-easing)",
           "important": false
         }
       ]
@@ -2443,27 +2450,6 @@
           "property": "line-height",
           "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
           "important": false
-        },
-        {
-          "property": "transform",
-          "value": "translateY(-4px)",
-          "important": false
-        },
-        {
-          "property": "transition",
-          "value": "transform var(--_expand-duration) var(--_expand-easing)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": ":host(.md-accordion-item--expanded) .md-accordion-item__content-inner",
-      "context": null,
-      "declarations": [
-        {
-          "property": "transform",
-          "value": "translateY(0)",
-          "important": false
         }
       ]
     },
@@ -2500,7 +2486,7 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion[transition='standard'])",
+      "selector": ":host([data-accordion-transition=\"standard\"])",
       "context": null,
       "declarations": [
         {
@@ -2541,7 +2527,7 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion[transition='fade'])",
+      "selector": ":host([data-accordion-transition=\"fade\"])",
       "context": null,
       "declarations": [
         {
@@ -2582,18 +2568,7 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion[transition='fade']) .md-accordion-item__content-inner",
-      "context": null,
-      "declarations": [
-        {
-          "property": "transform",
-          "value": "none",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": ":host-context(md-accordion[transition='collapse'])",
+      "selector": ":host([data-accordion-transition=\"collapse\"])",
       "context": null,
       "declarations": [
         {
@@ -2634,7 +2609,7 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion[transition='collapse']) .md-accordion-item__panel,\n:host-context(md-accordion[transition='collapse'].md-accordion-item--expanded)\n  .md-accordion-item__panel",
+      "selector": ":host([data-accordion-transition=\"collapse\"]) .md-accordion-item__panel,\n:host([data-accordion-transition=\"collapse\"].md-accordion-item--expanded)\n  .md-accordion-item__panel",
       "context": null,
       "declarations": [
         {
@@ -2645,18 +2620,7 @@
       ]
     },
     {
-      "selector": ":host-context(md-accordion[transition='collapse']) .md-accordion-item__content-inner",
-      "context": null,
-      "declarations": [
-        {
-          "property": "transform",
-          "value": "none",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": ":host-context(md-accordion[transition='none']),\n:host-context(md-accordion[transition='none']) *,\n:host-context(md-accordion[transition='none']) *::before,\n:host-context(md-accordion[transition='none']) *::after",
+      "selector": ":host([data-accordion-transition=\"none\"]),\n:host([data-accordion-transition=\"none\"]) *,\n:host([data-accordion-transition=\"none\"]) *::before,\n:host([data-accordion-transition=\"none\"]) *::after",
       "context": null,
       "declarations": [
         {
@@ -2677,12 +2641,12 @@
       ]
     },
     {
-      "selector": ":host,\n  .md-accordion-item__header,\n  .md-accordion-item__state-layer,\n  .md-accordion-item__leading,\n  .md-accordion-item__icon,\n  .md-accordion-item__trailing,\n  .md-accordion-item__panel,\n  .md-accordion-item__content",
+      "selector": ":host,\n  *,\n  *::before,\n  *::after",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
         {
-          "property": "transition-duration",
-          "value": "0.01ms",
+          "property": "transition",
+          "value": "none",
           "important": true
         },
         {
@@ -2821,77 +2785,164 @@
         "supportingText",
         "icon",
         "expanded",
+        "disabled",
+        "headingLevel",
         "collapsible",
-        "density",
-        "disabled"
+        "regionRole",
+        "contentMaxHeight",
+        "density"
       ],
       "events": [
-        "mdItemToggle"
+        "mdItemToggle",
+        "mdItemRequestFocus",
+        "mdItemRequestReorder"
       ],
-      "methods": [],
+      "methods": [
+        "toggle",
+        "focusHeader"
+      ],
       "slots": [
         "",
         "leading-icon",
         "headline",
         "trailing-icon"
       ],
-      "unsupportedProperties": [
-        "headingLevel",
-        "regionRole",
-        "contentMaxHeight"
-      ],
-      "unsupportedEvents": [
-        "mdItemRequestFocus",
-        "mdItemRequestReorder"
-      ],
-      "unsupportedMethods": [
-        "toggle",
-        "focusHeader"
-      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
+      "notes": [
+        "Dedicated native item: all ten properties, three events, toggle() and focusHeader() through .awcAccordionItemController(_:for:), four slots, twenty-four appearance hooks and eleven typed part targets. mdItemRequestFocus and mdItemRequestReorder bubble to the owning accordion, which performs the source navigation and keyboard reorder.",
+        "An item that is not a direct child of an accordion is never owned and keeps its own disclosure state and events, like the source element.",
+        "chassis-handle and chassis-handle-bar render on the first item of a floating accordion and are styled through chassisHandleColor and chassisHandleBackgroundHover; they accept no part declarations.",
+        "macOS SwiftUI/AppKit renderer and live-host verification is recorded; iOS SDK, simulator/device and VoiceOver execution remain unavailable and unverified."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "heading",
+        "header",
+        "state-layer",
+        "drag-handle",
+        "leading-icon",
+        "headline",
+        "supporting-text",
+        "trailing-icon",
+        "panel",
+        "content",
+        "content-inner"
+      ],
+      "appearance": {
+        "api": ".awcAccordionItemAppearance(AWCAccordionItemAppearance)",
+        "fields": [
+          "containerColor",
+          "containerColorExpanded",
+          "containerColorDragging",
+          "containerShape",
+          "containerShapeExpanded",
+          "containerShapeDragging",
+          "headerColor",
+          "headerColorExpanded",
+          "headlineColor",
+          "headlineColorExpanded",
+          "supportingColor",
+          "iconColor",
+          "iconColorExpanded",
+          "stateLayerColor",
+          "stateLayerColorExpanded",
+          "headerPadding",
+          "contentPadding",
+          "headerMinHeight",
+          "expandDuration",
+          "collapseDuration",
+          "elevation",
+          "elevationExpanded",
+          "chassisHandleColor",
+          "chassisHandleBackgroundHover"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "collapsible",
-        "disabled",
-        "expanded",
         "headline",
+        "supportingText",
         "icon",
-        "supportingText"
-      ],
-      "events": [
-        "mdItemToggle"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
+        "expanded",
+        "disabled",
         "headingLevel",
+        "collapsible",
         "regionRole",
         "contentMaxHeight",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdItemToggle",
         "mdItemRequestFocus",
         "mdItemRequestReorder"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "toggle",
         "focusHeader"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "leading-icon",
         "headline",
         "trailing-icon"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native item: all ten properties, three events, toggle() and focusHeader() through AWCAccordionItemControllerScope, four slots, twenty-four appearance hooks and eleven typed part targets. mdItemRequestFocus and mdItemRequestReorder bubble to the owning accordion, which performs the source navigation and keyboard reorder.",
+        "An item that is not a direct child of an accordion is never owned and keeps its own disclosure state and events, like the source element.",
+        "chassis-handle and chassis-handle-bar render on the first item of a floating accordion and are styled through chassisHandleColor and chassisHandleBackgroundHover; they accept no part declarations.",
+        "Android Compose rendering, events, retained-host and device suites are recorded; TalkBack delivery and OS accessibility traversal remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "heading",
+        "header",
+        "state-layer",
+        "drag-handle",
+        "leading-icon",
+        "headline",
+        "supporting-text",
+        "trailing-icon",
+        "panel",
+        "content",
+        "content-inner"
+      ],
+      "appearance": {
+        "api": "AWCAccordionItemAppearanceScope(AWCAccordionItemAppearance)",
+        "fields": [
+          "containerColor",
+          "containerColorExpanded",
+          "containerColorDragging",
+          "containerShape",
+          "containerShapeExpanded",
+          "containerShapeDragging",
+          "headerColor",
+          "headerColorExpanded",
+          "headlineColor",
+          "headlineColorExpanded",
+          "supportingColor",
+          "iconColor",
+          "iconColorExpanded",
+          "stateLayerColor",
+          "stateLayerColorExpanded",
+          "headerPadding",
+          "contentPadding",
+          "headerMinHeight",
+          "expandDuration",
+          "collapseDuration",
+          "elevation",
+          "elevationExpanded",
+          "chassisHandleColor",
+          "chassisHandleBackgroundHover"
+        ]
+      }
     }
   }
 }

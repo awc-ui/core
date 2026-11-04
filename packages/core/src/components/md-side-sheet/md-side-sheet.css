@@ -52,6 +52,11 @@
   box-sizing: border-box;
 }
 
+/* The public width includes the surface border, in both presentation modes. */
+.md-side-sheet__container {
+  box-sizing: border-box;
+}
+
 /* ==========================================================
    2. STANDARD VARIANT — inline, coexists with page content
    ========================================================== */
@@ -128,7 +133,7 @@
      edge) instead of overflowing off-screen and clipping its content. */
   inline-size: min(var(--_width), 100%);
   max-inline-size: min(var(--_max-width), 100%);
-  background-color: var(--md-sys-color-surface-container-low, #F7F2FA);
+  background-color: var(--md-side-sheet-container-color, var(--md-sys-color-surface-container-low, #F7F2FA));
   color: var(--_content-color);
   display: flex;
   flex-direction: column;
@@ -193,6 +198,9 @@
 }
 
 :host(.md-side-sheet--modal.md-side-sheet--detached) .md-side-sheet__container {
+  /* Reserve both detached margins before applying the requested/max width. */
+  inline-size: min(var(--_width), max(0px, calc(100% - 32px)));
+  max-inline-size: min(var(--_max-width), max(0px, calc(100% - 32px)));
   inset-block: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
   block-size: calc(100% - max(16px, calc(32px + var(--md-sys-density-scale, 0) * 4px)));
   box-shadow: var(--md-sys-elevation-3);
@@ -209,6 +217,7 @@
 :host(.md-side-sheet--standard.md-side-sheet--detached) .md-side-sheet__container {
   border: none;
   margin: 16px;
+  inline-size: max(0px, calc(100% - 32px));
   block-size: calc(100% - 32px);
   box-shadow: var(--md-sys-elevation-1);
 }
@@ -249,9 +258,11 @@
   margin-inline-end: calc(-12px - var(--md-sys-density-scale, 0) * 1px);
 }
 
+/* Forward the public hook directly: the nested icon button owns its own
+   --_icon-color, so forwarding that private alias would form a cycle. */
 .md-side-sheet__close md-icon-button,
 .md-side-sheet__back md-icon-button {
-  --md-icon-button-icon-color: var(--_icon-color);
+  --md-icon-button-icon-color: var(--md-side-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
   --md-icon-button-container-width: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
   --md-icon-button-container-height: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
   --md-icon-button-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
@@ -323,14 +334,16 @@
    ========================================================== */
 
 ::slotted([slot="back"]) {
-  color: var(--_icon-color);
+  color: var(--md-side-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --md-icon-button-icon-color: var(--md-side-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
   --md-icon-button-container-width: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
   --md-icon-button-container-height: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
   --md-icon-button-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
 }
 
 ::slotted([slot="close"]) {
-  color: var(--_icon-color);
+  color: var(--md-side-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --md-icon-button-icon-color: var(--md-side-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
   --md-icon-button-container-width: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
   --md-icon-button-container-height: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
   --md-icon-button-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));

@@ -1,0 +1,166 @@
+{
+ "tag": "md-status-dot",
+ "case": "inline",
+ "request": {
+  "tag": "md-status-dot",
+  "properties": {
+   "label": "All systems operational",
+   "inline": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Notifications",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          284,
+          32,
+          48,
+          48
+         ],
+         "identifier": "demo-status-dot-anchor",
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "button",
+         "selected": false
+        }
+       ],
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        284,
+        32,
+        48,
+        48
+       ],
+       "identifier": "demo-status-dot-anchor",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      },
+      {
+       "description": "All systems operational",
+       "enabled": true,
+       "frame": [
+        344,
+        50,
+        12,
+        12
+       ],
+       "identifier": "example-md-status-dot",
+       "role": "AXImage",
+       "roleDescription": "image"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      112
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    112
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-status-dot",
+  "properties": {
+   "density": 0,
+   "inline": true,
+   "label": "All systems operational",
+   "live": false,
+   "shape": "rect",
+   "size": "medium",
+   "state": "online"
+  },
+  "tag": "md-status-dot"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 12,
+     "width": 12,
+     "x": 344,
+     "y": 50
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI Circle",
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "outlineWidth": 0,
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "name": "md-status-dot"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

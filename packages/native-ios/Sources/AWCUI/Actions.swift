@@ -36,16 +36,6 @@ extension AWCNativeView {
                 emit("mdClick", ["selected": .bool(b("selected"))]); activateLink()
             }))
     }
-    var splitButton: some View {
-        HStack(spacing: 2) {
-            Button { emit("mdLeadingClick") } label: { Label(label, systemImage: awcSymbol(s("icon", "check"))).padding(12) }
-            Button {
-                set("trailingChecked", .bool(!b("trailingChecked")))
-                emit("mdTrailingClick", ["checked": .bool(b("trailingChecked"))])
-            } label: { symbol(s("trailingIcon", "expand_more")).padding(12).rotationEffect(.degrees(b("trailingChecked") ? 180 : 0)) }
-        }.buttonStyle(.plain).foregroundStyle(theme.onPrimary).background(theme.primary, in: Capsule())
-        .accessibilityElement(children: .contain)
-    }
     var segmentedButton: some View {
         Button {
             let selected = !b("selected"); set("selected", .bool(selected))
@@ -73,19 +63,31 @@ extension AWCNativeView {
                                    rightToLeft: s("dir") == "rtl" || (s("dir") != "ltr" && layoutDirection == .rightToLeft))
     }
     var nativeButtonGroup: AnyView {
-        AnyView(selectionGroup.environment(\.awcButtonFocusGroup, buttonFocusGroup)
-            .onAppear { synchronizeButtonFocusGroup() }
-            .onChange(of: nativeButtonFocusItems) { _, _ in synchronizeButtonFocusGroup() }
-            .onChange(of: s("dir")) { _, _ in synchronizeButtonFocusGroup() }
-            .onChange(of: s("selectionMode")) { _, _ in synchronizeButtonFocusGroup() }
-            .onChange(of: layoutDirection) { _, _ in synchronizeButtonFocusGroup() })
+        var current = node; current.properties = local
+        return AnyView(AWCNativeButtonGroupView(node:current,onEvent:onEvent))
+    }
+    func selectionChildProperties(_ item: AWCNode, index: Int) -> [String: AWCValue] {
+        var values: [String: AWCValue] = ["selected": .bool(groupSelection.contains(index))]
+        guard node.tag == "md-button-group", ["md-button", "md-icon-button"].contains(item.tag) else { return values }
+        values["toggle"] = true
+        values["size"] = .string(s("size", "sm"))
+        values["shape"] = .string(s("shape", "round"))
+        let siblings = node.children.indices.filter { ["md-button", "md-icon-button"].contains(node.children[$0].tag) }
+        let connected = s("variant") == "connected"
+        values["connectedLeft"] = .bool(connected && index != siblings.first)
+        values["connectedRight"] = .bool(connected && index != siblings.last)
+        return values
+    }
+    func selectionValue(_ index: Int) -> AWCValue {
+        node.children[index].properties["value"] ?? .string(node.tag == "md-button-group" ? "" : node.children[index].id)
     }
     var selectionGroup: some View {
         HStack(spacing: s("variant") == "connected" ? 2 : 8) {
             ForEach(Array(node.children.enumerated()), id: \.element.id) { index, item in
-                child(item, properties: ["selected": .bool(groupSelection.contains(index))]) { event in
+                child(item, properties: selectionChildProperties(item, index: index)) { event in
                     onEvent(event)
-                    guard !event.defaultPrevented, ["mdClick", "mdSegmentClick"].contains(event.name) else { return }
+                    let changeEvent = node.tag == "md-button-group" && item.tag == "md-button" ? "mdChange" : item.tag == "md-segmented-button" ? "mdSegmentClick" : "mdClick"
+                    guard !event.defaultPrevented, event.nodeID == item.id, event.name == changeEvent else { return }
                     let previousSelection = groupSelection
                     var selection = previousSelection
                     let multiple = b("multiselect") || s("selectionMode") == "multi-select"
@@ -93,8 +95,8 @@ extension AWCNativeView {
                         if !b("required") || selection.count > 1 { selection.remove(index) }
                     } else { if !multiple { selection.removeAll() }; selection.insert(index) }
                     set("_selection", .array(selection.sorted().map { .number(Double($0)) }))
-                    let values = selection.sorted().map { node.children[$0].properties["value"] ?? .string(node.children[$0].id) }
-                    emit(node.tag == "md-segmented-button-set" ? "mdChange" : "mdSelectionChange", node.tag == "md-segmented-button-set" ? .array(values) : ["values": .array(values), "added": .array(selection.subtracting(previousSelection).sorted().map { node.children[$0].properties["value"] ?? .string(node.children[$0].id) }), "removed": .array(previousSelection.subtracting(selection).sorted().map { node.children[$0].properties["value"] ?? .string(node.children[$0].id) })])
+                    let values = selection.sorted().map { selectionValue($0) }
+                    emit(node.tag == "md-segmented-button-set" ? "mdChange" : "mdSelectionChange", node.tag == "md-segmented-button-set" ? .array(values) : ["values": .array(values), "added": .array(selection.subtracting(previousSelection).sorted().map { selectionValue($0) }), "removed": .array(previousSelection.subtracting(selection).sorted().map { selectionValue($0) })])
                 }
             }
         }.frame(maxWidth: b("fullWidth") ? .infinity : nil)
@@ -113,7 +115,9 @@ extension AWCNativeView {
                 Toggle(isOn: Binding(get: { b("selected") }, set: { value in
                     set("selected", .bool(value)); emit("mdInput", ["selected": .bool(value)]); emit("mdChange", ["selected": .bool(value)])
                     if b("required") { validate(value) }
+                    _ = iconFocusHandle.requestPointerFocus?()  // a click focuses md-switch (Chrome, pointerdown)
                 })) { HStack { if !label.isEmpty { Text(label) } else { content() }; content(b("selected") ? "selected-icon" : "unselected-icon") } }.toggleStyle(.switch)
+                    .accessibilityHidden(true).awcFocusBridgeLayer { AWCNativeButtonFocusBridge(configuration: switchFocusConfiguration) }
             } else {
                 Button {
                     let checked = node.tag == "md-radio" ? true : !b("checked")
@@ -148,19 +152,9 @@ extension AWCNativeView {
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(theme.primary.opacity(0.25)))
     }
     var rating: some View {
-        HStack(spacing: 4) {
-            ForEach(1...max(1, Int(n("max", 5))), id: \.self) { index in
-                Button {
-                    guard !readOnly else { return }
-                    let amount = Double(index)
-                    let value = n("precision", 1) == 0.5 && n("value") == amount ? amount - 0.5 : amount
-                    set("value", .number(value)); emit("mdChange", .number(value))
-                } label: {
-                    Image(systemName: n("value", n("defaultValue")) >= Double(index) ? awcSymbol(s("icon", "star")) : n("value") >= Double(index) - 0.5 ? "star.leadinghalf.filled" : awcSymbol(s("emptyIcon", "star_border")))
-                        .font(.system(size: size * 0.6)).foregroundStyle(theme.primary)
-                }.buttonStyle(.plain).accessibilityLabel("\(index) of \(Int(n("max", 5))) stars")
-            }
-            if b("showValueLabel") { Text(s("value", s("defaultValue", "0"))).monospacedDigit() }
-        }.accessibilityLabel(s("ratingLabel", "Rating"))
+        // Dedicated renderer (Rating/NativeRatingView.swift): Web geometry, hover preview, pop / state layer / ripple, keyboard.
+        // Host-authored properties (outside a form): the component's own writes live in its model until the host changes them.
+        AWCNativeRatingView(nodeID: node.id, properties: formState == nil ? (AWCComponentCatalog.defaults[node.tag] ?? [:]).merging(node.properties) { _, new in new } : local,
+                            set: { set($0, $1) }, emit: { emit($0, $1) })
     }
 }

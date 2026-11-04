@@ -554,7 +554,7 @@
     "styleUrl": "md-checkbox.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "cbf66c4279d0dd846a43806e58081427d316fe9df2ab939d582ede6dc070a8e0"
+    "sha256": "b867163700c9b011a215107ef05ce62f787fc3a066e5f9eb12bd5858e89b55a5"
   },
   "styles": [
     {
@@ -1375,7 +1375,7 @@
       ]
     },
     {
-      "selector": ".md-checkbox__container,\n  .md-checkbox__state-layer",
+      "selector": ".md-checkbox__container,\n  :host(.md-checkbox--pressed) .md-checkbox__container,\n  .md-checkbox__state-layer",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
         {
@@ -1386,7 +1386,7 @@
       ]
     },
     {
-      "selector": ".md-checkbox__icon .material-symbols-outlined",
+      "selector": ".md-checkbox__icon .material-symbols-outlined,\n  :host(.md-checkbox--checked) .md-checkbox__icon .material-symbols-outlined,\n  :host(.md-checkbox--indeterminate) .md-checkbox__icon .material-symbols-outlined",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
         {
@@ -1744,78 +1744,132 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "checked",
-        "indeterminate",
-        "required",
-        "value",
+        "valueMissingLabel",
         "error",
         "errorText",
         "supportingText",
-        "valueMissingLabel",
+        "checked",
+        "indeterminate",
         "disabled",
         "softDisabled",
-        "name"
+        "required",
+        "name",
+        "value",
+        "density"
       ],
       "events": [
         "mdChange",
         "mdValidityChange"
       ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "getValidity",
         "checkValidity",
         "reportValidity",
         "setCustomValidity"
       ],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+        "Dedicated native checkbox: all twelve properties (indeterminate, error/errorText, supportingText, density 0…−4), mdChange and mdValidityChange, fourteen appearance hooks and five typed part targets.",
+        "Methods through AWCSelectionControlController: getValidity/checkValidity/reportValidity/setCustomValidity follow the source's constraint validation; reportValidity() shows the message in the supporting line and focuses the checkbox.",
+        "Click toggles (indeterminate → checked), Space once per press with the pressed pulse and a centred ripple, Enter inert; soft disabled stays focusable; the native form resets checked and indeterminate without events.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS runs through the simulator harness; VoiceOver/TalkBack execution remains unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "target",
+        "state-layer",
+        "container",
+        "icon",
+        "supporting-text"
+      ],
+      "appearance": {
+        "api": ".awcCheckboxAppearance(AWCCheckboxAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "containerSize",
+          "selectedContainerColor",
+          "outlineColor",
+          "outlineWidth",
+          "iconColor",
+          "iconSize",
+          "stateLayerColor",
+          "selectedStateLayerColor",
+          "stateLayerSize",
+          "touchTargetSize",
+          "supportingTextColor",
+          "errorTextColor"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "checked",
-        "disabled",
+        "valueMissingLabel",
         "error",
         "errorText",
-        "indeterminate",
-        "name",
-        "required",
-        "softDisabled",
         "supportingText",
-        "value"
-      ],
-      "events": [
-        "mdChange"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "valueMissingLabel",
+        "checked",
+        "indeterminate",
+        "disabled",
+        "softDisabled",
+        "required",
+        "name",
+        "value",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdChange",
         "mdValidityChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "getValidity",
         "checkValidity",
         "reportValidity",
         "setCustomValidity"
       ],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+        "Dedicated native checkbox: all twelve properties (indeterminate, error/errorText, supportingText, density 0…−4), mdChange and mdValidityChange, fourteen appearance hooks and five typed part targets.",
+        "Methods through AWCSelectionControlController: getValidity/checkValidity/reportValidity/setCustomValidity follow the source's constraint validation; reportValidity() shows the message in the supporting line and focuses the checkbox.",
+        "Click toggles (indeterminate → checked), Space once per press with the pressed pulse and a centred ripple, Enter inert; soft disabled stays focusable; the native form resets checked and indeterminate without events.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS runs through the simulator harness; VoiceOver/TalkBack execution remains unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "target",
+        "state-layer",
+        "container",
+        "icon",
+        "supporting-text"
+      ],
+      "appearance": {
+        "api": "AWCCheckboxAppearanceScope(AWCCheckboxAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "containerSize",
+          "selectedContainerColor",
+          "outlineColor",
+          "outlineWidth",
+          "iconColor",
+          "iconSize",
+          "stateLayerColor",
+          "selectedStateLayerColor",
+          "stateLayerSize",
+          "touchTargetSize",
+          "supportingTextColor",
+          "errorTextColor"
+        ]
+      }
     }
   }
 }

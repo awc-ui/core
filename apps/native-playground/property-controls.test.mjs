@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { propertyEditor, parsePropertyInput } from './property-controls.js';
+import { mergeComponentDocumentation } from './documentation.js';
 
 const editor = (type, value, extra = {}, component = {}) => propertyEditor(component, { name: 'value', type, ...extra }, value);
 
@@ -77,6 +78,27 @@ test('recursive and incomplete aliases are bounded and honest about missing type
   assert.equal(editor('UnknownType', 'current').kind, 'text');
   assert.match(editor('UnknownType', 'current').note, /unavailable/);
   assert.equal(editor('UnknownType').kind, 'readonly');
+});
+
+test('generated Status Dot alias metadata exposes the same declared choices on Web and both native platforms', () => {
+  const catalog = JSON.parse(readFileSync(new URL('../../packages/native-compiler/generated/catalog.json', import.meta.url)));
+  const source = catalog.components.find(component => component.tag === 'md-status-dot');
+  const usage = JSON.parse(readFileSync(new URL('../docs/src/data/components/status-dot.json', import.meta.url)));
+  const component = mergeComponentDocumentation({}, source, usage);
+  for (const platform of ['web', 'ios', 'android']) {
+    for (const [name, choices] of [
+      ['state', ['online', 'away', 'busy', 'offline', 'invisible', 'neutral']],
+      ['size', ['small', 'medium', 'large']],
+    ]) {
+      const property = component.properties.find(item => item.name === name);
+      const control = propertyEditor({ ...component, platform }, property, property.defaultValue);
+      assert.equal(control.kind, 'literal', `${platform}.${name}`);
+      assert.deepEqual(control.choices, choices);
+      assert.doesNotMatch(control.note || '', /unavailable/);
+      for (const choice of choices) assert.equal(parsePropertyInput(control, JSON.stringify(choice)), choice);
+      assert.throws(() => parsePropertyInput(control, '"not-a-declared-value"'), /declared/);
+    }
+  }
 });
 
 test('every catalog property classifies safely and declared defaults round-trip without coercion', () => {

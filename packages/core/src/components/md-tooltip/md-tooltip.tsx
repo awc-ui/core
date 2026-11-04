@@ -108,6 +108,7 @@ export class MdTooltip {
     // Honor `disabled`: a disabled tooltip must never render visible, and seeding
     // isVisible while disabled would also leak an unbalanced mdClose on the next hide.
     this.syncSlotFlags();
+    if (this.disabled) this.open = false;
     if (this.open && !this.disabled) this.isVisible = true;
   }
 
@@ -158,7 +159,10 @@ export class MdTooltip {
         this.syncSlotFlags();
         if (this.triggerEl) this.updateTriggerAria(this.triggerEl);
       });
-      this.slotObserver.observe(this.el, { childList: true, subtree: true, characterData: true });
+      this.slotObserver.observe(this.el, {
+        childList: true, subtree: true, characterData: true,
+        attributes: true, attributeFilter: ['slot'],
+      });
     }
 
     const first = this.triggerSlot?.assignedElements()[0] as HTMLElement | undefined;
@@ -167,7 +171,13 @@ export class MdTooltip {
 
   private onTriggerSlotChange = () => {
     const els = this.triggerSlot?.assignedElements();
-    if (els && els.length > 0) this.bindTrigger(els[0] as HTMLElement);
+    if (els && els.length > 0) {
+      this.bindTrigger(els[0] as HTMLElement);
+    } else {
+      this.clearTimers();
+      this.unbindTrigger();
+      this.open = false;
+    }
   };
 
   private syncSlotFlags() {
@@ -194,6 +204,13 @@ export class MdTooltip {
 
   @Watch('open')
   onOpenChange(val: boolean) {
+    this.clearTimers();
+    // Authored property updates obey the same disabled contract as show() and
+    // initial markup; do not leave a reflected open state with no visible popup.
+    if (val && this.disabled) {
+      this.open = false;
+      return;
+    }
     if (val) {
       this.showTooltip();
     } else {
@@ -216,8 +233,17 @@ export class MdTooltip {
    *  after binding (bindTrigger and the disabled watcher were the only refreshers). */
   @Watch('text')
   @Watch('subhead')
+  @Watch('variant')
   onDescriptionChange() {
     if (this.triggerEl) this.updateTriggerAria(this.triggerEl);
+  }
+
+  @Watch('position')
+  @Watch('autoPosition')
+  @Watch('offset')
+  @Watch('crossOffset')
+  onPositionOptionsChange() {
+    if (this.isVisible) this.schedulePositionUpdate();
   }
 
   // ─── Public Methods ──────────────────────────────────────
@@ -225,6 +251,7 @@ export class MdTooltip {
   /** Show the tooltip programmatically (no-op while `disabled`). */
   @Method()
   async show() {
+    this.clearTimers();
     // Don't flip `open` (a reflected attribute) true while disabled — showTooltip
     // would early-return, leaving open=true with nothing visible (a state desync).
     if (this.disabled) return;
@@ -234,6 +261,7 @@ export class MdTooltip {
   /** Dismiss the tooltip programmatically. */
   @Method()
   async hide() {
+    this.clearTimers();
     this.open = false;
   }
 
@@ -302,23 +330,17 @@ export class MdTooltip {
   }
 
   /**
-   * The trigger's accessible description: `text`/`subhead` props first, then a
-   * fallback to slotted rich content (subhead + supporting text) so a slot-only
-   * rich tooltip is still announced to screen readers. Action buttons are excluded
-   * — they are not description text and carry their own accessible names.
+   * Describe the content that actually renders. Rich slots replace their
+   * corresponding fallback properties; action labels are not description text.
    */
   private computeDescription(): string {
-    if (this.text) return this.text;
-    if (this.subhead) return this.subhead;
-    const parts: string[] = [];
-    for (const child of Array.from(this.el.children)) {
-      const slot = child.getAttribute('slot');
-      if (slot === 'subhead' || slot === 'content') {
-        const t = (child.textContent || '').trim();
-        if (t) parts.push(t);
-      }
-    }
-    return parts.join('. ');
+    if (this.variant !== 'rich') return this.text;
+    const children = Array.from(this.el.children);
+    const content = (name: string, fallback: string) => {
+      const assigned = children.filter(child => child.getAttribute('slot') === name);
+      return assigned.length ? assigned.map(child => (child.textContent || '').trim()).filter(Boolean).join(' ') : fallback;
+    };
+    return [content('subhead', this.subhead), content('content', this.text)].filter(Boolean).join('. ');
   }
 
   // ─── Event Handlers ──────────────────────────────────────
@@ -437,6 +459,7 @@ export class MdTooltip {
 
   private schedulePositionUpdate(attempt = 0) {
     requestAnimationFrame(() => {
+      if (!this.isVisible || !this.el.isConnected) return;
       const positioned = this.updatePosition();
       if (!positioned && attempt < 3) {
         this.schedulePositionUpdate(attempt + 1);
@@ -463,7 +486,7 @@ export class MdTooltip {
   /** Geometry snapshot from the last successful updatePosition. ex/ey are the popup's
    *  EXPECTED viewport coords — if a containing-block change reinterprets the stored
    *  style.top/left, the popup's real rect drifts from these and we reposition. */
-  private lastGeom = { at: 0, al: 0, aw: 0, ah: 0, pw: 0, ph: 0, vw: 0, vh: 0, ex: 0, ey: 0 };
+  private lastGeom = { at: 0, al: 0, aw: 0, ah: 0, pw: 0, ph: 0, vw: 0, vh: 0, ex: 0, ey: 0, direction: '' };
   private watchdogFrame = 0;
 
   private startPositionWatchdog() {
@@ -491,6 +514,7 @@ export class MdTooltip {
             // 0.5px tolerance absorbs subpixel churn; the entrance scale animation
             // exceeds it for a few frames, which just re-writes the same coords.
             Math.abs(p.top - g.ey) > 0.5 || Math.abs(p.left - g.ex) > 0.5 ||
+            getComputedStyle(this.el).direction !== g.direction ||
             window.innerWidth !== g.vw || window.innerHeight !== g.vh;
           if (drifted) this.updatePosition();
         }
@@ -616,6 +640,7 @@ export class MdTooltip {
       pw: popupW, ph: popupH,
       vw: window.innerWidth, vh: window.innerHeight,
       ex: anchorRect.left + coords.left, ey: anchorRect.top + coords.top,
+      direction: getComputedStyle(this.el).direction,
     };
     return true;
   }
@@ -643,8 +668,8 @@ export class MdTooltip {
 
     const cbRect = containingBlock.getBoundingClientRect();
     return {
-      top: viewportTop - cbRect.top,
-      left: viewportLeft - cbRect.left,
+      top: viewportTop - cbRect.top - (containingBlock.clientTop || 0) + (containingBlock.scrollTop || 0),
+      left: viewportLeft - cbRect.left - (containingBlock.clientLeft || 0) + (containingBlock.scrollLeft || 0),
     };
   }
 

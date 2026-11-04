@@ -1,0 +1,295 @@
+{
+ "tag": "md-side-sheet",
+ "case": "open",
+ "html": "<md-button variant=\"tonal\">Open side sheet</md-button><md-side-sheet data-ax-node=\"n0\" id=\"component\">Every great project starts with a shared workspace.</md-side-sheet>",
+ "props": {
+  "n0": {
+   "bottomDivider": false,
+   "closeable": true,
+   "density": 0,
+   "detached": false,
+   "headline": "Project details",
+   "open": true,
+   "scrimDismissible": true,
+   "sheetAriaLabel": "",
+   "showBack": false,
+   "side": "end",
+   "topDivider": false,
+   "variant": "standard"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "button",
+    "name": "Open side sheet",
+    "ignored": false,
+    "invalid": "false",
+    "focusable": true,
+    "frame": [
+     16,
+     16,
+     135.46875,
+     40
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       }
+      ]
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "StaticText",
+          "name": "Open side sheet",
+          "ignored": false,
+          "frame": [
+           32,
+           28,
+           103.46875,
+           16
+          ],
+          "children": [
+           {
+            "role": "InlineTextBox",
+            "name": "Open side sheet",
+            "ignored": false
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "role": "generic",
+    "name": "",
+    "ignored": false,
+    "frame": [
+     16,
+     56,
+     360,
+     140
+    ],
+    "children": [
+     {
+      "role": "region",
+      "name": "Project details",
+      "ignored": false,
+      "focusable": true,
+      "frame": [
+       16,
+       56,
+       360,
+       140
+      ],
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Project details",
+              "ignored": false,
+              "frame": [
+               41,
+               87,
+               138.1875,
+               25
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Project details",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           324,
+           80,
+           40,
+           40
+          ],
+          "children": [
+           {
+            "role": "button",
+            "name": "Close side sheet",
+            "ignored": false,
+            "focusable": true,
+            "frame": [
+             324,
+             80,
+             40,
+             40
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         17,
+         132,
+         359,
+         64
+        ],
+        "children": [
+         {
+          "role": "StaticText",
+          "name": "Every great project starts with a shared workspace.",
+          "ignored": false,
+          "frame": [
+           41,
+           146,
+           253,
+           36
+          ],
+          "children": [
+           {
+            "role": "InlineTextBox",
+            "name": "Every great project starts with a shared ",
+            "ignored": false
+           },
+           {
+            "role": "InlineTextBox",
+            "name": "workspace.",
+            "ignored": false
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-button",
+   "role": "button",
+   "name": "Open side sheet",
+   "frame": [
+    16,
+    16,
+    135.46875,
+    40
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "dom": "md-icon-button",
+   "role": "button",
+   "name": "Close side sheet",
+   "frame": [
+    324,
+    80,
+    40,
+    40
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

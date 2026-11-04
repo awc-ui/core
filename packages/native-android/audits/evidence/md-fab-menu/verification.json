@@ -1,0 +1,20 @@
+{
+  "startedAt": "2026-10-20T18:16:04.181813+00:00",
+  "completedAt": "2026-10-20T18:16:56.524870+00:00",
+  "sourceInputCount": 117,
+  "inputsChanged": [],
+  "deviceTests": {
+    "name": "dev.awc.playground.NativeFabMenuParityTest",
+    "tests": "9",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "18.167",
+    "timestamp": "2026-10-20T18:16:38",
+    "hostname": "localhost"
+  },
+  "unitTests": 75,
+  "fontPolicy": "Compose TextMotion.Animated uses linear/subpixel text measurement; original 2dp source width tolerance retained",
+  "firstRun": "../first-run/device-results.xml",
+  "command": "JAVA_HOME=/Users/ionut-valentinmitrache/Library/Java/JavaVirtualMachines/openjdk-23.0.1/Contents/Home ANDROID_HOME=/Users/ionut-valentinmitrache/Documents/Codex/2026-10-07/p/work/android-sdk ANDROID_SERIAL=emulator-5554 ./gradlew :native-ui:testDebugUnitTest :app:connectedDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=dev.awc.playground.NativeFabMenuParityTest,dev.awc.playground.LivePreviewHostTest#fabMenuMethodsStayIndependentOfStreamingAndCorrelateActualLifecycleAndItemEvents,dev.awc.playground.NativeFabParityTest#pointerKeyboardAccessibilityAndDisabledFocusUseNativeInputMetadata,dev.awc.playground.NativeIconButtonParityTest#pointerKeyboardAndSemanticsActivateOnceWithCommittedSelectedPayload,dev.awc.playground.NativeButtonParityTest#actualActivationSourceSurvivesCancellationAndScopedPropagation' --console=plain"
+}

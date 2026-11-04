@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { coveragePresentation, coverageRunViews, coverageRagStatus, renderCoverageRun, renderCoverageContent } from './studio-ui.js';
+import { createRequire } from 'node:module';
+import { readdir } from 'node:fs/promises';
+import { coveragePresentation, coverageRunViews, coverageRagStatus, renderCoverageRun, renderCoverageContent, createCoverageUI } from './studio-ui.js';
 
 test('measured coverage uses the latest report without merging separate runs or inferring success', () => {
   const measured = { path: 'latest', lines: { covered: 8, total: 10, percent: 80 } };
@@ -293,4 +295,208 @@ test('new unpaired coverage cannot hide a recorded failure, while new outcomes r
   assert.doesNotMatch(compact, /10 of 20 covered/);
   const latestOutcome = { ...newer, measurement: null, execution: { status: 'failed' } };
   assert.deepEqual(coverageRunViews({ runs: [{ ...failed, execution: { status: 'passed' } }, latestOutcome] }), [latestOutcome]);
+});
+
+
+// Use the same DOM boundary as canvas-inspector tests: verify mounted node
+// identity and asynchronous request ordering, without claiming browser layout.
+const packages = await readdir(new URL('../../node_modules/.pnpm/', import.meta.url));
+const jsdomPackage = packages.find(name => name.startsWith('jsdom@22.')) || packages.find(name => name.startsWith('jsdom@'));
+const { JSDOM } = createRequire(import.meta.url)(new URL(`../../node_modules/.pnpm/${jsdomPackage}/node_modules/jsdom/lib/api.js`, import.meta.url).pathname);
+function coverageFixture(t) {
+  const dom = new JSDOM('<!doctype html><div id="coverage-panel"></div>');
+  const state = { selected: { tag: 'md-button' } }, requests = [];
+  const globals = { document: dom.window.document, fetch: url => new Promise((resolve, reject) => requests.push({ url, resolve, reject })) };
+  const previous = Object.fromEntries(Object.keys(globals).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { value, configurable: true });
+  const ui = createCoverageUI({ getState: () => state }), root = dom.window.document.querySelector('#coverage-panel');
+  const data = (tag = state.selected.tag, covered = 8) => ({ tag, categories: Object.fromEntries([
+    ['unit', 'Unit'], ['component', 'Component'], ['e2e', 'End-to-end'], ['accessibility', 'Accessibility'],
+  ].map(([id, label]) => [id, { label, files: [{ path: `${tag}-${id}.test.ts`, testCount: 2 }], runs: [{
+    label: `${label} runner`, runnerKey: `${id}:core`, verified: true, source: { matchesCurrent: true },
+    measurement: { lines: { covered, total: 10, percent: covered * 10 } }, execution: { total: 2, passed: 2, failed: 0 },
+  }] }])) });
+  const respond = (index, report = data()) => requests[index].resolve({ ok: true, json: async () => report });
+  const select = index => root.querySelector('#coverage-tabs').dispatchEvent(new dom.window.CustomEvent('mdTabChange', { bubbles: true, detail: { index } }));
+  t.after(() => {
+    dom.window.close();
+    for (const [key, descriptor] of Object.entries(previous)) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else delete globalThis[key]; }
+  });
+  return { dom, state, ui, root, requests, data, respond, select };
+}
+
+test('same-component coverage revisit preserves every mounted node and makes no request or DOM writes', async t => {
+  const { dom, ui, root, requests, respond } = coverageFixture(t);
+  const loading = ui.load(); respond(0); await loading;
+  const nodes = [...root.querySelectorAll('*')], observer = new dom.window.MutationObserver(() => {});
+  observer.observe(root, { childList: true, subtree: true, attributes: true, characterData: true });
+  await ui.load();
+  assert.equal(requests.length, 1);
+  assert.deepEqual([...root.querySelectorAll('*')], nodes);
+  assert.deepEqual(observer.takeRecords(), []);
+  observer.disconnect();
+});
+
+test('coverage categories retain their hydrated content while switching visibility and preserving focused tabs', async t => {
+  const { dom, ui, root, respond, select } = coverageFixture(t);
+  const loading = ui.load(); respond(0); await loading;
+  const tabs = root.querySelector('#coverage-tabs'), heading = root.querySelector('.coverage-heading'), body = root.querySelector('.coverage-body');
+  const refresh = root.querySelector('#coverage-refresh'), third = tabs.children[2];
+  const nodes = [...body.querySelectorAll('*')], unit = body.querySelector('[data-category="unit"]');
+  unit.scrollTop = 45;
+  third.tabIndex = 0; third.focus();
+  select(2);
+  assert.equal(root.querySelector('#coverage-tabs'), tabs); assert.equal(root.querySelector('.coverage-heading'), heading);
+  assert.equal(root.querySelector('.coverage-body'), body); assert.equal(root.querySelector('#coverage-refresh'), refresh);
+  assert.equal(dom.window.document.activeElement, third);
+  assert.match(body.querySelector(':scope > :not([hidden])').textContent, /End-to-end runner/); assert.equal(tabs.activeTabIndex, 2);
+  assert.equal(unit.hidden, true); assert.deepEqual([...body.querySelectorAll('*')], nodes);
+  select(3);
+  assert.match(root.querySelector('#coverage-description').textContent, /Recorded accessibility checks/);
+  assert.match(body.querySelector(':scope > :not([hidden])').textContent, /Accessibility test cases/);
+  const content = body.firstChild; select(3); select(-1);
+  assert.equal(body.firstChild, content, 'reselecting or invalid selections cannot reconstruct content');
+  select(0);
+  assert.equal(unit.hidden, false); assert.equal(unit.scrollTop, 45);
+  assert.equal(body.querySelectorAll(':scope > :not([hidden])').length, 1);
+  assert.deepEqual([...body.querySelectorAll('*')], nodes, 'returning to a category cannot recreate its custom elements');
+});
+
+test('initial coverage keeps its loader visible until every category is hydrated', async t => {
+  const { dom, ui, root, respond } = coverageFixture(t);
+  let ready;
+  const hydration = new Promise(resolve => { ready = resolve; });
+  let disconnects = 0;
+  dom.window.customElements.define('md-card', class extends dom.window.HTMLElement {
+    componentOnReady() { return hydration; }
+    disconnectedCallback() { disconnects++; }
+  });
+  const loading = ui.load(); respond(0);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.ok(root.querySelector(':scope > .coverage-loading'));
+  assert.equal(root.getAttribute('aria-busy'), 'true');
+  const categories = [...root.querySelectorAll('.coverage-category')];
+  assert.equal(categories.length, 4);
+  assert.ok(categories.every(panel => panel.hidden && panel.closest('[aria-hidden="true"]')?.hidden));
+  ready(); await loading;
+  assert.equal(root.querySelector('.coverage-loading'), null);
+  assert.equal(root.querySelectorAll('.coverage-category:not([hidden])').length, 1);
+  assert.equal(root.querySelector('[data-category="unit"]').hidden, false);
+  assert.equal(root.hasAttribute('aria-busy'), false);
+  assert.equal(disconnects, 0, 'revealing the first report must not disconnect freshly hydrated hosts');
+});
+
+test('refresh stages hydrated categories without replacing current evidence and reveals the latest selected category', async t => {
+  const { dom, ui, root, respond, data, select } = coverageFixture(t);
+  const loading = ui.load(); respond(0); await loading;
+  const body = root.querySelector('.coverage-body'), oldNodes = [...body.querySelectorAll('*')];
+  let ready;
+  const hydration = new Promise(resolve => { ready = resolve; });
+  dom.window.customElements.define('md-card', class extends dom.window.HTMLElement {
+    componentOnReady() { return hydration; }
+  });
+  const refreshing = ui.load(true); respond(1, data('md-button', 9));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.ok(oldNodes.every(node => body.contains(node)), 'old report stays mounted while replacement hydrates');
+  assert.match(body.querySelector(':scope > :not([hidden])').textContent, /8 of 10 covered/);
+  assert.equal(body.querySelectorAll(':scope > :not([hidden])').length, 1);
+  select(2);
+  ready(); await refreshing;
+  assert.equal(root.querySelector('.coverage-body'), body);
+  assert.equal(body.querySelector(':scope > :not([hidden])').dataset.category, 'e2e');
+  assert.match(body.textContent, /9 of 10 covered/);
+  assert.doesNotMatch(body.textContent, /8 of 10 covered/);
+  assert.equal(root.querySelector('[aria-hidden="true"]'), null);
+});
+
+test('a stale hydration completion cannot replace another component report', async t => {
+  const { dom, ui, root, state, respond, data } = coverageFixture(t);
+  let ready;
+  const hydration = new Promise(resolve => { ready = resolve; });
+  let hold = true;
+  dom.window.customElements.define('md-card', class extends dom.window.HTMLElement {
+    componentOnReady() { return hold ? hydration : Promise.resolve(); }
+  });
+  const first = ui.load(); respond(0);
+  await new Promise(resolve => setImmediate(resolve));
+  state.selected.tag = 'md-card'; hold = false;
+  const next = ui.load(); respond(1, data('md-card', 4)); await next;
+  const nodes = [...root.querySelectorAll('*')];
+  ready(); await first;
+  assert.deepEqual([...root.querySelectorAll('*')], nodes);
+  assert.match(root.textContent, /md-card/);
+  assert.doesNotMatch(root.textContent, /md-button|8 of 10 covered/);
+});
+
+test('same-component refresh keeps old evidence mounted while busy and retains header and tabs after success', async t => {
+  const { ui, root, respond, data, select } = coverageFixture(t);
+  const loading = ui.load(); respond(0); await loading;
+  const tabs = root.querySelector('#coverage-tabs'), heading = root.querySelector('.coverage-heading');
+  const body = root.querySelector('.coverage-body'), oldReport = body.firstElementChild;
+  const refreshing = ui.load(true);
+  assert.equal(root.getAttribute('aria-busy'), 'true');
+  assert.equal(root.querySelector('#coverage-refresh').disabled, true);
+  assert.equal(body.firstElementChild, oldReport); assert.match(body.textContent, /8 of 10 covered/);
+  select(2); respond(1, data('md-button', 9)); await refreshing;
+  assert.equal(root.querySelector('#coverage-tabs'), tabs); assert.equal(root.querySelector('.coverage-heading'), heading);
+  assert.equal(root.querySelector('.coverage-body'), body);
+  assert.equal(tabs.activeTabIndex, 2); assert.match(body.textContent, /End-to-end runner/);
+  assert.match(body.textContent, /9 of 10 covered/); assert.doesNotMatch(body.textContent, /8 of 10 covered/);
+  assert.equal(root.hasAttribute('aria-busy'), false); assert.equal(root.querySelector('#coverage-refresh').disabled, false);
+});
+
+test('failed refresh honestly labels retained evidence and permits retry without replacing the tabs', async t => {
+  const { ui, root, requests, respond, data } = coverageFixture(t);
+  const loading = ui.load(); respond(0); await loading;
+  const tabs = root.querySelector('#coverage-tabs'), body = root.querySelector('.coverage-body'), report = body.firstElementChild;
+  const refreshing = ui.load(true); requests[1].reject(new Error('Network unavailable')); await refreshing;
+  const error = root.querySelector('#coverage-error');
+  assert.equal(error.hidden, false); assert.equal(error.getAttribute('role'), 'alert');
+  assert.match(error.textContent, /Refresh failed.*previously loaded report.*Network unavailable/);
+  assert.equal(body.firstElementChild, report); assert.equal(root.querySelector('#coverage-tabs'), tabs);
+  await ui.load(); assert.equal(error.hidden, false, 'revisiting cannot erase a failed-refresh warning');
+  const retry = ui.load(true); respond(2, data('md-button', 7)); await retry;
+  assert.equal(error.hidden, true); assert.equal(error.textContent, '');
+  assert.equal(root.querySelector('#coverage-tabs'), tabs); assert.match(body.textContent, /7 of 10 covered/);
+});
+
+test('in-flight loads for the same component are deduplicated including repeated refresh requests', async t => {
+  const { ui, root, requests, respond } = coverageFixture(t);
+  const first = ui.load(), repeated = ui.load(), refresh = ui.load(true);
+  assert.equal(first, repeated); assert.equal(first, refresh); assert.equal(requests.length, 1);
+  respond(0); await Promise.all([first, repeated, refresh]);
+  assert.equal(root.querySelectorAll('#coverage-tabs').length, 1);
+  const next = ui.load(true), duplicate = ui.load(true);
+  assert.equal(next, duplicate); assert.equal(requests.length, 2);
+  respond(1); await next;
+});
+
+test('changing components removes old evidence immediately and rejects late results from the previous component', async t => {
+  const { ui, root, state, requests, respond, data } = coverageFixture(t);
+  const first = ui.load(); respond(0); await first;
+  const oldRefresh = ui.load(true);
+  state.selected = { tag: 'md-card' };
+  const next = ui.load();
+  assert.doesNotMatch(root.textContent, /Unit runner|md-button/);
+  assert.match(root.textContent, /Reading test sources and reports/);
+  respond(2, data('md-card', 4)); await next;
+  const nodes = [...root.querySelectorAll('*')];
+  respond(1, data('md-button', 10)); await oldRefresh;
+  assert.deepEqual([...root.querySelectorAll('*')], nodes);
+  assert.match(root.textContent, /md-card/); assert.match(root.textContent, /4 of 10 covered/);
+  assert.doesNotMatch(root.textContent, /md-button|10 of 10 covered/);
+  assert.equal(requests.length, 3);
+});
+
+test('wrong-component reports and initial failures never render stale or fabricated measurements', async t => {
+  const { ui, root, requests, respond, data } = coverageFixture(t);
+  const wrong = ui.load(); respond(0, data('md-card', 10)); await wrong;
+  assert.match(root.textContent, /did not match the selected component/);
+  assert.equal(root.querySelector('md-meter'), null);
+  assert.equal(root.hasAttribute('aria-busy'), false);
+  const failed = ui.load(); requests[1].resolve({ ok: false }); await failed;
+  assert.match(root.textContent, /could not be loaded/);
+  assert.equal(root.querySelector('#coverage-tabs'), null);
+  const retry = ui.load(); respond(2); await retry;
+  assert.match(root.textContent, /8 of 10 covered/);
 });

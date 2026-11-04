@@ -1,0 +1,282 @@
+{
+ "tag": "md-tooltip",
+ "at": "2026-10-29T11:11:40.613Z",
+ "rows": [
+  {
+   "case": "plain",
+   "web": {
+    "elements": [
+     "button:Hover or focus me"
+    ],
+    "texts": [],
+    "focus": [
+     "button:Hover or focus me"
+    ],
+    "contrast": {
+     "measured": 2,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Hover or focus me"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Hover or focus me",
+      "button:Hover or focus me"
+     ],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Hover or focus me"
+     ],
+     "texts": [],
+     "focus": [
+      "button:Hover or focus me",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: button \"Hover or focus me\" target 149×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Hover or focus me"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Hover or focus me",
+      "button:Hover or focus me"
+     ],
+     "findings": [
+      {
+       "kind": "description",
+       "web": {
+        "role": "button",
+        "name": "Hover or focus me"
+       },
+       "native": {
+        "role": "button",
+        "name": "Hover or focus me"
+       },
+       "detail": "button \"Hover or focus me\" description \"One source. Every surface.\" → \"\"",
+       "status": "expected",
+       "reason": "Web: the tooltip describes its anchor (aria-describedby). Compose has no tooltip text on the anchor; the tooltip is a popup announced as a live region when shown."
+      }
+     ],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 11,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "rich",
+   "web": {
+    "elements": [
+     "button:Hover or focus me"
+    ],
+    "texts": [],
+    "focus": [
+     "button:Hover or focus me"
+    ],
+    "contrast": {
+     "measured": 2,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Hover or focus me"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Hover or focus me",
+      "button:Hover or focus me"
+     ],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Hover or focus me"
+     ],
+     "texts": [],
+     "focus": [
+      "button:Hover or focus me",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: button \"Hover or focus me\" target 149×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Hover or focus me"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Hover or focus me",
+      "button:Hover or focus me"
+     ],
+     "findings": [
+      {
+       "kind": "description",
+       "web": {
+        "role": "button",
+        "name": "Hover or focus me"
+       },
+       "native": {
+        "role": "button",
+        "name": "Hover or focus me"
+       },
+       "detail": "button \"Hover or focus me\" description \"Design systems. One source. Every surface.\" → \"\"",
+       "status": "expected",
+       "reason": "Web: the tooltip describes its anchor (aria-describedby). Compose has no tooltip text on the anchor; the tooltip is a popup announced as a live region when shown."
+      }
+     ],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 11,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

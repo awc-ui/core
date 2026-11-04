@@ -446,6 +446,54 @@ describe('md-icon-button', () => {
   });
 
   // ── md-ripple ─────────────────────────────────────────────
+  it('updates the default glyph and badge adornment when slotted content changes', async () => {
+    const page = await newSpecPage({ components: [MdIconButton], html: '<md-icon-button icon="mail"></md-icon-button>' });
+    const host = page.root!;
+    const slot = host.shadowRoot!.querySelector('slot:not([name])')!;
+    const glyph = () => host.shadowRoot!.querySelector('[part="icon"] .material-symbols-outlined');
+    const badge = page.doc.createElement('md-badge');
+    badge.textContent = '3';
+    host.appendChild(badge);
+    slot.dispatchEvent(new Event('slotchange'));
+    await page.waitForChanges();
+    expect(glyph()?.textContent).toBe('mail');
+    expect(host.classList.contains('md-icon-button--has-badge')).toBe(true);
+    const customIcon = page.doc.createElement('span');
+    customIcon.textContent = '✉';
+    host.appendChild(customIcon);
+    slot.dispatchEvent(new Event('slotchange'));
+    await page.waitForChanges();
+    expect(glyph()).toBeNull();
+    customIcon.remove();
+    badge.remove();
+    slot.dispatchEvent(new Event('slotchange'));
+    await page.waitForChanges();
+    expect(glyph()?.textContent).toBe('mail');
+    expect(host.classList.contains('md-icon-button--has-badge')).toBe(false);
+  });
+
+  it('switches between late selected content and the default glyph without changing selection', async () => {
+    const page = await newSpecPage({ components: [MdIconButton], html: '<md-icon-button toggle selected icon="favorite"></md-icon-button>' });
+    const host = page.root!;
+    const selectedSlot = host.shadowRoot!.querySelector('slot[name="selected"]')!;
+    const activeLayer = () => host.shadowRoot!.querySelector('.md-icon-button__icon--on')?.getAttribute('part');
+    expect(activeLayer()).toBe('icon');
+    const selectedIcon = page.doc.createElement('span');
+    selectedIcon.setAttribute('slot', 'selected');
+    selectedIcon.textContent = '♥';
+    host.appendChild(selectedIcon);
+    selectedSlot.dispatchEvent(new Event('slotchange'));
+    await page.waitForChanges();
+    expect(activeLayer()).toBe('selected-icon');
+    expect(host.getAttribute('aria-pressed')).toBe('true');
+    selectedIcon.remove();
+    selectedSlot.dispatchEvent(new Event('slotchange'));
+    await page.waitForChanges();
+    expect(activeLayer()).toBe('icon');
+    expect(host.shadowRoot!.querySelector('[part="icon"] .material-symbols-outlined')?.textContent).toBe('favorite');
+    expect(host.getAttribute('aria-pressed')).toBe('true');
+  });
+
   it('renders md-ripple by default', async () => {
     const page = await newSpecPage({
       components: [MdIconButton],

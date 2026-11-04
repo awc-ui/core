@@ -58,3 +58,16 @@ describe('md-menu-item e2e', () => {
     });
   });
 });
+
+describe('md-menu-item coordinated checkbox and radio state', () => {
+  it('replaces mixed checkbox ARIA with checked state and enforces one selected radio without closing keep-open items', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<md-menu quick open><md-menu-item id="mixed" type="checkbox" indeterminate keep-open headline="All" check-position="start"></md-menu-item><md-menu-item id="a" type="radio" selected keep-open headline="A"></md-menu-item><md-menu-item id="b" type="radio" keep-open headline="B"></md-menu-item></md-menu>');
+    const mixed = await page.find('#mixed'); await mixed.focus(); await page.keyboard.press('Space'); await page.waitForChanges();
+    expect(await mixed.getProperty('indeterminate')).toBe(true); expect(await mixed.getProperty('selected')).toBe(true);
+    expect(mixed.getAttribute('aria-checked')).toBe('true');
+    const b = await page.find('#b'); await b.focus(); await page.keyboard.press('Enter'); await page.waitForChanges();
+    expect(await b.getProperty('selected')).toBe(true); expect(await (await page.find('#a')).getProperty('selected')).toBe(false);
+    expect(await (await page.find('md-menu')).getProperty('open')).toBe(true);
+  });
+});

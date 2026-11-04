@@ -375,6 +375,7 @@
 /* MD3 glide: md-tabs FLIPs the incoming indicator from the outgoing tab's
    position/width via inherited vars (center-to-center delta + width ratio),
    then releases them so the transition carries it home. */
+/* @private --md-tab-glide-x  @private --md-tab-glide-scale — written inline by md-tabs for the indicator glide; not hooks. */
 :host(.md-tab--primary) .md-tab__indicator--active {
   opacity: 1;
   transform: translateX(var(--md-tab-glide-x, 0px)) scaleX(var(--md-tab-glide-scale, 1));

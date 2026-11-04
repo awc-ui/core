@@ -3,6 +3,48 @@ import { expect, waitFor } from 'storybook/test';
 import { html } from 'lit';
 import { t } from '../i18n';
 
+export const RippleMotionContract: Story = {
+  render: () => html`<button style="position:relative;width:120px;height:60px;border:0;padding:0" aria-label="Ripple surface"><span style="display:contents"><md-ripple></md-ripple></span>Press</button>`,
+  play: async ({ canvasElement }) => {
+    const ripple = canvasElement.querySelector('md-ripple') as HTMLMdRippleElement;
+    const surface = canvasElement.querySelector('button')!;
+    await waitFor(() => expect(ripple.classList.contains('hydrated')).toBe(true));
+    const waves = () => ripple.shadowRoot!.querySelectorAll('.md-ripple__wave');
+    await ripple.whenSettled();
+    for (const valid of [true, false]) {
+      surface.style.setProperty('--md-ripple-opacity', valid ? '.3' : 'invalid');
+      surface.style.setProperty('--md-ripple-extend-inline', valid ? '20px' : '-10px');
+      surface.style.setProperty('--md-ripple-extend-block', valid ? '10px' : 'calc(1px + 2px)');
+      surface.style.setProperty('--md-ripple-grow-duration', valid ? '100ms' : 'invalid');
+      surface.style.setProperty('--md-ripple-grow-easing', 'linear');
+      await ripple.trigger();
+      const wave = waves()[0] as HTMLElement;
+      expect(parseFloat(wave.style.width)).toBeCloseTo(2 * Math.hypot(valid ? 80 : 60, valid ? 40 : 30), 2);
+      const effect = wave.getAnimations()[0].effect as KeyframeEffect;
+      expect(effect.getTiming().duration).toBe(valid ? 100 : 450);
+      expect(Number(effect.getKeyframes()[0].opacity)).toBeCloseTo(valid ? .3 : .12);
+      await waitFor(() => expect(waves()).toHaveLength(0), { timeout: 2000 });
+    }
+    ripple.disabled = true;
+    await ripple.trigger();
+    expect(waves()).toHaveLength(0);
+    ripple.disabled = false;
+    surface.style.setProperty('--md-sys-ripple-enabled', '0');
+    await ripple.trigger();
+    expect(waves()).toHaveLength(0);
+    surface.style.setProperty('--md-sys-ripple-enabled', '1');
+    const next = document.createElement('button');
+    next.textContent = 'New surface'; next.style.cssText = 'position:relative;width:200px;height:80px;border:0;padding:0';
+    canvasElement.append(next);
+    next.append(ripple);
+    await ripple.trigger();
+    expect(parseFloat((waves()[0] as HTMLElement).style.width)).toBeCloseTo(2 * Math.hypot(100, 40), 2);
+    await waitFor(() => expect(waves()).toHaveLength(0), { timeout: 2000 });
+    surface.append(ripple);
+    next.remove();
+  },
+};
+
 /** Shadow-piercing helpers for play(): testing-library queries can't cross
  *  shadow roots, so interactions address the real host + internals directly. */
 type ButtonEl = HTMLElement & { loading: boolean; selected: boolean; href: string };

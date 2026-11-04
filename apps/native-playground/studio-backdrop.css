@@ -1,0 +1,67 @@
+/* Tonal, rounded architectural layers outside the component's rendering surface. */
+.shell > main {
+  position: relative;
+  isolation: isolate;
+}
+
+/* The local fullscreen fallback must still cover the sticky app header. */
+.shell > main:has(.workspace-grid.expanded-fallback) {
+  z-index: 1001;
+}
+
+.shell > main::before,
+.shell > main::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.shell > main::before {
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  width: min(72%, 880px);
+  height: 410px;
+  background: var(--primary);
+  opacity: 0.24;
+  -webkit-mask: url("/studio-architecture.svg") right top / contain no-repeat;
+  mask: url("/studio-architecture.svg") right top / contain no-repeat;
+}
+
+.shell > main::after {
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  width: min(85%, 1060px);
+  height: 420px;
+  background:
+    radial-gradient(ellipse at 79% 14%, color-mix(in srgb, var(--primary) 6%, transparent), transparent 60%),
+    radial-gradient(ellipse at 53% 43%, color-mix(in srgb, var(--md-sys-color-tertiary, var(--primary)) 4%, transparent), transparent 48%);
+}
+
+/* Let the illustration recede as the heading has less negative space. */
+@media (max-width: 1200px) {
+  .shell > main::before {
+    width: 68%;
+    opacity: 0.15;
+  }
+}
+
+@media (max-width: 700px) {
+  .shell > main::before {
+    width: 100%;
+    height: 220px;
+    opacity: 0.09;
+  }
+
+  .shell > main::after {
+    width: 100%;
+    height: 240px;
+  }
+}
+
+@media (forced-colors: active), print {
+  .shell > main::before,
+  .shell > main::after {
+    display: none;
+  }
+}

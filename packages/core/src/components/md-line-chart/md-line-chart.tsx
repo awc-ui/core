@@ -410,6 +410,8 @@ export class MdLineChart {
   @Watch('animationDuration')
   @Watch('tooltipRenderer')
   @Watch('valueFormatter')
+  @Watch('locale')
+  @Watch('noAnimation')
   onAnyPropChange() {
     this.applyEngine();
     this.rebuildA11yTable();
@@ -743,8 +745,11 @@ export class MdLineChart {
    * plot is mirrored and an arrow that moved "back" visually would be wrong.
    */
   private onPlotKeyDown = (e: KeyboardEvent) => {
-    const last = Math.max(0, this.dataLength() - 1);
-    if (last < 0) return;
+    const length = this.dataLength();
+    if (!length) return;
+    // Cursor positions are local to the visible window. Keep the data-only
+    // fallback readable even before a canvas has measurable geometry.
+    const last = this.zoomWin ? this.win().end - this.win().start : length - 1;
     const rtl = typeof getComputedStyle === 'function' && getComputedStyle(this.el).direction === 'rtl';
     const forward = rtl ? 'ArrowLeft' : 'ArrowRight';
     const back = rtl ? 'ArrowRight' : 'ArrowLeft';
@@ -794,10 +799,11 @@ export class MdLineChart {
       return;
     }
     const m = this.merged;
-    const xRaw = m.xValues[next];
+    const absoluteIndex = next + (this.zoomWin ? this.win().start : 0);
+    const xRaw = m.xValues[absoluteIndex];
     const xText = this.xAxis?.valueFormatter
       ? this.xAxis.valueFormatter(xRaw)
-      : defaultValueFormatter(xRaw ?? next + 1, this.locale);
+      : defaultValueFormatter(xRaw ?? absoluteIndex + 1, this.locale);
     const yFmt = (v: number) =>
       this.valueFormatter ? this.valueFormatter(v) : v.toLocaleString(this.locale || undefined);
     const values = this.seriesValuesAt(next)
@@ -805,7 +811,7 @@ export class MdLineChart {
       .map((sv: AxisSeriesValue) => `${sv.label} ${yFmt(sv.value as number)}`)
       .join(', ');
     this.announcement = this.labelPoint.replace('%x%', xText).replace('%values%', values);
-    this.mdHover.emit({ dataIndex: next, axisValue: xRaw, seriesIndices: this.visibleSeriesIndices() });
+    this.mdHover.emit({ dataIndex: absoluteIndex, axisValue: xRaw, seriesIndices: this.visibleSeriesIndices() });
   }
 
   private onPlotDblClick = (e: MouseEvent) => {

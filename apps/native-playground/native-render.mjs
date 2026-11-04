@@ -1,3 +1,7 @@
+import { nativeCaptureViewport, supportsNativeViewportTag } from './native-viewport.js';
+import { validateSkeletonLengths } from './skeleton-appearance.js';
+import { segmentedContextOptions } from './segmented-context.js';
+import { buttonGroupSelectionOptions } from './button-group-state.js';
 import { nativeContentSlots } from './content-slots.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -24,18 +28,39 @@ export function validateRenderRequest(value, tags) {
   if (props === null || typeof props !== 'object' || Array.isArray(props)) throw new RenderError(400,'INVALID_PROPERTIES','Properties must be a JSON object.');
   if (value.dark !== undefined && typeof value.dark !== 'boolean') throw new RenderError(400,'INVALID_THEME','dark must be a boolean.');
   if (value.width !== undefined && (typeof value.width !== 'number' || !Number.isFinite(value.width))) throw new RenderError(400,'INVALID_WIDTH','width must be a finite number.');
+  if (value.height !== undefined && (!supportsNativeViewportTag(value.tag) || typeof value.height !== 'number' || !Number.isFinite(value.height) || value.height <= 0)) throw new RenderError(400, 'INVALID_HEIGHT', 'height must be a finite positive overlay viewport size.');
   if (value.scenario !== undefined && (!['button-behavior', 'navigation-events', 'focus-accessibility'].includes(value.scenario) || value.tag !== 'md-button')) throw new RenderError(400,'INVALID_SCENARIO','Choose a supported native example for md-button.');
   if (value.text !== undefined && (value.tag !== 'md-button' || typeof value.text !== 'string' || Buffer.byteLength(value.text, 'utf8') > 4096)) throw new RenderError(400,'INVALID_TEXT','Button text must be a string of at most 4096 UTF-8 bytes.');
   if (value.buttonAppearance !== undefined && value.tag !== 'md-button') throw new RenderError(400, 'INVALID_BUTTON_APPEARANCE', 'Local button appearance applies to md-button only.');
+  if (value.badgeAppearance !== undefined && value.tag !== 'md-badge') throw new RenderError(400, 'INVALID_BADGE_APPEARANCE', 'Local badge appearance applies to md-badge only.');
+  if (value.statusDotAppearance !== undefined && value.tag !== 'md-status-dot') throw new RenderError(400, 'INVALID_STATUS_DOT_APPEARANCE', 'Local status dot appearance applies to md-status-dot only.');
+  if (value.loadingIndicatorAppearance !== undefined && value.tag !== 'md-loading-indicator') throw new RenderError(400, 'INVALID_LOADING_INDICATOR_APPEARANCE', 'Local loading indicator appearance applies to md-loading-indicator only.');
+  if (value.tooltipAppearance !== undefined && value.tag !== 'md-tooltip') throw new RenderError(400, 'INVALID_TOOLTIP_APPEARANCE', 'Local tooltip appearance applies to md-tooltip only.');
+  if (value.snackbarAppearance !== undefined && value.tag !== 'md-snackbar') throw new RenderError(400, 'INVALID_SNACKBAR_APPEARANCE', 'Local snackbar appearance applies to md-snackbar only.');
+  if (value.skeletonAppearance !== undefined && value.tag !== 'md-skeleton') throw new RenderError(400, 'INVALID_SKELETON_APPEARANCE', 'Local skeleton appearance applies to md-skeleton only.');
+  if (value.progressIndicatorAppearance !== undefined && value.tag !== 'md-progress-indicator') throw new RenderError(400, 'INVALID_PROGRESS_INDICATOR_APPEARANCE', 'Local progress appearance applies to md-progress-indicator only.');
+  if (value.meterAppearance !== undefined && value.tag !== 'md-meter') throw new RenderError(400, 'INVALID_METER_APPEARANCE', 'Local meter appearance applies to md-meter only.');
+  if (value.iconButtonAppearance !== undefined && value.tag !== 'md-icon-button') throw new RenderError(400, 'INVALID_ICON_BUTTON_APPEARANCE', 'Local icon button appearance applies to md-icon-button only.');
+  if (value.splitButtonAppearance !== undefined && value.tag !== 'md-split-button') throw new RenderError(400, 'INVALID_SPLIT_BUTTON_APPEARANCE', 'Local split button appearance applies to md-split-button only.');
+  if (value.fabAppearance !== undefined && value.tag !== 'md-fab') throw new RenderError(400, 'INVALID_FAB_APPEARANCE', 'Local FAB appearance applies to md-fab only.');
+  if (value.dividerAppearance !== undefined && value.tag !== 'md-divider') throw new RenderError(400, 'INVALID_DIVIDER_APPEARANCE', 'Local divider appearance applies to md-divider only.');
+  for (const [key, tag, code] of [['fabMenuAppearance', 'md-fab-menu', 'INVALID_FAB_MENU_APPEARANCE'], ['fabMenuItemAppearance', 'md-fab-menu-item', 'INVALID_FAB_MENU_ITEM_APPEARANCE'], ['accordionAppearance', 'md-accordion', 'INVALID_ACCORDION_APPEARANCE'], ['accordionItemAppearance', 'md-accordion-item', 'INVALID_ACCORDION_ITEM_APPEARANCE'], ['avatarAppearance', 'md-avatar', 'INVALID_AVATAR_APPEARANCE'], ['switchAppearance', 'md-switch', 'INVALID_SWITCH_APPEARANCE'], ['checkboxAppearance', 'md-checkbox', 'INVALID_CHECKBOX_APPEARANCE'], ['radioAppearance', 'md-radio', 'INVALID_RADIO_APPEARANCE'], ['chipAppearance', 'md-chip', 'INVALID_CHIP_APPEARANCE'], ['rippleAppearance', 'md-ripple', 'INVALID_RIPPLE_APPEARANCE'], ['toolbarAppearance', 'md-toolbar', 'INVALID_TOOLBAR_APPEARANCE'], ['stepperAppearance', 'md-stepper', 'INVALID_STEPPER_APPEARANCE'], ['stepAppearance', 'md-step', 'INVALID_STEP_APPEARANCE'], ['sliderAppearance', 'md-slider', 'INVALID_SLIDER_APPEARANCE'], ['ratingAppearance', 'md-rating', 'INVALID_RATING_APPEARANCE'], ['menuAppearance', 'md-menu', 'INVALID_MENU_APPEARANCE'], ['lineChartAppearance', 'md-line-chart', 'INVALID_CHART_APPEARANCE'], ['areaChartAppearance', 'md-area-chart', 'INVALID_CHART_APPEARANCE'], ['barChartAppearance', 'md-bar-chart', 'INVALID_CHART_APPEARANCE'], ['pieChartAppearance', 'md-pie-chart', 'INVALID_CHART_APPEARANCE'], ['sparklineAppearance', 'md-sparkline', 'INVALID_CHART_APPEARANCE'], ['navigationBarAppearance', 'md-navigation-bar', 'INVALID_NAVIGATION_BAR_APPEARANCE'], ['navigationTabAppearance', 'md-navigation-tab', 'INVALID_NAVIGATION_TAB_APPEARANCE'], ['tabsAppearance', 'md-tabs', 'INVALID_TABS_APPEARANCE'], ['tabAppearance', 'md-tab', 'INVALID_TAB_APPEARANCE'], ['breadcrumbsAppearance', 'md-breadcrumbs', 'INVALID_BREADCRUMBS_APPEARANCE'], ['breadcrumbItemAppearance', 'md-breadcrumb-item', 'INVALID_BREADCRUMB_ITEM_APPEARANCE'], ['dialogAppearance', 'md-dialog', 'INVALID_DIALOG_APPEARANCE'], ['bottomSheetAppearance', 'md-bottom-sheet', 'INVALID_BOTTOM_SHEET_APPEARANCE'], ['sideSheetAppearance', 'md-side-sheet', 'INVALID_SIDE_SHEET_APPEARANCE'], ['listAppearance', 'md-list', 'INVALID_LIST_APPEARANCE'], ['listItemAppearance', 'md-list-item', 'INVALID_LIST_ITEM_APPEARANCE'], ['cardAppearance', 'md-card', 'INVALID_CARD_APPEARANCE'], ['orgChartAppearance', 'md-organization-chart', 'INVALID_ORG_CHART_APPEARANCE'], ['textFieldAppearance', 'md-text-field', 'INVALID_TEXT_FIELD_APPEARANCE'], ['numberFieldAppearance', 'md-number-field', 'INVALID_NUMBER_FIELD_APPEARANCE'], ['otpFieldAppearance', 'md-otp-field', 'INVALID_OTP_FIELD_APPEARANCE'], ['tableAppearance', 'md-table', 'INVALID_TABLE_APPEARANCE'], ['tableCellAppearance', 'md-table-cell', 'INVALID_TABLE_CELL_APPEARANCE'], ['tableContainerAppearance', 'md-table-container', 'INVALID_TABLE_CONTAINER_APPEARANCE'], ['tableExpandToggleAppearance', 'md-table-expand-toggle', 'INVALID_TABLE_EXPAND_TOGGLE_APPEARANCE'], ['tablePaginationAppearance', 'md-table-pagination', 'INVALID_TABLE_PAGINATION_APPEARANCE'], ['tableRowAppearance', 'md-table-row', 'INVALID_TABLE_ROW_APPEARANCE'], ['tableSortLabelAppearance', 'md-table-sort-label', 'INVALID_TABLE_SORT_LABEL_APPEARANCE'], ['tableToolbarAppearance', 'md-table-toolbar', 'INVALID_TABLE_TOOLBAR_APPEARANCE']]) {
+    if (value[key] !== undefined && value.tag !== tag) throw new RenderError(400, code, 'Local appearance applies only to its matching component.');
+  }
+  if (value.segmentedButtonAppearance !== undefined && value.tag !== 'md-segmented-button') throw new RenderError(400, 'INVALID_SEGMENTED_BUTTON_APPEARANCE', 'Local segmented button appearance applies to md-segmented-button only.');
+  if (value.buttonGroupAppearance !== undefined && value.tag !== 'md-button-group') throw new RenderError(400, 'INVALID_BUTTON_GROUP_APPEARANCE', 'Local button group appearance applies to md-button-group only.');
   function depth(v, level=0) {
     if (level>32) throw new RenderError(400,'INVALID_PROPERTIES','Property nesting is too deep.');
     if (v && typeof v==='object') for(const child of Object.values(v))depth(child,level+1);
   }
   depth(props);
   let themeOptions;
-  try { themeOptions = { ...nativeThemeOptions(value), ...nativeContentSlots(value.slots) }; }
+  try {
+    if (value.tag === 'md-skeleton') validateSkeletonLengths(props);
+    themeOptions = { ...nativeThemeOptions(value), ...nativeContentSlots(value.slots, value.tag), ...buttonGroupSelectionOptions(value.buttonGroupSelection, value.tag), ...segmentedContextOptions(value.segmentedContext, value.tag) };
+  }
   catch (error) { throw new RenderError(400, error.code || 'INVALID_THEME', error.message); }
-  return {tag:value.tag,properties:canonical(props),dark:value.dark??false,width:Math.round(Math.min(1200,Math.max(320,value.width??640))),...(value.scenario ? {scenario:value.scenario} : {}),...(value.text !== undefined ? {text:value.text} : {}),...themeOptions};
+  return {tag:value.tag,properties:canonical(props),dark:value.dark??false,width:nativeCaptureViewport(value.width ?? 640).width,...(supportsNativeViewportTag(value.tag) && value.height !== undefined ? { height: nativeCaptureViewport(value.width ?? 640, value.height).height } : {}),...(value.scenario ? {scenario:value.scenario} : {}),...(value.text !== undefined ? {text:value.text} : {}),...themeOptions};
 }
 
 export async function readLocalJSONRequest(req) {

@@ -913,8 +913,18 @@ export class MdAutocomplete {
     if (this.vc.active) this.vc.setQuery('');
     this.commitValue(this.multiple ? [] : '');
     this.mdClear.emit();
-    this.fieldEl?.focus?.();
+    this.refocusAfterClear();
   };
+
+  /** Put focus back in the trigger input after the clear button, which holds
+   *  focus and unmounts once the value is empty. `host.focus()` cannot do it:
+   *  with delegatesFocus it is a no-op while focus is already inside the field
+   *  (the button is slotted into it), so focus fell to <body>. */
+  private refocusAfterClear() {
+    const field = this.fieldEl as (HTMLElement & { setFocus?: () => Promise<void> }) | undefined;
+    if (field?.setFocus) void field.setFocus();
+    else field?.focus?.();
+  }
 
   // ── Input handlers ───────────────────────────────────────
 
@@ -938,8 +948,18 @@ export class MdAutocomplete {
   }
 
   private handleFieldInput = (e: CustomEvent<string>) => {
+    // The inner field's composed mdInput must not reach host listeners as a
+    // second mdInput: md-autocomplete emits its own (applyTyped).
+    e.stopPropagation();
     this.cancelListFocus();
     this.applyTyped(e.detail ?? '');
+  };
+
+  /** The inner field's composed mdChange (the TYPED text, fired when focus
+   *  moves into the listbox) and mdSearch are not md-autocomplete events —
+   *  committed selections emit md-autocomplete's own mdChange. */
+  private swallowFieldEvent = (e: Event) => {
+    e.stopPropagation();
   };
 
   /** Printable keys (and Backspace) pressed while focus is on an option:
@@ -1161,6 +1181,8 @@ export class MdAutocomplete {
         inputAriaAutocomplete="list"
         chipsWrap={this.inlineChips}
         onMdInput={this.handleFieldInput}
+        onMdChange={this.swallowFieldEvent}
+        onMdSearch={this.swallowFieldEvent}
         onClick={() => {
           if (!this.disabled && !this.softDisabled && !this.open) this.open = true;
         }}

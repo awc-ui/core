@@ -1,0 +1,353 @@
+{
+ "tag": "md-snackbar",
+ "at": "2026-10-29T11:11:40.392Z",
+ "rows": [
+  {
+   "case": "open",
+   "web": {
+    "elements": [
+     "status:",
+     "button:Undo",
+     "button:Dismiss"
+    ],
+    "texts": [
+     "Project saved"
+    ],
+    "focus": [
+     "button:Undo",
+     "button:Dismiss"
+    ],
+    "contrast": {
+     "measured": 5,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "button:Undo",
+      "button:Dismiss"
+     ],
+     "texts": [
+      "Project saved"
+     ],
+     "announcements": [
+      "Changes archived"
+     ],
+     "focus": [
+      "button:Undo",
+      "button:Dismiss",
+      "button:Undo"
+     ],
+     "findings": [],
+     "contrastMeasured": 4
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "button:Undo",
+      "button:Dismiss"
+     ],
+     "texts": [
+      "Project saved"
+     ],
+     "focus": [
+      "button:Undo",
+      "button:Dismiss",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: button \"Undo\" target 65×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Dismiss\" target 40×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "status:",
+      "button:Undo",
+      "button:Dismiss"
+     ],
+     "texts": [
+      "Project saved"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Undo",
+      "button:Dismiss",
+      "button:Undo"
+     ],
+     "findings": [],
+     "contrastMeasured": 5,
+     "atf": {
+      "elements": 17,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "assertive",
+   "web": {
+    "elements": [
+     "alert:",
+     "button:Undo",
+     "button:Dismiss"
+    ],
+    "texts": [
+     "Project saved"
+    ],
+    "focus": [],
+    "contrast": {
+     "measured": 5,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "button:Undo",
+      "button:Dismiss"
+     ],
+     "texts": [
+      "Project saved"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 4
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "button:Undo",
+      "button:Dismiss"
+     ],
+     "texts": [
+      "Project saved"
+     ],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: button \"Undo\" target 65×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Dismiss\" target 40×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "alert:",
+      "button:Undo",
+      "button:Dismiss"
+     ],
+     "texts": [
+      "Project saved"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 5,
+     "atf": {
+      "elements": 17,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "message-only",
+   "web": {
+    "elements": [
+     "status:"
+    ],
+    "texts": [
+     "Project saved"
+    ],
+    "focus": [],
+    "contrast": {
+     "measured": 1,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "Project saved"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "Project saved"
+     ],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [
+      "status:"
+     ],
+     "texts": [
+      "Project saved"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 1,
+     "atf": {
+      "elements": 10,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

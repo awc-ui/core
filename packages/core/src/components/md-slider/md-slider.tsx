@@ -252,6 +252,28 @@ export class MdSlider {
   }
 
   /**
+   * Keep each native input's live value equal to what the slider shows. The
+   * browser steps the input itself (keyboard, track clicks); when the shown
+   * value does not follow — `controlled` with no handler, or a handler that
+   * clamps — the rendered `value` is unchanged, so the vdom never rewrites the
+   * DOM property and the next step would start from a value nobody sees.
+   */
+  componentDidRender() {
+    const root = this.el.shadowRoot;
+    if (!root) return;
+    const sync = (selector: string, shown: number) => {
+      const input = root.querySelector(selector) as HTMLInputElement | null;
+      if (input && input.value !== String(shown)) input.value = String(shown);
+    };
+    if (this.range) {
+      sync('.md-slider__input--start', this.displayStart);
+      sync('.md-slider__input--end', this.displayEnd);
+    } else {
+      sync('.md-slider__input', this.displayValue);
+    }
+  }
+
+  /**
    * Publish the current reading to the owning form.
    *
    * A range slider carries two numbers, which a single name/value pair cannot
@@ -433,9 +455,13 @@ export class MdSlider {
     return { value: this.displayValue };
   }
 
-  private rangeDetail(): MdSliderValueDetail {
+  /**
+   * `value` is the moved thumb's value. Pointer gestures track the thumb in
+   * `rangeDragThumb`; keyboard steps arrive on a thumb's own input and pass it in.
+   */
+  private rangeDetail(thumb: 'start' | 'end' | null = this.rangeDragThumb): MdSliderValueDetail {
     return {
-      value: this.rangeDragThumb === 'start' ? this.displayStart : this.displayEnd,
+      value: thumb === 'start' ? this.displayStart : this.displayEnd,
       valueStart: this.displayStart,
       valueEnd: this.displayEnd,
     };
@@ -463,7 +489,7 @@ export class MdSlider {
         }
       }
       this.syncCssVars();
-      this.mdInput.emit(this.rangeDetail());
+      this.mdInput.emit(this.rangeDetail(isStart ? 'start' : 'end'));
     } else {
       this.setSingle(val);
       this.syncCssVars();
@@ -491,13 +517,17 @@ export class MdSlider {
         }
       }
       this.syncCssVars();
-      this.mdChange.emit(this.rangeDetail());
+      this.mdChange.emit(this.rangeDetail(isStart ? 'start' : 'end'));
     } else {
       this.setSingle(val);
       this.syncCssVars();
       this.mdChange.emit(this.singleDetail());
     }
     this.commit();
+    // Repaint from the committed value: in `controlled` mode a step the host
+    // rejected (or clamped to the value it already had) changes no prop, so no
+    // watcher would move the thumb back from the live value it was painted at.
+    this.syncCssVars();
   };
 
   // ── Pointer helpers ─────────────────────────────────────
@@ -756,7 +786,11 @@ export class MdSlider {
     this.mdDragEnd.emit(detail);
   };
 
+  // A disabled input still receives pointer events (the stylesheet re-enables
+  // pointer-events on it under the host's `pointer-events: none`, and browsers
+  // dispatch pointer events to disabled controls), so the drag pair is gated here.
   private onInputPointerDown = (which: 'single' | 'start' | 'end') => () => {
+    if (this.disabled) return;
     this.pressingThumb = which;
     const detail: MdSliderDragDetail = this.range
       ? { thumb: which, value: which === 'start' ? this.displayStart : this.displayEnd, valueStart: this.displayStart, valueEnd: this.displayEnd }
@@ -765,6 +799,7 @@ export class MdSlider {
   };
 
   private onInputPointerUp = (which: 'single' | 'start' | 'end') => () => {
+    if (this.disabled) return;
     this.pressingThumb = null;
     const detail: MdSliderDragDetail = this.range
       ? { thumb: which, value: which === 'start' ? this.displayStart : this.displayEnd, valueStart: this.displayStart, valueEnd: this.displayEnd }

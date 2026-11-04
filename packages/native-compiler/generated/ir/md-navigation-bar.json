@@ -493,56 +493,132 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "activeIndex"
-      ],
-      "events": [
-        "mdChange"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
+        "activeIndex",
         "labelBehavior",
         "manualActivation",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdChange"
+      ],
+      "methods": [
         "select",
         "focusTab"
       ],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
+      "notes": [
+        "Dedicated native renderer (SwiftUI / Compose): the full-width row of equal destinations (flex 1 1 0, min 64), surface-container, the density-tapered 64-point height, the top divider, corners and elevation hooks, computed from the authored md-navigation-tab children as the source.",
+        "Selection as the source: activeIndex is truncated and clamped to an activatable destination (forward, then backward; −1 when none); clicks, Enter/Space, the arrows (automatic activation unless manualActivation; mirrored in RTL; soft-disabled destinations reachable but never activated), Home/End, activeIndex writes and select(index) emit mdChange { index, previousIndex } when the selection changes.",
+        "One tab stop (the active destination); focusTab(index) focuses without selecting. labelBehavior (always / selected / none) passes to destinations without their own value. Reduced motion removes the transitions (the ripple stays).",
+        "The bar's 7 hooks and the 22 destination hooks (the stylesheet's documented list; the CEM lists 12 of them) through .awcNavigationBarAppearance(…) / AWCNavigationBarAppearanceScope; select / focusTab through AWCNavigationBarController.",
+        "Verified against the Mac Chrome 153 oracles (paint, interaction states and motion)."
+      ],
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": ".awcNavigationBarAppearance(AWCNavigationBarAppearance)",
+        "fields": [
+          "containerColor",
+          "containerHeight",
+          "containerShape",
+          "containerElevation",
+          "dividerColor",
+          "dividerWidth",
+          "zIndex",
+          "activeIndicatorColor",
+          "activeIndicatorWidth",
+          "activeIndicatorHeight",
+          "activeIndicatorShape",
+          "activeIconColor",
+          "inactiveIconColor",
+          "activeLabelColor",
+          "inactiveLabelColor",
+          "labelFont",
+          "labelFontSize",
+          "labelFontWeight",
+          "iconSize",
+          "paddingBlockStart",
+          "paddingBlockEnd",
+          "hoverStateLayerColor",
+          "focusStateLayerColor",
+          "pressedStateLayerColor",
+          "focusStateLayerOpacity",
+          "badgeColor",
+          "badgeOnColor",
+          "disabledOpacity",
+          "slottedIconFont"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "activeIndex"
-      ],
-      "events": [
-        "mdChange"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
+        "activeIndex",
         "labelBehavior",
         "manualActivation",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdChange"
+      ],
+      "methods": [
         "select",
         "focusTab"
       ],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native renderer (SwiftUI / Compose): the full-width row of equal destinations (flex 1 1 0, min 64), surface-container, the density-tapered 64-point height, the top divider, corners and elevation hooks, computed from the authored md-navigation-tab children as the source.",
+        "Selection as the source: activeIndex is truncated and clamped to an activatable destination (forward, then backward; −1 when none); clicks, Enter/Space, the arrows (automatic activation unless manualActivation; mirrored in RTL; soft-disabled destinations reachable but never activated), Home/End, activeIndex writes and select(index) emit mdChange { index, previousIndex } when the selection changes.",
+        "One tab stop (the active destination); focusTab(index) focuses without selecting. labelBehavior (always / selected / none) passes to destinations without their own value. Reduced motion removes the transitions (the ripple stays).",
+        "The bar's 7 hooks and the 22 destination hooks (the stylesheet's documented list; the CEM lists 12 of them) through .awcNavigationBarAppearance(…) / AWCNavigationBarAppearanceScope; select / focusTab through AWCNavigationBarController.",
+        "Verified against the Mac Chrome 153 oracles (paint, interaction states and motion)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCNavigationBarAppearanceScope(AWCNavigationBarAppearance)",
+        "fields": [
+          "containerColor",
+          "containerHeight",
+          "containerShape",
+          "containerElevation",
+          "dividerColor",
+          "dividerWidth",
+          "zIndex",
+          "activeIndicatorColor",
+          "activeIndicatorWidth",
+          "activeIndicatorHeight",
+          "activeIndicatorShape",
+          "activeIconColor",
+          "inactiveIconColor",
+          "activeLabelColor",
+          "inactiveLabelColor",
+          "labelFont",
+          "labelFontSize",
+          "labelFontWeight",
+          "iconSize",
+          "paddingBlockStart",
+          "paddingBlockEnd",
+          "hoverStateLayerColor",
+          "focusStateLayerColor",
+          "pressedStateLayerColor",
+          "focusStateLayerOpacity",
+          "badgeColor",
+          "badgeOnColor",
+          "disabledOpacity",
+          "slottedIconFont"
+        ]
+      }
     }
   }
 }

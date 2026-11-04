@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="dev.awc.playground.LivePreviewHostTest" tests="4" failures="1" errors="0" skipped="0" time="28.814" timestamp="2026-10-20T19:43:44" hostname="localhost">
+  <properties>
+    <property name="device" value="AwcNative(AVD) - 16" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="meterUsesActual300DpParentAndTypedStylesWithCustomAlphaRoles" classname="dev.awc.playground.LivePreviewHostTest" time="3.706" />
+  <testcase name="nativeModernAndLegacyIcuMatch75IndependentIntlCases" classname="dev.awc.playground.NativeMeterFormatTest" time="0.062" />
+  <testcase name="all196BrowserFixturesMatchNativeRangeTextPartsGeometryAndPaint" classname="dev.awc.playground.NativeMeterParityTest" time="23.646">
+    <failure>java.lang.AssertionError: light/linear-density0 label width native=50.5 Web=49.8671875
+light/linear-density-2 label width native=47.0 Web=46.4296875
+light/linear-header-true-false label width native=50.5 Web=49.8671875
+light/linear-header-true-true label width native=50.5 Web=49.8671875
+light/linear-rtl label width native=50.5 Web=49.8671875
+light/linear-rtl label x native=189.5 Web=190.1328125
+light/linear-all-styles label width native=50.5 Web=49.8671875
+light/circular-density0 root width native=50.5 Web=49.8671875
+light/circular-density0 label width native=50.5 Web=49.8671875
+light/circular-density-2 root width native=47.0 Web=46.4296875
+light/circular-density-2 label width native=47.0 Web=46.4296875
+light/circular-header-true-false root width native=50.5 Web=49.8671875
+light/circular-header-true-false label width native=50.5 Web=49.8671875
+light/circular-header-true-true root width native=50.5 Web=49.8671875
+light/circular-header-true-true label width native=50.5 Web=49.8671875
+light/circular-rtl root width native=50.5 Web=49.8671875
+light/circular-rtl label width native=50.5 Web=49.8671875
+light/circular-all-styles label width native=50.5 Web=49.8671875
+light/circular-all-styles label x native=4.5 Web=5.0625
+light/inherited-noncanonical label width native=48.0 Web=47.2890625
+light/custom-zero-height label width native=50.5 Web=49.8671875
+light/custom-value-text label width native=37.0 Web=36.4140625
+light/locale-ar-EG root height native=29.0 Web=24.0
+light/locale-ar-EG value width native=16.5 Web=19.328125
+light/locale-ar-EG value height native=21.0 Web=16.0
+light/locale-ar-EG track y native=25.0 Web=20.0
+light/locale-ar-EG indicator y native=25.0 Web=20.0
+dark/linear-density0 label width native=50.5 Web=49.8671875
+dark/linear-density-2 label width native=47.0 Web=46.4296875
+dark/linear-header-true-false label width native=50.5 Web=49.8671875
+dark/linear-header-true-true label width native=50.5 Web=49.8671875
+dark/linear-rtl label width native=50.5 Web=49.8671875
+dark/linear-rtl label x native=189.5 Web=190.1328125
+dark/linear-all-styles label width native=50.5 Web=49.8671875
+dark/circular-density0 root width native=50.5 Web=49.8671875
+dark/circular-density0 label width native=50.5 Web=49.8671875
+dark/circular-density-2 root width native=47.0 Web=46.4296875
+dark/circular-density-2 label width native=47.0 Web=46.4296875
+dark/circular-header-true-false root width native=50.5 Web=49.8671875
+dark/circular-header-true-false label width native=50.5 Web=49.8671875
+dark/circular-header-true-true root width native=50.5 Web=49.8671875
+dark/circular-header-true-true label width native=50.5 Web=49.8671875
+dark/circular-rtl root width native=50.5 Web=49.8671875
+dark/circular-rtl label width native=50.5 Web=49.8671875
+dark/circular-all-styles label width native=50.5 Web=49.8671875
+dark/circular-all-styles label x native=4.5 Web=5.0625
+dark/inherited-noncanonical label width native=48.0 Web=47.2890625
+dark/custom-zero-height label width native=50.5 Web=49.8671875
+dark/custom-value-text label width native=37.0 Web=36.4140625
+dark/locale-ar-EG root height native=29.0 Web=24.0
+dark/locale-ar-EG value width native=16.5 Web=19.328125
+dark/locale-ar-EG value height native=21.0 Web=16.0
+dark/locale-ar-EG track y native=25.0 Web=20.0
+dark/locale-ar-EG indicator y native=25.0 Web=20.0
+at org.junit.Assert.fail(Assert.java:89)
+at org.junit.Assert.assertTrue(Assert.java:42)
+at dev.awc.playground.NativeMeterParityTest.all196BrowserFixturesMatchNativeRangeTextPartsGeometryAndPaint(NativeMeterParityTest.kt:105)
+</failure>
+  </testcase>
+  <testcase name="realWidthAndArcMotionSettleAndReducedMotionAndForcedColorsApply" classname="dev.awc.playground.NativeMeterParityTest" time="1.01" />
+</testsuite>

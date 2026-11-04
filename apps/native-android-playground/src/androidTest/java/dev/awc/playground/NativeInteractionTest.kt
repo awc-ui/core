@@ -20,12 +20,16 @@ class NativeInteractionTest {
     @Test fun everySourceTagComposesNatively() {
         var tag by mutableStateOf(AWCNativeCatalog.tags.first())
         compose.setContent { AWCTheme { key(tag) { AWCComponent(tag, AWCNativeCatalog.defaults[tag].orEmpty() + fixture(tag)) { SampleSlot(tag, it) { _, _ -> } } } } }
-        AWCNativeCatalog.tags.forEach { next -> compose.runOnIdle { tag = next }; compose.waitForIdle() }
+        // Infinite source animations (loading indicator, indeterminate progress, skeleton pulse) never let an auto-advancing
+        // clock idle; the test only needs every tag to compose, so it advances a manual clock instead.
+        compose.mainClock.autoAdvance = false
+        AWCNativeCatalog.tags.forEach { next -> compose.runOnUiThread { tag = next }; compose.mainClock.advanceTimeBy(100) }
     }
 
     @Test fun genericProgressUsesSourceDefaultMaximum() {
         compose.setContent { AWCTheme { AWCComponent("md-progress-indicator", mapOf("value" to 50)) } }
-        compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)).assert(SemanticsMatcher.expectValue(SemanticsProperties.ProgressBarRangeInfo, ProgressBarRangeInfo(.5f, 0f..1f)))
+        // Source default max=100 (aria-valuenow 50, aria-valuemax 100): the dedicated renderer reports the source range.
+        compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)).assert(SemanticsMatcher.expectValue(SemanticsProperties.ProgressBarRangeInfo, ProgressBarRangeInfo(50f, 0f..100f)))
     }
 
     @Test fun buttonToggleEmitsSelectedValue() {
@@ -47,11 +51,12 @@ class NativeInteractionTest {
         compose.setContent { AWCTheme { AWCComponent("md-segmented-button-set", onEvent = { name, value -> if(name == "mdChange") values += value }) {
             if(it == "") { AWCComponent("md-segmented-button", mapOf("label" to "Day", "value" to "day")); AWCComponent("md-segmented-button", mapOf("label" to "Week", "value" to "week")) }
         } } }
-        compose.onNodeWithText("Day").performClick()
-        compose.onNodeWithText("Week").performClick()
+        // The segment is named by its label (contentDescription); the visible label text is not a second node.
+        compose.onNodeWithContentDescription("Day").performClick()
+        compose.onNodeWithContentDescription("Week").performClick()
         compose.runOnIdle { assertEquals(listOf("week"), values.last()) }
-        compose.onNodeWithText("Day").assertIsNotSelected()
-        compose.onNodeWithText("Week").assertIsSelected()
+        compose.onNodeWithContentDescription("Day").assertIsNotSelected()
+        compose.onNodeWithContentDescription("Week").assertIsSelected()
     }
 
     @Test fun checkboxEmitsSourcePayloadAndFollowsExternalUpdate() {

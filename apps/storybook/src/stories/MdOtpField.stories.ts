@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { expect, waitFor } from 'storybook/test';
 import { html } from 'lit';
+import { exerciseServerValidation } from '../../../../packages/core/src/components/md-checkbox/test-utils/form-validation.browser';
+import { exerciseOtpEditing, exerciseOtpPaste } from '../../../../packages/core/src/components/md-otp-field/test-utils/editing.browser';
 import { t } from '../i18n';
 import { drivingCoverage, exerciseProps } from '../testing/coverage-mode';
 
@@ -505,4 +507,26 @@ export const DarkTheme: Story = {
       ></md-otp-field>
     </div>
   `,
+};
+
+/** Application/server validation must be queryable without stealing focus, and
+ * interactive reports must expose the same error through the field's own UI. */
+export const ServerValidation: Story = {
+  render: () => html`<form><fieldset style="border:0;padding:0">
+    <button type="button">Outside control</button>
+    <md-otp-field data-form-contract name="entry" label="Form value" aria-label="Form value"></md-otp-field>
+  </fieldset></form>`,
+  play: async ({ canvasElement }) => {
+    await exerciseServerValidation(canvasElement.querySelector('md-otp-field') as HTMLElement);
+  },
+};
+
+export const CellEditing: Story = {
+  render: () => html`<md-otp-field label="Verification code" length="4" group-size="2"></md-otp-field>`,
+  play: async ({ canvasElement }) => exerciseOtpEditing(canvasElement.querySelector('md-otp-field') as HTMLElement),
+};
+
+export const PasteAndAutofill: Story = {
+  render: () => html`<md-otp-field label="Verification code" length="4"></md-otp-field>`,
+  play: async ({ canvasElement }) => exerciseOtpPaste(canvasElement.querySelector('md-otp-field') as HTMLElement),
 };

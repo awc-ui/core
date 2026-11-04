@@ -1,6 +1,9 @@
 import path from 'node:path';
 
 const repository = process.env.AWC_COVERAGE_REPO || path.resolve(__dirname, '../../../..');
+// This config is copied into each isolated run directory; resolve the shared
+// build utility from the explicitly supplied repository, not this file's path.
+const { coreStylesOutputTarget } = require(path.join(repository, 'scripts/core-styles.cjs'));
 const core = path.join(repository, 'packages/core');
 const output = process.env.AWC_COVERAGE_E2E_OUTPUT || path.join(core, 'coverage-e2e');
 const tag = process.env.AWC_COVERAGE_COMPONENT || 'md-button';
@@ -26,8 +29,8 @@ export const config = {
   invisiblePrehydration: false,
   devServer: { port: 5337, openBrowser: false },
   outputTargets: [
-    { type: 'www', dir: path.join(output, 'www'), serviceWorker: null,
-      copy: [{ src: path.join(repository, 'packages/tokens/src/tokens.css'), dest: 'build/md3.css' }] },
+    coreStylesOutputTarget({ repository }),
+    { type: 'www', dir: path.join(output, 'www'), serviceWorker: null },
     { type: 'dist-custom-elements', dir: path.join(output, 'components'),
       customElementsExportBehavior: 'auto-define-custom-elements', externalRuntime: false, generateTypeDeclarations: false },
   ],

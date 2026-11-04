@@ -3,6 +3,35 @@ import { expect, waitFor } from 'storybook/test';
 import { html } from 'lit';
 import { t } from '../i18n';
 
+export const ItemLinkLifecycle: Story = {
+  render: () => html`<div role="list"><md-breadcrumb-item href="#projects" target="_blank" item-index="1" item-total="3"><span slot="icon">★</span><strong>Projects</strong></md-breadcrumb-item><md-breadcrumb-item> </md-breadcrumb-item></div>`,
+  play: async ({ canvasElement }) => {
+    const item = canvasElement.querySelector('md-breadcrumb-item') as HTMLMdBreadcrumbItemElement;
+    await waitFor(() => expect(item.classList.contains('hydrated')).toBe(true));
+    const details: MdSelectDetail[] = [];
+    item.addEventListener('mdSelect', event => { event.preventDefault(); details.push((event as CustomEvent).detail); });
+    const link = () => item.shadowRoot!.querySelector('a')!;
+    expect(link().rel).toContain('noopener');
+    link().click();
+    expect(details[0]).toMatchObject({ href: '#projects', label: '★Projects', itemIndex: 1, itemTotal: 3 });
+    item.rel = 'nofollow';
+    await waitFor(() => expect(link().rel).toBe('nofollow'));
+    item.target = '';
+    item.rel = '';
+    item.querySelector('[slot="icon"]')!.remove();
+    await waitFor(() => expect(item.shadowRoot!.querySelector('[part="icon"]')).toBeNull());
+    item.icon = 'folder';
+    item.disabled = true;
+    await waitFor(() => expect(item.shadowRoot!.querySelector('a')).toBeNull());
+    expect(item.shadowRoot!.querySelector('[part="icon"]')!.textContent).toBe('folder');
+    item.disabled = false;
+    item.current = true;
+    await waitFor(() => expect(item.shadowRoot!.querySelector('[part="static"]')?.getAttribute('aria-current')).toBe('page'));
+    item.replaceChildren(document.createTextNode('Current project'));
+    await waitFor(() => expect(item.textContent).toBe('Current project'));
+  },
+};
+
 /** Shadow-piercing helpers for play(): testing-library queries can't cross
  *  shadow roots, so interactions address the components' internals directly. */
 interface MdSelectDetail {

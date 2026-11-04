@@ -723,31 +723,31 @@
       "code": "HTML_FORM",
       "severity": "warning",
       "message": "HTML form association requires explicit native form state.",
-      "line": 117
+      "line": 118
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 293
+      "line": 294
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 293
+      "line": 294
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 651
+      "line": 667
     },
     {
       "code": "CANCELABLE_EVENT",
       "severity": "warning",
       "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
-      "line": 77
+      "line": 78
     }
   ],
   "source": {
@@ -755,7 +755,7 @@
     "styleUrl": "md-select.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "9bb5b36f1552db3ccb459a8ac8e49bc642955994d1b5c97146266887e60e4cc0"
+    "sha256": "7bcc37dc9ae9cec5e36f41531e28cbed3e8a12067fa62cfe65f967124e3aad73"
   },
   "styles": [
     {
@@ -1376,27 +1376,36 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
+        "valueMissingLabel",
+        "reserveSupportingSpace",
+        "variant",
         "label",
         "placeholder",
         "value",
+        "disabled",
         "required",
         "error",
         "errorText",
         "supportingText",
+        "density",
         "clearable",
+        "matchTriggerWidth",
+        "placement",
+        "maxHeight",
         "options",
         "filterable",
+        "name",
         "searchPlaceholder",
+        "filterLabel",
         "noResultsText",
         "noOptionsText",
         "clearLabel",
         "loadingText",
-        "loading",
-        "open",
+        "clearIcon",
         "dropdownIcon",
-        "valueMissingLabel",
-        "disabled",
-        "name"
+        "loading",
+        "fullWidth",
+        "open"
       ],
       "events": [
         "mdChange",
@@ -1404,25 +1413,7 @@
         "mdClose",
         "mdValidityChange"
       ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "reserveSupportingSpace",
-        "variant",
-        "density",
-        "matchTriggerWidth",
-        "placement",
-        "maxHeight",
-        "virtualize",
-        "filterMode",
-        "rowHeight",
-        "filterLabel",
-        "searchingLabel",
-        "clearIcon",
-        "fullWidth"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "show",
         "close",
         "focusTrigger",
@@ -1435,70 +1426,71 @@
         "reportValidity",
         "setCustomValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "",
         "loader",
         "dropdown-icon"
       ],
+      "unsupportedProperties": [
+        "virtualize",
+        "filterMode",
+        "rowHeight",
+        "searchingLabel"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native searchable sheet replaces anchored web listbox. Default-slot select-option children are parsed as option data.",
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+        "Dedicated native renderer (SwiftUI / Compose): an md-text-field (AWCFieldHooks) trigger with the caret, clear button, loader and the md-menu listbox (filterable search, empty / no-results text, loading bar), verified against the Mac Chrome 153 oracles (paint 1577 checks; interaction states and motion, full and reduced).",
+        "Methods through AWCSelectController (show, close, focusTrigger, reset, loadOptions, setQuery, getLabels, getValidity, checkValidity, reportValidity, setCustomValidity); form participation through AWCFormScope.",
+        "Not supported: virtualize (not virtualized: the native lists render every option (loadOptions / options replace the list)).",
+        "Not supported: filterMode (filtering is local (contains); the source's remote mode is the app's (setQuery / loadOptions)).",
+        "Not supported: rowHeight (virtualization row height (no virtualized list)).",
+        "Not supported: searchingLabel (remote-search status text (no remote mode))."
       ],
       "verification": "not-device-verified"
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "clearLabel",
-        "clearable",
-        "disabled",
-        "error",
-        "errorText",
-        "filterable",
-        "label",
-        "loading",
-        "maxHeight",
-        "name",
-        "noOptionsText",
-        "noResultsText",
-        "open",
-        "options",
-        "placeholder",
-        "required",
-        "searchPlaceholder",
-        "supportingText",
-        "value"
-      ],
-      "events": [
-        "mdChange",
-        "mdClose",
-        "mdOpen"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
         "valueMissingLabel",
         "reserveSupportingSpace",
         "variant",
+        "label",
+        "placeholder",
+        "value",
+        "disabled",
+        "required",
+        "error",
+        "errorText",
+        "supportingText",
         "density",
+        "clearable",
         "matchTriggerWidth",
         "placement",
-        "virtualize",
-        "filterMode",
-        "rowHeight",
+        "maxHeight",
+        "options",
+        "filterable",
+        "name",
+        "searchPlaceholder",
         "filterLabel",
-        "searchingLabel",
+        "noResultsText",
+        "noOptionsText",
+        "clearLabel",
         "loadingText",
         "clearIcon",
         "dropdownIcon",
-        "fullWidth"
+        "loading",
+        "fullWidth",
+        "open"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdChange",
+        "mdOpen",
+        "mdClose",
         "mdValidityChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "show",
         "close",
         "focusTrigger",
@@ -1511,13 +1503,27 @@
         "reportValidity",
         "setCustomValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "loader",
         "dropdown-icon"
       ],
+      "unsupportedProperties": [
+        "virtualize",
+        "filterMode",
+        "rowHeight",
+        "searchingLabel"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+        "Dedicated native renderer (SwiftUI / Compose): an md-text-field (AWCFieldHooks) trigger with the caret, clear button, loader and the md-menu listbox (filterable search, empty / no-results text, loading bar), verified against the Mac Chrome 153 oracles (paint 1577 checks; interaction states and motion, full and reduced).",
+        "Methods through AWCSelectController (show, close, focusTrigger, reset, loadOptions, setQuery, getLabels, getValidity, checkValidity, reportValidity, setCustomValidity); form participation through AWCFormScope.",
+        "Not supported: virtualize (not virtualized: the native lists render every option (loadOptions / options replace the list)).",
+        "Not supported: filterMode (filtering is local (contains); the source's remote mode is the app's (setQuery / loadOptions)).",
+        "Not supported: rowHeight (virtualization row height (no virtualized list)).",
+        "Not supported: searchingLabel (remote-search status text (no remote mode))."
       ],
       "verification": "not-device-verified"
     }

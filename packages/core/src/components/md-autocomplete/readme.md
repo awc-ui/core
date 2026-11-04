@@ -118,7 +118,10 @@ el.filterer = (options, { inputValue }) =>
 **Events** — `mdInput` (`CustomEvent<string>`, the typed text), `mdChange`
 (`string | string[]`, the committed selection), `mdOpen` (`void`), `mdClose`
 (`void`), `mdClear` (`void`) — all composed; `mdValidityChange`
-(`{ valid, validationMessage, flags }`) bubbles but is **not composed**.
+(`{ valid, validationMessage, flags }`) bubbles but is **not composed**. These
+are the only events a host listener receives: the embedded `md-text-field`'s
+own `mdInput`, `mdChange` and `mdSearch` are stopped at the boundary, so one
+keystroke is one `mdInput` and `mdChange` always means a committed selection.
 
 **Methods** — `focusInput()`, `showMenu()`, `closeMenu()`,
 `loadOptions(source)`, `getLabels(values)`, `getValidity()`,

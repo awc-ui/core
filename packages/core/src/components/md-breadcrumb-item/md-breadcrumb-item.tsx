@@ -129,12 +129,6 @@ export class MdBreadcrumbItem {
   }
 
   componentDidLoad() {
-    const iconSlot = this.el.shadowRoot?.querySelector(
-      'slot[name="icon"]',
-    ) as HTMLSlotElement | null;
-    iconSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedIcon = iconSlot.assignedElements().length > 0;
-    });
     const mainSlot = this.el.shadowRoot?.querySelector(
       'slot:not([name])',
     ) as HTMLSlotElement | null;
@@ -215,21 +209,16 @@ export class MdBreadcrumbItem {
   }
 
   private renderIcon() {
-    if (this.hasSlottedIcon) {
-      return (
-        <span class="md-breadcrumb-item__icon" part="icon" aria-hidden="true">
-          <slot name="icon"></slot>
-        </span>
-      );
-    }
-    if (this.icon) {
-      return (
-        <span class="md-breadcrumb-item__icon" part="icon" aria-hidden="true">
-          <span class="material-symbols-outlined">{this.icon}</span>
-        </span>
-      );
-    }
-    return null;
+    // The slot must exist before an icon is assigned, and its handler must
+    // survive switching between the anchor and static render branches.
+    const slot = <slot name="icon" onSlotchange={event => {
+      this.hasSlottedIcon = (event.currentTarget as HTMLSlotElement).assignedElements().length > 0;
+    }}>
+      {this.icon && <span class="material-symbols-outlined">{this.icon}</span>}
+    </slot>;
+    return this.hasSlottedIcon || this.icon
+      ? <span class="md-breadcrumb-item__icon" part="icon" aria-hidden="true">{slot}</span>
+      : slot;
   }
 
   private renderLabel() {
@@ -300,6 +289,7 @@ export class MdBreadcrumbItem {
           'md-breadcrumb-item--disabled': this.disabled,
         }}
         role="listitem"
+        style={{ '--_enter-index': String(this.itemIndex) }}
       >
         {this.renderLeadingSeparator()}
         {this.renderInner()}

@@ -143,6 +143,10 @@
   ],
   "cssParts": [
     {
+      "name": "popover",
+      "description": ""
+    },
+    {
       "name": "plate",
       "description": ""
     },
@@ -217,10 +221,6 @@
     {
       "name": "preview",
       "description": ""
-    },
-    {
-      "name": "popover",
-      "description": ""
     }
   ],
   "cssCustomProps": [
@@ -272,7 +272,18 @@
   "dependencies": [
     "md-button"
   ],
-  "dataTypes": [],
+  "dataTypes": [
+    {
+      "name": "ColorPickerVariant",
+      "kind": "type",
+      "body": "'inline' | 'popover'"
+    },
+    {
+      "name": "ColorFormat",
+      "kind": "type",
+      "body": "'hex' | 'rgb' | 'hsl'"
+    }
+  ],
   "callableProps": [],
   "eventTypes": [],
   "eventPayloads": [

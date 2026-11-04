@@ -5,6 +5,8 @@ import {
   formatDisplayDate,
   dateFormatPattern,
   resolveDateSeparator,
+  clampDate,
+  getFirstDayOfWeek,
 } from './date-utils';
 
 describe('parseFlexibleDateInput', () => {
@@ -135,5 +137,31 @@ describe('resolveDateSeparator', () => {
 
   it('derives separator from locale when not provided', () => {
     expect(resolveDateSeparator('en-US')).toBe('/');
+  });
+
+  it('falls back safely for malformed locale identifiers', () => {
+    expect(resolveDateSeparator('not_a_locale')).toBe('/');
+    expect(getFirstDayOfWeek('not_a_locale')).toBe(0);
+    expect(toIsoDate(parseFlexibleDateInput('03042025', 'not_a_locale')!)).toBe('2025-03-04');
+  });
+});
+
+describe('date input ambiguity and inclusive bounds', () => {
+  it('resolves seven-digit dates using locale when there is no unambiguous two-digit day', () => {
+    expect(toIsoDate(parseFlexibleDateInput('1012025', 'en-US')!)).toBe('2025-10-01');
+    expect(toIsoDate(parseFlexibleDateInput('1012025', 'en-GB')!)).toBe('2025-01-10');
+    expect(toIsoDate(parseFlexibleDateInput('0112025', 'en-US')!)).toBe('2025-01-01');
+    expect(parseFlexibleDateInput('9912025')).toBeNull();
+    expect(parseFlexibleDateInput('3/4/25')).toBeNull();
+    expect(toIsoDate(parseFlexibleDateInput('3/4/2025', 'en-GB')!)).toBe('2025-04-03');
+  });
+
+  it('clamps only beyond valid bounds and preserves dates on or within them', () => {
+    const day = new Date(2025, 5, 15);
+    expect(toIsoDate(clampDate(day, '2025-06-16', '2025-06-20'))).toBe('2025-06-16');
+    expect(toIsoDate(clampDate(day, '2025-06-01', '2025-06-14'))).toBe('2025-06-14');
+    expect(clampDate(day, '2025-06-15', '2025-06-15')).toBe(day);
+    expect(clampDate(day, 'invalid', 'invalid')).toBe(day);
+    expect(clampDate(day, '', '')).toBe(day);
   });
 });

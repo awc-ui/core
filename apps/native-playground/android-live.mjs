@@ -1,3 +1,7 @@
+import { splitButtonCheckedOptions } from './split-button-state.js';
+import { segmentedSelectionOptions } from './segmented-context.js';
+import { nativeMethodReply, nativeMethodValue } from './native-methods.js';
+import { buttonGroupSelectionOptions } from './button-group-state.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { randomBytes, randomUUID } from 'node:crypto';
@@ -6,6 +10,7 @@ import path from 'node:path';
 import { RenderError } from './native-render.mjs';
 import { validateLiveInput } from './native-live.mjs';
 import { nativeEventMetadata } from './native-event-metadata.mjs';
+import { validateNativeInspection } from './native-inspection.mjs';
 
 const execute = promisify(execFile);
 const fail = (status, code, message) => new RenderError(status, code, message);
@@ -60,10 +65,15 @@ function frameResult(session, value) {
   if (png.length < 24 || !png.subarray(0, 8).equals(pngSignature) || png.toString('ascii', 12, 16) !== 'IHDR'
     || png.readUInt32BE(16) !== value.width || png.readUInt32BE(20) !== value.height) throw fail(502, 'INVALID_LIVE_FRAME', 'Invalid Android PNG.');
   const diagnostics = frameDiagnostics(value.diagnostics);
+  const inspection = validateNativeInspection(value.inspection, 'android');
+  let selection;
+  try { selection = { ...splitButtonCheckedOptions(value.splitButtonChecked, session.tag), ...buttonGroupSelectionOptions(value.buttonGroupSelection, session.tag), ...segmentedSelectionOptions(value.segmentedSelection, session.tag, session.segmentedContext) }; }
+  catch { throw fail(502, 'INVALID_LIVE_FRAME', 'Invalid ordered child selection.'); }
   session.logicalWidth = value.logicalWidth; session.logicalHeight = value.logicalHeight;
   return { sessionId: session.id, platform: 'android', renderer: 'Jetpack Compose', tag: session.tag,
     imageUrl: `data:image/png;base64,${value.png}`, width: value.width, height: value.height,
-    logicalWidth: value.logicalWidth, logicalHeight: value.logicalHeight, revision: ++session.revision, events: events(value.events), ...diagnostics };
+    logicalWidth: value.logicalWidth, logicalHeight: value.logicalHeight, revision: ++session.revision, events: events(value.events), ...diagnostics,
+    ...(inspection === undefined ? {} : { inspection }), ...selection };
 }
 
 /** One dedicated emulator Activity. Input stays inside that Activity; ADB never injects global input. */
@@ -148,6 +158,15 @@ export function createAndroidLiveRenderer({
       // Cleanup only this token-owned Activity and this exact ADB forward.
       if (session.port) {
         try { await (await request(session, '/command', { command: 'close' }, AbortSignal.timeout(2000))).body?.cancel(); } catch {}
+        // R2-D9: wait until this host's own listener is gone (its token stops answering) before the forward is removed
+        // and the emulator is released, so a new session never races a still-closing predecessor on the device port.
+        if (session.launch) for (const until = Date.now() + 2500; Date.now() < until;) {
+          try {
+            const reply = await fetchDevice(`http://127.0.0.1:${session.port}/health`, { headers: { Authorization: `Bearer ${session.token}` }, signal: AbortSignal.timeout(400), redirect: 'error' });
+            await reply.body?.cancel(); if (!reply.ok) break;
+          } catch { break; }
+          await delay(50);
+        }
         try { await runAdb(['-s', session.serial, 'forward', '--remove', `tcp:${session.port}`]); } catch {}
       }
       if (active === session) active = null;
@@ -165,11 +184,20 @@ export function createAndroidLiveRenderer({
     session.pending++; touch(session);
     const operation = session.tail.then(async () => {
       if (session.closed) throw fail(410, 'SESSION_CLOSED', 'The Android preview closed.');
-      if (['pointer', 'click', 'key', 'text'].includes(payload.command)) payload = validateLiveInput(payload, session);
+      if (['pointer', 'click', 'key', 'text', 'method', 'method-results', 'update', 'resize'].includes(payload.command)) payload = validateLiveInput(payload, session);
       try {
         const value = await readJSON(await request(session, '/command', payload, AbortSignal.any([session.abort.signal, AbortSignal.timeout(commandTimeoutMs)])));
         if (value.error) throw fail(502, 'ANDROID_INPUT_FAILED', value.message || 'Android could not process this input.');
-        const result = value.ack === true ? { sessionId: session.id, revision: session.revision, events: events(value.events) } : frameResult(session, value);
+        const resized = payload.command === 'resize';
+        if (resized && (value.ack !== true || value.logicalWidth !== payload.width || value.logicalHeight !== payload.height)) throw fail(502, 'INVALID_VIEWPORT_FRAME', 'Native resize must acknowledge a captured frame at the requested applied dimensions.');
+        if ((payload.callId || payload.command === 'method-results') && value.ack !== true) throw fail(502, 'INVALID_METHOD_RESULT', 'Native lifecycle methods require a separate acknowledgement.');
+        let methodReply;
+        try { methodReply = nativeMethodReply(value, payload); }
+        catch (error) { throw fail(502, error.code, error.message); }
+        const result = value.ack === true && !resized ? { sessionId: session.id, revision: session.revision, events: events(value.events), ...methodReply } : frameResult(session, value);
+        if (payload.command === 'method' && !payload.callId && value.result !== undefined) {
+          try { result.methodResult = nativeMethodValue(value.result); } catch (error) { throw fail(502, error.code, error.message); }
+        }
         result.events = [...session.undelivered.splice(0), ...result.events];
         touch(session); return result;
       } catch (error) { void stop(session); throw error instanceof RenderError ? error : fail(502, 'ANDROID_CONNECTION_FAILED', 'Android disconnected or timed out. Start a new preview.'); }
@@ -183,7 +211,7 @@ export function createAndroidLiveRenderer({
     if (active?.closed) await active.cleanup;
     if (disposed) throw fail(503, 'SERVICE_STOPPED', 'The Android preview service has stopped.');
     if (active) throw fail(429, 'ANDROID_SESSION_BUSY', 'The emulator already has a live preview. Close the other Android preview tab and retry.');
-    const session = active = { id: randomUUID(), token: randomBytes(32).toString('hex'), tag: config.tag, revision: 0,
+    const session = active = { id: randomUUID(), token: randomBytes(32).toString('hex'), tag: config.tag, segmentedContext: config.segmentedContext, revision: 0,
       abort: new AbortController(), tail: Promise.resolve(), pending: 0, undelivered: [], closed: false };
     try {
       session.serial = await inspect();

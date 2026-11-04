@@ -12,6 +12,36 @@ const create = (html: string) =>
   });
 
 describe('md-table', () => {
+  it('switches between skeleton, empty and row data while retaining its public selection contract', async () => {
+    const page = await create('<md-table selection="multiple" loading loading-mode="skeleton" loading-rows="2" columns="3"><md-table-body><md-table-row value="a"><md-table-cell>A</md-table-cell><md-table-cell>B</md-table-cell><md-table-cell>C</md-table-cell></md-table-row></md-table-body></md-table>');
+    const table = page.root as HTMLMdTableElement;
+    expect(table.shadowRoot!.querySelectorAll('[part="skeleton-row"]')).toHaveLength(2);
+    expect(table.shadowRoot!.querySelectorAll('.md-table__bar')).toHaveLength(6);
+    table.loading = false; table.empty = true;
+    await page.waitForChanges();
+    expect(table.shadowRoot!.querySelector('[part="empty"]')).toBeTruthy();
+    expect(table.shadowRoot!.querySelector('[aria-live]')!.textContent).toBe('No data');
+    table.empty = false; table.stickyHeader = true;
+    await page.waitForChanges();
+    expect(table.shadowRoot!.querySelector('[part="empty"]')).toBeNull();
+    await table.toggleSelectAll(); await page.waitForChanges();
+    expect((await table.getSelection()).values).toEqual(['a']);
+    await table.toggleSelectAll(); await page.waitForChanges();
+    expect((await table.getSelection()).values).toEqual([]);
+    table.shadowRoot!.querySelector('slot:not([name])')!.dispatchEvent(new Event('slotchange'));
+    table.dispatchEvent(new CustomEvent('mdMotionArm'));
+    await page.waitForChanges();
+    expect(table.querySelector('md-table-row')!.getAttribute('aria-selected')).toBe('false');
+  });
+
+  it.each([
+    ['column-template="repeat(4, 1fr)"', 4],
+    ['column-template="1fr 100px"', 2],
+    ['', 1],
+  ])('sizes skeleton placeholders from the declared grid (%s)', async (attrs, count) => {
+    const page = await create(`<md-table loading loading-mode="skeleton" loading-rows="1" ${attrs}></md-table>`);
+    expect(page.root!.shadowRoot!.querySelectorAll('.md-table__bar')).toHaveLength(count);
+  });
   describe('rendering', () => {
     it('renders with defaults', async () => {
       const page = await create('<md-table></md-table>');

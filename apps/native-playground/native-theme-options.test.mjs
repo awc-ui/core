@@ -19,9 +19,10 @@ test('theme and direction retain typed props through browser and server normaliz
   assert.notEqual(request.themeTokens['--md-sys-color-primary'], '#000000');
 });
 
-test('native options accept only known MD3 color roles and fixed layout directions', () => {
+test('native options accept bounded color-role data and fixed layout directions', () => {
   assert.deepEqual(nativeThemeOptions({ themeTokens: { '--md-sys-color-primary': '#aabbcc' }, direction: 'ltr' }), { themeTokens: { '--md-sys-color-primary': '#AABBCC' }, direction: 'ltr' });
-  for (const themeTokens of [null, [], 'red', { '--bg': '#000000' }, { '--md-sys-color-primary': 'red' }, { '--md-sys-color-primary': '#00000000' }, { '--md-sys-color-primary': 'url(https://example.test)' }, { '--md-sys-color-primary': 1 }]) {
+  assert.deepEqual(nativeThemeOptions({ themeTokens: { '--md-sys-color-Brand': '#aabbcc80' } }), { themeTokens: { '--md-sys-color-Brand': '#AABBCC80' } });
+  for (const themeTokens of [null, [], 'red', { '--bg': '#000000' }, { '--md-sys-color-primary': 'red' }, { '--md-sys-color-primary': '#0000000' }, { '--md-sys-color-primary': 'url(https://example.test)' }, { '--md-sys-color-primary': 1 }]) {
     assert.throws(() => validateRenderRequest({ tag: 'md-button', themeTokens }, new Set(['md-button'])), error => error.code === 'INVALID_THEME_TOKENS' && error.status === 400);
   }
   for (const direction of [null, true, 'auto', '<rtl>']) assert.throws(() => nativeThemeOptions({ direction }), error => error.code === 'INVALID_DIRECTION');

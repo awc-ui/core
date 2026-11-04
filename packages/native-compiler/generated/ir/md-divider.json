@@ -58,7 +58,7 @@
   "cssParts": [
     {
       "name": "divider",
-      "description": "The divider element itself (host)"
+      "description": "The inner painted line; inset margins do not affect the host"
     }
   ],
   "cssProperties": [
@@ -132,7 +132,7 @@
     "styleUrl": "md-divider.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "6436b0cd42ee90a0a42287eae5e322fe81e604e4702699d5225ae48dfca17729"
+    "sha256": "58d58708503b05c7bb7b5f16c56d119a7865af3788b4d97b9c2b6eca91dd87eb"
   },
   "styles": [
     {
@@ -445,8 +445,22 @@
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
+      "notes": [
+        "Dedicated native divider uses a measured inner painted line, signed logical inset margins and nonnegative thickness. Inset-start overrides both-side inset; inset-end takes precedence when multiple flags are true. Vertical insets apply at the top and bottom. Native drawing replaces CSS; runtime verification is recorded separately in the parity audit."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "divider"
+      ],
+      "appearance": {
+        "api": "AWCDividerAppearance / .awcDividerAppearance",
+        "fields": [
+          "color",
+          "thickness",
+          "insetStart",
+          "insetEnd"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
@@ -464,9 +478,21 @@
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native divider uses a measured inner painted line, signed logical inset margins and nonnegative thickness. Inset-start overrides both-side inset; inset-end takes precedence when multiple flags are true. Vertical insets apply at the top and bottom. Native drawing replaces CSS; runtime verification is recorded separately in the parity audit."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "divider"
+      ],
+      "appearance": {
+        "api": "AWCDividerAppearance / AWCDividerAppearanceScope",
+        "fields": [
+          "color",
+          "thickness",
+          "insetStart",
+          "insetEnd"
+        ]
+      }
     }
   }
 }

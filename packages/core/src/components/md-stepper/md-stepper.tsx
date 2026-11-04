@@ -404,15 +404,22 @@ export class MdStepper {
     if (typeof MutationObserver === 'undefined') return;
     this.stepObserver = new MutationObserver((records) => {
       let entered: HTMLMdStepElement | null = null;
+      let left = false;
       for (const r of records) {
         if (r.attributeName === 'error') {
           const el = r.target as HTMLMdStepElement;
-          if (el.error && el.tagName.toLowerCase() === 'md-step') entered = el;
+          if (el.tagName.toLowerCase() !== 'md-step') continue;
+          if (el.error) entered = el;
+          else left = true;
         }
       }
       // Re-gate the affordance against the new state (idempotent — settles).
       this.syncSteps();
       if (entered) this.announceError(entered);
+      // Once no step is in error, empty the alert region: a stale error must not
+      // stay readable in browse mode, and the same error raised again has to
+      // CHANGE the region's content or the live region stays silent.
+      else if (left && !this.steps.some((s) => s.error)) this.errorMessage = '';
     });
     this.attachObserver();
   }
@@ -468,8 +475,10 @@ export class MdStepper {
     if (this.mode !== 'linear') return true;
     if (target <= this.active) return true; // back is always allowed
     if (step.completed) return true; // revisit a completed (e.g. editable) step
-    // forward only when every prior step is completed or skippable
-    return this.steps.slice(0, target).every((s) => s.completed || s.optional);
+    // forward only when every prior step is completed or skippable. A disabled
+    // step is skippable: the user can never complete it, and next() / Continue
+    // already step over it — without this it walled off every later step.
+    return this.steps.slice(0, target).every((s) => s.completed || s.optional || s.disabled);
   }
 
   private clampToValidStep(index: number): number {

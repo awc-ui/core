@@ -6,7 +6,8 @@
 
    PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
      Trigger:   --md-multi-select-width, -min-width, -trigger-width, -frame-gap
-     Chips:     --md-multi-select-chip-gap, -chip-radius
+     Chips:     --md-multi-select-chip-gap, -chip-radius, -chip-height,
+                -chip-outline (value chips and the "+N" counter)
      Caret:     --md-multi-select-caret-color, -caret-size (glyph), -caret-box-size
      Clear:     --md-multi-select-clear-color, -clear-bg, -clear-hover-bg,
                 -clear-size, -clear-radius, -clear-icon-size,
@@ -41,6 +42,11 @@
     --_min-width: var(--md-multi-select-min-width, 200px);
   --_chip-gap: var(--md-multi-select-chip-gap, var(--md-sys-spacing-gap-xs, 4px));
   --_chip-radius: var(--md-multi-select-chip-radius, 8px);
+  /* Chip height and outline for the value chips and the "+N" counter. Unset,
+     they fall back to any --md-chip-* value inherited from an ancestor, then
+     to md-chip's own input-chip defaults, so the chips look as before. */
+  --_chip-height: var(--md-multi-select-chip-height, var(--md-chip-container-height, 32px));
+  --_chip-outline: var(--md-multi-select-chip-outline, var(--md-chip-outline-color, var(--md-sys-color-outline-variant, #CAC4D0)));
   --_caret-color: var(--md-multi-select-caret-color, var(--md-sys-color-on-surface-variant));
   --_clear-color: var(--md-multi-select-clear-color, var(--md-sys-color-on-surface-variant));
   --_option-icon-size: var(--md-multi-select-option-icon-size, 20px);
@@ -193,6 +199,15 @@
   contain: inline-size;
 }
 
+/* The chip hooks reach the value chips, not only the "+N" counter (the
+   measurement row too, so the overflow maths matches what is drawn). */
+.md-multi-select__chips md-chip,
+.md-multi-select__inline-chips md-chip,
+.md-multi-select__inline-measure md-chip {
+  --md-chip-container-height: var(--_chip-height);
+  --md-chip-outline-color: var(--_chip-outline);
+}
+
 .md-multi-select__chips md-chip {
   --md-chip-container-shape: var(--_chip-radius);
 }
@@ -305,9 +320,9 @@
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  block-size: var(--md-multi-select-chip-height, 32px);
+  block-size: var(--_chip-height);
   padding-inline: 12px;
-  border: 1px solid var(--md-multi-select-chip-outline, var(--md-sys-color-outline-variant, #CAC4D0));
+  border: 1px solid var(--_chip-outline);
   border-radius: var(--_chip-radius);
   background: transparent;
   color: var(--md-sys-color-on-surface-variant, #49454F);

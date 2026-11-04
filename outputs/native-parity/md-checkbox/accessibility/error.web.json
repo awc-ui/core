@@ -1,0 +1,113 @@
+{
+ "tag": "md-checkbox",
+ "case": "error",
+ "html": "<md-checkbox data-ax-node=\"n0\" id=\"example-md-checkbox\" aria-label=\"Accept terms\">Receive project updates</md-checkbox>",
+ "props": {
+  "n0": {
+   "checked": false,
+   "density": 0,
+   "disabled": false,
+   "error": true,
+   "errorText": "You must accept the terms",
+   "indeterminate": false,
+   "name": "",
+   "required": false,
+   "softDisabled": false,
+   "supportingText": "",
+   "value": "updates",
+   "valueMissingLabel": "Please check this box if you want to proceed."
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "checkbox",
+    "name": "Accept terms",
+    "ignored": false,
+    "description": "You must accept the terms",
+    "invalid": "true",
+    "focusable": true,
+    "checked": "false",
+    "frame": [
+     16,
+     16,
+     48,
+     66
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       },
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       }
+      ]
+     },
+     {
+      "role": "alert",
+      "name": "",
+      "ignored": false,
+      "live": "assertive",
+      "atomic": true,
+      "relevant": "additions text",
+      "frame": [
+       31,
+       66,
+       141.640625,
+       16
+      ],
+      "children": [
+       {
+        "role": "StaticText",
+        "name": "You must accept the terms",
+        "ignored": false,
+        "frame": [
+         31,
+         67,
+         141.640625,
+         14
+        ],
+        "children": [
+         {
+          "role": "InlineTextBox",
+          "name": "You must accept the terms",
+          "ignored": false
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

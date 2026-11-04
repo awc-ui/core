@@ -249,19 +249,19 @@
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 489
+      "line": 493
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 495
+      "line": 499
     },
     {
       "code": "DOM_MUTATION",
       "severity": "warning",
       "message": "classList depends on browser semantics and requires a native adapter.",
-      "line": 557
+      "line": 579
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -275,7 +275,7 @@
     "styleUrl": "md-tabs.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "e560f535711f8f6dbe02deea7b36d33b21ba68be19c4106cbd8aef2b457cf993"
+    "sha256": "378a245d4674401eccc5dd337ca3d358d4815727ab5ec9afbf777f7b66791c9a"
   },
   "styles": [
     {
@@ -442,11 +442,6 @@
           "property": "flex",
           "value": "1",
           "important": false
-        },
-        {
-          "property": "min-inline-size",
-          "value": "90px",
-          "important": false
         }
       ]
     },
@@ -583,60 +578,98 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "activeTabIndex"
-      ],
-      "events": [
-        "mdTabChange"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
+        "activeTabIndex",
         "variant",
         "divider",
         "ariaLabelProp",
         "tabWidth",
         "width"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdTabChange"
+      ],
+      "methods": [
         "selectTab"
       ],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Updates linked md-tab-panels within the same native tree or AWCNativeScope using native node IDs."
+        "Dedicated native renderer (SwiftUI / Compose): the primary / secondary tablist with equal, auto or fixed tab widths, the scrolling strip (the active tab revealed, edge fades, wheel), the full or per-tab divider and the indicator glide (FLIP from the outgoing indicator, held one frame, then 400 ms emphasized-decelerate), computed from the authored md-tab children as the source.",
+        "Selection as the source: activeTabIndex is rounded and clamped past disabled tabs and its writes are silent; clicks, Enter/Space, the arrows (automatic activation, wrapping, mirrored in RTL), Home/End and selectTab(index) emit mdTabChange { index, previousIndex }; the active tab is followed by identity across reorders and removals.",
+        "One tab stop (the active tab, else the first enabled one). The system Reduce Motion setting removes the glide and the state-layer fades (colours still transition), as prefers-reduced-motion does.",
+        "The two tab-bar hooks and the nine md-tab hooks (inherited by every tab) through .awcTabsAppearance(…) / AWCTabsAppearanceScope; selectTab(index) through AWCTabsController.",
+        "Verified against the Mac Chrome 153 oracles (paint, interaction states and motion); the tablist is the platform tab group whose tabs report their selection."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": ".awcTabsAppearance(AWCTabsAppearance)",
+        "fields": [
+          "containerColor",
+          "dividerColor",
+          "tabContainerColor",
+          "activeLabelColor",
+          "inactiveLabelColor",
+          "activeIconColor",
+          "inactiveIconColor",
+          "activeIndicatorColor",
+          "activeIndicatorHeight",
+          "tabDividerColor",
+          "glideDuration"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
         "activeTabIndex",
-        "divider"
-      ],
-      "events": [
-        "mdTabChange"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
         "variant",
+        "divider",
         "ariaLabelProp",
         "tabWidth",
         "width"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdTabChange"
+      ],
+      "methods": [
         "selectTab"
       ],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native renderer (SwiftUI / Compose): the primary / secondary tablist with equal, auto or fixed tab widths, the scrolling strip (the active tab revealed, edge fades, wheel), the full or per-tab divider and the indicator glide (FLIP from the outgoing indicator, held one frame, then 400 ms emphasized-decelerate), computed from the authored md-tab children as the source.",
+        "Selection as the source: activeTabIndex is rounded and clamped past disabled tabs and its writes are silent; clicks, Enter/Space, the arrows (automatic activation, wrapping, mirrored in RTL), Home/End and selectTab(index) emit mdTabChange { index, previousIndex }; the active tab is followed by identity across reorders and removals.",
+        "One tab stop (the active tab, else the first enabled one). The system Reduce Motion setting removes the glide and the state-layer fades (colours still transition), as prefers-reduced-motion does.",
+        "The two tab-bar hooks and the nine md-tab hooks (inherited by every tab) through .awcTabsAppearance(…) / AWCTabsAppearanceScope; selectTab(index) through AWCTabsController.",
+        "Verified against the Mac Chrome 153 oracles (paint, interaction states and motion); the tablist is the platform tab group whose tabs report their selection."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCTabsAppearanceScope(AWCTabsAppearance)",
+        "fields": [
+          "containerColor",
+          "dividerColor",
+          "tabContainerColor",
+          "activeLabelColor",
+          "inactiveLabelColor",
+          "activeIconColor",
+          "inactiveIconColor",
+          "activeIndicatorColor",
+          "activeIndicatorHeight",
+          "tabDividerColor",
+          "glideDuration"
+        ]
+      }
     }
   }
 }

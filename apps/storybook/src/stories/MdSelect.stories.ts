@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { expect, waitFor } from 'storybook/test';
 import { html, nothing } from 'lit';
+import { exerciseServerValidation } from '../../../../packages/core/src/components/md-checkbox/test-utils/form-validation.browser';
+import { exerciseSelectFiltering, exerciseOptionData } from '../../../../packages/core/src/components/md-select/test-utils/filtering.browser';
 import { ref } from 'lit/directives/ref.js';
 import { t } from '../i18n';
 
@@ -1163,3 +1165,23 @@ const virtualSmallRows = [
   { value: 'c', label: 'Charlie' },
   { value: 'd', label: 'Delta' },
 ];
+
+/** Server validation is queried silently and presented through this control. */
+export const ServerValidation: Story = {
+  render: () => html`<form><fieldset style="border:0;padding:0">
+    <button type="button">Outside control</button>
+    <md-select data-form-contract name="entry" label="Form value" aria-label="Form value"></md-select>
+  </fieldset></form>`,
+  play: async ({ canvasElement }) => {
+    await exerciseServerValidation(canvasElement.querySelector('md-select') as HTMLElement);
+  },
+};
+
+export const FilteringContract: Story = {
+  render: () => html`<md-select label="Produce"></md-select>`,
+  play: async ({ canvasElement }) => exerciseSelectFiltering(canvasElement.querySelector('md-select') as HTMLElement),
+};
+export const DynamicOptionContract: Story = {
+  render: () => html`<md-select label="Produce"><md-select-option value="a">Apple</md-select-option></md-select>`,
+  play: async ({ canvasElement }) => exerciseOptionData(canvasElement.querySelector('md-select') as HTMLElement),
+};

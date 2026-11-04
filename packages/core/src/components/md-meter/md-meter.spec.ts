@@ -142,6 +142,25 @@ describe('md-meter', () => {
 
   // ── Fill geometry ────────────────────────────────────────
   describe('fill width variable', () => {
+    it.each([
+      [-Number.MAX_VALUE, 0],
+      [-Number.MAX_VALUE / 2, 25],
+      [0, 50],
+      [Number.MAX_VALUE / 2, 75],
+      [Number.MAX_VALUE, 100],
+    ])('keeps extreme finite range value %s at %s percent', async (value, percentage) => {
+      const page = await create('<md-meter show-value></md-meter>');
+      const meter = page.root as unknown as MdMeter;
+      meter.min = -Number.MAX_VALUE;
+      meter.max = Number.MAX_VALUE;
+      meter.value = value;
+      await page.waitForChanges();
+      const indicator = page.root!.shadowRoot!.querySelector('[part="indicator"]') as HTMLElement;
+      expect(indicator.style.getPropertyValue('--_fill-pct')).toBe(`${percentage}%`);
+      expect(page.root!.getAttribute('aria-valuetext')).toBe(pct(percentage / 100));
+      expect(page.root!.shadowRoot!.querySelector('[part="value"]')!.textContent).toBe(pct(percentage / 100));
+    });
+
     it('writes the percentage onto --_fill-pct', async () => {
       const page = await create('<md-meter value="25"></md-meter>');
       const indicator = page.root?.shadowRoot?.querySelector('[part="indicator"]') as HTMLElement;

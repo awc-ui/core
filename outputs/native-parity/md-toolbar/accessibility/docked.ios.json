@@ -1,0 +1,133 @@
+{
+ "tag": "md-toolbar",
+ "case": "docked",
+ "elements": [
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Formatting",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    48,
+    380,
+    40,
+    40
+   ],
+   "interactive": true,
+   "label": "Undo",
+   "traits": [
+    "button"
+   ]
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Formatting",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    120,
+    380,
+    40,
+    40
+   ],
+   "interactive": true,
+   "label": "Redo",
+   "traits": [
+    "button"
+   ]
+  },
+  {
+   "class": "AccessibilityNode",
+   "containers": [
+    "semanticGroup:Formatting"
+   ],
+   "depth": 7,
+   "frame": [
+    192,
+    392,
+    1,
+    16
+   ],
+   "interactive": true,
+   "label": "Separator",
+   "traits": [],
+   "value": "Vertical"
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Formatting",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    225,
+    380,
+    40,
+    40
+   ],
+   "interactive": true,
+   "label": "Bold",
+   "traits": [
+    "button",
+    "toggleButton"
+   ],
+   "value": "0"
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Formatting",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    297,
+    380,
+    40,
+    40
+   ],
+   "interactive": true,
+   "label": "Italic",
+   "traits": [
+    "button",
+    "toggleButton"
+   ],
+   "value": "0"
+  }
+ ],
+ "focus": [
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     48,
+     380,
+     40,
+     40
+    ],
+    "interactive": true,
+    "label": "Undo",
+    "traits": [
+     "button"
+    ]
+   }
+  },
+  {}
+ ],
+ "id": "md-toolbar/docked",
+ "image": {
+  "scale": 3,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "ios": "26.3.1",
+ "platform": "ios"
+}

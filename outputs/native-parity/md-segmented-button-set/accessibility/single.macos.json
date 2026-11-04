@@ -1,0 +1,364 @@
+{
+ "tag": "md-segmented-button-set",
+ "case": "single",
+ "request": {
+  "tag": "md-segmented-button-set",
+  "properties": {},
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Day",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            146,
+            32,
+            116,
+            40
+           ],
+           "identifier": "segment-day",
+           "invalid": "false",
+           "required": false,
+           "role": "AXRadioButton",
+           "roleDescription": "radio button",
+           "selected": true,
+           "value": true
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          146,
+          32,
+          116,
+          40
+         ],
+         "identifier": "segment-day",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Week",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            262,
+            32,
+            116,
+            40
+           ],
+           "identifier": "segment-week",
+           "invalid": "false",
+           "required": false,
+           "role": "AXRadioButton",
+           "roleDescription": "radio button",
+           "selected": false,
+           "value": false
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          262,
+          32,
+          116,
+          40
+         ],
+         "identifier": "segment-week",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Month",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            377,
+            32,
+            117,
+            40
+           ],
+           "identifier": "segment-month",
+           "invalid": "false",
+           "required": false,
+           "role": "AXRadioButton",
+           "roleDescription": "radio button",
+           "selected": false,
+           "value": false
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          377,
+          32,
+          117,
+          40
+         ],
+         "identifier": "segment-month",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        }
+       ],
+       "description": "",
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        146,
+        32,
+        348,
+        40
+       ],
+       "identifier": "component",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      104
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    104
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "segment-0",
+    "properties": {
+     "label": "Day",
+     "selected": true,
+     "value": "day"
+    },
+    "tag": "md-segmented-button"
+   },
+   {
+    "children": [],
+    "id": "segment-1",
+    "properties": {
+     "label": "Week",
+     "selected": false,
+     "value": "week"
+    },
+    "tag": "md-segmented-button"
+   },
+   {
+    "children": [],
+    "id": "segment-2",
+    "properties": {
+     "label": "Month",
+     "selected": false,
+     "value": "month"
+    },
+    "tag": "md-segmented-button"
+   }
+  ],
+  "id": "component",
+  "properties": {
+   "density": 0,
+   "multiselect": false
+  },
+  "tag": "md-segmented-button-set"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Day",
+    "frame": [
+     146,
+     32,
+     116,
+     40
+    ],
+    "identifier": "segment-day",
+    "role": "AXRadioButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Week",
+    "frame": [
+     262,
+     32,
+     116,
+     40
+    ],
+    "identifier": "segment-week",
+    "role": "AXRadioButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Month",
+    "frame": [
+     377,
+     32,
+     117,
+     40
+    ],
+    "identifier": "segment-month",
+    "role": "AXRadioButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Day",
+    "frame": [
+     146,
+     32,
+     116,
+     40
+    ],
+    "identifier": "segment-day",
+    "role": "AXRadioButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 40,
+     "width": 348,
+     "x": 146,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI equal-column Layout",
+     "gap": {
+      "column": 0,
+      "row": 0
+     },
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "name": "md-segmented-button-set"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 116,
+     "x": 146,
+     "y": 32
+    },
+    "id": "component.child.segment-day",
+    "name": "md-segmented-button",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 117,
+     "x": 377,
+     "y": 32
+    },
+    "id": "component.child.segment-month",
+    "name": "md-segmented-button",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 116,
+     "x": 262,
+     "y": 32
+    },
+    "id": "component.child.segment-week",
+    "name": "md-segmented-button",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

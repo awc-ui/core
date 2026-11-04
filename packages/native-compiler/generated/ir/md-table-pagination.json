@@ -147,6 +147,18 @@
       "description": "Label of the \"All\" rows-per-page option."
     },
     {
+      "name": "label",
+      "type": "string",
+      "default": "'Pagination'",
+      "defaultValue": "Pagination",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "label",
+      "optional": false,
+      "description": "Accessible name of the navigation landmark (localise with the other `label-*` props)."
+    },
+    {
       "name": "compact",
       "type": "boolean",
       "default": "false",
@@ -293,7 +305,7 @@
       },
       {
         "name": "aria-label",
-        "value": "Pagination"
+        "value": "this.label || 'Pagination'"
       }
     ],
     "children": [
@@ -576,7 +588,7 @@
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 112
+      "line": 115
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -590,7 +602,7 @@
     "styleUrl": "md-table-pagination.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "e3655914c7eb3a8aa4900e572680bb6795fd50eff4bda39e404959522eda4ab8"
+    "sha256": "99dcb1f079c6d5dc496c7730d8f3b536c078b41b42bfa3b1448606189eddc1fa"
   },
   "styles": [
     {
@@ -918,77 +930,103 @@
         "rowsPerPage",
         "rowsPerPageOptions",
         "showFirstLast",
+        "labelDisplayedRows",
         "labelRowsPerPage",
         "labelFirstPage",
         "labelPreviousPage",
         "labelNextPage",
         "labelLastPage",
+        "labelAll",
+        "label",
         "compact",
-        "disabled"
+        "disabled",
+        "density"
       ],
       "events": [
         "mdPageChange",
         "mdRowsPerPageChange"
       ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "labelDisplayedRows",
-        "labelAll",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "goToPage",
         "setRowsPerPage"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "actions"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Positive page sizes supported; web -1 all-rows sentinel and format templates are not implemented."
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Range text, rows-per-page select (including the All option), previous / next and first / last buttons, compact, disabled, density, the actions slot.",
+        "goToPage / setRowsPerPage through AWCTablePaginationController. Hooks through AWCTablePaginationAppearance; --md-table-pagination-padding-inline has no effect in the source and none natively (decision log).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcTablePaginationAppearance(AWCTablePaginationAppearance)",
+        "fields": [
+          "color",
+          "background",
+          "paddingBlock",
+          "paddingInline",
+          "selectWidth"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
         "count",
-        "disabled",
-        "labelNextPage",
-        "labelPreviousPage",
         "page",
         "rowsPerPage",
         "rowsPerPageOptions",
-        "showFirstLast"
+        "showFirstLast",
+        "labelDisplayedRows",
+        "labelRowsPerPage",
+        "labelFirstPage",
+        "labelPreviousPage",
+        "labelNextPage",
+        "labelLastPage",
+        "labelAll",
+        "label",
+        "compact",
+        "disabled",
+        "density"
       ],
       "events": [
         "mdPageChange",
         "mdRowsPerPageChange"
       ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "labelDisplayedRows",
-        "labelRowsPerPage",
-        "labelFirstPage",
-        "labelLastPage",
-        "labelAll",
-        "compact",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "goToPage",
         "setRowsPerPage"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "actions"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Range text, rows-per-page select (including the All option), previous / next and first / last buttons, compact, disabled, density, the actions slot.",
+        "goToPage / setRowsPerPage through AWCTablePaginationController. Hooks through AWCTablePaginationAppearance; --md-table-pagination-padding-inline has no effect in the source and none natively (decision log).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCTablePaginationAppearanceScope(AWCTablePaginationAppearance)",
+        "fields": [
+          "color",
+          "background",
+          "paddingBlock",
+          "paddingInline",
+          "selectWidth"
+        ]
+      }
     }
   }
 }

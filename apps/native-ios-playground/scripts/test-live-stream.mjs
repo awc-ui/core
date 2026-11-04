@@ -22,7 +22,11 @@ try {
     }
   };
   await waitFor(() => frames.length >= 10);
-  const input = async (phase, x = 40, y = 40) => {
+  // The live host centres the component (test-live-preview checks the centred bounds): press its measured centre.
+  const bounds = first.inspection?.nodes?.find(node => node.id === 'component')?.bounds;
+  assert.ok(bounds && bounds.width > 0 && bounds.height > 0, 'The live host publishes the button measurement.');
+  const centre = [bounds.x + bounds.width / 2, bounds.y + bounds.height / 2];
+  const input = async (phase, x = centre[0], y = centre[1]) => {
     const started = performance.now();
     const result = await renderer.input(first.sessionId, { command: 'pointer', phase, x, y });
     inputs.push(performance.now() - started);

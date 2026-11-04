@@ -33,7 +33,8 @@ export default mergeConfig(base, {
     },
   }],
   test: {
-    maxWorkers: 2,
+    // Keep focus-sensitive story interactions and browser coverage sequential.
+    maxWorkers: 1,
     reporters: ['default', ['json', { outputFile: path.join(output, 'results.json') }]],
     setupFiles: ['./scripts/laboratory-coverage.setup.ts'],
     browser: {

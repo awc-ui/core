@@ -227,7 +227,7 @@
           },
           {
             "kind": "expression",
-            "source": "!this.inSelectionMode && <slot name=\"leading\" />"
+            "source": "!this.inSelectionMode && <slot name=\"leading\" onSlotchange={this.syncSlots} />"
           },
           {
             "kind": "text",
@@ -291,7 +291,7 @@
           },
           {
             "kind": "expression",
-            "source": "this.inSelectionMode ? (\n            <slot name=\"selection-actions\" />\n          ) : (\n            <slot name=\"actions\" />\n          )"
+            "source": "this.inSelectionMode ? (\n            <slot name=\"selection-actions\" onSlotchange={this.syncSlots} />\n          ) : (\n            <slot name=\"actions\" onSlotchange={this.syncSlots} />\n          )"
           },
           {
             "kind": "text",
@@ -307,22 +307,22 @@
   },
   "diagnostics": [
     {
-      "code": "SHADOW_DOM",
-      "severity": "warning",
-      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 68
-    },
-    {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 73
+      "line": 97
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 130
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 97
+      "line": 135
     }
   ],
   "source": {
@@ -330,7 +330,7 @@
     "styleUrl": "md-table-toolbar.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "a7642e51ade1bacddb1531af88cca39612b8f62de932353040a2ef59a9707e4d"
+    "sha256": "f2ac361fd1862cd141d8c72267895870041540db0a31ada2b540f99079ebf122"
   },
   "styles": [
     {
@@ -864,19 +864,14 @@
         "headline",
         "supportingText",
         "numSelected",
-        "labelSelected"
-      ],
-      "events": [],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
         "autoBind",
+        "labelSelected",
         "compact",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "events": [],
+      "methods": [],
+      "slots": [
         "leading",
         "headline",
         "supporting-text",
@@ -884,40 +879,74 @@
         "selection-actions",
         "actions"
       ],
-      "notes": [],
-      "verification": "not-device-verified"
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Headline / supporting text (props and slots), leading / title-area / actions / selection-actions slots, the selection band with numSelected or autoBind to the container table.",
+        "Hooks through AWCTableToolbarAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcTableToolbarAppearance(AWCTableToolbarAppearance)",
+        "fields": [
+          "color",
+          "background",
+          "selectionBackground",
+          "selectionColor",
+          "paddingBlock",
+          "paddingInline",
+          "minHeight"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
         "headline",
-        "labelSelected",
+        "supportingText",
         "numSelected",
-        "supportingText"
+        "autoBind",
+        "labelSelected",
+        "compact",
+        "density"
       ],
       "events": [],
       "methods": [],
       "slots": [
-        "actions"
-      ],
-      "unsupportedProperties": [
-        "autoBind",
-        "compact",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
         "leading",
         "headline",
         "supporting-text",
         "title-area",
-        "selection-actions"
+        "selection-actions",
+        "actions"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Headline / supporting text (props and slots), leading / title-area / actions / selection-actions slots, the selection band with numSelected or autoBind to the container table.",
+        "Hooks through AWCTableToolbarAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCTableToolbarAppearanceScope(AWCTableToolbarAppearance)",
+        "fields": [
+          "color",
+          "background",
+          "selectionBackground",
+          "selectionColor",
+          "paddingBlock",
+          "paddingInline",
+          "minHeight"
+        ]
+      }
     }
   }
 }

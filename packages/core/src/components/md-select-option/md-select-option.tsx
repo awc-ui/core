@@ -74,11 +74,28 @@ export class MdSelectOption {
     this.mdSelectOptionChange.emit();
   }
 
+  /** `hidden` (a global attribute, not a prop) and the slotted label text
+   *  are option data too: the parent must re-read when either changes. */
+  private observer?: MutationObserver;
+
   connectedCallback() {
     this.mdSelectOptionChange?.emit();
+    if (typeof MutationObserver !== 'undefined') {
+      this.observer?.disconnect();
+      this.observer = new MutationObserver(() => this.mdSelectOptionChange.emit());
+      this.observer.observe(this.el, {
+        attributes: true,
+        attributeFilter: ['hidden'],
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
+    }
   }
 
   disconnectedCallback() {
+    this.observer?.disconnect();
+    this.observer = undefined;
     this.mdSelectOptionChange?.emit();
   }
 

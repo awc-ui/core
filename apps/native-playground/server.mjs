@@ -48,7 +48,7 @@ export async function resolveAsset(rawUrl, options = {}) {
   } else {
     root = app;
     relative = pathname === '/' ? 'index.html' : pathname.slice(1);
-    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'documentation.js', 'documentation-ui.js', 'content-slots.js', 'component-styles.js', 'component-styles-ui.js', 'api-examples.js', 'native-api-examples.js', 'theme-editor.css', 'button-appearance.js', 'button-appearance-ui.js', 'ai-instructions-ui.js', 'component-navigation-ui.js', 'component-icons.js', 'brand-icons.js', 'usage-snippets.js', 'syntax-highlighting.js', 'syntax-vendor/highlighter.js', 'syntax-vendor/LICENSES.txt', 'property-controls.js', 'studio.css', 'studio-ui.js', 'canvas-tools.js', 'canvas-tools.css', 'canvas-inspector.js', 'canvas-inspector.css', 'studio-theme.js', 'preview-frame.html', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'].includes(relative)) return null;
+    if (!['index.html', 'app.js', 'styles.css', 'recipes.js', 'contracts.js', 'native-viewport.js', 'documentation.js', 'documentation-ui.js', 'content-slots.js', 'button-configuration.js', 'appearance-part-rules.js', 'component-styles.js', 'component-styles-ui.js', 'api-examples.js', 'native-api-examples.js', 'theme-editor.css', 'button-appearance.js', 'icon-button-appearance.js', 'button-group-appearance.js', 'fab-appearance.js', 'fab-menu-appearance.js', 'fab-menu-state.js', 'badge-appearance.js', 'status-dot-appearance.js', 'loading-indicator-appearance.js', 'corner-shape.js', 'meter-appearance.js', 'progress-indicator-appearance.js', 'skeleton-appearance.js', 'skeleton-length.js', 'snackbar-appearance.js', 'tooltip-appearance.js', 'accordion-appearance.js', 'card-appearance.js', 'list-appearance.js', 'modal-appearance.js', 'avatar-appearance.js', 'orgchart-appearance.js', 'selection-appearance.js', 'ripple-appearance.js', 'stepper-appearance.js', 'sr-appearance.js', 'table-appearance.js', 'menu-appearance.js', 'chart-appearance.js', 'toolbar-appearance.js', 'navbar-appearance.js', 'tabs-appearance.js', 'breadcrumbs-appearance.js', 'text-field-appearance.js', 'number-field-appearance.js', 'otp-field-appearance.js', 'meter-format-options.js', 'theme-color-tokens.js', 'meter-configuration.js', 'split-button-appearance.js', 'split-button-state.js', 'native-preview-keys.js', 'divider-appearance.js', 'segmented-button-appearance.js', 'segmented-context.js', 'segmented-configuration.js', 'native-methods.js', 'native-property-updates.js', 'button-family-updates.js', 'button-group-state.js', 'button-group-configuration.js', 'component-appearance.js', 'button-appearance-ui.js', 'ai-instructions-ui.js', 'component-navigation-ui.js', 'component-icons.js', 'brand-icons.js', 'usage-snippets.js', 'syntax-highlighting.js', 'syntax-vendor/highlighter.js', 'syntax-vendor/LICENSES.txt', 'property-controls.js', 'studio.css', 'studio-backdrop.css', 'studio-architecture.svg', 'studio-ui.js', 'canvas-tools.js', 'canvas-tools.css', 'canvas-inspector.js', 'canvas-inspector.css', 'studio-theme.js', 'preview-frame.html', 'preview-frame.js', 'native-theme-options.js', 'theme-vendor/awc-theme.js', 'theme-vendor/LICENSES.txt'].includes(relative)) return null;
   }
   const absolute = path.resolve(root, relative);
   if (!within(path.resolve(root), absolute)) return null;
@@ -110,6 +110,13 @@ export async function handleAIInstructionsRequest(req, res, { repoRoot: reposito
 export async function readAssetContent(file, repository = repoRoot) {
   const content = await readFile(file);
   const relative = path.relative(await realpath(repository), file).split(path.sep).join('/');
+  if (relative === 'apps/native-playground/index.html') {
+    // Render the checkout's version in the initial HTML so the header does not
+    // shift after a client fetch or claim that this is npm's latest release.
+    const { version } = JSON.parse(await readFile(path.join(repository, 'packages/core/package.json'), 'utf8'));
+    const escapedVersion = String(version).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+    return Buffer.from(content.toString('utf8').replaceAll('{{AWC_CORE_VERSION}}', escapedVersion));
+  }
   const component = /^apps\/docs\/src\/data\/components\/([a-z][a-z0-9]*(?:-[a-z0-9]+)*)\.json$/.exec(relative);
   if (!component) return content;
   return Buffer.from(JSON.stringify(await enrichEventDocumentation(repository, `md-${component[1]}`, JSON.parse(content.toString('utf8')))));

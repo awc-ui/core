@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="dev.awc.playground.NativeMeterFormatTest" tests="1" failures="1" errors="0" skipped="0" time="0.479" timestamp="2026-10-20T19:40:09" hostname="localhost">
+  <properties>
+    <property name="device" value="AwcNative(AVD) - 16" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="nativeModernAndLegacyIcuMatch75IndependentIntlCases" classname="dev.awc.playground.NativeMeterFormatTest" time="0.099">
+    <failure>java.lang.AssertionError: legacy/engineering-morePrecision: expected=&lt;12.346E3&gt; actual=&lt;12.35E3&gt;
+legacy/compact-currency-name: expected=&lt;1.2K US dollars&gt; actual=&lt;$1.2K&gt;
+legacy/compact-percent: expected=&lt;123K%&gt; actual=&lt;1.2K&gt;
+at org.junit.Assert.fail(Assert.java:89)
+at org.junit.Assert.assertTrue(Assert.java:42)
+at dev.awc.playground.NativeMeterFormatTest.nativeModernAndLegacyIcuMatch75IndependentIntlCases(NativeMeterFormatTest.kt:30)
+</failure>
+  </testcase>
+</testsuite>

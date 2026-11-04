@@ -1,6 +1,10 @@
 import { Component, Host, h, Prop, Event, EventEmitter, Element, State } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
 
+/**
+ * @csspart checkmark - Built-in checkmark graphic when selected and noCheckmark is false.
+ * @csspart icon - Built-in icon-property graphic when it is not replaced by the checkmark.
+ */
 @Component({
   tag: 'md-segmented-button',
   styleUrl: 'md-segmented-button.css',
@@ -186,9 +190,7 @@ export class MdSegmentedButton {
           <slot name="icon"></slot>
           {/* Label resolves from the `label` prop first, then falls back
               to whatever the consumer passed in the default slot, matching
-              the pattern used across md-button, md-fab-menu-item, etc.
-              The wrapper is always rendered so the slot's content lands
-              inside the labelled part — empty wrapper is harmless. */}
+              the pattern used across md-button, md-fab-menu-item, etc. */}
           {/* Rendered only when there IS a label. An empty wrapper is not
               harmless after all: it is a second flex item, so the content row's
               gap sits between the glyph and a zero-width span and shifts an

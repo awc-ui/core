@@ -285,9 +285,11 @@ Sourced from [M3 · Menus · Guidelines](https://m3.material.io/components/menus
 ## Accessibility, RTL, density, i18n
 
 **Accessibility**
-- The surface is `role="menu"` with `aria-orientation="vertical"`, and
-  `aria-labelledby` pointing at the `anchor` id — so give the trigger a real
-  accessible name. In `listbox` mode the surface becomes `role="presentation"`
+- The surface is `role="menu"` with `aria-orientation="vertical"`, labelled by
+  the anchor — so give the trigger a real accessible name. The surface lives in
+  the menu's shadow root, where an `aria-labelledby` IDREF to the anchor cannot
+  resolve, so the label is set through element reflection
+  (`ariaLabelledByElements`); browsers without it get the IDREF. In `listbox` mode the surface becomes `role="presentation"`
   and the owning component supplies the real `listbox`.
 - Roving focus, typeahead, `Escape`, `Tab` and focus return to the anchor are all
   handled for you.

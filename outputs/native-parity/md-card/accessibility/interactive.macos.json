@@ -1,0 +1,373 @@
+{
+ "tag": "md-card",
+ "case": "interactive",
+ "request": {
+  "tag": "md-card",
+  "properties": {
+   "aria-label": "Open workspace",
+   "interactive": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "enabled": true,
+         "frame": [
+          48,
+          48,
+          11.5,
+          16
+         ],
+         "identifier": "D7252549-AC3A-4E4B-BD89-D9733402EBF3",
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "✧"
+        },
+        {
+         "enabled": true,
+         "frame": [
+          48,
+          72,
+          113.5,
+          16
+         ],
+         "identifier": "5645D992-17D1-443D-9C1F-36EB8CEF1E98",
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Ideas take shape."
+        },
+        {
+         "enabled": true,
+         "frame": [
+          48,
+          96,
+          318.5,
+          16
+         ],
+         "identifier": "0DEC91D3-DD05-4FE9-BB4E-641C668A6A43",
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "A shared design language, built for every surface."
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Explore workspace",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            48,
+            120,
+            152,
+            40
+           ],
+           "identifier": "493E4A6E-80A8-4E25-AE20-9D09E17110E9",
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          24,
+          96,
+          200,
+          88
+         ],
+         "identifier": "493E4A6E-80A8-4E25-AE20-9D09E17110E9",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        }
+       ],
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        32,
+        32,
+        576,
+        144
+       ],
+       "identifier": "example-md-card",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      208
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    208
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "D7252549-AC3A-4E4B-BD89-D9733402EBF3",
+    "properties": {
+     "text": "✧"
+    },
+    "tag": "#text"
+   },
+   {
+    "children": [],
+    "id": "5645D992-17D1-443D-9C1F-36EB8CEF1E98",
+    "properties": {
+     "text": "Ideas take shape."
+    },
+    "tag": "#text"
+   },
+   {
+    "children": [],
+    "id": "0DEC91D3-DD05-4FE9-BB4E-641C668A6A43",
+    "properties": {
+     "text": "A shared design language, built for every surface."
+    },
+    "tag": "#text"
+   },
+   {
+    "children": [
+     {
+      "children": [],
+      "id": "509B2175-04B4-4A41-8C37-9EC38ED051BE",
+      "properties": {
+       "text": "Explore workspace"
+      },
+      "tag": "#text"
+     }
+    ],
+    "id": "493E4A6E-80A8-4E25-AE20-9D09E17110E9",
+    "properties": {
+     "variant": "text"
+    },
+    "tag": "md-button"
+   }
+  ],
+  "id": "example-md-card",
+  "properties": {
+   "aria-label": "Open workspace",
+   "density": 0,
+   "disabled": false,
+   "dragEnabled": false,
+   "fullHeight": false,
+   "fullWidth": false,
+   "interactive": true,
+   "ripple": true,
+   "softDisabled": false,
+   "variant": "elevated"
+  },
+  "tag": "md-card"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Explore workspace",
+    "frame": [
+     48,
+     120,
+     152,
+     40
+    ],
+    "identifier": "493E4A6E-80A8-4E25-AE20-9D09E17110E9",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Explore workspace",
+    "frame": [
+     48,
+     120,
+     152,
+     40
+    ],
+    "identifier": "493E4A6E-80A8-4E25-AE20-9D09E17110E9",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Explore workspace",
+    "frame": [
+     48,
+     120,
+     152,
+     40
+    ],
+    "identifier": "493E4A6E-80A8-4E25-AE20-9D09E17110E9",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 144,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "active": false,
+     "background": [
+      0.9686275124549866,
+      0.9490196108818054,
+      0.9803921580314636,
+      1
+     ],
+     "color": [
+      0.10980392247438431,
+      0.10588235408067703,
+      0.12156864255666733,
+      1
+     ],
+     "contentGap": 8,
+     "dragging": false,
+     "focusRing": false,
+     "focused": false,
+     "fontSize": 14,
+     "gap": {
+      "column": 0,
+      "row": 8
+     },
+     "hover": false,
+     "layerOpacity": 0,
+     "lineHeight": 20,
+     "offsetX": 0,
+     "offsetY": 0,
+     "outlineColor": [
+      0.7921568751335144,
+      0.7686274647712708,
+      0.8156862854957581,
+      1
+     ],
+     "outlineWidth": 0,
+     "padding": [
+      16,
+      16,
+      16,
+      16
+     ],
+     "renderTime": 1031486239.6319585,
+     "role": "",
+     "shadow": [
+      0,
+      1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0.3019607961177826,
+      0,
+      1,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0.14901961386203766
+     ],
+     "tabindex": -2,
+     "zIndex": 0
+    },
+    "name": "md-card"
+   },
+   {
+    "bounds": {
+     "height": 144,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component.ripple",
+    "metrics": {
+     "diameter": 593.7272100889431,
+     "opacity": 0,
+     "renderTime": 1031486090.0462502,
+     "scale": 0,
+     "x": 288,
+     "y": 72
+    },
+    "name": "ripple",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 144,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component.state-layer",
+    "metrics": {
+     "opacity": 0,
+     "renderTime": 1031486239.6319585
+    },
+    "name": "state-layer",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

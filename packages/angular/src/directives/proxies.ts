@@ -938,7 +938,7 @@ it uncomposed means each component reports only for itself, while
 
 @ProxyCmp({
   defineCustomElementFn: defineMdDialog,
-  inputs: ['cancelLabel', 'closeLabel', 'density', 'divider', 'fullscreen', 'headerDivider', 'headline', 'icon', 'locale', 'okLabel', 'open', 'scrimDismissible'],
+  inputs: ['cancelLabel', 'closeLabel', 'density', 'dialogAriaLabel', 'divider', 'fullscreen', 'headerDivider', 'headline', 'icon', 'locale', 'okLabel', 'open', 'scrimDismissible'],
   methods: ['show', 'whenClosed', 'close']
 })
 @Component({
@@ -946,7 +946,7 @@ it uncomposed means each component reports only for itself, while
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['cancelLabel', 'closeLabel', 'density', 'divider', 'fullscreen', 'headerDivider', 'headline', 'icon', 'locale', 'okLabel', 'open', 'scrimDismissible'],
+  inputs: ['cancelLabel', 'closeLabel', 'density', 'dialogAriaLabel', 'divider', 'fullscreen', 'headerDivider', 'headline', 'icon', 'locale', 'okLabel', 'open', 'scrimDismissible'],
   standalone: true
 })
 export class MdDialog {
@@ -2899,7 +2899,7 @@ export declare interface MdTableHead extends Components.MdTableHead {}
 
 @ProxyCmp({
   defineCustomElementFn: defineMdTablePagination,
-  inputs: ['compact', 'count', 'density', 'disabled', 'labelAll', 'labelDisplayedRows', 'labelFirstPage', 'labelLastPage', 'labelNextPage', 'labelPreviousPage', 'labelRowsPerPage', 'page', 'rowsPerPage', 'rowsPerPageOptions', 'showFirstLast'],
+  inputs: ['compact', 'count', 'density', 'disabled', 'label', 'labelAll', 'labelDisplayedRows', 'labelFirstPage', 'labelLastPage', 'labelNextPage', 'labelPreviousPage', 'labelRowsPerPage', 'page', 'rowsPerPage', 'rowsPerPageOptions', 'showFirstLast'],
   methods: ['goToPage', 'setRowsPerPage']
 })
 @Component({
@@ -2907,7 +2907,7 @@ export declare interface MdTableHead extends Components.MdTableHead {}
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['compact', 'count', 'density', 'disabled', 'labelAll', 'labelDisplayedRows', 'labelFirstPage', 'labelLastPage', 'labelNextPage', 'labelPreviousPage', 'labelRowsPerPage', 'page', 'rowsPerPage', 'rowsPerPageOptions', 'showFirstLast'],
+  inputs: ['compact', 'count', 'density', 'disabled', 'label', 'labelAll', 'labelDisplayedRows', 'labelFirstPage', 'labelLastPage', 'labelNextPage', 'labelPreviousPage', 'labelRowsPerPage', 'page', 'rowsPerPage', 'rowsPerPageOptions', 'showFirstLast'],
   standalone: true
 })
 export class MdTablePagination {
@@ -3260,7 +3260,7 @@ documented composed-event-leak class — see md-date-picker's swallow guards).
 
 @ProxyCmp({
   defineCustomElementFn: defineMdTransferList,
-  inputs: ['countTemplate', 'density', 'disabled', 'emptyIcon', 'emptyText', 'items', 'moveAllLeftIcon', 'moveAllLeftLabel', 'moveAllRightIcon', 'moveAllRightLabel', 'moveLeftIcon', 'moveLeftLabel', 'moveRightIcon', 'moveRightLabel', 'searchIcon', 'searchable', 'showSelectAll', 'singleStepOnly', 'sourceSearchPlaceholder', 'sourceTitle', 'targetSearchPlaceholder', 'targetTitle', 'value'],
+  inputs: ['countTemplate', 'density', 'disabled', 'emptyIcon', 'emptyText', 'items', 'moveAllLeftIcon', 'moveAllLeftLabel', 'moveAllRightIcon', 'moveAllRightLabel', 'moveLeftIcon', 'moveLeftLabel', 'moveRightIcon', 'moveRightLabel', 'searchIcon', 'searchable', 'selectAllLabel', 'showSelectAll', 'singleStepOnly', 'sourceSearchPlaceholder', 'sourceTitle', 'targetSearchPlaceholder', 'targetTitle', 'value'],
   methods: ['moveSelectedRight', 'moveSelectedLeft']
 })
 @Component({
@@ -3268,7 +3268,7 @@ documented composed-event-leak class — see md-date-picker's swallow guards).
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['countTemplate', 'density', 'disabled', 'emptyIcon', 'emptyText', 'items', 'moveAllLeftIcon', 'moveAllLeftLabel', 'moveAllRightIcon', 'moveAllRightLabel', 'moveLeftIcon', 'moveLeftLabel', 'moveRightIcon', 'moveRightLabel', 'searchIcon', 'searchable', 'showSelectAll', 'singleStepOnly', 'sourceSearchPlaceholder', 'sourceTitle', 'targetSearchPlaceholder', 'targetTitle', 'value'],
+  inputs: ['countTemplate', 'density', 'disabled', 'emptyIcon', 'emptyText', 'items', 'moveAllLeftIcon', 'moveAllLeftLabel', 'moveAllRightIcon', 'moveAllRightLabel', 'moveLeftIcon', 'moveLeftLabel', 'moveRightIcon', 'moveRightLabel', 'searchIcon', 'searchable', 'selectAllLabel', 'showSelectAll', 'singleStepOnly', 'sourceSearchPlaceholder', 'sourceTitle', 'targetSearchPlaceholder', 'targetTitle', 'value'],
   standalone: true
 })
 export class MdTransferList {

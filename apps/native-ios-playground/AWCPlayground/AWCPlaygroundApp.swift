@@ -19,10 +19,16 @@ struct PlaygroundView: View {
     @State private var generation = 0
     @State private var tab = "Preview"
 
+    // iOS List offers single selection only through an optional binding; macOS keeps the non-optional one.
+    #if os(iOS)
+    private var listSelection: Binding<String?> { Binding(get: { selected }, set: { if let value = $0 { selected = value } }) }
+    #else
+    private var listSelection: Binding<String> { $selected }
+    #endif
     private var tags: [String] { AWCComponentCatalog.tags.filter { query.isEmpty || $0.localizedCaseInsensitiveContains(query) || (AWCComponentCatalog.summaries[$0] ?? "").localizedCaseInsensitiveContains(query) } }
     var body: some View {
         NavigationSplitView {
-            List(selection: $selected) {
+            List(selection: listSelection) {
                 Section {
                     Text("AWC Native").font(.title.bold())
                     Text("\(AWCComponentCatalog.tags.count) components · SwiftUI").font(.caption).foregroundStyle(.secondary)

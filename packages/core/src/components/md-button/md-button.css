@@ -28,6 +28,7 @@
      --md-button-container-shape    Fixed border radius, including pressed/selected
      --md-button-outline-color      Border color
      --md-button-outline-width      Border width (enables a border on any variant)
+     --md-button-focus-ring-color   Keyboard focus ring color
      --md-button-width              Fixed inline-size (default: auto)
      --md-button-min-width          Minimum inline-size (default: per-size touch target)
      --md-button-max-width          Maximum inline-size (default: none)
@@ -390,7 +391,8 @@
 }
 :host(.md-button--filled:hover)  { --_container-elevation: var(--md-sys-elevation-1); }
 :host(.md-button--filled:active) { --_container-elevation: var(--md-sys-elevation-0, none); }
-:host(.md-button--filled:focus-visible) { --_container-elevation: var(--md-sys-elevation-0, none); }
+:host(.md-button--filled:focus-visible),
+:host(.md-button--filled.md-button--anchor-focus-visible) { --_container-elevation: var(--md-sys-elevation-0, none); }
 
 /* Outlined */
 :host(.md-button--outlined) {
@@ -406,7 +408,8 @@
 :host(.md-button--outlined:hover:not(.md-button--disabled)) {
   border-color: var(--md-button-outline-color, var(--md-sys-color-primary));
 }
-:host(.md-button--outlined:focus-visible) {
+:host(.md-button--outlined:focus-visible),
+:host(.md-button--outlined.md-button--anchor-focus-visible) {
   border-color: var(--md-button-outline-color, var(--md-sys-color-primary));
 }
 
@@ -435,7 +438,8 @@
   --_container-elevation: var(--md-sys-elevation-1);
 }
 :host(.md-button--elevated:hover)  { --_container-elevation: var(--md-sys-elevation-2); }
-:host(.md-button--elevated:focus-visible) { --_container-elevation: var(--md-sys-elevation-1); }
+:host(.md-button--elevated:focus-visible),
+:host(.md-button--elevated.md-button--anchor-focus-visible) { --_container-elevation: var(--md-sys-elevation-1); }
 :host(.md-button--elevated:active) { --_container-elevation: var(--md-sys-elevation-1); }
 
 /* Tonal */
@@ -445,7 +449,8 @@
   --_state-layer-color: var(--md-sys-color-on-secondary-container);
 }
 :host(.md-button--tonal:hover)  { --_container-elevation: var(--md-sys-elevation-1); }
-:host(.md-button--tonal:focus-visible) { --_container-elevation: var(--md-sys-elevation-0, none); }
+:host(.md-button--tonal:focus-visible),
+:host(.md-button--tonal.md-button--anchor-focus-visible) { --_container-elevation: var(--md-sys-elevation-0, none); }
 :host(.md-button--tonal:active) { --_container-elevation: var(--md-sys-elevation-0, none); }
 
 /* ==========================================================
@@ -510,7 +515,8 @@
 :host(:hover) .md-button__state-layer {
   opacity: var(--md-button-hover-opacity, var(--md-sys-state-hover-state-layer-opacity, 0.08));
 }
-:host(:focus-visible) .md-button__state-layer {
+:host(:focus-visible) .md-button__state-layer,
+:host(.md-button--anchor-focus-visible) .md-button__state-layer {
   opacity: var(--md-button-focus-opacity, var(--md-sys-state-focus-state-layer-opacity, 0.12));
 }
 /* The interaction state is independent of shape morphing, including the real
@@ -535,7 +541,7 @@
    the ring keeps its full 2px breathing room — same visual treatment
    as a stand-alone button. */
 :host(:focus-visible) {
-  outline-color: var(--md-sys-color-secondary);
+  outline-color: var(--md-button-focus-ring-color, var(--md-sys-color-secondary));
   z-index: 1;
 }
 
@@ -822,11 +828,32 @@ slot[name="trailing-icon"] {
   z-index: 0;
 }
 
-/* The focus ring belongs to the whole button, not the inner content box. */
-:host(:has(.md-button__anchor:focus-visible)) {
+/* The focus ring belongs to the whole button, not the inner content box. The anchor keeps focus inside the shadow
+   root, so neither :host(:focus-visible) nor :host(:has(...)) can see it: the host mirrors it as a class. */
+:host(.md-button--anchor-focus-visible) {
   outline: var(--md-sys-state-focus-ring-width, 3px) solid
     var(--md-button-focus-ring-color, var(--md-sys-color-secondary, #625B71));
   outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
+
+/* Link mode: the anchor IS the whole button. The host's padding moves onto the anchor so the anchor (the ripple's
+   measuring parent, the hit area and the focus target) covers the full padding box, exactly like a plain button's
+   ripple, instead of only the content box. Same expressions as the host padding rules; placed after them to win. */
+:host(.md-button--link) {
+  padding: 0;
+  padding-inline: 0;
+}
+:host(.md-button--link) .md-button__anchor {
+  box-sizing: border-box;
+  /* block-size: 100% resolves to auto against the host's min-height-only (indefinite) height; stretching to the
+     single flex line, which the host's min-block-size clamps, fills the button's full inner height instead. */
+  align-self: stretch;
+  block-size: auto;
+  padding-block: var(--md-button-padding-block, 0px);
+  padding-inline: max(0px, calc(var(--_padding-inline) - var(--_link-outline-width, var(--md-button-outline-width, 0px))));
+}
+:host(.md-button--link.md-button--outlined) {
+  --_link-outline-width: var(--_outline-width);
 }
 
 /* ==========================================================

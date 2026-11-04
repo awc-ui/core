@@ -1,0 +1,305 @@
+{
+ "tag": "md-text-field",
+ "case": "disabled",
+ "request": {
+  "tag": "md-text-field",
+  "properties": {
+   "label": "Project name",
+   "value": "AWC Native",
+   "disabled": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "description": "Project name",
+       "enabled": false,
+       "focused": false,
+       "frame": [
+        56,
+        55,
+        500,
+        26
+       ],
+       "help": "A name your team will recognize",
+       "placeholder": "e.g. AWC Native",
+       "required": false,
+       "role": "AXStaticText",
+       "roleDescription": "text",
+       "value": "AWC Native"
+      },
+      {
+       "description": "Clear",
+       "enabled": false,
+       "frame": [
+        551,
+        40,
+        40,
+        40
+       ],
+       "identifier": "example-md-text-field",
+       "role": "AXButton",
+       "roleDescription": "button"
+      },
+      {
+       "enabled": false,
+       "frame": [
+        48,
+        92,
+        173,
+        16
+       ],
+       "identifier": "example-md-text-field",
+       "role": "AXStaticText",
+       "roleDescription": "text",
+       "value": "A name your team will recognize"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      140
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    140
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-text-field",
+  "properties": {
+   "appearFocused": false,
+   "autoCapitalize": "",
+   "autocomplete": "",
+   "chipsWrap": false,
+   "clearable": "internal",
+   "debounce": 0,
+   "density": 0,
+   "disabled": true,
+   "enterKeyHint": "",
+   "error": false,
+   "errorText": "",
+   "focusBorderWidth": 3,
+   "formatOn": "blur",
+   "hidePasswordLabel": "Hide password",
+   "inputAriaAutocomplete": "",
+   "inputExpanded": false,
+   "inputMode": "",
+   "inputRole": "",
+   "label": "Project name",
+   "multiline": false,
+   "name": "",
+   "passwordToggle": false,
+   "pattern": "",
+   "placeholder": "e.g. AWC Native",
+   "prefixText": "",
+   "readOnly": false,
+   "required": false,
+   "reserveSupportingSpace": false,
+   "restrict": "",
+   "showPasswordLabel": "Show password",
+   "speechLang": "",
+   "speechToText": false,
+   "spellcheck": true,
+   "suffixText": "",
+   "supportingText": "A name your team will recognize",
+   "throttle": 0,
+   "type": "text",
+   "value": "AWC Native",
+   "variant": "filled"
+  },
+  "tag": "md-text-field"
+ },
+ "focus": [
+  {
+   "keyboardFocus": null,
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": null,
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 76,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "composing": false,
+     "displayValue": "AWC Native",
+     "error": false,
+     "floating": true,
+     "focused": false,
+     "hover": false,
+     "labelProgress": 1,
+     "listening": false,
+     "passwordVisible": false,
+     "valid": true,
+     "validationMessage": "",
+     "value": "AWC Native"
+    },
+    "name": "md-text-field"
+   },
+   {
+    "bounds": {
+     "height": 24,
+     "width": 28,
+     "x": 557,
+     "y": 48
+    },
+    "id": "component.clear",
+    "metrics": {
+     "disabled": true,
+     "label": "Clear",
+     "pressed": null
+    },
+    "name": "clear",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 56,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component.container",
+    "metrics": {
+     "background": "#1C1B1F0A",
+     "padBlock": 8,
+     "padEnd": 23,
+     "padStart": 23
+    },
+    "name": "container",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 56,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component.indicator",
+    "metrics": {
+     "color": "#1C1B1F61",
+     "height": 1
+    },
+    "name": "indicator",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 24,
+     "width": 502,
+     "x": 55,
+     "y": 56
+    },
+    "id": "component.input",
+    "metrics": {
+     "caret": "#6750A4",
+     "color": "#1C1B1F61",
+     "fontSize": 16,
+     "lineHeight": 24,
+     "secure": false,
+     "value": "AWC Native"
+    },
+    "name": "input",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 16,
+     "width": 71,
+     "x": 55,
+     "y": 40
+    },
+    "id": "component.label",
+    "metrics": {
+     "color": "#1C1B1F61",
+     "fontSize": 12,
+     "lineHeight": 16,
+     "progress": 1
+    },
+    "name": "label",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 56,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component.state-layer",
+    "metrics": {
+     "opacity": 0
+    },
+    "name": "state-layer",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 16,
+     "width": 173,
+     "x": 48,
+     "y": 92
+    },
+    "id": "component.supporting-text",
+    "metrics": {
+     "role": ""
+    },
+    "name": "supporting-text",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

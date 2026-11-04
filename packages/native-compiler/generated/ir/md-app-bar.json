@@ -457,28 +457,34 @@
   },
   "diagnostics": [
     {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 128
+    },
+    {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Document access requires a native adapter.",
-      "line": 127
+      "line": 132
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 139
+      "line": 146
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 148
+      "line": 155
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 163
+      "line": 170
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -492,7 +498,7 @@
     "styleUrl": "md-app-bar.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "2078a7d9a36b1a16d78884626dd16f7a0b18a013168402d7d0abed99f81c5fc6"
+    "sha256": "5b8bd9c17c279af0be5d38039bb1138645bf9f6cc1ae6e64b9719712a096755a"
   },
   "styles": [
     {
@@ -834,7 +840,7 @@
         },
         {
           "property": "--_expanded-padding-block-end",
-          "value": "var(--md-sys-spacing-inset-xl, 24px)",
+          "value": "var(--md-app-bar-expanded-padding-block-end, var(--md-sys-spacing-inset-xl, 24px))",
           "important": false
         }
       ]
@@ -861,7 +867,7 @@
         },
         {
           "property": "--_expanded-padding-block-end",
-          "value": "28px",
+          "value": "var(--md-app-bar-expanded-padding-block-end, 28px)",
           "important": false
         }
       ]
@@ -2398,6 +2404,16 @@
         {
           "property": "--md-avatar-size",
           "value": "var(--_avatar-size)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-width",
+          "value": "var(--_trailing-icon-touch-size)",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-container-height",
+          "value": "var(--_trailing-icon-touch-size)",
           "important": false
         }
       ]

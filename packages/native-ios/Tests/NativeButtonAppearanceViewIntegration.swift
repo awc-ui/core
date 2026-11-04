@@ -46,6 +46,12 @@ import AWCUI
     }
     static func main() {
         _ = NSApplication.shared; NSApp.setActivationPolicy(.accessory)
+        for (localDensity, expectedHeight) in [(0.0,24.0),(-1.0,36.0)] {
+            fixture(AWCNativeView(tag:"md-button",properties:["density":.number(localDensity)],children:[.text("Nested")]).awcDensity(-4)) { host, _ in
+                let button=descendants(host).first{String(describing:type(of:$0)).contains("AWCNativeButtonFocusView")}!
+                check(abs(button.bounds.height-expectedHeight)<0.1,"Default Button density inherits its scope; an explicit negative rung overrides it")
+            }
+        }
         fixture(AWCButton(children: [.text("Continue")])
             .awcButtonAppearance(.init(containerColor: "#0000FF"))
             .awcButtonAppearance(.init(containerColor: "#FF0000", labelColor: "#00FF00", cornerRadius: 0))) { host, _ in
@@ -66,6 +72,21 @@ import AWCUI
                 check(image.count(255, 0, 0) > 15, "Leading glyph uses its own appearance color")
                 check(image.count(0, 255, 0) > 15, "Trailing glyph uses its independent appearance color")
                 check(image.count(0, 0, 255) > 30, "Native animated loader uses loading appearance color")
+            }
+        var loadingEvents: [AWCEvent] = []
+        let loadingPointer = AWCNativePointerState()
+        fixture(AWCButton(properties:.init(ripple:false,loading:true),children:[.text("Wait")],onEvent:{loadingEvents.append($0)})
+            .awcButtonAppearance(.init(containerColor:"#000000",stateLayerColor:"#FF0000",cornerRadius:0,pressedOpacity:1))
+            .environment(\.awcNativePointerState,loadingPointer)) { host,window in
+                let button=descendants(host).first{String(describing:type(of:$0)).contains("AWCNativeButtonFocusView")}!
+                let point=button.convert(NSPoint(x:button.bounds.midX,y:button.bounds.midY),to:nil)
+                let down=NSEvent.mouseEvent(with:.leftMouseDown,location:point,modifierFlags:[],timestamp:ProcessInfo.processInfo.systemUptime,windowNumber:window.windowNumber,context:nil,eventNumber:1,clickCount:1,pressure:1)!
+                let local=button.convert(NSPoint(x:button.bounds.midX,y:button.bounds.midY),to:host)
+                loadingPointer.update(phase:.down,location:local); window.sendEvent(down); pump()
+                check(pixels(host).count(255,0,0)>1000,"Loading pointer uses source active state-layer while activation/morph/ripple stay blocked")
+                let up=NSEvent.mouseEvent(with:.leftMouseUp,location:point,modifierFlags:[],timestamp:ProcessInfo.processInfo.systemUptime,windowNumber:window.windowNumber,context:nil,eventNumber:2,clickCount:1,pressure:0)!
+                window.sendEvent(up); loadingPointer.update(phase:.up,location:local); pump()
+                check(loadingEvents.isEmpty,"Loading pointer active visuals never emit child activation events")
             }
         var events: [AWCEvent] = []
         let pointer = AWCNativePointerState()
@@ -91,6 +112,19 @@ import AWCUI
                     let point = button.convert(CGPoint(x: button.bounds.midX, y: button.bounds.midY), to: host)
                     hover.update(phase: .move, location: CGPoint(x: point.x, y: host.isFlipped ? point.y : host.bounds.height - point.y)); pump()
                     check(pixels(host).count(255, 0, 0) > 1000, "State layer inherits explicit label color when its own color is omitted")
+                }
+        }
+        for loading in [false, true] {
+            let hover = AWCNativePointerState()
+            fixture(AWCButton(properties: .init(ripple: false, loading: loading), children: [.text("Wait")])
+                .awcButtonAppearance(.init(containerColor: "#000000", stateLayerColor: "#FF0000", cornerRadius: 0, hoverOpacity: 1, focusRingColor: "#0000FF"))
+                .environment(\.awcNativePointerState, hover)) { host, window in
+                    let button = descendants(host).first(where: { String(describing: type(of: $0)).contains("AWCNativeButtonFocusView") })!
+                    let point = button.convert(CGPoint(x: button.bounds.midX, y: button.bounds.midY), to: host)
+                    hover.update(phase: .move, location: CGPoint(x: point.x, y: host.isFlipped ? point.y : host.bounds.height - point.y)); pump()
+                    check(pixels(host).count(255, 0, 0) > 1000, "Loading \(loading) retains source hover appearance independently of blocked actions")
+                    hover.update(phase: .leave); _ = window.makeFirstResponder(button); pump()
+                    check(pixels(host).count(0, 0, 255) > 100, "Explicit focusRingColor reaches actual native ring for loading \(loading)")
                 }
         }
         let children: [AWCNode] = [.text("Slots"), .init(id: "leading", tag: "#text", properties: ["text": "L"], slot: "leading-icon"), .init(id: "trailing", tag: "#text", properties: ["text": "T"], slot: "trailing-icon"), .init(id: "loader", tag: "#text", properties: ["text": "X"], slot: "loader")]

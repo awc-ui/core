@@ -29,9 +29,9 @@ class NativeAutomaticFormTest {
         } }
         compose.onAllNodes(hasSetTextAction())[0].performTextReplacement("")
         compose.onNodeWithText("Submit").performClick()
-        compose.onNodeWithText("This field is required").assertExists()
+        compose.onNodeWithText("Please fill out this field.").assertExists()
         compose.onAllNodes(hasSetTextAction())[0].performTextReplacement("Grace")
-        compose.onNodeWithText("This field is required").assertDoesNotExist()
+        compose.onNodeWithText("Please fill out this field.").assertDoesNotExist()
         compose.onNodeWithText("Submit").performClick()
         compose.runOnIdle { assertEquals(listOf(AWCFormEntry("name", "Grace"), AWCFormEntry("flag", "yes")), submissions.last().entries); input.clear(); form.reset() }
         compose.onAllNodes(hasSetTextAction())[0].assertTextContains("Ada")
@@ -118,7 +118,7 @@ class NativeAutomaticFormTest {
             } }
         } }
         compose.onNodeWithText("Submit").performClick()
-        compose.onNodeWithText("This field is required").assertDoesNotExist()
+        compose.onNodeWithText("Please fill out this field.").assertDoesNotExist()
         compose.runOnIdle { assertEquals(listOf(AWCFormEntry("locked", "")), submissions.single().entries) }
     }
 }

@@ -38,16 +38,18 @@ test('all 81 Android guides verify actual typed wrappers and their Kotlin proper
 test('Android support comes from its own policy, including differences from iOS', () => {
   const field = androidGuide(component('md-text-field'), sources);
   assert.match(field, /\| `variant` \| `AWCTextFieldVariant` \| `'filled'` \| Supported by Android adapter \|/);
-  assert.match(field, /\| `speechToText` .* Unsupported \/ not listed in Android policy \|/);
-  assert.match(field, /\| `mdSpeechResult` \| Unsupported \/ not listed in Android policy \|/);
-  assert.match(field, /Supported Android slots: `trailing-icon`/);
-  assert.match(field, /Unsupported source slots: `leading-icon`/);
-  assert.match(field, /Unsupported source methods: .*`getInputElement`/);
+  // md-text-field is a full Android adapter (its own policy); the bar chart below keeps its one unsupported method.
+  assert.match(field, /\| `speechToText` .* Supported by Android adapter \|/);
+  assert.match(field, /\| `mdSpeechResult` \| Supported \|/);
+  assert.match(field, /Supported Android slots: `leading-icon`, .*`trailing-icon`/);
+  assert.match(field, /Unsupported source slots: None declared\./);
+  assert.match(field, /Unsupported source methods: None declared\./);
   const chart = androidGuide(component('md-bar-chart'), sources);
   assert.match(chart, /\| `xAxis` .* Supported by Android adapter \|/);
-  assert.match(chart, /\| `zoom` .* Unsupported \/ not listed in Android policy \|/);
-  assert.match(chart, /Supported Android slots: None declared/);
-  assert.match(chart, /Advanced scales, curves, stacking, zoom/);
+  // md-bar-chart is a dedicated native chart (n5-024): zoom and the slots are supported; getInstance() stays unsupported.
+  assert.match(chart, /\| `zoom` \| `AWCBarChartZoom` \| `'none'` \| Supported by Android adapter \|/);
+  assert.match(chart, /Supported Android slots: `header`, `empty`, `loader`, `loading`, `footer`/);
+  assert.match(chart, /Unsupported source methods: `getInstance`$/m);
 });
 
 test('button instructions use actual Compose state, nullable map events and native action scopes', () => {

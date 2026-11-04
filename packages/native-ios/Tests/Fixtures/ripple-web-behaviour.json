@@ -1,0 +1,101 @@
+{
+ "scenarios": {
+  "secondary": {
+   "afterDown": 0,
+   "afterUp": 0
+  },
+  "foreignRelease": {
+   "heldAfterForeign": 1,
+   "opacity": 0.12,
+   "removedAfterRealUpMs": 199.60000002384186
+  },
+  "blur": {
+   "afterBlur": 0,
+   "afterUp": 0
+  },
+  "disableMid": {
+   "afterDisable": 0,
+   "pressWhileDisabled": 0,
+   "triggerAfterEnable": 1
+  },
+  "replace": {
+   "waves": 1,
+   "left": -11.8034,
+   "top": -61.8034,
+   "size": 223.607
+  },
+  "settledHeld": {
+   "elapsedMs": 231.20000004768372,
+   "wavesAfter": 1
+  },
+  "settledTrigger": {
+   "elapsedMs": 208.79999995231628,
+   "wavesAfter": 1,
+   "removedMs": 633.5
+  },
+  "settledNone": {
+   "elapsedMs": 0
+  },
+  "settledFadeDone": {
+   "elapsedMs": 198.30000007152557,
+   "wavesAfter": 0
+  },
+  "disconnect": {
+   "afterRemove": 0,
+   "onNewSurface": 1,
+   "newWaveSize": 152.315,
+   "oldSurfaceAfter": 1
+  },
+  "triggerDisabled": {
+   "waves": 0
+  },
+  "suppressed": {
+   "trigger": 0,
+   "press": 0
+  },
+  "suppressMidflight": {
+   "waves": 1,
+   "containerOpacity": 0
+  },
+  "outside": {
+   "waves": 0
+  },
+  "earlyRelease": {
+   "removedMs": 664.8999999761581
+  },
+  "heldLong": {
+   "waves": 1,
+   "opacity": 0.12,
+   "removedAfterUpMs": 195.39999997615814
+  },
+  "zeroDuration": {
+   "removedAfterUpMs": 206.79999995231628
+  },
+  "rtlOrigin": {
+   "left": -110.83,
+   "top": -110.83,
+   "size": 241.661
+  },
+  "hiddenPress": {
+   "waves": 1,
+   "display": "none"
+  },
+  "triggerCentered": {
+   "left": -7.7033,
+   "top": -67.7033,
+   "size": 215.407
+  },
+  "triggerReplace": {
+   "waves": 1,
+   "left": -7.08204,
+   "afterUp": 1
+  }
+ },
+ "oracle": {
+  "page": "/ripple/behaviour.html",
+  "browser": "Chrome/153.0.8010.36",
+  "createdAt": "2026-10-27T11:29:05.270Z",
+  "deviceScaleFactor": 1,
+  "media": []
+ }
+}

@@ -609,6 +609,14 @@
       "description": ""
     },
     {
+      "name": "--md-multi-select-chip-height",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-chip-outline",
+      "description": ""
+    },
+    {
       "name": "--md-multi-select-caret-color",
       "description": ""
     },
@@ -634,14 +642,6 @@
     },
     {
       "name": "--md-multi-select-inline-chips-block-start",
-      "description": ""
-    },
-    {
-      "name": "--md-multi-select-chip-height",
-      "description": ""
-    },
-    {
-      "name": "--md-multi-select-chip-outline",
       "description": ""
     },
     {
@@ -764,6 +764,11 @@
       "kind": "interface",
       "extends": "",
       "body": "  value: string;\n  label?: string;\n  disabled?: boolean;\n  icon?: string;\n  iconColor?: string;\n  supportingText?: string;\n  selected?: boolean;"
+    },
+    {
+      "name": "FilterMode",
+      "kind": "type",
+      "body": "'substring' | 'prefix' | 'fuzzy'"
     }
   ],
   "callableProps": [

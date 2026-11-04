@@ -1,0 +1,155 @@
+/*
+ * Early layout for persistent navigation, included with the core token sheet.
+ * Stencil defines lazy elements before their shadow markup/CSS is available.
+ * Keep these rules through the empty shadow root, then stop on the first-render
+ * Host class. A parent can render before .hydrated while waiting for children;
+ * its real layout must not be added to a placeholder during that interval.
+ *
+ * These are minimum reservations, not a second rendering implementation.
+ * Wrapped breadcrumbs, arbitrary slotted content and consumer overrides of tab
+ * heights can require more space. SSR remains the way to reserve exact content.
+ * The source-expression checks in scripts/pre-hydration-layout.test.mjs keep
+ * the default dimensions aligned with the owning component stylesheets.
+ */
+
+/* Match the components' local density overrides before their CSS arrives.
+ * density="0" deliberately keeps the inherited scale, as their :host rules do. */
+:where(md-app-bar:not(.md-app-bar), md-breadcrumbs:not(.md-breadcrumbs), md-breadcrumb-item:not(.md-breadcrumb-item), md-tab:not(.md-tab)):not(.hydrated)[density="-1"] { --md-sys-density-scale: -1; }
+:where(md-app-bar:not(.md-app-bar), md-breadcrumbs:not(.md-breadcrumbs), md-breadcrumb-item:not(.md-breadcrumb-item), md-tab:not(.md-tab)):not(.hydrated)[density="-2"] { --md-sys-density-scale: -2; }
+:where(md-app-bar:not(.md-app-bar), md-breadcrumbs:not(.md-breadcrumbs), md-breadcrumb-item:not(.md-breadcrumb-item), md-tab:not(.md-tab)):not(.hydrated)[density="-3"] { --md-sys-density-scale: -3; }
+:where(md-app-bar:not(.md-app-bar), md-breadcrumbs:not(.md-breadcrumbs), md-breadcrumb-item:not(.md-breadcrumb-item), md-tab:not(.md-tab)):not(.hydrated)[density="-4"] { --md-sys-density-scale: -4; }
+
+/* A child-sized placeholder keeps author borders/padding outside the row:
+ * a 75px row plus a 1px host border must reserve 76px, not 75px. */
+md-app-bar:not(.md-app-bar):not(.hydrated):not([hidden]) {
+  display: block;
+  box-sizing: border-box;
+  --_awc-early-app-bar-height: var(--md-app-bar-row-height, max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px)));
+  --_awc-early-app-bar-headline: 0px;
+  --_awc-early-app-bar-subtitle: 0px;
+}
+
+md-app-bar:not(.md-app-bar):not(.hydrated):not([hidden])::before {
+  content: "";
+  display: block;
+  min-block-size: var(--_awc-early-app-bar-height);
+}
+
+/* Avoid adding the unassigned light-DOM slots as extra rows. Their DOM stays
+ * connected, so child components still initialize normally. */
+md-app-bar:not(.md-app-bar):not(.hydrated) > * { position: absolute; }
+
+md-app-bar:not(.md-app-bar)[variant="medium"]:not(.hydrated) {
+  --_awc-early-app-bar-height: calc(
+    var(--md-app-bar-row-height, max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px))) +
+    var(--_awc-early-app-bar-headline) + var(--_awc-early-app-bar-subtitle) +
+    var(--md-sys-spacing-inset-xl, 24px)
+  );
+  min-block-size: var(--md-app-bar-medium-height, calc(112px + var(--md-sys-density-scale, 0) * 4px));
+}
+
+md-app-bar:not(.md-app-bar):is([variant="medium"], [variant="large"]):not(.hydrated):is([headline]:not([headline=""]), :has(> [slot="headline"])) {
+  --_awc-early-app-bar-headline: max(28px, calc(36px + var(--md-sys-density-scale, 0) * 2px));
+}
+
+md-app-bar:not(.md-app-bar)[variant="medium"]:not(.hydrated):is([subtitle]:not([subtitle=""]), :has(> [slot="subtitle"])) {
+  --_awc-early-app-bar-subtitle: calc(2px + max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)));
+  min-block-size: var(--md-app-bar-medium-height-with-subtitle, calc(136px + var(--md-sys-density-scale, 0) * 4px));
+}
+
+md-app-bar:not(.md-app-bar)[variant="large"]:not(.hydrated) {
+  --_awc-early-app-bar-height: calc(
+    var(--md-app-bar-row-height, max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px))) +
+    var(--md-app-bar-row-padding-block-start, 20px) +
+    var(--_awc-early-app-bar-headline) + var(--_awc-early-app-bar-subtitle) + 28px
+  );
+  min-block-size: var(--md-app-bar-large-height, calc(120px + var(--md-sys-density-scale, 0) * 4px));
+}
+
+md-app-bar:not(.md-app-bar)[variant="large"]:not(.hydrated):is([subtitle]:not([subtitle=""]), :has(> [slot="subtitle"])) {
+  --_awc-early-app-bar-subtitle: calc(2px + max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  min-block-size: var(--md-app-bar-large-height-with-subtitle, calc(152px + var(--md-sys-density-scale, 0) * 4px));
+}
+
+/* Breadcrumb height lives inside each item's interactive surface. A blank
+ * line with the same font/padding also supports the public padding shorthand.
+ * Empty/hidden trails reserve no space; multiple wrapped lines are content. */
+md-breadcrumbs:not(.md-breadcrumbs):not(.hydrated):not([hidden]) {
+  display: block;
+  box-sizing: border-box;
+}
+
+md-breadcrumbs:not(.md-breadcrumbs):not(.hydrated) > md-breadcrumb-item { position: absolute; }
+
+md-breadcrumbs:not(.md-breadcrumbs):not(.hydrated):not([hidden]):has(> md-breadcrumb-item:not([hidden]):not(.md-breadcrumb-item--collapsed))::before,
+md-breadcrumb-item:not(.md-breadcrumb-item):not(.hydrated):not([hidden]):not(.md-breadcrumb-item--collapsed)::before {
+  content: "\00a0";
+  display: block;
+  vertical-align: top;
+  padding: var(--md-breadcrumb-item-padding, calc(8px + var(--md-sys-density-scale, 0) * 2px) max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px)));
+  font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+}
+
+md-breadcrumb-item:not(.md-breadcrumb-item):not(.hydrated):not([hidden]):not(.md-breadcrumb-item--collapsed) {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Icon crumbs can be taller than the text line. */
+md-breadcrumb-item:not(.md-breadcrumb-item)[icon]:not([icon=""]):not(.hydrated)::before,
+md-breadcrumbs:not(.md-breadcrumbs):not(.hydrated):has(> md-breadcrumb-item[icon]:not([icon=""]):not([hidden]))::before {
+  line-height: max(18px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+}
+
+/* Tabs have a fixed standard track, except primary icon+label stacks.
+ * The strip floor survives the empty shadow root; child boxes preserve it if
+ * the strip finishes before a child. Empty and hidden strips stay empty. */
+md-tabs:not(.md-tabs):not(.hydrated):not([hidden]):has(> md-tab:not([hidden])) {
+  display: block;
+  box-sizing: border-box;
+  --_awc-early-tabs-base: 48px;
+  --_awc-early-tabs-reservation: calc(var(--_awc-early-tabs-base) + var(--md-sys-density-scale, 0) * 4px);
+  min-block-size: var(--_awc-early-tabs-reservation);
+}
+
+/* A mixed set of local child densities cannot be reduced to the parent's
+ * inherited scale. Reserve only the shortest supported track in that case.
+ * A uniform local rung, the common compact-strip case, can be exact. */
+md-tabs:not(.md-tabs):not(.hydrated):has(> md-tab:is([density="-1"], [density="-2"], [density="-3"], [density="-4"]):not([hidden])) {
+  --_awc-early-tabs-reservation: min(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px));
+}
+
+md-tabs:not(.md-tabs):not(.hydrated):has(> md-tab[density="-1"]:not([hidden])):not(:has(> md-tab:not([density="-1"]):not([hidden]))) {
+  --_awc-early-tabs-reservation: calc(var(--_awc-early-tabs-base) - 4px);
+}
+md-tabs:not(.md-tabs):not(.hydrated):has(> md-tab[density="-2"]:not([hidden])):not(:has(> md-tab:not([density="-2"]):not([hidden]))) {
+  --_awc-early-tabs-reservation: calc(var(--_awc-early-tabs-base) - 8px);
+}
+md-tabs:not(.md-tabs):not(.hydrated):has(> md-tab[density="-3"]:not([hidden])):not(:has(> md-tab:not([density="-3"]):not([hidden]))) {
+  --_awc-early-tabs-reservation: calc(var(--_awc-early-tabs-base) - 12px);
+}
+md-tabs:not(.md-tabs):not(.hydrated):has(> md-tab[density="-4"]:not([hidden])):not(:has(> md-tab:not([density="-4"]):not([hidden]))) {
+  --_awc-early-tabs-reservation: calc(var(--_awc-early-tabs-base) - 16px);
+}
+
+md-tab:not(.md-tab):not(.hydrated):not([hidden]) {
+  display: inline-block;
+  vertical-align: top;
+  box-sizing: border-box;
+  block-size: calc(48px + var(--md-sys-density-scale, 0) * 4px);
+}
+
+md-tab:not(.md-tab):not(.hydrated):not([hidden]):not(md-tabs[variant="secondary"] > md-tab):not([variant="secondary"]):not([inline-icon]:not([inline-icon="false"]))[label]:not([label=""]):is([icon]:not([icon=""]), :has(> [slot="icon"])) {
+  block-size: calc(64px + var(--md-sys-density-scale, 0) * 4px);
+}
+
+md-tabs:not(.md-tabs)[variant="secondary"] > md-tab:not(.hydrated):not([hidden]) {
+  block-size: calc(48px + var(--md-sys-density-scale, 0) * 4px);
+}
+
+md-tabs:not(.md-tabs):not(.hydrated):not([hidden]):not([variant="secondary"]):has(> md-tab:not([hidden]):not([inline-icon]:not([inline-icon="false"]))[label]:not([label=""])[icon]:not([icon=""])),
+md-tabs:not(.md-tabs):not(.hydrated):not([hidden]):not([variant="secondary"]):has(> md-tab:not([hidden]):not([inline-icon]:not([inline-icon="false"]))[label]:not([label=""]) > [slot="icon"]) {
+  --_awc-early-tabs-base: 64px;
+}

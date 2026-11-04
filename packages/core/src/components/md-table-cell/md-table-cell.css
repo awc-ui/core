@@ -144,6 +144,16 @@
     var(--md-table-cell-sticky-transition, var(--_fx-fast, 150ms cubic-bezier(0.31, 0.94, 0.34, 1)));
 }
 
+/* Reduced motion: the row drops its background/state-layer transitions, so
+   the pinned cell must too — otherwise the pinned column lags 150ms behind its
+   row (the column-first flicker the matched timing above exists to prevent). */
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}
+
 /* Custom ligature pin (pin-icon) matches the SVG footprint; same tint/size
    vars apply. */
 .md-table-cell__pin-glyph {

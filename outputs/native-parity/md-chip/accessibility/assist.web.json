@@ -1,0 +1,139 @@
+{
+ "tag": "md-chip",
+ "case": "assist",
+ "html": "<md-chip data-ax-node=\"n0\" id=\"example-md-chip\"></md-chip>",
+ "props": {
+  "n0": {
+   "appearance": "outlined",
+   "contentAlign": "center",
+   "density": 0,
+   "disabled": false,
+   "elevated": false,
+   "icon": "event",
+   "label": "Add to calendar",
+   "removable": false,
+   "selected": false,
+   "softDisabled": false,
+   "trailingIcon": "",
+   "variant": "assist"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "button",
+    "name": "Add to calendar",
+    "ignored": false,
+    "focusable": true,
+    "roledescription": "chip",
+    "frame": [
+     16,
+     16,
+     149.578125,
+     32
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       }
+      ]
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "StaticText",
+          "name": "Add to calendar",
+          "ignored": false,
+          "frame": [
+           50,
+           24,
+           99.578125,
+           16
+          ],
+          "children": [
+           {
+            "role": "InlineTextBox",
+            "name": "Add to calendar",
+            "ignored": false
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-chip",
+   "role": "button",
+   "name": "Add to calendar",
+   "frame": [
+    16,
+    16,
+    149.578125,
+    32
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true,
+    "roledescription": "chip"
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

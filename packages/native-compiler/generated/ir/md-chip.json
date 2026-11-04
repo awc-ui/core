@@ -323,7 +323,7 @@
       },
       {
         "name": "class",
-        "value": "{\n          'md-chip': true,\n          [`md-chip--${this.variant}`]: true,\n          'md-chip--selected': this.selected && this.isSelectable,\n          // The deprecated `elevated` boolean resolves into `appearance`, and\n          // the legacy `md-chip--elevated` class is still emitted for that case\n          // so every existing rule keyed on it (disabled states, selected\n          // combinations) keeps applying untouched.\n          [`md-chip--appearance-${this.effectiveAppearance}`]: true,\n          'md-chip--elevated': this.effectiveAppearance === 'elevated',\n          [`md-chip--color-${this.color}`]: !!this.color,\n          'md-chip--disabled': isEffectivelyDisabled,\n          'md-chip--with-leading-icon': hasLeadingIcon || showCheckmark,\n          'md-chip--with-trailing-icon': hasTrailingIcon || showRemove,\n        }"
+        "value": "{\n          'md-chip': true,\n          [`md-chip--${this.variant}`]: true,\n          'md-chip--selected': this.selected && this.isSelectable,\n          // The deprecated `elevated` boolean resolves into `appearance`, and\n          // the legacy `md-chip--elevated` class is still emitted for that case\n          // so every existing rule keyed on it (disabled states, selected\n          // combinations) keeps applying untouched.\n          [`md-chip--appearance-${this.effectiveAppearance}`]: true,\n          'md-chip--elevated': this.effectiveAppearance === 'elevated',\n          [`md-chip--color-${this.color}`]: !!this.color,\n          // Role rules key on this class, not the reflected attribute: a value that is not a\n          // role name (e.g. a hex) is rejected by `colorVars` and must render the neutral chip.\n          'md-chip--colored': !!this.colorVars,\n          'md-chip--disabled': isEffectivelyDisabled,\n          'md-chip--with-leading-icon': hasLeadingIcon || showCheckmark,\n          'md-chip--with-trailing-icon': hasTrailingIcon || showRemove,\n        }"
       },
       {
         "name": "role",
@@ -511,19 +511,19 @@
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 208
+      "line": 216
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 211
+      "line": 219
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 215
+      "line": 223
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -537,7 +537,7 @@
     "styleUrl": "md-chip.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "d871e106ce04e56f71d60b7cf1f39b5cfe0b69d047713ae10ea72b9aecc115e8"
+    "sha256": "2cce8253d9aac251e088dfee64b4f681900d0bc9a01bc220b7f24ef231373fb8"
   },
   "styles": [
     {
@@ -885,7 +885,7 @@
         },
         {
           "property": "--_state-layer-color",
-          "value": "var(--md-sys-color-on-secondary-container)",
+          "value": "var(--md-chip-state-layer-color, var(--md-sys-color-on-secondary-container))",
           "important": false
         }
       ]
@@ -935,7 +935,7 @@
       ]
     },
     {
-      "selector": ":host(.md-chip--appearance-outlined[color])",
+      "selector": ":host(.md-chip--appearance-outlined.md-chip--colored)",
       "context": null,
       "declarations": [
         {
@@ -982,7 +982,7 @@
       ]
     },
     {
-      "selector": ":host(.md-chip--appearance-filled[color]),\n:host(.md-chip--appearance-elevated[color])",
+      "selector": ":host(.md-chip--appearance-filled.md-chip--colored),\n:host(.md-chip--appearance-elevated.md-chip--colored)",
       "context": null,
       "declarations": [
         {
@@ -1008,6 +1008,22 @@
       ]
     },
     {
+      "selector": ":host(.md-chip--selected.md-chip--appearance-filled),\n:host(.md-chip--selected.md-chip--appearance-elevated)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_container-color",
+          "value": "var(--_container-color-selected)",
+          "important": false
+        },
+        {
+          "property": "--_icon-color",
+          "value": "var(--md-chip-icon-color, var(--md-sys-color-on-secondary-container))",
+          "important": false
+        }
+      ]
+    },
+    {
       "selector": ":host(.md-chip--appearance-filled) .md-chip__outline,\n:host(.md-chip--appearance-elevated) .md-chip__outline",
       "context": null,
       "declarations": [
@@ -1019,22 +1035,22 @@
       ]
     },
     {
-      "selector": ":host(.md-chip--selected[color])",
+      "selector": ":host(.md-chip--selected.md-chip--colored)",
       "context": null,
       "declarations": [
         {
           "property": "--_container-color",
-          "value": "var(--_c-container)",
+          "value": "var(--md-chip-container-color-selected, var(--_c-container))",
           "important": false
         },
         {
           "property": "color",
-          "value": "var(--_c-on-container)",
+          "value": "var(--md-chip-label-color-selected, var(--_c-on-container))",
           "important": false
         },
         {
           "property": "--_label-color-selected",
-          "value": "var(--_c-on-container)",
+          "value": "var(--md-chip-label-color-selected, var(--_c-on-container))",
           "important": false
         },
         {
@@ -1044,7 +1060,7 @@
         },
         {
           "property": "--_state-layer-color",
-          "value": "var(--_c-on-container)",
+          "value": "var(--md-chip-state-layer-color, var(--_c-on-container))",
           "important": false
         }
       ]
@@ -1674,12 +1690,12 @@
         {
           "property": "color",
           "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
-          "important": false
+          "important": true
         },
         {
           "property": "--_icon-color",
           "value": "color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent)",
-          "important": false
+          "important": true
         },
         {
           "property": "--_elevation",
@@ -1689,7 +1705,7 @@
       ]
     },
     {
-      "selector": ":host(.md-chip--disabled:not(.md-chip--selected):not(.md-chip--elevated)) .md-chip__outline",
+      "selector": ":host(.md-chip--disabled:not(.md-chip--selected):not(.md-chip--elevated):not(.md-chip--appearance-filled)) .md-chip__outline",
       "context": null,
       "declarations": [
         {
@@ -1711,7 +1727,7 @@
       ]
     },
     {
-      "selector": ":host(.md-chip--disabled.md-chip--elevated:not(.md-chip--selected))",
+      "selector": ":host(.md-chip--disabled.md-chip--elevated:not(.md-chip--selected)),\n:host(.md-chip--disabled.md-chip--appearance-filled:not(.md-chip--selected))",
       "context": null,
       "declarations": [
         {
@@ -1989,10 +2005,15 @@
         "trailingIcon",
         "selected",
         "selectable",
+        "appearance",
+        "color",
+        "elevated",
+        "disabled",
+        "softDisabled",
         "removable",
         "label",
-        "disabled",
-        "softDisabled"
+        "contentAlign",
+        "density"
       ],
       "events": [
         "mdClick",
@@ -2005,58 +2026,112 @@
         "leading-icon",
         "trailing-icon"
       ],
-      "unsupportedProperties": [
-        "appearance",
-        "color",
-        "elevated",
-        "contentAlign",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
+      "notes": [
+        "Dedicated native chip: all fourteen properties (assist, filter, input and suggestion variants; outlined, filled and elevated appearances; colour roles; contentAlign; density 0…−4), mdClick, mdSelect and the cancelable mdRemove, the default, leading-icon and trailing-icon slots, twelve appearance hooks and seven typed part targets.",
+        "Roles as in the source: a button chip, a group with a primary action and the remove button, and a display token. Enter and Space activate; Delete and Backspace remove.",
+        "Lengths: SwiftUI takes px, em, rem and ch (AWCChipLength); Compose takes dp. The primary part has no native styling target.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS runs through the simulator harness; VoiceOver/TalkBack execution remains unverified."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "outline",
+        "primary",
+        "checkmark",
+        "icon",
+        "label",
+        "remove",
+        "trailing-icon"
+      ],
+      "appearance": {
+        "api": ".awcChipAppearance(AWCChipHookAppearance)",
+        "fields": [
+          "containerColor",
+          "containerColorSelected",
+          "labelColor",
+          "labelColorSelected",
+          "iconColor",
+          "iconSize",
+          "containerShape",
+          "containerHeight",
+          "outlineColor",
+          "outlineWidth",
+          "stateLayerColor",
+          "elevation"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "disabled",
+        "variant",
         "icon",
-        "label",
-        "removable",
-        "selectable",
-        "selected",
-        "softDisabled",
-        "variant"
-      ],
-      "events": [
-        "mdClick",
-        "mdRemove",
-        "mdSelect"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
         "trailingIcon",
+        "selected",
+        "selectable",
         "appearance",
         "color",
         "elevated",
+        "disabled",
+        "softDisabled",
+        "removable",
+        "label",
         "contentAlign",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "events": [
+        "mdClick",
+        "mdSelect",
+        "mdRemove"
+      ],
+      "methods": [],
+      "slots": [
+        "",
         "leading-icon",
         "trailing-icon"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native chip: all fourteen properties (assist, filter, input and suggestion variants; outlined, filled and elevated appearances; colour roles; contentAlign; density 0…−4), mdClick, mdSelect and the cancelable mdRemove, the default, leading-icon and trailing-icon slots, twelve appearance hooks and seven typed part targets.",
+        "Roles as in the source: a button chip, a group with a primary action and the remove button, and a display token. Enter and Space activate; Delete and Backspace remove.",
+        "Lengths: SwiftUI takes px, em, rem and ch (AWCChipLength); Compose takes dp. The primary part has no native styling target.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS runs through the simulator harness; VoiceOver/TalkBack execution remains unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "outline",
+        "primary",
+        "checkmark",
+        "icon",
+        "label",
+        "remove",
+        "trailing-icon"
+      ],
+      "appearance": {
+        "api": "AWCChipAppearanceScope(AWCChipHookAppearance)",
+        "fields": [
+          "containerColor",
+          "containerColorSelected",
+          "labelColor",
+          "labelColorSelected",
+          "iconColor",
+          "iconSize",
+          "containerShape",
+          "containerHeight",
+          "outlineColor",
+          "outlineWidth",
+          "stateLayerColor",
+          "elevation"
+        ]
+      }
     }
   }
 }

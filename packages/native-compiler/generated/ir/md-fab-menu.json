@@ -702,65 +702,143 @@
       "status": "adapter-implemented",
       "properties": [
         "open",
-        "menuLabel"
+        "anchor",
+        "variant",
+        "placement",
+        "quick",
+        "menuLabel",
+        "density"
       ],
       "events": [
         "mdOpen",
         "mdClose"
       ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
-        "anchor",
-        "variant",
-        "placement",
-        "quick",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "show",
         "whenClosed",
         "close"
       ],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
+      "notes": [
+        "Dedicated anchored menu uses public AWCFabMenuScope with separate authored native anchor and menu nodes. Actual native frames drive up/down/auto positioning, RTL alignment and moving-anchor tracking; no synthetic anchor, scrim or fabricated item list is added by the renderer. The preview composes a real extended FAB with three authored items in a 360 by 480 point context.",
+        "Retain AWCFabMenuController and attach View.awcFabMenuController. Async show waits for actual native initialization, close begins the 180 ms closing phase, and whenClosed waits for the closed render. Reopen cancels closing without losing the current cycle waiter; detach resolves lifecycle waits. Initial open mounts silently. Live method IDs use bounded retention, idempotent acceptance, explicit terminal queries and completion independent of visual streaming.",
+        "Anchor pointer/Enter/Space capture suppresses its own action before opening. Fresh pointer opening keeps anchor focus; keyboard or already-focused pointer opening enters the first item. Native roving focus includes disabled items while blocking their activation. Arrow, Home/End, Tab/Shift-Tab, Escape and printable typeahead use actual native focus. Outside clicks include the containing native window outside the authored scope.",
+        "Three typed appearance fields cascade into actual item renderers; native density inheritance preserves source missing/zero behavior and local negative overrides. Anchor FAB reuses its public temporary icon controller, preserves extended label geometry, and applies ellipse, source icon rotation/scale/fade and vibrant colors. Scoped authored appearance is restored after close rather than destroying immutable values to reproduce Web inline-style cleanup.",
+        "Focused controller, actual AppKit/SwiftUI layout/pixel/interaction and live-host protocol fixtures are wired into existing native runners. macOS validation is recorded in audits/md-fab-menu.md. This environment has no iOS SDK/device runtime; UIKit and VoiceOver execution is not claimed."
+      ],
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCFabMenuAppearance / View.awcFabMenuAppearance",
+        "fields": [
+          "itemContainerColor",
+          "itemLabelColor",
+          "itemGap"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "anchor",
+        "density",
         "menuLabel",
-        "open"
+        "open",
+        "placement",
+        "quick",
+        "variant"
       ],
       "events": [
         "mdClose",
         "mdOpen"
       ],
-      "methods": [],
+      "methods": [
+        "show",
+        "close",
+        "whenClosed"
+      ],
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "anchor",
-        "variant",
-        "placement",
-        "quick",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "show",
-        "whenClosed",
-        "close"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Native nonmodal FAB menu uses AWCFabMenuScope with separately authored ID anchors, actual native bounds, a retained item tree and scoped controller show/close/whenClosed lifecycle. Source input ordering, roving focus, typeahead and typed appearance are implemented; runtime acceptance is recorded separately in audits/md-fab-menu.md. AWCSlotText or AWCSearchableLabelScope supplies actual searchable names for arbitrary native label content. Native scoped appearance restores authored FAB colors on close rather than deleting immutable authored appearance as Web inline-style cleanup does."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCFabMenuAppearance / AWCFabMenuAppearanceScope",
+        "fields": [
+          "itemContainerColor",
+          "itemLabelColor",
+          "itemGap"
+        ]
+      },
+      "nativeEquivalents": {
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "AWCFabMenuScope / authored id and anchor properties",
+          "description": "A scoped native registry resolves authored anchor identity, pointer modality, focus and nonmodal outside activation.",
+          "limitations": [
+            "The scope is the native viewport; global document lookup is not exposed."
+          ]
+        },
+        "DOM_LAYOUT": {
+          "status": "implemented",
+          "api": "Compose LayoutCoordinates",
+          "description": "Actual transformed anchor bounds are tracked while open and drive logical-edge positioning and auto placement.",
+          "limitations": [
+            "Native dp replaces browser CSS pixels."
+          ]
+        },
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Native authored layout-tree traversal / AWCSlotText / AWCSearchableLabelScope",
+          "description": "Registered item descendants retain authored order for roving focus and typeahead. Explicit native text registration replaces DOM textContent.",
+          "limitations": [
+            "An arbitrary Compose content lambda cannot be introspected for text; use the supplied native searchable-label equivalent."
+          ]
+        },
+        "SHADOW_DOM": {
+          "status": "implemented",
+          "api": "Composable default slot and nonmodal overlay layer",
+          "description": "The retained native layer separates menu flow layout from authored items and anchor.",
+          "limitations": [
+            "No DOM shadow root is created."
+          ]
+        },
+        "CSS_RUNTIME": {
+          "status": "implemented",
+          "api": "AWCFabMenuAppearanceScope / native layout direction and density",
+          "description": "Typed appearance and applied native geometry replace runtime computed CSS values.",
+          "limitations": [
+            "Arbitrary CSS selectors are not evaluated."
+          ]
+        },
+        "ANIMATION_FRAME": {
+          "status": "implemented",
+          "api": "AWCFabMenuController / Compose frame clock",
+          "description": "Initial paint readiness, cancelable pending opens, delayed close commit and retained cycle completion follow native frame lifecycle.",
+          "limitations": [
+            "Native frame scheduling replaces requestAnimationFrame."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionEvent",
+          "description": "Void lifecycle callbacks and synchronous scoped capture/target/bubble events preserve committed-state ordering.",
+          "limitations": [
+            "DOM event objects are not fabricated."
+          ]
+        }
+      }
     }
   }
 }

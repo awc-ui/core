@@ -1,0 +1,737 @@
+{
+ "tag": "md-toolbar",
+ "case": "default",
+ "id": "md-toolbar/default",
+ "platform": "android",
+ "sdk": 36,
+ "windows": [
+  {
+   "type": 1,
+   "display": 114,
+   "title": "",
+   "root": {
+    "class": "android.widget.FrameLayout",
+    "actions": [
+     {
+      "id": 16908342,
+      "name": "showOnScreen"
+     }
+    ],
+    "frame": [
+     0,
+     0,
+     1280,
+     256
+    ],
+    "children": [
+     {
+      "class": "android.widget.LinearLayout",
+      "important": false,
+      "actions": [
+       {
+        "id": 16908342,
+        "name": "showOnScreen"
+       }
+      ],
+      "frame": [
+       0,
+       0,
+       1280,
+       256
+      ],
+      "children": [
+       {
+        "class": "android.widget.FrameLayout",
+        "important": false,
+        "actions": [
+         {
+          "id": 16908342,
+          "name": "showOnScreen"
+         }
+        ],
+        "frame": [
+         0,
+         0,
+         1280,
+         256
+        ],
+        "children": [
+         {
+          "class": "android.widget.FrameLayout",
+          "important": false,
+          "actions": [
+           {
+            "id": 16908342,
+            "name": "showOnScreen"
+           }
+          ],
+          "frame": [
+           0,
+           0,
+           1280,
+           256
+          ],
+          "children": [
+           {
+            "class": "androidx.compose.ui.platform.ComposeView",
+            "actions": [
+             {
+              "id": 16908342,
+              "name": "showOnScreen"
+             }
+            ],
+            "frame": [
+             0,
+             0,
+             1280,
+             256
+            ],
+            "children": [
+             {
+              "class": "android.view.View",
+              "important": false,
+              "frame": [
+               0,
+               0,
+               1280,
+               256
+              ],
+              "children": [
+               {
+                "class": "android.view.View",
+                "important": false,
+                "frame": [
+                 0,
+                 0,
+                 1280,
+                 256
+                ],
+                "virtualId": 3,
+                "children": [
+                 {
+                  "class": "android.view.View",
+                  "contentDescription": "Formatting",
+                  "actions": [
+                   {
+                    "id": 131072,
+                    "name": "setSelection"
+                   },
+                   {
+                    "id": 256,
+                    "name": "nextGranularity"
+                   },
+                   {
+                    "id": 512,
+                    "name": "previousGranularity"
+                   }
+                  ],
+                  "frame": [
+                   447,
+                   64,
+                   386,
+                   128
+                  ],
+                  "virtualId": 9,
+                  "children": [
+                   {
+                    "class": "android.view.View",
+                    "important": false,
+                    "frame": [
+                     463,
+                     80,
+                     354,
+                     96
+                    ],
+                    "virtualId": 10,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "screenReaderFocusable": true,
+                      "focusable": true,
+                      "clickable": true,
+                      "actions": [
+                       {
+                        "id": 1,
+                        "name": "focus"
+                       },
+                       {
+                        "id": 16,
+                        "name": "click"
+                       },
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       455,
+                       80,
+                       88,
+                       96
+                      ],
+                      "virtualId": 13,
+                      "children": [
+                       {
+                        "class": "android.view.View",
+                        "contentDescription": "Undo",
+                        "actions": [
+                         {
+                          "id": 131072,
+                          "name": "setSelection"
+                         },
+                         {
+                          "id": 256,
+                          "name": "nextGranularity"
+                         },
+                         {
+                          "id": 512,
+                          "name": "previousGranularity"
+                         }
+                        ],
+                        "frame": [
+                         463,
+                         88,
+                         80,
+                         80
+                        ],
+                        "virtualId": 2000000013,
+                        "fake": true
+                       },
+                       {
+                        "class": "android.view.View",
+                        "important": false,
+                        "visible": false,
+                        "frame": [
+                         479,
+                         104,
+                         48,
+                         48
+                        ],
+                        "virtualId": 35
+                       },
+                       {
+                        "class": "android.widget.Button",
+                        "frame": [
+                         463,
+                         88,
+                         80,
+                         80
+                        ],
+                        "virtualId": 1000000013,
+                        "fake": true
+                       }
+                      ]
+                     },
+                     {
+                      "class": "android.view.View",
+                      "screenReaderFocusable": true,
+                      "focusable": true,
+                      "clickable": true,
+                      "actions": [
+                       {
+                        "id": 1,
+                        "name": "focus"
+                       },
+                       {
+                        "id": 16,
+                        "name": "click"
+                       },
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       543,
+                       80,
+                       96,
+                       96
+                      ],
+                      "virtualId": 17,
+                      "children": [
+                       {
+                        "class": "android.view.View",
+                        "contentDescription": "Redo",
+                        "actions": [
+                         {
+                          "id": 131072,
+                          "name": "setSelection"
+                         },
+                         {
+                          "id": 256,
+                          "name": "nextGranularity"
+                         },
+                         {
+                          "id": 512,
+                          "name": "previousGranularity"
+                         }
+                        ],
+                        "frame": [
+                         551,
+                         88,
+                         80,
+                         80
+                        ],
+                        "virtualId": 2000000017,
+                        "fake": true
+                       },
+                       {
+                        "class": "android.view.View",
+                        "important": false,
+                        "visible": false,
+                        "frame": [
+                         567,
+                         104,
+                         48,
+                         48
+                        ],
+                        "virtualId": 42
+                       },
+                       {
+                        "class": "android.widget.Button",
+                        "frame": [
+                         551,
+                         88,
+                         80,
+                         80
+                        ],
+                        "virtualId": 1000000017,
+                        "fake": true
+                       }
+                      ]
+                     },
+                     {
+                      "class": "android.view.View",
+                      "contentDescription": "Separator",
+                      "stateDescription": "Vertical",
+                      "actions": [
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       639,
+                       112,
+                       2,
+                       32
+                      ],
+                      "virtualId": 21,
+                      "children": [
+                       {
+                        "class": "android.view.View",
+                        "important": false,
+                        "frame": [
+                         592,
+                         80,
+                         49,
+                         96
+                        ],
+                        "virtualId": 22
+                       }
+                      ]
+                     },
+                     {
+                      "class": "android.view.View",
+                      "stateDescription": "Not selected",
+                      "screenReaderFocusable": true,
+                      "checkable": true,
+                      "focusable": true,
+                      "clickable": true,
+                      "actions": [
+                       {
+                        "id": 1,
+                        "name": "focus"
+                       },
+                       {
+                        "id": 16,
+                        "name": "click"
+                       },
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       641,
+                       80,
+                       88,
+                       96
+                      ],
+                      "virtualId": 24,
+                      "children": [
+                       {
+                        "class": "android.view.View",
+                        "contentDescription": "Bold",
+                        "actions": [
+                         {
+                          "id": 131072,
+                          "name": "setSelection"
+                         },
+                         {
+                          "id": 256,
+                          "name": "nextGranularity"
+                         },
+                         {
+                          "id": 512,
+                          "name": "previousGranularity"
+                         }
+                        ],
+                        "frame": [
+                         649,
+                         88,
+                         80,
+                         80
+                        ],
+                        "virtualId": 2000000024,
+                        "fake": true
+                       },
+                       {
+                        "class": "android.view.View",
+                        "important": false,
+                        "visible": false,
+                        "frame": [
+                         665,
+                         104,
+                         48,
+                         48
+                        ],
+                        "virtualId": 50
+                       },
+                       {
+                        "class": "android.widget.Button",
+                        "frame": [
+                         649,
+                         88,
+                         80,
+                         80
+                        ],
+                        "virtualId": 1000000024,
+                        "fake": true
+                       }
+                      ]
+                     },
+                     {
+                      "class": "android.view.View",
+                      "stateDescription": "Not selected",
+                      "screenReaderFocusable": true,
+                      "checkable": true,
+                      "focusable": true,
+                      "clickable": true,
+                      "actions": [
+                       {
+                        "id": 1,
+                        "name": "focus"
+                       },
+                       {
+                        "id": 16,
+                        "name": "click"
+                       },
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       729,
+                       80,
+                       96,
+                       96
+                      ],
+                      "virtualId": 28,
+                      "children": [
+                       {
+                        "class": "android.view.View",
+                        "contentDescription": "Italic",
+                        "actions": [
+                         {
+                          "id": 131072,
+                          "name": "setSelection"
+                         },
+                         {
+                          "id": 256,
+                          "name": "nextGranularity"
+                         },
+                         {
+                          "id": 512,
+                          "name": "previousGranularity"
+                         }
+                        ],
+                        "frame": [
+                         737,
+                         88,
+                         80,
+                         80
+                        ],
+                        "virtualId": 2000000028,
+                        "fake": true
+                       },
+                       {
+                        "class": "android.view.View",
+                        "important": false,
+                        "visible": false,
+                        "frame": [
+                         753,
+                         104,
+                         48,
+                         48
+                        ],
+                        "virtualId": 58
+                       },
+                       {
+                        "class": "android.widget.Button",
+                        "frame": [
+                         737,
+                         88,
+                         80,
+                         80
+                        ],
+                        "virtualId": 1000000028,
+                        "fake": true
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "childOrder": "semantics (replacedChildren)",
+ "source": "in-process AccessibilityNodeProvider",
+ "density": 2,
+ "image": {
+  "scale": 1,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 0.5,
+  "source": "frame"
+ },
+ "atf": {
+  "elements": 27,
+  "results": [
+   {
+    "check": "TouchTargetSizeCheck",
+    "type": "ERROR",
+    "message": "This item's width is 44dp. Consider making the width of this touch target 48dp or larger.",
+    "element": {
+     "class": "android.view.View",
+     "text": "",
+     "contentDescription": "",
+     "bounds": "Rect(455, 80 - 543, 176)"
+    }
+   },
+   {
+    "check": "TouchTargetSizeCheck",
+    "type": "ERROR",
+    "message": "This item's width is 44dp. Consider making the width of this touch target 48dp or larger.",
+    "element": {
+     "class": "android.view.View",
+     "text": "",
+     "contentDescription": "",
+     "bounds": "Rect(641, 80 - 729, 176)"
+    }
+   }
+  ]
+ },
+ "focus": [
+  {
+   "class": "android.view.View",
+   "screenReaderFocusable": true,
+   "focusable": true,
+   "focused": true,
+   "clickable": true,
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    },
+    {
+     "id": 16,
+     "name": "click"
+    },
+    {
+     "id": 131072,
+     "name": "setSelection"
+    },
+    {
+     "id": 256,
+     "name": "nextGranularity"
+    },
+    {
+     "id": 512,
+     "name": "previousGranularity"
+    }
+   ],
+   "frame": [
+    455,
+    80,
+    88,
+    96
+   ],
+   "virtualId": 13
+  },
+  {
+   "class": "android.view.View",
+   "screenReaderFocusable": true,
+   "focusable": true,
+   "focused": true,
+   "clickable": true,
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    },
+    {
+     "id": 16,
+     "name": "click"
+    },
+    {
+     "id": 131072,
+     "name": "setSelection"
+    },
+    {
+     "id": 256,
+     "name": "nextGranularity"
+    },
+    {
+     "id": 512,
+     "name": "previousGranularity"
+    }
+   ],
+   "frame": [
+    455,
+    80,
+    88,
+    96
+   ],
+   "virtualId": 13
+  },
+  {
+   "class": "android.view.View",
+   "screenReaderFocusable": true,
+   "focusable": true,
+   "focused": true,
+   "clickable": true,
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    },
+    {
+     "id": 16,
+     "name": "click"
+    },
+    {
+     "id": 131072,
+     "name": "setSelection"
+    },
+    {
+     "id": 256,
+     "name": "nextGranularity"
+    },
+    {
+     "id": 512,
+     "name": "previousGranularity"
+    }
+   ],
+   "frame": [
+    455,
+    80,
+    88,
+    96
+   ],
+   "virtualId": 13
+  }
+ ],
+ "events": [
+  {
+   "type": "TYPE_WINDOW_STATE_CHANGED",
+   "via": "system",
+   "text": [],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "android.app.Presentation"
+  },
+  {
+   "type": "TYPE_WINDOW_CONTENT_CHANGED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 1,
+   "class": "android.view.ViewGroup"
+  },
+  {
+   "type": "TYPE_WINDOW_CONTENT_CHANGED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 1,
+   "class": "android.view.ViewGroup"
+  },
+  {
+   "type": "TYPE_VIEW_FOCUSED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "android.view.ViewGroup"
+  }
+ ]
+}

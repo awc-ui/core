@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/studio.css" />
   <link rel="stylesheet" href="/theme-editor.css" />
   <link rel="stylesheet" href="/canvas-tools.css" />
+  <link rel="stylesheet" href="/studio-backdrop.css" />
   <script type="module" src="/app.js"></script>
 </head>
 <body>
@@ -20,7 +21,15 @@
       <strong>AWC UI</strong>
     </a>
     <span slot="headline" class="studio-app-title"><md-divider class="studio-brand-divider" vertical aria-hidden="true"></md-divider><span>Laboratory</span></span>
-    <span slot="trailing" class="compiler-status" id="compiler-status" role="status"><md-status-dot inline size="small" state="away"></md-status-dot><span>Connecting</span></span>
+    <nav slot="trailing" class="studio-project-links" aria-label="Project links">
+      <a href="https://github.com/awc-ui/core" target="_blank" rel="noopener noreferrer" aria-label="AWC UI source on GitHub (opens in a new tab)" title="AWC UI on GitHub">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        <span class="studio-project-link-label">GitHub</span>
+      </a>
+      <a href="https://www.npmjs.com/package/@awc-ui/core" target="_blank" rel="noopener noreferrer" aria-label="AWC UI on npm; local library version {{AWC_CORE_VERSION}} (opens in a new tab)" title="Local library version: {{AWC_CORE_VERSION}}">
+        <span class="studio-npm-label">npm</span><span class="studio-package-version">v{{AWC_CORE_VERSION}}</span>
+      </a>
+    </nav>
     <md-icon-button slot="trailing" id="open-theme" variant="tonal" icon="palette" aria-label="Open theme settings" title="Open theme settings"></md-icon-button>
     <md-icon-button slot="trailing" id="theme-toggle" icon="dark_mode" aria-label="Switch to dark theme" title="Switch theme"></md-icon-button>
   </md-app-bar>
@@ -32,7 +41,7 @@
       <footer class="sidebar-footer"><span class="studio-symbol material-symbols-outlined" aria-hidden="true">science</span><div><strong>Built with AWC UI</strong><span>One system. Every surface.</span></div></footer>
     </aside>
     <main>
-      <section class="component-heading"><div><md-breadcrumbs class="component-kicker" label="Component location" density="-2"><md-breadcrumb-item>Library</md-breadcrumb-item><md-breadcrumb-item><span id="category-label">Actions</span></md-breadcrumb-item><md-breadcrumb-item current><code id="tag-label">md-button</code></md-breadcrumb-item></md-breadcrumbs><h1 id="component-title">Button</h1><p id="component-description"></p></div><div class="component-actions"><md-button id="reset" variant="outlined" size="sm" icon="restart_alt">Reset</md-button></div></section>
+      <section class="component-heading"><div><md-breadcrumbs class="component-kicker" label="Component location" density="-2"><md-breadcrumb-item>Library</md-breadcrumb-item><md-breadcrumb-item><span id="category-label">Actions</span></md-breadcrumb-item><md-breadcrumb-item current><code id="tag-label">md-button</code></md-breadcrumb-item></md-breadcrumbs><h1 id="component-title">Button</h1><p id="component-description"></p></div></section>
       <div class="workspace-grid">
         <div class="studio-main-column">
           <section class="preview-panel" aria-label="Component preview">
@@ -41,15 +50,17 @@
               <md-button id="platform-web" variant="filled" value="web" data-platform="web" icon="language" selected>Web</md-button>
               <md-button id="platform-ios" variant="filled" value="ios" data-platform="ios"><svg class="platform-brand-icon" slot="leading-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true" focusable="false"><path d="M17.6 12.7c0-2.4 2-3.6 2.1-3.7-1.2-1.7-3-1.9-3.7-1.9-1.6-.2-3.1 1-3.9 1-.8 0-2-1-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.2 10.2.8 1.2 1.7 2.4 3 2.3 1.2-.1 1.7-.8 3.2-.8 1.5 0 1.9.8 3.3.8 1.4 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.4-2.8-.1 0-2.7-1-2.7-4.3ZM15.1 5.5c.7-.9 1.2-2 1.1-3.2-1.1 0-2.4.8-3.1 1.6-.7.7-1.3 1.9-1.2 3 1.2.1 2.4-.6 3.2-1.4Z"/></svg>SwiftUI</md-button>
               <md-button id="platform-android" variant="filled" value="android" data-platform="android" icon="android">Android</md-button>
-            </md-button-group><span class="studio-status" role="status" aria-live="polite" aria-atomic="true"><md-chip id="preview-runtime" class="runtime-badge studio-status-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">LIVE WEB</md-chip><span id="preview-runtime-announcement" class="studio-visually-hidden">LIVE WEB</span></span></div>
-            <div class="canvas-toolbar" aria-label="Canvas controls">
-              <div class="viewport-controls"><md-select id="canvas-width" aria-label="Preview viewport width" variant="outlined" density="-4" value="fit"><md-select-option value="fit">Responsive</md-select-option><md-select-option value="360">Phone · 360px</md-select-option><md-select-option value="768">Tablet · 768px</md-select-option><md-select-option value="1024">Desktop · 1024px</md-select-option></md-select><span id="canvas-dimensions" class="canvas-dimensions">Auto width</span><span class="studio-status" role="status" aria-live="polite" aria-atomic="true"><md-chip id="canvas-direction" class="studio-status-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">LTR →</md-chip><span id="canvas-direction-announcement" class="studio-visually-hidden">Left-to-right layout</span></span></div>
+            </md-button-group>
+            <div class="canvas-toolbar" role="group" aria-label="Canvas controls">
+              <div class="viewport-controls"><span id="canvas-dimensions" class="canvas-dimensions" aria-label="Preview dimensions">Measuring…</span><span class="studio-status" role="status" aria-live="polite" aria-atomic="true"><md-chip id="canvas-direction" class="studio-status-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">LTR →</md-chip><span id="canvas-direction-announcement" class="studio-visually-hidden">Left-to-right layout</span></span></div>
               <span id="canvas-expanded-label" hidden>Expanded studio · Esc to exit</span>
-              <div class="canvas-toggles"><md-tooltip text="Switch left-to-right / right-to-left layout" position="bottom"><md-icon-button id="canvas-rtl" icon="format_textdirection_l_to_r" toggle aria-label="Toggle right-to-left layout"></md-icon-button></md-tooltip><md-tooltip text="8px grid with 64px pixel rulers" position="bottom"><md-icon-button id="canvas-grid" icon="grid_4x4" toggle aria-label="Toggle pixel grid and rulers"></md-icon-button></md-tooltip><md-tooltip text="Inspect size, padding, spacing and typography" position="bottom"><md-icon-button id="canvas-bounds" icon="design_services" toggle aria-label="Inspect component measurements"></md-icon-button></md-tooltip><md-tooltip id="canvas-expand-tooltip" text="Expand canvas and properties" position="bottom"><md-icon-button id="canvas-fullscreen" icon="fullscreen" aria-label="Expand studio with properties" aria-expanded="false"></md-icon-button></md-tooltip></div>
+              <div class="canvas-toggles"><md-tooltip text="Reset preview to its default size" position="bottom"><md-icon-button id="canvas-reset-size" icon="restart_alt" aria-label="Reset preview size"></md-icon-button></md-tooltip><md-tooltip text="Switch left-to-right / right-to-left layout" position="bottom"><md-icon-button id="canvas-rtl" icon="format_textdirection_l_to_r" toggle aria-label="Toggle right-to-left layout"></md-icon-button></md-tooltip><md-tooltip text="8px grid with 64px pixel rulers" position="bottom"><md-icon-button id="canvas-grid" icon="grid_4x4" toggle aria-label="Toggle pixel grid and rulers"></md-icon-button></md-tooltip><md-tooltip text="Inspect size, padding, spacing and typography" position="bottom"><md-icon-button id="canvas-bounds" icon="design_services" toggle aria-label="Inspect component measurements"></md-icon-button></md-tooltip><md-tooltip id="canvas-expand-tooltip" text="Expand canvas and properties" position="bottom"><md-icon-button id="canvas-fullscreen" icon="fullscreen" aria-label="Expand studio with properties" aria-expanded="false"></md-icon-button></md-tooltip></div>
+            </div>
             </div>
             <p id="canvas-help" hidden></p>
-            <div id="preview-stage" class="preview-stage"><div id="preview-content"></div></div>
-            <div class="preview-footer"><span id="preview-caption">Original AWC component</span><span id="recipe-status">Live reference</span></div>
+            <p id="canvas-resize-help" class="studio-visually-hidden">Drag a preview edge or corner to resize. When a resize handle is focused, use the arrow keys for 10 pixel steps or Shift and an arrow key for 50 pixel steps. Press Home to fit the available space.</p>
+            <div id="preview-stage" class="preview-stage" role="region" aria-label="Component viewport" tabindex="0"><div id="preview-content"></div></div>
+            <div class="preview-footer"><div class="preview-runtime-caption"><span class="studio-status" role="status" aria-live="polite" aria-atomic="true"><md-chip id="preview-runtime" class="runtime-badge studio-status-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">LIVE WEB</md-chip><span id="preview-runtime-announcement" class="studio-visually-hidden">LIVE WEB</span></span><span id="preview-caption">Original AWC component</span></div><div class="preview-footer-actions"><span id="recipe-status">Live reference</span><md-button variant="text" size="xs" id="native-render-button" icon="refresh" hidden>Reconnect</md-button></div></div>
             </md-card>
           </section>
           <section class="studio-documentation" aria-label="Component documentation">
@@ -69,6 +80,11 @@
             <md-tab id="properties-tab" label="Properties" controls="properties-tabpanel" active><md-chip id="props-count" slot="badge" class="count-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">0</md-chip></md-tab>
             <md-tab id="css-variables-tab" label="CSS variables" controls="css-variables-tabpanel"><md-chip id="css-variables-count" slot="badge" class="count-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">0</md-chip></md-tab>
           </md-tabs>
+          <div class="props-panel-actions">
+            <md-tooltip text="Restore initial properties, content and styles; clear recorded events." position="bottom">
+              <md-button id="reset" variant="text" size="sm" icon="restart_alt" full-width aria-label="Reset component">Reset component</md-button>
+            </md-tooltip>
+          </div>
           <div id="properties-panel">
             <section id="properties-tabpanel" role="tabpanel" aria-labelledby="properties-tab" tabindex="0">
               <p class="props-hint">Changes apply to the web reference.</p>

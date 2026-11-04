@@ -28,11 +28,8 @@
   --_gap: var(--md-breadcrumbs-gap, calc(8px + var(--md-sys-density-scale, 0) * 2px));
   --_separator-color: var(--md-breadcrumbs-separator-color, var(--md-sys-color-on-surface-variant, #49454F));
   --_text-color: var(--md-breadcrumbs-text-color, var(--md-sys-color-on-surface-variant, #49454F));
-  --_stagger: var(--md-breadcrumbs-stagger, 40ms);
 
   /* MD3 motion tokens. */
-  --_in-duration: var(--md-sys-motion-spring-spatial-default-duration, 500ms);
-  --_in-easing: var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00));
   --_state-duration: var(--md-sys-motion-spring-effects-default-duration, 200ms);
   --_state-easing: var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00));
 
@@ -55,63 +52,11 @@
 
 /* ==========================================================
    1. STAGGERED ENTRANCE
-   Each visible item enters with a soft fade + horizontal slide.
-   We pre-bake delays for up to 12 items so the stagger reads
-   without any JS measurement. The animation is "one-shot": it
-   doesn't replay on re-render because Stencil reuses the slot
-   nodes.
+   Lives on md-breadcrumb-item's own :host (see md-breadcrumb-item.css). A
+   `::slotted(...)` animation declared here never ran: the slotted crumb resolves
+   `@keyframes` names in ITS tree (the page), not in this shadow root, so the
+   entrance, its RTL variant and `--md-breadcrumbs-stagger` were all dead.
    ========================================================== */
-
-@keyframes md-breadcrumb-enter {
-  from {
-    opacity: 0;
-    transform: translateX(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-::slotted(md-breadcrumb-item) {
-  animation: md-breadcrumb-enter var(--_in-duration) var(--_in-easing) both;
-}
-
-/* Stagger first 12 items via nth-of-type. After that the
-   delay caps so the trail never feels slow. */
-::slotted(md-breadcrumb-item:nth-of-type(1))  { animation-delay: calc(var(--_stagger) * 0); }
-::slotted(md-breadcrumb-item:nth-of-type(2))  { animation-delay: calc(var(--_stagger) * 1); }
-::slotted(md-breadcrumb-item:nth-of-type(3))  { animation-delay: calc(var(--_stagger) * 2); }
-::slotted(md-breadcrumb-item:nth-of-type(4))  { animation-delay: calc(var(--_stagger) * 3); }
-::slotted(md-breadcrumb-item:nth-of-type(5))  { animation-delay: calc(var(--_stagger) * 4); }
-::slotted(md-breadcrumb-item:nth-of-type(6))  { animation-delay: calc(var(--_stagger) * 5); }
-::slotted(md-breadcrumb-item:nth-of-type(7))  { animation-delay: calc(var(--_stagger) * 6); }
-::slotted(md-breadcrumb-item:nth-of-type(8))  { animation-delay: calc(var(--_stagger) * 7); }
-::slotted(md-breadcrumb-item:nth-of-type(9))  { animation-delay: calc(var(--_stagger) * 8); }
-::slotted(md-breadcrumb-item:nth-of-type(10)) { animation-delay: calc(var(--_stagger) * 9); }
-::slotted(md-breadcrumb-item:nth-of-type(11)) { animation-delay: calc(var(--_stagger) * 10); }
-::slotted(md-breadcrumb-item:nth-of-type(12)) { animation-delay: calc(var(--_stagger) * 11); }
-
-/* RTL: slide in from the opposite side. */
-:host([dir="rtl"]) {
-  /* re-define the keyframe via a class so we don't override
-     the global definition for LTR consumers. */
-}
-:host([dir="rtl"]) ::slotted(md-breadcrumb-item),
-:host-context([dir="rtl"]) ::slotted(md-breadcrumb-item) {
-  animation-name: md-breadcrumb-enter-rtl;
-}
-
-@keyframes md-breadcrumb-enter-rtl {
-  from {
-    opacity: 0;
-    transform: translateX(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
 
 /* ==========================================================
    2. OVERFLOW BUTTON
@@ -186,9 +131,6 @@
    4. REDUCED MOTION
    ========================================================== */
 @media (prefers-reduced-motion: reduce) {
-  ::slotted(md-breadcrumb-item) {
-    animation: none !important;
-  }
   .md-breadcrumbs__overflow-btn {
     transition: none;
   }

@@ -1,0 +1,158 @@
+{
+ "tag": "md-progress-indicator",
+ "case": "indeterminate",
+ "request": {
+  "tag": "md-progress-indicator",
+  "properties": {
+   "indeterminate": true,
+   "label": "Loading"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "description": "Loading",
+         "focused": false,
+         "frame": [
+          170,
+          45,
+          300,
+          10
+         ],
+         "identifier": "example-md-progress-indicator",
+         "maxValue": 100,
+         "minValue": 0,
+         "role": "AXProgressIndicator",
+         "roleDescription": "progress indicator",
+         "valueDescription": "Indeterminate"
+        }
+       ],
+       "enabled": true,
+       "frame": [
+        -129,
+        45,
+        599,
+        10
+       ],
+       "identifier": "example-md-progress-indicator",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      100
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    100
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-progress-indicator",
+  "properties": {
+   "complete": false,
+   "density": 0,
+   "fourColor": false,
+   "indeterminate": true,
+   "label": "Loading",
+   "max": 100,
+   "size": 0,
+   "thickness": 4,
+   "value": 64,
+   "variant": "linear",
+   "wave": true,
+   "waveAmplitude": 0,
+   "waveLength": 0,
+   "waveSpeed": 0
+  },
+  "tag": "md-progress-indicator"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 10,
+     "width": 300,
+     "x": 170,
+     "y": 45
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI progress indicator",
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "name": "md-progress-indicator"
+   },
+   {
+    "bounds": {
+     "height": 4,
+     "width": 300,
+     "x": 170,
+     "y": 48
+    },
+    "id": "component.track",
+    "name": "md-progress-indicator ::part(track)",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

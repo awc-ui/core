@@ -160,7 +160,23 @@
   "dependencies": [
     "md-divider"
   ],
-  "dataTypes": [],
+  "dataTypes": [
+    {
+      "name": "MdListStyle",
+      "kind": "type",
+      "body": "'standard' | 'segmented'"
+    },
+    {
+      "name": "MdListSelectionMode",
+      "kind": "type",
+      "body": "'none' | 'single-select' | 'multi-select'"
+    },
+    {
+      "name": "MdListInteractionMode",
+      "kind": "type",
+      "body": "'single-action' | 'multi-action'"
+    }
+  ],
   "callableProps": [],
   "eventTypes": [
     {

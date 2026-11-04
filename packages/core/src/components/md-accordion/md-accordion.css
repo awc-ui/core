@@ -38,12 +38,8 @@
 
    Transition presets are exposed via the `transition` attribute on
    the host: `expressive` (default), `standard`, `fade`, `collapse`,
-   `none`. The attribute is reflected so child items pick it up via
-   `:host-context(md-accordion[transition="…"])` and the parent
-   chassis also honours it (notably for `none`).
-
-   CSS PARTS:
-     (none)
+   `none`. The parent mirrors the preset onto its direct child items;
+   the chassis also honours it (notably for `none`).
 
    SLOTS:
      (default)            Accordion items
@@ -57,7 +53,10 @@
      the `.md-accordion--elevation-N` classes below. Any explicit
      `--md-accordion-elevation` override still wins. */
   --_elevation: var(--md-accordion-elevation, var(--md-sys-elevation-0, none));
-  --_elevation-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+  --_effects-easing: var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.8, 0.34, 1));
+  --_effects-duration: var(--md-sys-motion-spring-effects-default-duration, 200ms);
+  --_shape-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+  --_shape-duration: var(--md-sys-motion-duration-medium2, 300ms);
 
   /* Drop-target ghost (pointer reorder). Same recipe as md-list so the two
      reorder surfaces read as one pattern: a low-opacity tint of the dragged
@@ -68,7 +67,6 @@
   --_drop-placeholder-outline-width: var(--md-accordion-drop-placeholder-outline-width, 2px);
   --_drop-placeholder-shape: var(--md-accordion-drop-placeholder-shape, var(--_container-shape));
   --_drop-placeholder-opacity: var(--md-accordion-drop-placeholder-opacity, 1);
-  --_elevation-duration: var(--md-sys-motion-duration-medium2, 300ms);
 
   display: block;
   inline-size: 100%;
@@ -113,8 +111,8 @@
   }
 }
 
-/* ── Elevation levels — both the host (outlined) and the child items
-   (filled, via :host-context in md-accordion-item.css) consume these. */
+/* Elevation levels apply to the outlined chassis. Filled item elevation
+   is mirrored by the owner and resolved in md-accordion-item.css. */
 :host(.md-accordion--elevation-1) { --_elevation: var(--md-accordion-elevation, var(--md-sys-elevation-1)); }
 :host(.md-accordion--elevation-2) { --_elevation: var(--md-accordion-elevation, var(--md-sys-elevation-2)); }
 :host(.md-accordion--elevation-3) { --_elevation: var(--md-accordion-elevation, var(--md-sys-elevation-3)); }
@@ -143,7 +141,9 @@
   border-radius: var(--_container-shape);
   overflow: hidden;
   box-shadow: var(--_elevation);
-  transition: box-shadow var(--_elevation-duration) var(--_elevation-easing);
+  transition:
+    border-color var(--_effects-duration) var(--_effects-easing),
+    box-shadow var(--_effects-duration) var(--_effects-easing);
 }
 :host(.md-accordion--outlined) ::slotted(md-accordion-item) {
   display: block;
@@ -216,8 +216,9 @@
      drag itself is driven by an inline transform with no transition
      so the panel tracks the pointer 1:1. */
   transition:
-    box-shadow var(--_elevation-duration) var(--_elevation-easing),
-    border-radius var(--_elevation-duration) var(--_elevation-easing);
+    background-color var(--_effects-duration) var(--_effects-easing),
+    box-shadow var(--_effects-duration) var(--_effects-easing),
+    border-radius var(--_shape-duration) var(--_shape-easing);
 }
 
 /* When the panel is the floating variant, neutralise the inline-size
@@ -263,7 +264,7 @@
 
 /* ── A11y: respect reduced motion ─────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  :host(.md-accordion--floating) {
+  :host {
     transition: none;
   }
 }

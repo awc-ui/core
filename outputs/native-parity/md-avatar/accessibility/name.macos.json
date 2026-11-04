@@ -1,0 +1,164 @@
+{
+ "tag": "md-avatar",
+ "case": "name",
+ "request": {
+  "tag": "md-avatar",
+  "properties": {},
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "description": "Alex Morgan",
+       "enabled": true,
+       "frame": [
+        292,
+        32,
+        56,
+        56
+       ],
+       "identifier": "example-md-avatar",
+       "role": "AXImage",
+       "roleDescription": "image"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      120
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    120
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-avatar",
+  "properties": {
+   "alt": "",
+   "colorFromName": true,
+   "crossorigin": "",
+   "density": 0,
+   "initials": "",
+   "label": "",
+   "loading": "lazy",
+   "name": "Alex Morgan",
+   "shape": "circle",
+   "size": "large",
+   "src": ""
+  },
+  "tag": "md-avatar"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 56,
+     "width": 56,
+     "x": 292,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "background": [
+      0.9764706492424011,
+      0.8705882430076599,
+      0.8627451062202454,
+      1
+     ],
+     "color": [
+      0.21568629145622253,
+      0.0235294122248888,
+      0.0235294122248888,
+      1
+     ],
+     "initials": "AM",
+     "label": "Alex Morgan",
+     "mode": "initials",
+     "outline": 0,
+     "palette": 4,
+     "radii": [
+      [
+       28,
+       28
+      ],
+      [
+       28,
+       28
+      ],
+      [
+       28,
+       28
+      ],
+      [
+       28,
+       28
+      ]
+     ],
+     "role": "img",
+     "size": 56
+    },
+    "name": "md-avatar"
+   },
+   {
+    "bounds": {
+     "height": 26,
+     "width": 37,
+     "x": 301.5,
+     "y": 47
+    },
+    "id": "component.initials",
+    "metrics": {
+     "fontSize": 22.400000000000002,
+     "fontWeight": 500,
+     "letterSpacing": 1.12,
+     "text": "AM"
+    },
+    "name": "initials",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

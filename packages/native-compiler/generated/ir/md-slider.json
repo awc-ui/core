@@ -734,28 +734,28 @@
       "line": 66
     },
     {
-      "code": "DOM_QUERY",
-      "severity": "warning",
-      "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 513
-    },
-    {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 513
+      "line": 262
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelector depends on browser semantics and requires a native adapter.",
+      "line": 265
     },
     {
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 515
+      "line": 545
     },
     {
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 521
+      "line": 551
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -769,7 +769,7 @@
     "styleUrl": "md-slider.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "278285315af4bc0d51a64cb0a820364e3addbb41eea76d24bc37f3926d0a2893"
+    "sha256": "3258f597e4e5851ab9cfbfadee41bada48d6bbd02aa26962e743386ab69cac13"
   },
   "styles": [
     {
@@ -1694,11 +1694,6 @@
         {
           "property": "block-size",
           "value": "100%",
-          "important": false
-        },
-        {
-          "property": "transform",
-          "value": "none",
           "important": false
         }
       ]
@@ -2850,12 +2845,12 @@
         },
         {
           "property": "padding-block",
-          "value": "var(--md-slider-value-padding-block, var(--md-sys-spacing-inset-md, 12px))",
+          "value": "var(\n    --md-slider-value-padding-block,\n    max(4px, calc(var(--md-sys-spacing-inset-md, 12px) + var(--md-sys-density-scale, 0) * 2px))\n  )",
           "important": false
         },
         {
           "property": "padding-inline",
-          "value": "var(--md-slider-value-padding-inline, var(--md-sys-spacing-inset-lg, 16px))",
+          "value": "var(\n    --md-slider-value-padding-inline,\n    max(8px, calc(var(--md-sys-spacing-inset-lg, 16px) + var(--md-sys-density-scale, 0) * 2px))\n  )",
           "important": false
         },
         {
@@ -3112,13 +3107,13 @@
           "important": false
         },
         {
-          "property": "transform",
-          "value": "rotate(-90deg)",
+          "property": "writing-mode",
+          "value": "vertical-lr",
           "important": false
         },
         {
-          "property": "transform-origin",
-          "value": "center center",
+          "property": "direction",
+          "value": "rtl",
           "important": false
         }
       ]
@@ -3221,6 +3216,17 @@
       ]
     },
     {
+      "selector": ".md-slider__thumb-knob,\n  :host(.md-slider--stops) .md-slider__track-active,\n  :host(.md-slider--stops) .md-slider__tick",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
       "selector": ":host([density='-1'])",
       "context": null,
       "declarations": [
@@ -3305,112 +3311,168 @@
         "max",
         "value",
         "step",
+        "disabled",
+        "name",
+        "nameStart",
+        "nameEnd",
+        "variant",
         "range",
+        "stops",
         "valueStart",
         "valueEnd",
-        "labeled",
+        "size",
+        "orientation",
+        "fullHeight",
         "valueIndicator",
+        "labeled",
+        "insetIcon",
         "icon",
         "sliderAriaLabel",
         "ariaLabelStart",
         "ariaLabelEnd",
-        "disabled",
-        "name",
-        "nameEnd",
-        "nameStart"
-      ],
-      "events": [
-        "mdInput",
-        "mdChange",
-        "mdDragStart",
-        "mdDragEnd"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "variant",
-        "stops",
-        "size",
-        "orientation",
-        "fullHeight",
-        "insetIcon",
         "valueText",
         "valueStartText",
         "valueEndText",
         "controlled",
         "density"
       ],
-      "unsupportedEvents": [
-        "mdFocus",
-        "mdBlur"
-      ],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
-        "inset-icon"
-      ],
-      "notes": [
-        "Range uses two accessible native sliders. Vertical layout, centered track, tick marks and DOM thumb metadata are not implemented.",
-        "Range value events retain source value plus valueStart/valueEnd. Drag events include value fields and thumb single/start/end.",
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
-      ],
-      "verification": "not-device-verified"
-    },
-    "android": {
-      "status": "adapter-implemented",
-      "properties": [
-        "disabled",
-        "labeled",
-        "max",
-        "min",
-        "name",
-        "nameEnd",
-        "nameStart",
-        "range",
-        "sliderAriaLabel",
-        "step",
-        "value",
-        "valueEnd",
-        "valueIndicator",
-        "valueStart",
-        "valueText"
-      ],
       "events": [
+        "mdInput",
         "mdChange",
-        "mdInput"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "variant",
-        "stops",
-        "size",
-        "orientation",
-        "fullHeight",
-        "insetIcon",
-        "icon",
-        "ariaLabelStart",
-        "ariaLabelEnd",
-        "valueStartText",
-        "valueEndText",
-        "controlled",
-        "density"
-      ],
-      "unsupportedEvents": [
         "mdFocus",
         "mdBlur",
         "mdDragStart",
         "mdDragEnd"
       ],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "methods": [],
+      "slots": [
         "inset-icon"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
-        "Horizontal Compose slider/range slider; vertical, custom icons and drag event parity remain unsupported."
+        "Dedicated native slider: standard / centered / range, five sizes, stops, value indicator, inset icon (Material Symbols from icon), vertical orientation, keyboard, pointer and touch input with the source events and order, the stylesheet transitions; hooks through AWCSliderAppearance.",
+        "Host property changes follow the Stencil watchers: value / valueStart / valueEnd changes clear a live drag value, min / max changes re-clamp (written back to the node).",
+        "The inset-icon slot (custom icon content) is not rendered natively: the inset icon comes from the icon property.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint, pointer / keyboard / touch replays with events, motion per frame (plain and reduced motion), lifecycle (runtime property changes through the Stencil watchers, form reset), RTL."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcSliderAppearance(AWCSliderAppearance)",
+        "fields": [
+          "trackLength",
+          "activeColor",
+          "inactiveColor",
+          "trackShape",
+          "trackHeight",
+          "tickActiveColor",
+          "tickFilledColor",
+          "tickInactiveColor",
+          "thumbColor",
+          "thumbWidth",
+          "thumbHeight",
+          "valueBackground",
+          "valueColor",
+          "valueShape",
+          "valueFontFamily",
+          "valueFontSize",
+          "valueFontWeight",
+          "valueLineHeight",
+          "valuePaddingInline",
+          "valuePaddingBlock",
+          "insetIconColor",
+          "insetIconActiveColor",
+          "minTrackLength"
+        ]
+      }
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "min",
+        "max",
+        "value",
+        "step",
+        "disabled",
+        "name",
+        "nameStart",
+        "nameEnd",
+        "variant",
+        "range",
+        "stops",
+        "valueStart",
+        "valueEnd",
+        "size",
+        "orientation",
+        "fullHeight",
+        "valueIndicator",
+        "labeled",
+        "insetIcon",
+        "icon",
+        "sliderAriaLabel",
+        "ariaLabelStart",
+        "ariaLabelEnd",
+        "valueText",
+        "valueStartText",
+        "valueEndText",
+        "controlled",
+        "density"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdFocus",
+        "mdBlur",
+        "mdDragStart",
+        "mdDragEnd"
+      ],
+      "methods": [],
+      "slots": [
+        "inset-icon"
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native slider: standard / centered / range, five sizes, stops, value indicator, inset icon (Material Symbols from icon), vertical orientation, keyboard, pointer and touch input with the source events and order, the stylesheet transitions; hooks through AWCSliderAppearance.",
+        "Host property changes follow the Stencil watchers: value / valueStart / valueEnd changes clear a live drag value, min / max changes re-clamp (written back to the node).",
+        "The inset-icon slot (custom icon content) is not rendered natively: the inset icon comes from the icon property.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint, pointer / keyboard / touch replays with events, motion per frame (plain and reduced motion), lifecycle (runtime property changes through the Stencil watchers, form reset), RTL."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCSliderAppearanceScope(AWCSliderAppearance)",
+        "fields": [
+          "trackLength",
+          "activeColor",
+          "inactiveColor",
+          "trackShape",
+          "trackHeight",
+          "tickActiveColor",
+          "tickFilledColor",
+          "tickInactiveColor",
+          "thumbColor",
+          "thumbWidth",
+          "thumbHeight",
+          "valueBackground",
+          "valueColor",
+          "valueShape",
+          "valueFontFamily",
+          "valueFontSize",
+          "valueFontWeight",
+          "valueLineHeight",
+          "valuePaddingInline",
+          "valuePaddingBlock",
+          "insetIconColor",
+          "insetIconActiveColor",
+          "minTrackLength"
+        ]
+      }
     }
   }
 }

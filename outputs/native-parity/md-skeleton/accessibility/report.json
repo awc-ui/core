@@ -1,0 +1,184 @@
+{
+ "tag": "md-skeleton",
+ "at": "2026-10-29T11:11:40.232Z",
+ "rows": [
+  {
+   "case": "announce",
+   "web": {
+    "elements": [
+     "status:Loading"
+    ],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 0,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 1,
+     "elements": [
+      "progressbar:Loading"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "extra",
+       "native": {
+        "role": "progressbar",
+        "name": "Loading",
+        "range": {}
+       },
+       "detail": "macos exposes progressbar \"Loading\" that Web does not",
+       "status": "expected",
+       "reason": "Web role=status \"Loading\". Native presents the platform busy indicator named \"Loading\" (see the skeleton role entry) instead of a text status."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 1,
+     "elements": [
+      "progressbar:Loading"
+     ],
+     "texts": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "extra",
+       "native": {
+        "role": "progressbar",
+        "name": "Loading",
+        "range": {
+         "text": "1"
+        }
+       },
+       "detail": "ios exposes progressbar \"Loading\" that Web does not",
+       "status": "expected",
+       "reason": "Web role=status \"Loading\"; iOS presents it as the activity indicator named \"Loading\" (polite announcement on appear)."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "status:Loading"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0,
+     "atf": {
+      "elements": 8,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "silent",
+   "web": {
+    "elements": [],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 0,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0,
+     "atf": {
+      "elements": 8,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

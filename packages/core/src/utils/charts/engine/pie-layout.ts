@@ -184,6 +184,13 @@ export interface PieChartSpec {
   highlight: 'slice' | 'series' | 'none';
   legend?: MdChartLegendPosition | 'none';
   valueFormatter: (v: number) => string;
+  /**
+   * How the hover card prints a slice's share, given as 0..100. Omitted →
+   * one decimal and a `%` (`66.7%`), which is right for `en` only: a chart
+   * whose values are printed for another locale passes one that prints the
+   * share the same way (`66,7%`).
+   */
+  percentFormatter?: (percent: number) => string;
   /** Data index of the hovered slice, or -1. */
   highlightIndex?: number;
   /**

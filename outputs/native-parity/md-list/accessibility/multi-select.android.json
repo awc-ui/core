@@ -1,0 +1,607 @@
+{
+ "tag": "md-list",
+ "case": "multi-select",
+ "id": "md-list/multi-select",
+ "platform": "android",
+ "sdk": 36,
+ "windows": [
+  {
+   "type": 1,
+   "display": 1506,
+   "title": "",
+   "root": {
+    "class": "android.widget.FrameLayout",
+    "actions": [
+     {
+      "id": 16908342,
+      "name": "showOnScreen"
+     }
+    ],
+    "frame": [
+     0,
+     0,
+     1280,
+     592
+    ],
+    "children": [
+     {
+      "class": "android.widget.LinearLayout",
+      "important": false,
+      "actions": [
+       {
+        "id": 16908342,
+        "name": "showOnScreen"
+       }
+      ],
+      "frame": [
+       0,
+       0,
+       1280,
+       592
+      ],
+      "children": [
+       {
+        "class": "android.widget.FrameLayout",
+        "important": false,
+        "actions": [
+         {
+          "id": 16908342,
+          "name": "showOnScreen"
+         }
+        ],
+        "frame": [
+         0,
+         0,
+         1280,
+         592
+        ],
+        "children": [
+         {
+          "class": "android.widget.FrameLayout",
+          "important": false,
+          "actions": [
+           {
+            "id": 16908342,
+            "name": "showOnScreen"
+           }
+          ],
+          "frame": [
+           0,
+           0,
+           1280,
+           592
+          ],
+          "children": [
+           {
+            "class": "androidx.compose.ui.platform.ComposeView",
+            "actions": [
+             {
+              "id": 16908342,
+              "name": "showOnScreen"
+             }
+            ],
+            "frame": [
+             0,
+             0,
+             1280,
+             592
+            ],
+            "children": [
+             {
+              "class": "android.view.View",
+              "important": false,
+              "frame": [
+               0,
+               0,
+               1280,
+               592
+              ],
+              "children": [
+               {
+                "class": "android.view.View",
+                "important": false,
+                "frame": [
+                 0,
+                 0,
+                 1280,
+                 592
+                ],
+                "virtualId": 1850,
+                "children": [
+                 {
+                  "class": "android.view.View",
+                  "collection": {
+                   "rows": 3,
+                   "columns": 1,
+                   "selectionMode": 0
+                  },
+                  "frame": [
+                   64,
+                   80,
+                   1152,
+                   432
+                  ],
+                  "virtualId": 1856,
+                  "children": [
+                   {
+                    "class": "android.view.View",
+                    "screenReaderFocusable": true,
+                    "checkable": true,
+                    "focusable": true,
+                    "collectionItem": {
+                     "row": 0,
+                     "column": 0,
+                     "selected": false,
+                     "heading": false
+                    },
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     }
+                    ],
+                    "frame": [
+                     64,
+                     80,
+                     1152,
+                     144
+                    ],
+                    "virtualId": 1858,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       100,
+                       132,
+                       40,
+                       40
+                      ],
+                      "virtualId": 1863
+                     },
+                     {
+                      "class": "android.widget.TextView",
+                      "text": "Design review",
+                      "actions": [
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       168,
+                       108,
+                       1016,
+                       48
+                      ],
+                      "virtualId": 1868
+                     },
+                     {
+                      "class": "android.widget.TextView",
+                      "text": "Project milestone",
+                      "actions": [
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       168,
+                       156,
+                       1016,
+                       40
+                      ],
+                      "virtualId": 1870
+                     },
+                     {
+                      "class": "android.widget.CheckBox",
+                      "frame": [
+                       64,
+                       80,
+                       1152,
+                       144
+                      ],
+                      "virtualId": 1000001858,
+                      "fake": true
+                     }
+                    ]
+                   },
+                   {
+                    "class": "android.view.View",
+                    "screenReaderFocusable": true,
+                    "checkable": true,
+                    "focusable": true,
+                    "collectionItem": {
+                     "row": 1,
+                     "column": 0,
+                     "selected": false,
+                     "heading": false
+                    },
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     }
+                    ],
+                    "frame": [
+                     64,
+                     224,
+                     1152,
+                     144
+                    ],
+                    "virtualId": 1876,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       100,
+                       276,
+                       40,
+                       40
+                      ],
+                      "virtualId": 1881
+                     },
+                     {
+                      "class": "android.widget.TextView",
+                      "text": "Prototype",
+                      "actions": [
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       168,
+                       252,
+                       1016,
+                       48
+                      ],
+                      "virtualId": 1886
+                     },
+                     {
+                      "class": "android.widget.TextView",
+                      "text": "Project milestone",
+                      "actions": [
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       168,
+                       300,
+                       1016,
+                       40
+                      ],
+                      "virtualId": 1888
+                     },
+                     {
+                      "class": "android.widget.CheckBox",
+                      "frame": [
+                       64,
+                       224,
+                       1152,
+                       144
+                      ],
+                      "virtualId": 1000001876,
+                      "fake": true
+                     }
+                    ]
+                   },
+                   {
+                    "class": "android.view.View",
+                    "screenReaderFocusable": true,
+                    "checkable": true,
+                    "focusable": true,
+                    "collectionItem": {
+                     "row": 2,
+                     "column": 0,
+                     "selected": false,
+                     "heading": false
+                    },
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     }
+                    ],
+                    "frame": [
+                     64,
+                     368,
+                     1152,
+                     144
+                    ],
+                    "virtualId": 1894,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       100,
+                       420,
+                       40,
+                       40
+                      ],
+                      "virtualId": 1899
+                     },
+                     {
+                      "class": "android.widget.TextView",
+                      "text": "Release",
+                      "actions": [
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       168,
+                       396,
+                       1016,
+                       48
+                      ],
+                      "virtualId": 1904
+                     },
+                     {
+                      "class": "android.widget.TextView",
+                      "text": "Project milestone",
+                      "actions": [
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       168,
+                       444,
+                       1016,
+                       40
+                      ],
+                      "virtualId": 1906
+                     },
+                     {
+                      "class": "android.widget.CheckBox",
+                      "frame": [
+                       64,
+                       368,
+                       1152,
+                       144
+                      ],
+                      "virtualId": 1000001894,
+                      "fake": true
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "childOrder": "semantics (replacedChildren)",
+ "source": "in-process AccessibilityNodeProvider",
+ "density": 2,
+ "image": {
+  "scale": 1,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 0.5,
+  "source": "frame"
+ },
+ "atf": {
+  "elements": 23,
+  "results": []
+ },
+ "focus": [
+  {
+   "class": "android.view.View",
+   "screenReaderFocusable": true,
+   "checkable": true,
+   "focusable": true,
+   "focused": true,
+   "collectionItem": {
+    "row": 0,
+    "column": 0,
+    "selected": false,
+    "heading": false
+   },
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    }
+   ],
+   "frame": [
+    64,
+    80,
+    1152,
+    144
+   ],
+   "virtualId": 1858
+  },
+  {
+   "class": "android.view.View",
+   "screenReaderFocusable": true,
+   "checkable": true,
+   "focusable": true,
+   "focused": true,
+   "collectionItem": {
+    "row": 0,
+    "column": 0,
+    "selected": false,
+    "heading": false
+   },
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    }
+   ],
+   "frame": [
+    64,
+    80,
+    1152,
+    144
+   ],
+   "virtualId": 1858
+  },
+  {
+   "class": "android.view.View",
+   "screenReaderFocusable": true,
+   "checkable": true,
+   "focusable": true,
+   "focused": true,
+   "collectionItem": {
+    "row": 0,
+    "column": 0,
+    "selected": false,
+    "heading": false
+   },
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    }
+   ],
+   "frame": [
+    64,
+    80,
+    1152,
+    144
+   ],
+   "virtualId": 1858
+  },
+  {
+   "class": "android.view.View",
+   "screenReaderFocusable": true,
+   "checkable": true,
+   "focusable": true,
+   "focused": true,
+   "collectionItem": {
+    "row": 0,
+    "column": 0,
+    "selected": false,
+    "heading": false
+   },
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    }
+   ],
+   "frame": [
+    64,
+    80,
+    1152,
+    144
+   ],
+   "virtualId": 1858
+  }
+ ],
+ "events": [
+  {
+   "type": "TYPE_WINDOW_STATE_CHANGED",
+   "via": "system",
+   "text": [],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "android.app.Presentation"
+  },
+  {
+   "type": "TYPE_WINDOW_CONTENT_CHANGED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 1,
+   "class": "android.view.ViewGroup"
+  },
+  {
+   "type": "TYPE_WINDOW_STATE_CHANGED",
+   "via": "system",
+   "text": [
+    "AWC Native"
+   ],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "dev.awc.playground.LivePreviewActivity"
+  },
+  {
+   "type": "TYPE_VIEW_FOCUSED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "android.view.ViewGroup"
+  },
+  {
+   "type": "TYPE_WINDOW_CONTENT_CHANGED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 1,
+   "class": "android.view.ViewGroup"
+  }
+ ]
+}

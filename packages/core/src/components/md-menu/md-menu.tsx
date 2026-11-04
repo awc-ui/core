@@ -21,6 +21,12 @@ const NATIVE_EXPANDABLE_TAGS = new Set(['BUTTON', 'SUMMARY']);
 
 let menuIdCounter = 0;
 
+/** ARIA element reflection — lets the shadow-internal surface be labelled by a
+ *  light-DOM anchor (see updateAnchorAria). Absent in older engines and in the
+ *  spec test DOM, which keep the plain `aria-labelledby` IDREF. */
+const SUPPORTS_LABEL_REFLECTION =
+  typeof HTMLElement !== 'undefined' && 'ariaLabelledByElements' in HTMLElement.prototype;
+
 @Component({ tag: 'md-menu', styleUrl: 'md-menu.css', shadow: true })
 export class MdMenu {
   @Element() el!: HTMLElement;
@@ -191,6 +197,12 @@ export class MdMenu {
    * inherited one. 0 = default, -4 = ultra-compact.
    */
   @Prop({ reflect: true }) density: 0 | -1 | -2 | -3 | -4 = 0;
+
+  /** A flyout rendered by an md-sub-menu-item (`slot="submenu"`, no anchor). */
+  private get isSubmenu(): boolean {
+    return !this.anchor && this.el.getAttribute('slot') === 'submenu'
+      && this.el.parentElement?.tagName === 'MD-SUB-MENU-ITEM';
+  }
 
   /** True when the popup should expose listbox semantics (prop or provider). */
   private get asListbox(): boolean {
@@ -512,6 +524,11 @@ export class MdMenu {
 
     // Escape belongs to the innermost popup, even when filtering leaves no
     // items. Do not let the parent dialog handle the same dismissal key.
+    // A SUBMENU is the exception: its row owns its open state, so Escape is left
+    // to bubble to that md-sub-menu-item, which closes the flyout, clears its
+    // own aria-expanded and takes focus back. Closing here instead left the row
+    // "expanded" and focus stranded inside a menu that was about to go inert.
+    if (e.key === 'Escape' && this.isSubmenu) return;
     if (e.key === 'Escape') {
       e.preventDefault();
       e.stopPropagation();
@@ -955,6 +972,18 @@ export class MdMenu {
     }
     if (supportsExpanded) anchorEl.setAttribute('aria-expanded', open ? 'true' : 'false');
     else anchorEl.removeAttribute('aria-expanded');
+
+    // Name the menu after its anchor. The surface sits in THIS shadow root and the
+    // anchor usually in the light DOM, so an `aria-labelledby` IDREF can't resolve
+    // across that boundary and the menu went unnamed. ARIA element reflection may
+    // reference an element in an ancestor tree, so hand the anchor over directly.
+    // (Where reflection is missing, render() keeps the IDREF attribute instead.)
+    const surface = this.el.shadowRoot?.querySelector('.md-menu__surface') as
+      | (HTMLElement & { ariaLabelledByElements?: Element[] | null })
+      | null;
+    if (surface && SUPPORTS_LABEL_REFLECTION) {
+      surface.ariaLabelledByElements = open && !this.asListbox ? [anchorEl] : null;
+    }
   }
 
   /** Restores the ancestor `isolation` this menu relaxed for the current open. */
@@ -1467,7 +1496,7 @@ export class MdMenu {
           role={this.asListbox ? 'presentation' : 'menu'}
           id={this.menuId}
           aria-orientation={this.asListbox ? undefined : 'vertical'}
-          aria-labelledby={this.asListbox ? undefined : this.anchor || undefined}
+          aria-labelledby={this.asListbox || SUPPORTS_LABEL_REFLECTION ? undefined : this.anchor || undefined}
         >
           {/* Pinned header above the scroll area (e.g. a virtualized select's
               search field). Empty — and zero-cost — for every other menu. */}

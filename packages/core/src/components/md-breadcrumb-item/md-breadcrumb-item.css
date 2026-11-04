@@ -25,7 +25,9 @@
    ========================================================== */
 
 :host {
-  --_link-color: var(--md-breadcrumb-item-link-color, var(--md-sys-color-on-surface-variant, #49454F));
+  /* The trail-level `--md-breadcrumbs-text-color` (set on md-breadcrumbs, inherited by its
+     crumbs) is the documented resting label colour; the per-item hook still wins. */
+  --_link-color: var(--md-breadcrumb-item-link-color, var(--md-breadcrumbs-text-color, var(--md-sys-color-on-surface-variant, #49454F)));
   --_current-color: var(--md-breadcrumb-item-current-color, var(--md-sys-color-on-secondary-container, #1D192B));
   --_current-bg: var(--md-breadcrumb-item-current-bg, var(--md-sys-color-secondary-container, #E8DEF8));
   /* 61% (not the M3 38% disabled tint) so a disabled crumb still meets WCAG
@@ -53,6 +55,41 @@
   font-weight: var(--md-sys-typescale-label-large-font-weight, 500);
   line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
   letter-spacing: var(--md-sys-typescale-label-large-letter-spacing, 0.1px);
+
+  /* Staggered entrance (fade + inline slide). Declared on the crumb's own host so the
+     keyframes resolve in this shadow root; `--_enter-index` is the crumb's position
+     (set by render), and the stagger caps after the twelfth crumb. */
+  --_enter-duration: var(--md-sys-motion-spring-spatial-default-duration, 500ms);
+  --_enter-easing: var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00));
+  animation: md-breadcrumb-enter var(--_enter-duration) var(--_enter-easing) both;
+  animation-delay: calc(var(--md-breadcrumbs-stagger, 40ms) * min(var(--_enter-index, 0), 11));
+}
+
+/* RTL: slide in from the opposite side. */
+:host(:dir(rtl)) {
+  animation-name: md-breadcrumb-enter-rtl;
+}
+
+@keyframes md-breadcrumb-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes md-breadcrumb-enter-rtl {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 :host(.md-breadcrumb-item--collapsed) {
@@ -60,8 +97,7 @@
 }
 
 /* ==========================================================
-   1. SEPARATOR — fades in alongside the item (parent uses a
-   stagger via animation-delay).
+   1. SEPARATOR — fades in with the crumb's own entrance.
    ========================================================== */
 .md-breadcrumb-item__separator {
   color: var(--md-breadcrumbs-separator-color, var(--md-sys-color-on-surface-variant, #49454F));
@@ -203,6 +239,9 @@
    5. REDUCED MOTION
    ========================================================== */
 @media (prefers-reduced-motion: reduce) {
+  :host {
+    animation: none;
+  }
   .md-breadcrumb-item__link,
   .md-breadcrumb-item__static,
   .md-breadcrumb-item__icon .material-symbols-outlined,

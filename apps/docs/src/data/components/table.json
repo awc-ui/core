@@ -425,7 +425,13 @@
     "md-table-sort-label",
     "md-progress-indicator"
   ],
-  "dataTypes": [],
+  "dataTypes": [
+    {
+      "name": "MdTableSortOrder",
+      "kind": "type",
+      "body": "'asc' | 'desc' | 'none'"
+    }
+  ],
   "callableProps": [],
   "eventTypes": [
     {
@@ -433,11 +439,6 @@
       "kind": "interface",
       "extends": "",
       "body": "  /** Column id of the active sort, or empty for \"no sort\". */\n  column: string;\n  /** Sort direction. */\n  order: MdTableSortOrder;"
-    },
-    {
-      "name": "MdTableSortOrder",
-      "kind": "type",
-      "body": "'asc' | 'desc' | 'none'"
     },
     {
       "name": "MdTableSelectionState",

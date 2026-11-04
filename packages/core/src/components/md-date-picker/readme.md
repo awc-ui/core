@@ -356,16 +356,25 @@ Sourced from [M3 · Date pickers · Guidelines](https://m3.material.io/component
 semantics with `aria-selected`, `aria-current="date"` on today and a full
 localized date as the accessible name; arrow keys move by day and week, Page
 Up / Page Down by month, Shift + Page Up / Page Down by year. Disabled dates are
-exposed as `disabled`, not merely greyed. The trigger toggle carries
+exposed as `disabled`, not merely greyed. The modal year grid is a keyboard grid
+too: it is one Tab stop (roving tabindex) that receives focus on the current
+year when it opens; arrows move by one year across and three years down, Home /
+End to the start / end of the row, Ctrl + Home / Ctrl + End to the first / last
+year of the list, Page Up / Page Down by six rows, and disabled years are
+skipped. Enter or Space picks the year and focus returns to the day grid. The trigger toggle carries
 `aria-haspopup="dialog"` and a live `aria-expanded`. Modal variants trap Tab
 inside the panel and restore focus to the previously focused element on close.
 `label` names the field and errors surface in the supporting line, so
 `reserve-supporting-space` avoids the layout jump when one appears. The
 navigation buttons are named entirely by the label props — untranslated, they are
-the weakest part of a localized picker.
+the weakest part of a localized picker. Under `prefers-reduced-motion: reduce`
+the panel entrance and exit, the month / year menu and year grid blooms, the
+month slide and the navigation chevron / menu caret fades are all removed.
 
 **RTL** — the calendar grid, the navigation chevrons and the field mirror under
-`dir="rtl"`, and the docked panel's start/end alignment flips with it. Set
+`dir="rtl"`, and the docked panel's start/end alignment flips with it. Arrow
+keys follow the visual direction: in a mirrored day or year grid ArrowRight moves
+to the cell painted on the right, which is the previous day or year. Set
 `locale` to a matching RTL locale so weekday order and formatting agree.
 
 **Density** — `density="-1…-4"` locally overrides the inherited `data-density`

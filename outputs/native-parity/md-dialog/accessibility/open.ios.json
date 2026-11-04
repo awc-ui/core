@@ -1,0 +1,164 @@
+{
+ "tag": "md-dialog",
+ "case": "open",
+ "elements": [
+  {
+   "class": "AccessibilityNode",
+   "containers": [
+    "modal",
+    "semanticGroup:Project details",
+    "modal"
+   ],
+   "depth": 1,
+   "frame": [
+    64,
+    353.8333333333333,
+    153,
+    28.333333333333314
+   ],
+   "label": "Project details",
+   "traits": [
+    "staticText"
+   ]
+  },
+  {
+   "class": "AccessibilityNode",
+   "containers": [
+    "modal",
+    "semanticGroup:Project details",
+    "modal",
+    "semanticGroup"
+   ],
+   "depth": 3,
+   "frame": [
+    64,
+    400,
+    330,
+    16.666666666666686
+   ],
+   "label": "Every great project starts with a shared workspace.",
+   "traits": [
+    "staticText"
+   ]
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "modal",
+    "semanticGroup:Project details",
+    "modal",
+    "semanticGroup"
+   ],
+   "depth": 2,
+   "frame": [
+    434.3333333333333,
+    416,
+    75.66666666666669,
+    40
+   ],
+   "interactive": true,
+   "label": "Cancel",
+   "traits": [
+    "button"
+   ]
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "modal",
+    "semanticGroup:Project details",
+    "modal",
+    "semanticGroup"
+   ],
+   "depth": 2,
+   "frame": [
+    518,
+    416,
+    58,
+    40
+   ],
+   "interactive": true,
+   "label": "OK",
+   "traits": [
+    "button"
+   ]
+  }
+ ],
+ "focus": [
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     518,
+     416,
+     58,
+     40
+    ],
+    "interactive": true,
+    "label": "OK",
+    "traits": [
+     "button"
+    ]
+   }
+  },
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     434.3333333333333,
+     416,
+     75.66666666666669,
+     40
+    ],
+    "interactive": true,
+    "label": "Cancel",
+    "traits": [
+     "button"
+    ]
+   }
+  },
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     518,
+     416,
+     58,
+     40
+    ],
+    "interactive": true,
+    "label": "OK",
+    "traits": [
+     "button"
+    ]
+   }
+  },
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     434.3333333333333,
+     416,
+     75.66666666666669,
+     40
+    ],
+    "interactive": true,
+    "label": "Cancel",
+    "traits": [
+     "button"
+    ]
+   }
+  }
+ ],
+ "id": "md-dialog/open",
+ "image": {
+  "scale": 3,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "ios": "26.3.1",
+ "platform": "ios"
+}

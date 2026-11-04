@@ -1,0 +1,414 @@
+{
+ "tag": "md-dialog",
+ "case": "open",
+ "request": {
+  "tag": "md-dialog",
+  "properties": {
+   "open": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "enabled": true,
+         "frame": [
+          64,
+          74,
+          153,
+          28
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Project details"
+        },
+        {
+         "actions": [
+          "AXScrollLeftByPage",
+          "AXScrollRightByPage",
+          "AXScrollUpByPage",
+          "AXScrollDownByPage"
+         ],
+         "children": [
+          {
+           "enabled": true,
+           "frame": [
+            64,
+            120,
+            330,
+            16
+           ],
+           "identifier": "9FA277D9-0B0C-4150-BEBB-F781B0B90744",
+           "role": "AXStaticText",
+           "roleDescription": "text",
+           "value": "Every great project starts with a shared workspace."
+          }
+         ],
+         "focused": false,
+         "frame": [
+          40,
+          104,
+          560,
+          32
+         ],
+         "role": "AXScrollArea",
+         "roleDescription": "scroll area"
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Cancel",
+           "enabled": true,
+           "expanded": false,
+           "focused": true,
+           "frame": [
+            434.5,
+            136,
+            75.5,
+            40
+           ],
+           "identifier": "component.cancel-button",
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          },
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "OK",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            518,
+            136,
+            58,
+            40
+           ],
+           "identifier": "component.ok-button",
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          }
+         ],
+         "description": "",
+         "focused": false,
+         "frame": [
+          64,
+          136,
+          512,
+          40
+         ],
+         "identifier": "component.actions",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        }
+       ],
+       "description": "Project details",
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        15,
+        23,
+        610,
+        194
+       ],
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      240
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    240
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": {
+  "class": "AWCNativeButtonFocusView",
+  "description": "Cancel",
+  "frame": [
+   434.5,
+   136,
+   75.5,
+   40
+  ],
+  "identifier": "component.cancel-button",
+  "role": "AXButton"
+ },
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "9FA277D9-0B0C-4150-BEBB-F781B0B90744",
+    "properties": {
+     "text": "Every great project starts with a shared workspace."
+    },
+    "tag": "#text"
+   }
+  ],
+  "id": "component",
+  "properties": {
+   "cancelLabel": "",
+   "closeLabel": "",
+   "closeable": true,
+   "density": 0,
+   "dialogAriaLabel": "",
+   "divider": false,
+   "fullscreen": false,
+   "headerDivider": false,
+   "headline": "Project details",
+   "icon": "",
+   "locale": "en-US",
+   "okLabel": "",
+   "open": true,
+   "scrimDismissible": true
+  },
+  "tag": "md-dialog"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "OK",
+    "frame": [
+     518,
+     136,
+     58,
+     40
+    ],
+    "identifier": "component.ok-button",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Cancel",
+    "frame": [
+     434.5,
+     136,
+     75.5,
+     40
+    ],
+    "identifier": "component.cancel-button",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "OK",
+    "frame": [
+     518,
+     136,
+     58,
+     40
+    ],
+    "identifier": "component.ok-button",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Cancel",
+    "frame": [
+     434.5,
+     136,
+     75.5,
+     40
+    ],
+    "identifier": "component.cancel-button",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 240,
+     "width": 640,
+     "x": 0,
+     "y": 0
+    },
+    "id": "component",
+    "name": "md-dialog"
+   },
+   {
+    "bounds": {
+     "height": 64,
+     "width": 560,
+     "x": 40,
+     "y": 139.45784556304002
+    },
+    "id": "component.actions",
+    "name": "actions",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 75.5,
+     "x": 434.5,
+     "y": 139.45784556304002
+    },
+    "id": "component.cancel-button",
+    "name": "cancel-button",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 144,
+     "width": 560,
+     "x": 40,
+     "y": 51.457845563040024
+    },
+    "id": "component.container",
+    "metrics": {
+     "label": "Project details",
+     "radius": 28,
+     "role": "alertdialog"
+    },
+    "name": "container",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 144,
+     "width": 560,
+     "x": 40,
+     "y": 51.457845563040024
+    },
+    "id": "component.container-motion",
+    "metrics": {
+     "opacity": 0.8271077218479985,
+     "renderTime": 1031495747.3638753,
+     "translateY": 3.4578455630400295
+    },
+    "name": "container-motion",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 32,
+     "width": 560,
+     "x": 40,
+     "y": 107.45784556304002
+    },
+    "id": "component.content",
+    "metrics": {
+     "fontSize": 14,
+     "lineHeight": 20
+    },
+    "name": "content",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 56,
+     "width": 560,
+     "x": 40,
+     "y": 51.457845563040024
+    },
+    "id": "component.header",
+    "name": "header",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 32,
+     "width": 153,
+     "x": 64,
+     "y": 75.45784556304002
+    },
+    "id": "component.headline",
+    "name": "headline",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 58,
+     "x": 518,
+     "y": 139.45784556304002
+    },
+    "id": "component.ok-button",
+    "name": "ok-button",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 240,
+     "width": 640,
+     "x": 0,
+     "y": 0
+    },
+    "id": "component.scrim",
+    "metrics": {
+     "opacity": 0.8271077218479985,
+     "renderTime": 1031495747.3638753
+    },
+    "name": "scrim",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

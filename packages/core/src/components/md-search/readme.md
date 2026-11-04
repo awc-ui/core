@@ -163,11 +163,18 @@ built-in loading indicator in the trailing cluster while `loading`).
   either set the component renders no resting affordance of its own.
 - **`full-screen` locks document scroll** while open (compensating for the
   scrollbar width so the page does not shift) and **traps Tab** inside the
-  overlay. `docked` is non-modal: Tab continues into the document.
+  overlay. The trap walks the composed tree, so the slotted results (including
+  a row whose tab stop lives in its own shadow, like md-list's roving row) are
+  in the Tab cycle before it wraps. `docked` is non-modal: Tab continues into
+  the document, and Arrow keys and Escape typed in an unrelated page control
+  are left to that control — the search acts on them only while focus is in
+  the search, on its external trigger, or nowhere.
 - While open, **ArrowDown / ArrowUp move focus through the slotted results**;
   Down from the input lands on the first item, Up from the first item returns
   to the input. The steppable rows are the ones matching `md-list-item`,
   `[role="option"]`, `[role="menuitem"]`, `[data-search-result]` or `li`.
+- An Enter that commits an IME composition (`isComposing`, or WebKit's
+  `keyCode` 229) neither submits nor opens the view.
 - `escape-closes` and `dismiss-on-outside-click` both default **on**. The
   outside-click watcher runs in both layouts on `mousedown` (capture) and
   deliberately ignores clicks on a wired external trigger, so that trigger owns

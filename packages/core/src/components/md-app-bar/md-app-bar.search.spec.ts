@@ -96,12 +96,13 @@ describe('md-app-bar — search variant', () => {
         const page = await create('variant="search"');
         const onActivate = jest.fn();
         page.root!.addEventListener('mdSearchActivate', onActivate);
-        const ev = new KeyboardEvent('keydown', { key, bubbles: true });
+        const ev = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
         input(page)!.dispatchEvent(ev);
         await page.waitForChanges();
         expect(onActivate).toHaveBeenCalled();
-        // Space would otherwise scroll the page.
-        expect(ev.defaultPrevented).toBe(true);
+        // Enter has no default to keep; Space is a character in this text field and must
+        // reach it (a focused text input never scrolls the page on Space).
+        expect(ev.defaultPrevented).toBe(key === 'Enter');
       }
     });
 

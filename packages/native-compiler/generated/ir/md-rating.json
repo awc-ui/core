@@ -336,7 +336,7 @@
     "attributes": [
       {
         "name": "class",
-        "value": "{\n          'md-rating': true,\n          [`md-rating--${this.size}`]: true,\n          'md-rating--readonly': this.readonly,\n          'md-rating--disabled': this.disabled,\n          'md-rating--soft-disabled': this.softDisabled,\n          'md-rating--focused': this.focused,\n        }"
+        "value": "{\n          'md-rating': true,\n          [`md-rating--${this.size}`]: true,\n          'md-rating--readonly': this.readonly,\n          'md-rating--disabled': this.disabled,\n          'md-rating--soft-disabled': this.softDisabled,\n          'md-rating--focused': this.focused,\n          'md-rating--outline-empty': this.outlineEmpty,\n        }"
       }
     ],
     "children": [
@@ -497,7 +497,7 @@
     "styleUrl": "md-rating.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "c1afc960f3705637b448ebca5d0bf5020c7a121fa4b0cb4e24fc2fdc25dccfec"
+    "sha256": "db950f6c361cd8d039c81b3963d7ddac057cce82709e41c639b20abcae208bac"
   },
   "styles": [
     {
@@ -947,11 +947,27 @@
           "property": "font-variation-settings",
           "value": "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24",
           "important": false
+        },
+        {
+          "property": "clip-path",
+          "value": "inset(0 var(--_fill-clip, 0%) 0 0)",
+          "important": false
         }
       ]
     },
     {
-      "selector": ":host([outline-empty]) .md-rating__icon--bg",
+      "selector": ":host(:dir(rtl)) .md-rating__icon--fg",
+      "context": null,
+      "declarations": [
+        {
+          "property": "clip-path",
+          "value": "inset(0 0 0 var(--_fill-clip, 0%))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-rating--outline-empty) .md-rating__icon--bg",
       "context": null,
       "declarations": [
         {
@@ -1186,17 +1202,6 @@
       ]
     },
     {
-      "selector": ":host-context([dir=\"rtl\"]) .md-rating__items,\n:host([dir=\"rtl\"]) .md-rating__items",
-      "context": null,
-      "declarations": [
-        {
-          "property": "flex-direction",
-          "value": "row-reverse",
-          "important": false
-        }
-      ]
-    },
-    {
       "selector": ".md-rating__item,\n  .md-rating__icon--state",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
@@ -1371,79 +1376,114 @@
         "precision",
         "size",
         "readonly",
-        "icon",
-        "emptyIcon",
-        "showValueLabel",
-        "ratingLabel",
         "disabled",
         "softDisabled",
-        "name"
-      ],
-      "events": [
-        "mdChange"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
+        "icon",
+        "emptyIcon",
         "outlineEmpty",
         "getLabel",
+        "showValueLabel",
+        "ratingLabel",
+        "name",
         "hover",
         "density"
       ],
-      "unsupportedEvents": [
-        "mdHover"
+      "events": [
+        "mdHover",
+        "mdChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "focusRating"
       ],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Tap an already full star to choose its half value when precision is 0.5. Native hover preview is not implemented.",
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+        "Dedicated native rating: precision 1 / 0.5, hover preview, keyboard, pop / state layer / ripple motion, readonly, disabled and soft-disabled, the value label; getLabel goes through the native label closure; hooks through AWCRatingAppearance; focusRating() through AWCRatingController.",
+        "Host value changes are validated and clamped like @Watch('value'); a smaller max re-clamps the value.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint, pointer / keyboard / touch replays with events, motion per frame (plain and reduced motion), lifecycle (runtime property changes through the Stencil watchers, form reset), RTL."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcRatingAppearance(AWCRatingAppearance)",
+        "fields": [
+          "itemSize",
+          "itemGap",
+          "activeColor",
+          "inactiveColor",
+          "focusRingColor",
+          "focusRingWidth",
+          "focusRingOffset",
+          "stateLayerColor",
+          "valueLabelColor",
+          "valueLabelFont",
+          "popScale",
+          "duration",
+          "iconFontFamily"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "value",
         "defaultValue",
-        "disabled",
         "max",
-        "name",
-        "readonly",
-        "showValueLabel",
-        "softDisabled",
-        "value"
-      ],
-      "events": [
-        "mdChange"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
         "precision",
         "size",
+        "readonly",
+        "disabled",
+        "softDisabled",
         "icon",
         "emptyIcon",
         "outlineEmpty",
         "getLabel",
+        "showValueLabel",
         "ratingLabel",
+        "name",
         "hover",
         "density"
       ],
-      "unsupportedEvents": [
-        "mdHover"
+      "events": [
+        "mdHover",
+        "mdChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "focusRating"
       ],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
-        "Native whole-star rating; fractional precision, hover and custom icon rendering remain unsupported."
+        "Dedicated native rating: precision 1 / 0.5, hover preview, keyboard, pop / state layer / ripple motion, readonly, disabled and soft-disabled, the value label; getLabel goes through the native label closure; hooks through AWCRatingAppearance; focusRating() through AWCRatingController.",
+        "Host value changes are validated and clamped like @Watch('value'); a smaller max re-clamps the value.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint, pointer / keyboard / touch replays with events, motion per frame (plain and reduced motion), lifecycle (runtime property changes through the Stencil watchers, form reset), RTL."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCRatingAppearanceScope(AWCRatingAppearance)",
+        "fields": [
+          "itemSize",
+          "itemGap",
+          "activeColor",
+          "inactiveColor",
+          "focusRingColor",
+          "focusRingWidth",
+          "focusRingOffset",
+          "stateLayerColor",
+          "valueLabelColor",
+          "valueLabelFont",
+          "popScale",
+          "duration",
+          "iconFontFamily"
+        ]
+      }
     }
   }
 }

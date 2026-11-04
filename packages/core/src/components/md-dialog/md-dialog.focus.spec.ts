@@ -168,10 +168,13 @@ describe('md-dialog — focus trap', () => {
       expect(focused).toHaveLength(0);
     });
 
-    it('does nothing when the dialog holds no focusable control', async () => {
+    it('keeps focus on the modal surface when it holds no focusable control', async () => {
       const page = await create('<p>Nothing to focus here.</p>');
+      const panel = page.root!.shadowRoot!.querySelector<HTMLElement>('[part=container]')!;
+      const focus = jest.spyOn(panel, 'focus');
       const ev = tab(page);
-      expect(ev.defaultPrevented).toBe(false);
+      expect(ev.defaultPrevented).toBe(true);
+      expect(focus).toHaveBeenCalled();
     });
 
     it('treats a single stop as both ends', async () => {
@@ -201,6 +204,33 @@ describe('md-dialog — focus trap', () => {
       controls.forEach(expose);
       return { host, shadow, controls };
     }
+
+    it('excludes disabled controls even when they have an explicit tabindex', async () => {
+      const page = await create('<button id="disabled" disabled tabindex="0">Disabled</button><button id="ready">Ready</button>');
+      const { els } = makeFocusable(page);
+      expect(page.rootInstance.getFocusableElements()).toEqual([els[1]]);
+    });
+
+    it('excludes hidden inputs even with an explicit tabindex and reported box', async () => {
+      const page = await create('<input id="hidden-input" type="hidden" tabindex="0"><button id="ready">Ready</button>');
+      makeFocusable(page);
+      expect(page.rootInstance.getFocusableElements().map((element: HTMLElement) => element.id)).toEqual(['ready']);
+    });
+
+    it('keeps the first legend and links reachable inside a disabled fieldset', async () => {
+      const page = await create('<fieldset disabled><legend><button id="legend">Legend</button></legend><button id="blocked">Blocked</button><a href="#" id="link">Link</a><legend><button id="later">Later legend</button></legend></fieldset><button id="ready">Ready</button>');
+      const { els } = makeFocusable(page);
+      expect(page.rootInstance.getFocusableElements()).toEqual([els[0], els[2], els[4]]);
+    });
+
+    it('excludes a styled hidden branch from the focus order', async () => {
+      const page = await create('<div style="visibility:hidden"><button id="hidden">Hidden</button></div><button id="ready">Ready</button>');
+      const { els } = makeFocusable(page);
+      // mock-doc does not resolve authored CSS into computed styles.
+      const computed = jest.spyOn(global, 'getComputedStyle').mockImplementation(element => (element as HTMLElement).style);
+      try { expect(page.rootInstance.getFocusableElements().map((element: HTMLElement) => element.id)).toEqual([els[1].id]); }
+      finally { computed.mockRestore(); }
+    });
 
     it.each([true, false])('visits an earlier shadow field before a later native button (direct slot: %s)', async (direct) => {
       const content = '<focus-field id="field"></focus-field><button id="later">Later</button>';

@@ -701,14 +701,30 @@ export class MdSubMenuItem {
   private handleKeyDown = (e: KeyboardEvent) => {
     if (this.disabled) return;
 
-    if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
+    // The flyout opens toward the inline END, so the key that opens it points
+    // there and the opposite one closes it: ArrowRight/ArrowLeft in LTR,
+    // mirrored in RTL (where autoPositionSubmenu places the flyout on the left).
+    const rtl = this.resolveDirection() === 'rtl';
+    const openKey = rtl ? 'ArrowLeft' : 'ArrowRight';
+    const closeKey = rtl ? 'ArrowRight' : 'ArrowLeft';
+    // The nested menu is this row's light-DOM child, so every key pressed on an
+    // item INSIDE the flyout bubbles through this handler too. Only keys aimed
+    // at the row itself may open (or re-open) the flyout — otherwise ArrowRight,
+    // Enter or Space on a child item re-ran show() on the open submenu, which
+    // ripples this row and throws focus back to the submenu's first item.
+    const fromRow = e.target === this.el;
+
+    if (fromRow && (e.key === openKey || e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
       e.stopPropagation();
       triggerRipple(this.el);
       this.openSubmenu(true);
     }
 
-    if ((e.key === 'ArrowLeft' || e.key === 'Escape') && this.submenuOpen) {
+    // Closing keys are honoured from the row AND from inside the flyout: that is
+    // how ArrowLeft (ArrowRight in RTL) and Escape on a child item return to
+    // this row. md-menu leaves a submenu's Escape to the row for this reason.
+    if ((e.key === closeKey || e.key === 'Escape') && this.submenuOpen) {
       e.preventDefault();
       e.stopPropagation();
       // Same teardown as a mouse-out close — routed through closeSubmenu so the

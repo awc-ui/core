@@ -1,0 +1,240 @@
+{
+ "tag": "md-ripple",
+ "at": "2026-10-29T11:11:42.901Z",
+ "rows": [
+  {
+   "case": "default",
+   "web": {
+    "elements": [
+     "button:Tap to see the ripple"
+    ],
+    "texts": [],
+    "focus": [
+     "button:Tap to see the ripple"
+    ],
+    "contrast": {
+     "measured": 2,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Tap to see the ripple"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Tap to see the ripple",
+      "button:Tap to see the ripple"
+     ],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Tap to see the ripple"
+     ],
+     "texts": [],
+     "focus": [
+      "button:Tap to see the ripple",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Tap to see the ripple"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Tap to see the ripple",
+      "button:Tap to see the ripple"
+     ],
+     "findings": [],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 10,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "disabled",
+   "web": {
+    "elements": [
+     "button:Tap to see the ripple"
+    ],
+    "texts": [],
+    "focus": [
+     "button:Tap to see the ripple"
+    ],
+    "contrast": {
+     "measured": 2,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Tap to see the ripple"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Tap to see the ripple",
+      "button:Tap to see the ripple"
+     ],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Tap to see the ripple"
+     ],
+     "texts": [],
+     "focus": [
+      "button:Tap to see the ripple",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Tap to see the ripple"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Tap to see the ripple",
+      "button:Tap to see the ripple"
+     ],
+     "findings": [],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 10,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

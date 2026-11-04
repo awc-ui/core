@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="dev.awc.playground.NativeSnackbarParityTest" tests="5" failures="1" errors="0" skipped="0" time="37.169" timestamp="2026-10-20T21:26:25" hostname="localhost">
+  <properties>
+    <property name="device" value="AwcNative(AVD) - 16" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="all122PristineDefaultPaletteCasesPaintWithoutInjectedTokens" classname="dev.awc.playground.NativeSnackbarParityTest" time="17.002">
+    <failure>java.lang.AssertionError: light/message-empty actual message glyph color absent (nearest=0.7647058789052216, expected=[0.9568627450980393, 0.9372549019607843, 0.9568627450980393, 1.0])
+light/all-styles actual surface paint Color(0.42352942, 0.54509807, 0.58431375, 1.0, sRGB IEC61966-2.1) differs from [0.48000000000000004, 0.6, 0.64, 1.0]
+light/all-styles-stacked-rtl actual surface paint Color(0.41960785, 0.5411765, 0.5803922, 1.0, sRGB IEC61966-2.1) differs from [0.48000000000000004, 0.6, 0.64, 1.0]
+dark/message-empty actual message glyph color absent (nearest=0.7098039274122201, expected=[0.19215686274509805, 0.18823529411764706, 0.2, 1.0])
+dark/all-styles actual surface paint Color(0.42352942, 0.54509807, 0.58431375, 1.0, sRGB IEC61966-2.1) differs from [0.48000000000000004, 0.6, 0.64, 1.0]
+dark/all-styles-stacked-rtl actual surface paint Color(0.41960785, 0.5411765, 0.5803922, 1.0, sRGB IEC61966-2.1) differs from [0.48000000000000004, 0.6, 0.64, 1.0]
+at org.junit.Assert.fail(Assert.java:89)
+at org.junit.Assert.assertTrue(Assert.java:42)
+at dev.awc.playground.NativeSnackbarParityTest.runMatrix(NativeSnackbarParityTest.kt:139)
+at dev.awc.playground.NativeSnackbarParityTest.all122PristineDefaultPaletteCasesPaintWithoutInjectedTokens(NativeSnackbarParityTest.kt:38)
+</failure>
+  </testcase>
+  <testcase name="all122NativeLayoutsMatchSourceViewportRootAndRealParts" classname="dev.awc.playground.NativeSnackbarParityTest" time="10.327" />
+  <testcase name="snackbarRetainedAllPropertiesAndCorrelatedImmediateMethods" classname="dev.awc.playground.LivePreviewSnackbarHostTest" time="1.44" />
+  <testcase name="snackbarPointerHoverPausesAndResizePreservesOriginalDeadline" classname="dev.awc.playground.LivePreviewSnackbarHostTest" time="5.02" />
+  <testcase name="snackbarConfiguredHeightRetainedResizeAndMethodClosedStateAreReal" classname="dev.awc.playground.LivePreviewSnackbarHostTest" time="2.766" />
+</testsuite>

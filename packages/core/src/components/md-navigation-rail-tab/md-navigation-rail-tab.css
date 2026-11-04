@@ -525,11 +525,16 @@ md-ripple {
 
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
+  /* The labels-selected rule re-declares the label transitions with a higher
+     specificity, so it is listed here too — otherwise a selected-only label still
+     grows (and pushes the icon). The horizontal pill has its own block below. */
   :host,
   .md-navigation-rail-tab__indicator,
   .md-navigation-rail-tab__state-layer,
   .md-navigation-rail-tab__icon,
-  .md-navigation-rail-tab__label {
+  .md-navigation-rail-tab__label,
+  :host(.md-navigation-rail-tab--labels-selected:not(.md-navigation-rail-tab--expanded))
+    .md-navigation-rail-tab__label {
     transition: none;
   }
 }
@@ -614,6 +619,14 @@ md-ripple {
 :host([data-orientation='horizontal']:focus-visible) .md-navigation-rail-tab__icon-wrapper {
   outline: 3px solid var(--_focus-ring-color);
   outline-offset: 2px;
+}
+
+/* Same specificity as the horizontal pill rules above, so it must come after them. */
+@media (prefers-reduced-motion: reduce) {
+  :host([data-orientation='horizontal']) .md-navigation-rail-tab__icon-wrapper,
+  :host([data-orientation='horizontal']) .md-navigation-rail-tab__icon-wrapper::after {
+    transition: none;
+  }
 }
 
 /* ---------- Disclosure caret ----------

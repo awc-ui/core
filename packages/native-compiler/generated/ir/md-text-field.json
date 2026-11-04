@@ -370,7 +370,7 @@
       "reflect": true,
       "attribute": "density",
       "optional": false,
-      "description": "Density scale: 0 (default 56px), -1 (52px), -2 (48px), -3 (44px)."
+      "description": "Density scale: 0 (default 56px), -1 (52px), -2 (48px), -3 (44px), -4 (40px)."
     },
     {
       "name": "multiline",
@@ -1237,7 +1237,7 @@
     "styleUrl": "md-text-field.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "864ce96c7dadd22754140c18b40c89b2986f7902bb393359e2daae1cf68a09d5"
+    "sha256": "69756a75280660ae5d6be4d5a602177ee6314843669041b2d0de6e632a40cc0e"
   },
   "styles": [
     {
@@ -4403,10 +4403,24 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
+        "reserveSupportingSpace",
+        "variant",
         "label",
         "value",
         "placeholder",
         "type",
+        "name",
+        "pattern",
+        "minLength",
+        "min",
+        "max",
+        "step",
+        "autocomplete",
+        "inputMode",
+        "enterKeyHint",
+        "autoCapitalize",
+        "spellcheck",
+        "disabled",
         "readOnly",
         "required",
         "error",
@@ -4419,15 +4433,23 @@
         "passwordToggle",
         "showPasswordLabel",
         "hidePasswordLabel",
+        "density",
         "multiline",
         "rows",
-        "disabled",
-        "max",
-        "min",
-        "minLength",
-        "name",
-        "pattern",
-        "step"
+        "speechToText",
+        "speechLang",
+        "restrict",
+        "formatter",
+        "parser",
+        "formatOn",
+        "focusBorderWidth",
+        "appearFocused",
+        "chipsWrap",
+        "debounce",
+        "throttle",
+        "inputRole",
+        "inputExpanded",
+        "inputAriaAutocomplete"
       ],
       "events": [
         "mdInput",
@@ -4435,41 +4457,10 @@
         "mdSearch",
         "mdClear",
         "mdPasswordToggle",
+        "mdSpeechResult",
         "mdValidityChange"
       ],
-      "methods": [],
-      "slots": [
-        "leading-icon",
-        "trailing-icon"
-      ],
-      "unsupportedProperties": [
-        "reserveSupportingSpace",
-        "variant",
-        "autocomplete",
-        "inputMode",
-        "enterKeyHint",
-        "autoCapitalize",
-        "spellcheck",
-        "density",
-        "speechToText",
-        "speechLang",
-        "restrict",
-        "formatter",
-        "parser",
-        "formatOn",
-        "focusBorderWidth",
-        "appearFocused",
-        "chipsWrap",
-        "debounce",
-        "throttle",
-        "inputRole",
-        "inputExpanded",
-        "inputAriaAutocomplete"
-      ],
-      "unsupportedEvents": [
-        "mdSpeechResult"
-      ],
-      "unsupportedMethods": [
+      "methods": [
         "setFocus",
         "select",
         "getInputElement",
@@ -4478,69 +4469,94 @@
         "checkValidity",
         "reportValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "leading-icon",
         "chips",
         "clear-icon",
         "password-toggle-icon",
         "speech-icon",
-        "error-icon"
+        "error-icon",
+        "trailing-icon"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native keyboard input and secure entry. Change commits on submit; HTML validity flags beyond required, JS formatter/parser/restrict and speech recognition remain unsupported.",
-        "clearable/passwordToggle external modes emit intent without mutating native state; internal and boolean true modes perform the change.",
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+        "Dedicated native text field (SwiftUI on AppKit/UIKit text input, Compose BasicTextField): all 47 properties — filled and outlined, density 0…−4, the floating label and outlined notch, prefix/suffix, counter, clearable / password toggle / speech-to-text in internal and external modes, single-line and auto-grow/fixed multiline, chips with chipsWrap, restrict, debounce/throttle mdSearch, the combobox input role — every event, the seven slots, seventeen hooks and typed parts for the container, label, input, supporting text and counter.",
+        "Real native text input: IME composition (marked text), selection, caret colour, secure entry with the password toggle, keyboard type / return key / content type from type, inputMode, enterKeyHint and autocomplete; no automatic capitalisation, correction or smart punctuation unless autoCapitalize asks for it (Chrome inserts exactly the keys typed).",
+        "Methods through AWCTextFieldController: setFocus(), select(), getValidity/checkValidity/reportValidity/setCustomValidity with Chrome's ValidityState flags and English messages; getInputElement() returns AWCTextFieldInputInfo (value, selection, focus, composition) instead of a DOM element. formatter/parser closures go through AWCTextFieldFormatting (.awcTextFieldFormatting / AWCTextFieldFormattingScope).",
+        "Forms: registers with the native form (name, value, constraint validation, reset without events); Enter submits a single-line field's form. Speech-to-text internal mode uses the platform recognizer (SFSpeechRecognizer with the app's usage descriptions; Android SpeechRecognizer with RECORD_AUDIO); external mode reports the microphone state.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153 (paint incl. ::part cases, per-frame motion, events and timing). On iOS a tap focuses on release (UIKit convention), so the focus motion starts one tap later than Chrome's mouse press."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "input",
+        "container",
+        "label",
+        "chips",
+        "supporting-text",
+        "counter"
+      ],
+      "appearance": {
+        "api": ".awcTextFieldAppearance(AWCTextFieldAppearance)",
+        "fields": [
+          "activeIndicatorColor",
+          "containerColor",
+          "containerShape",
+          "cursor",
+          "errorColor",
+          "filledPill",
+          "focusBorderWidth",
+          "focusInset",
+          "iconColor",
+          "iconSize",
+          "inputColor",
+          "labelColor",
+          "opticalNudge",
+          "outlineColor",
+          "paddingInlineStart",
+          "paddingInlineEnd",
+          "supportingTextColor"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "clearable",
-        "disabled",
-        "error",
-        "errorText",
-        "hidePasswordLabel",
-        "label",
-        "max",
-        "maxLength",
-        "min",
-        "minLength",
-        "multiline",
-        "name",
-        "passwordToggle",
-        "pattern",
-        "placeholder",
-        "prefixText",
-        "readOnly",
-        "required",
-        "rows",
-        "showPasswordLabel",
-        "step",
-        "suffixText",
-        "supportingText",
-        "type",
-        "value",
-        "variant"
-      ],
-      "events": [
-        "mdChange",
-        "mdClear",
-        "mdInput",
-        "mdPasswordToggle",
-        "mdSearch"
-      ],
-      "methods": [],
-      "slots": [
-        "trailing-icon"
-      ],
-      "unsupportedProperties": [
         "reserveSupportingSpace",
+        "variant",
+        "label",
+        "value",
+        "placeholder",
+        "type",
+        "name",
+        "pattern",
+        "minLength",
+        "min",
+        "max",
+        "step",
         "autocomplete",
         "inputMode",
         "enterKeyHint",
         "autoCapitalize",
         "spellcheck",
+        "disabled",
+        "readOnly",
+        "required",
+        "error",
+        "errorText",
+        "supportingText",
+        "prefixText",
+        "suffixText",
+        "maxLength",
+        "clearable",
+        "passwordToggle",
+        "showPasswordLabel",
+        "hidePasswordLabel",
         "density",
+        "multiline",
+        "rows",
         "speechToText",
         "speechLang",
         "restrict",
@@ -4556,11 +4572,16 @@
         "inputExpanded",
         "inputAriaAutocomplete"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdSearch",
+        "mdClear",
+        "mdPasswordToggle",
         "mdSpeechResult",
         "mdValidityChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "setFocus",
         "select",
         "getInputElement",
@@ -4569,19 +4590,57 @@
         "checkValidity",
         "reportValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "leading-icon",
         "chips",
         "clear-icon",
         "password-toggle-icon",
         "speech-icon",
-        "error-icon"
+        "error-icon",
+        "trailing-icon"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+        "Dedicated native text field (SwiftUI on AppKit/UIKit text input, Compose BasicTextField): all 47 properties — filled and outlined, density 0…−4, the floating label and outlined notch, prefix/suffix, counter, clearable / password toggle / speech-to-text in internal and external modes, single-line and auto-grow/fixed multiline, chips with chipsWrap, restrict, debounce/throttle mdSearch, the combobox input role — every event, the seven slots, seventeen hooks and typed parts for the container, label, input, supporting text and counter.",
+        "Real native text input: IME composition (marked text), selection, caret colour, secure entry with the password toggle, keyboard type / return key / content type from type, inputMode, enterKeyHint and autocomplete; no automatic capitalisation, correction or smart punctuation unless autoCapitalize asks for it (Chrome inserts exactly the keys typed).",
+        "Methods through AWCTextFieldController: setFocus(), select(), getValidity/checkValidity/reportValidity/setCustomValidity with Chrome's ValidityState flags and English messages; getInputElement() returns AWCTextFieldInputInfo (value, selection, focus, composition) instead of a DOM element. formatter/parser closures go through AWCTextFieldFormatting (.awcTextFieldFormatting / AWCTextFieldFormattingScope).",
+        "Forms: registers with the native form (name, value, constraint validation, reset without events); Enter submits a single-line field's form. Speech-to-text internal mode uses the platform recognizer (SFSpeechRecognizer with the app's usage descriptions; Android SpeechRecognizer with RECORD_AUDIO); external mode reports the microphone state.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153 (paint incl. ::part cases, per-frame motion, events and timing). On iOS a tap focuses on release (UIKit convention), so the focus motion starts one tap later than Chrome's mouse press."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "input",
+        "container",
+        "label",
+        "chips",
+        "supporting-text",
+        "counter"
+      ],
+      "appearance": {
+        "api": "AWCTextFieldAppearanceScope(AWCTextFieldAppearance)",
+        "fields": [
+          "activeIndicatorColor",
+          "containerColor",
+          "containerShape",
+          "cursor",
+          "errorColor",
+          "filledPill",
+          "focusBorderWidth",
+          "focusInset",
+          "iconColor",
+          "iconSize",
+          "inputColor",
+          "labelColor",
+          "opticalNudge",
+          "outlineColor",
+          "paddingInlineStart",
+          "paddingInlineEnd",
+          "supportingTextColor"
+        ]
+      }
     }
   }
 }

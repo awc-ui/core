@@ -201,12 +201,6 @@
     },
     {
       "name": "--md-tab-glide-duration"
-    },
-    {
-      "name": "--md-tab-glide-x"
-    },
-    {
-      "name": "--md-tab-glide-scale"
     }
   ],
   "render": {
@@ -417,7 +411,7 @@
     "styleUrl": "md-tab.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "e0a039398f8dc6522b63679fa355695e14396495be4308a18d0a286ee31acab2"
+    "sha256": "dc17f5972e473dd80026f2cba925b56df5dbd145488f5b085e79468d03f00c6a"
   },
   "styles": [
     {
@@ -1762,8 +1756,12 @@
         "label",
         "icon",
         "active",
+        "disabled",
+        "inlineIcon",
+        "variant",
         "badge",
-        "disabled"
+        "controls",
+        "density"
       ],
       "events": [
         "mdTabClick"
@@ -1773,48 +1771,76 @@
         "icon",
         "badge"
       ],
-      "unsupportedProperties": [
-        "inlineIcon",
-        "variant",
-        "controls",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
+      "notes": [
+        "Rendered by its md-tabs (geometry, state and motion) or, outside a tablist, as a single tab with its own active state; activation outside a tablist emits mdTabClick only.",
+        "Stacked (icon above the label) or inline icons, the secondary variant, badges (a count or a dot, on the icon or inline), density 0 to -4 and label truncation as the source; slotted icon and badge content renders natively.",
+        "Hover, press and keyboard focus (8 % / 12 % state layer, inset 3-point focus ring) with the md-ripple wave; colours transition over 200 ms."
+      ],
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": ".awcTabAppearance(AWCTabAppearance)",
+        "fields": [
+          "containerColor",
+          "activeLabelColor",
+          "inactiveLabelColor",
+          "activeIconColor",
+          "inactiveIconColor",
+          "activeIndicatorColor",
+          "activeIndicatorHeight",
+          "dividerColor",
+          "glideDuration"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "label",
+        "icon",
         "active",
         "disabled",
-        "icon",
-        "label"
-      ],
-      "events": [
-        "mdTabClick"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
         "inlineIcon",
         "variant",
         "badge",
         "controls",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "events": [
+        "mdTabClick"
+      ],
+      "methods": [],
+      "slots": [
         "icon",
         "badge"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Rendered by its md-tabs (geometry, state and motion) or, outside a tablist, as a single tab with its own active state; activation outside a tablist emits mdTabClick only.",
+        "Stacked (icon above the label) or inline icons, the secondary variant, badges (a count or a dot, on the icon or inline), density 0 to -4 and label truncation as the source; slotted icon and badge content renders natively.",
+        "Hover, press and keyboard focus (8 % / 12 % state layer, inset 3-point focus ring) with the md-ripple wave; colours transition over 200 ms."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCTabAppearanceScope(AWCTabAppearance)",
+        "fields": [
+          "containerColor",
+          "activeLabelColor",
+          "inactiveLabelColor",
+          "activeIconColor",
+          "inactiveIconColor",
+          "activeIndicatorColor",
+          "activeIndicatorHeight",
+          "dividerColor",
+          "glideDuration"
+        ]
+      }
     }
   }
 }

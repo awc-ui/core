@@ -1,6 +1,9 @@
+import { exerciseDateFormats, exerciseDateMenuKeyboard } from '../../../../packages/core/src/components/md-date-picker/test-utils/editing.browser';
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { expect, waitFor } from "storybook/test";
 import { html } from "lit";
+import { exerciseServerValidation } from '../../../../packages/core/src/components/md-checkbox/test-utils/form-validation.browser';
+import { exerciseDateKeyboard, exerciseDateMenus, exerciseDateTyping } from '../../../../packages/core/src/components/md-date-picker/test-utils/editing.browser';
 import { drivingCoverage, exerciseProps } from "../testing/coverage-mode";
 import { t } from "../i18n";
 
@@ -3428,4 +3431,38 @@ export const KeyboardNavigation: Story = {
       },
     );
   },
+};
+
+/** Server validation is queried silently and presented through this control. */
+export const ServerValidation: Story = {
+  render: () => html`<form><fieldset style="border:0;padding:0">
+    <button type="button">Outside control</button>
+    <md-date-picker data-form-contract name="entry" label="Form value" aria-label="Form value"></md-date-picker>
+  </fieldset></form>`,
+  play: async ({ canvasElement }) => {
+    await exerciseServerValidation(canvasElement.querySelector('md-date-picker') as HTMLElement);
+  },
+};
+
+export const CalendarKeyboardContract: Story = {
+  render: () => html`<md-date-picker label="Booking date"></md-date-picker>`,
+  play: async ({ canvasElement }) => exerciseDateKeyboard(canvasElement.querySelector('md-date-picker') as HTMLElement),
+};
+export const CalendarMenuContract: Story = {
+  render: () => html`<md-date-picker label="Booking date"></md-date-picker>`,
+  play: async ({ canvasElement }) => exerciseDateMenus(canvasElement.querySelector('md-date-picker') as HTMLElement),
+};
+export const TypedDateContract: Story = {
+  render: () => html`<md-date-picker label="Booking date"></md-date-picker>`,
+  play: async ({ canvasElement }) => exerciseDateTyping(canvasElement.querySelector('md-date-picker') as HTMLElement),
+};
+
+export const LocalizedDateEntry: Story = {
+ render: () => html`<md-date-picker label="Booking date"></md-date-picker>`,
+ play: async ({ canvasElement }) => exerciseDateFormats(canvasElement.querySelector('md-date-picker') as HTMLElement),
+};
+
+export const CalendarMenuKeyboard: Story = {
+ render: () => html`<md-date-picker label="Booking date"></md-date-picker>`,
+ play: async ({ canvasElement }) => exerciseDateMenuKeyboard(canvasElement.querySelector('md-date-picker') as HTMLElement),
 };

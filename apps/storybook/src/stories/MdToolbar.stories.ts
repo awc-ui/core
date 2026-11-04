@@ -976,3 +976,24 @@ export const EmailApp: Story = {
    roving member: the default Tab stop prefers an ENABLED sibling, but
    arrows still reach the disabled one (WAI-ARIA APG discoverability).
    ========================================================== */
+
+export const RuntimeControlClassification: Story = {
+  render: () => html`<md-toolbar aria-label="Formatting"><button id="runtime-bold" tabindex="2">Bold</button><div tabindex="0"><button id="runtime-italic">Italic</button></div><input type="checkbox" aria-label="Spellcheck"></md-toolbar>`,
+  play: async ({ canvasElement }) => {
+    const toolbar = canvasElement.querySelector('md-toolbar') as HTMLMdToolbarElement;
+    await waitFor(() => expect(toolbar.classList.contains('hydrated')).toBe(true));
+    const bold = canvasElement.querySelector('#runtime-bold') as HTMLButtonElement;
+    const italic = canvasElement.querySelector('#runtime-italic') as HTMLButtonElement;
+    italic.focus(); await toolbar.setFocus(); expect(document.activeElement).toBe(italic);
+    italic.setAttribute('role', 'checkbox'); italic.setAttribute('aria-checked', 'false');
+    await waitFor(() => expect(italic.hasAttribute('tabindex')).toBe(false));
+    await toolbar.setFocus(); expect(document.activeElement).toBe(bold);
+    toolbar.containerSemantics = 'generic'; await waitFor(() => expect(bold.getAttribute('tabindex')).toBe('2'));
+    toolbar.containerSemantics = 'toolbar'; toolbar.variant = 'floating'; toolbar.layout = 'vertical';
+    await waitFor(() => expect(toolbar.getAttribute('aria-orientation')).toBe('vertical'));
+    italic.removeAttribute('role'); italic.removeAttribute('aria-checked');
+    await waitFor(() => expect(italic.getAttribute('tabindex')).toBe('-1'));
+    bold.focus(); bold.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, composed: true }));
+    await waitFor(() => expect(document.activeElement).toBe(italic));
+  },
+};

@@ -11,8 +11,9 @@ keyboard, and text commands therefore reach the same content that the browser se
 Outside the scope, production adapters continue using their normal platform
 dialog and popup windows.
 
-The preview canvas expands while a modal is open; menus are centered and sheets
-use a fixed viewport. System-window placement, platform scrims, and sheet dragging
+The preview canvas expands while a modal is open; the legacy menu adapter is
+centered and sheets use a fixed viewport. FAB menus use their authored anchor
+and actual viewport through `AWCFabMenuScope`. System-window placement, platform scrims, and sheet dragging
 are not reproduced. This scope is for isolated component tooling, not production
 modal navigation. Keyboard Escape and existing native actions dismiss previews.
 
@@ -21,6 +22,22 @@ for explicitly supported text slots. It preserves structural fixtures such as ta
 items, table rows, menus and action buttons. Limits are 32 entries, 80 characters
 per name, 4096 UTF-8 bytes per value, and 32768 bytes in total. The older button
 `text` field remains supported; an explicit default-slot override takes priority.
+Named button icon slots also accept `{"kind":"symbol","value":"favorite"}`;
+the loader additionally accepts `{"kind":"progress"}` for a real 24dp circular
+progress indicator. Icon buttons accept text/symbol descriptors for their default
+and `selected` slots. Explicit empty Text content replaces the fallback glyph;
+omitting the slot restores it. These descriptors create native content, never HTML.
+
+For measurement tools, wrap one `AWCComponent` in `AWCInspectionScope(collector)`.
+`AWCInspectionCollector.snapshot()` returns native bounds and available renderer
+metrics, with stable part IDs and parent relationships. Layout values use dp;
+typography uses sp. Buttons report their surface, content and present label,
+icon and loader parts. Icon buttons report their root, state layer and active
+icon wrapper/glyph. Other adapters report their root bounds. Custom Text
+slots can attach both members of `rememberAWCInspectionText(...)`, supplying
+the name of the actual configured font resource. Unreported styles remain
+absent. Collection is opt-in and UI-thread-only; capture tools should retain
+the immutable snapshot belonging to the frame they render.
 
 ## Integration
 
@@ -105,7 +122,7 @@ AWCTheme {
 ```
 
 Colors accept `#RRGGBB`: `containerColor`, `labelColor`, `iconColor`,
-`trailingIconColor`, `loadingColor`, `stateLayerColor`, `outlineColor`.
+`trailingIconColor`, `loadingColor`, `stateLayerColor`, `outlineColor`, `focusRingColor`.
 All numeric parameters are nullable `Double`; dimensions use dp and typography
 uses sp. Accepted ranges are:
 
@@ -118,21 +135,29 @@ uses sp. Accepted ranges are:
 | `cornerRadius` / `outlineWidth` | 0–200 / 0–16 |
 | `paddingInline`, `paddingBlock` / `gap` | 0–128 / 0–64 |
 | `hoverOpacity`, `focusOpacity`, `pressedOpacity` | 0–1 |
+| `width`, `minWidth`, `maxWidth`, `height`, `minHeight` | 0–2400 |
 
 `paddingInline` is the per-side inset measured from the outer border edge;
 `paddingBlock` is per-side content padding inside the stroke. Original minimum
-button dimensions remain. An explicit corner radius stays fixed during press,
-selection and connected-button rendering. An explicit outline width enables a
+button dimensions remain unless overridden by `minWidth`/`minHeight`. Explicit
+width takes precedence over `fullWidth`; minimum dimensions take precedence over
+conflicting requested and maximum dimensions. Requested sizes can overflow a
+smaller parent, and the rendered content clips at the button surface.
+An explicit corner radius stays fixed during press and selection; connected
+edges use the source connected-corner rules. An explicit outline width enables a
 stroke on any variant; outline color alone retains that variant's source width.
 Disabled custom content retains 0.38 alpha, container and outline 0.12.
 
 Trailing icon size/color inherit the corresponding leading icon override unless
 provided separately; icon and loading colors otherwise inherit label color.
-Loading size remains independent. Named icon/loader slots inherit the part color
-and explicit size constraint; explicit styling inside caller content takes
-precedence. Label slots inherit the text style and content color. Empty slots do
-not acquire an icon merely because an appearance size is set. A line-height
-override reserves a minimum line box without clipping taller native glyphs.
+The default loader uses 70% of the resolved icon size, with a 10dp floor;
+`loadingSize` overrides it independently. Named icon slots inherit the part color,
+resolved size, RTL mirroring and trailing expansion rotation. A supplied loader
+inherits color but retains its authored dimensions. Label slots inherit the text
+style and content color. Empty slots do
+not acquire an icon merely because an appearance size is set. An explicit
+line-height sets the label slot's line box; taller glyphs overflow that box and
+clip at the button surface.
 State-layer opacities do not change the source ripple opacity.
 
 These are typed native visual equivalents for anchor, state layer, icons, label
@@ -140,6 +165,101 @@ and loader. They do not implement CSS selectors, CSS parts or the CSS cascade.
 Font synthesis/rasterization and native text metrics remain platform-specific.
 The debug live host accepts `buttonAppearanceDefaults` and `buttonAppearance`
 objects with these same fields; invalid native inputs are ignored per field.
+
+## Icon button appearance and actions
+
+`AWCIconButtonAppearanceScope` exposes the nine `md-icon-button` style hooks:
+`containerColor`, `iconColor`, `stateLayerColor`, `iconSize`, `cornerRadius`,
+`outlineColor`, `outlineWidth`, `width`, and `height`. Colors are `#RRGGBB`.
+Dimensions use dp, with 0–2400 accepted for icon size, radius, width and height,
+and 0–16 for outline width. Invalid fields inherit the surrounding valid values.
+
+```kotlin
+AWCIconButtonAppearanceScope(AWCIconButtonAppearance(
+    width = 56.0,
+    height = 56.0,
+    iconSize = 24.0,
+)) {
+    AWCComponent("md-icon-button", mapOf(
+        "variant" to "tonal",
+        "toggle" to true,
+        "aria-label" to "Save to favorites",
+    )) { slot ->
+        when (slot) {
+            "" -> AWCMaterialSymbol("favorite")
+            "selected" -> AWCMaterialSymbol("check")
+        }
+    }
+}
+```
+
+The native renderer follows all five source size/density rungs and the three
+width modes. A custom radius changes the resting shape; selected and pressed
+morphs retain their source targets. Connected corners take precedence. Standard
+and outlined disabled variants preserve custom container colors; disabled
+filled/tonal containers and all disabled icons use the source muted palette.
+The debug host accepts `iconButtonAppearanceDefaults` and `iconButtonAppearance`.
+
+`mdClick` reports `{ selected }` after navigation and selection have committed.
+`AWCActionScope` provides native capture/target/bubble notification, but canceling
+this notification cannot undo the earlier effects. No `mdChange` is emitted.
+`AWCNavigationScope`, `AWCButtonFocusScope` and `AWCSlotsScope` also work with icon
+buttons. Supply `aria-label` for the accessible action name; `AWCMaterialSymbol`
+is decorative unless explicitly given its own description.
+
+Direct default-slot badges adorn the icon without replacing it. Direct avatars
+retain their own dimensions. See [the icon-button audit](audits/md-icon-button.md)
+for measured evidence and native boundaries.
+
+## FAB menu lifecycle and authored anchors
+
+Wrap the native viewport in `AWCFabMenuScope`, then author the anchor and menu
+separately. Give the anchor an `id` property and set the menu's `anchor` property
+to that same ID. The scope tracks actual native coordinates and observes outside
+input without blocking the underlying content. It should contain the whole
+viewport where outside dismissal is expected, rather than just the anchor.
+
+`rememberAWCFabMenuController()` creates a controller for one
+`AWCFabMenuControllerScope(controller)` containing the menu. Its suspending
+`show()`, `close()` and `whenClosed()` preserve separate opening acceptance and
+completed closing. `close()` returns while the 180ms closing phase may still be
+visible; await `whenClosed()` when subsequent work requires it to be gone.
+Call these methods from a coroutine. Initially open menus do not announce a new
+`mdOpen` event or steal focus. Input on the anchor toggles the menu and suppresses
+the anchor's own action, matching the source capture behavior.
+
+Use the structural default slot for `md-fab-menu-item` children. Each item exposes
+its `icon` slot and a default label slot. `AWCSlotText` renders and registers actual
+text for live typeahead; `AWCSearchableLabelScope` supplies a searchable name for
+custom native label compositions. A nonempty label property visually masks its
+slot while leaving that composition mounted.
+
+`AWCFabMenuAppearanceScope` exposes itemContainerColor, itemLabelColor and itemGap.
+`AWCFabMenuItemAppearanceScope` exposes containerColor, labelColor, iconColor,
+iconSize and cornerRadius. Colors use `#RRGGBB`, geometry uses dp. Menu lifecycle
+and item action callbacks have null detail; scoped native actions carry actual
+input provenance separately. See [the Menu and Item audit](audits/md-fab-menu.md).
+
+## Badge anchors and appearance
+
+`AWCBadgeHost(badge = { ... }) { ... }` keeps the content's native size and overlays
+the badge using that measured parent. Its `shape` property selects the rectangular
+corner or circular 45-degree rim; placement uses physical top/right in either text
+direction, matching the source. A Badge assigned directly to an IconButton uses
+the same anchor calculation and does not replace the icon.
+
+`AWCBadgeAppearanceScope` exposes containerColor, labelColor, cornerRadius,
+iconColor, iconSize, offsetX, offsetY, largeHeight, largePadding and smallSize.
+Offsets use `AWCBadgeOffset(points, fraction)`, combining dp with a fraction of the
+badge's own width or height. Padding uses physical
+`AWCBadgePadding(top, right, bottom, left)` in dp. Zero remains a valid override;
+colors use `#RRGGBB`. The named icon slot accepts real native content, including
+an explicit empty replacement. `AWCMaterialSymbol` inherits its resolved size and
+color. A nested Badge inherits its IconButton density when its own rung is omitted or
+zero; a negative local rung overrides that value. The visible value follows the
+source numeric threshold and four UTF-16-unit
+slice; CSS-style whitespace collapse affects paint while the accessible name
+retains the original displayed value. Native status updates are polite.
 
 ## Button forms, actions and navigation
 
@@ -219,7 +339,10 @@ when capture stopped target delivery. Accepted toggles commit before dispatching
 noncancelable `mdChange`; attempts to cancel that notification have no effect.
 A native event with `bubbles = false` still captures and reaches its target;
 `crossesBoundaries = false` stops its path at the nearest explicit scope boundary.
-Activation metadata remains `unknown` unless a caller supplies a known source.
+Button actions report `pointer` with local dp coordinates, `keyboard`, or
+`accessibility` from the actual activation path. Implicit submission retains
+`unknown`; it does not invent an input event. The live host exposes these values
+separately from event detail, alongside final cancellation and scope path.
 This does not expose a DOM MouseEvent, `isTrusted`, modifier/middle-click browser
 behavior, shadow-tree retargeting or cancellation of native OS input.
 
@@ -268,6 +391,13 @@ provides explicit native slots. Supported names are `""`, `leading-icon`,
 intentionally empty; removing its name restores fallback on recomposition.
 Legacy `content(slotName)` lambdas continue to work. Arbitrary selectors and
 DOM element lists are not exposed.
+
+`AWCMaterialSymbol("favorite")` uses the bundled Material Symbols font and
+inherits a button icon/loader slot's resolved size and color. Outside a button,
+its default size is 20dp. An optional `size` and `modifier` can be supplied.
+Symbols are decorative by default; provide `contentDescription` when a symbol
+has its own meaning. Arbitrary supplied slot composables retain their own
+accessibility semantics.
 
 `AWCButtonBehaviorDemo` combines these public APIs in the live playground's
 **Form & cancellation** scenario. It uses a real native text field, submit/reset
@@ -342,3 +472,156 @@ The Material date-picker retains its own native calendar navigation; a standalon
 after buttons, a roving group, RTL control and an explicitly focusable grid cell.
 Device regressions send real Compose hardware Tab, Shift+Tab, arrows, Home/End
 and Enter, and inspect selected, click, role and collection semantics.
+
+### Button Group
+
+`md-button-group` coordinates native `md-button` and `md-icon-button` children in a retained, non-wrapping row. It supports all seven source properties, density-sensitive gaps, connected selected/pressed corners, standard neighbor press motion, single/multiple selection, required selection and logical keyboard traversal. Keyed reordering updates the actual child order without resetting selection.
+
+Use `AWCButtonGroupAppearanceScope(AWCButtonGroupAppearance(...))` for `gap`, `width`, `minWidth`, `maxWidth`, `height`, `minHeight` and `maxHeight` in dp. Values are optional and merge with inherited defaults. `fullWidth` overrides the authored width, while min/max bounds still apply. Source flex sizing divides the content box before adding button padding; an icon retains its definite height, and a child's minimum height may overflow a smaller group height unless the max-height hook caps it.
+
+`AWCButtonGroupStateScope(state)` observes one group's actual selection through `AWCButtonGroupState.snapshot()`, returning booleans in authored child order. This preserves duplicate and empty values. `mdSelectionChange` separately reports source-shaped `values`, `added` and `removed` after child activation. Like the source's raw click handler, group reconciliation still occurs when a child action is canceled, soft-disabled or loading; required selection may select that child. Native scope membership replaces DOM descendant queries, and no browser `originalEvent` is fabricated.
+
+### FAB appearance and temporary menu icon
+
+`AWCFabAppearanceScope(AWCFabAppearance(...))` maps containerColor, iconColor,
+iconSize, cornerRadius and labelColor to the five public FAB hooks. Dimensions are
+dp. The `icon` content slot accepts real composables; `AWCMaterialSymbol` inherits
+its resolved glyph size, while literal Text inherits the FAB's host typography.
+
+```kotlin
+val fab = rememberAWCFabController()
+AWCFabControllerScope(fab) {
+    AWCComponent("md-fab", mapOf("icon" to "add", "label" to "Create"))
+}
+// From a native UI callback after attachment:
+val applied = fab.setMenuIcon("close")
+fab.setMenuIcon(null) // restore the latest authored icon/slot
+```
+
+The Boolean result means the attached FAB accepted the update, including when
+disabled; it does not wait for animation. `mdClick` callback detail is null in
+place of a DOM MouseEvent. In `AWCActionScope`, the existing detail map is empty
+and `activation` carries actual native input metadata. See [the FAB audit](audits/md-fab.md)
+for measured verification and platform boundaries.
+
+### Segmented buttons and sets
+
+`md-segmented-button` is controlled when used alone: `mdSegmentClick` proposes a
+selection without mutating the authored `selected` property. Inside
+`md-segmented-button-set`, the parent commits by child identity and emits
+`mdChange` as the exact ordered values array, including duplicate and empty values.
+Scoped `AWCActionEvent.rawDetail` preserves the array; `segmentedSelectionValues`
+provides a typed accessor. The existing map-shaped `detail` remains a compatibility
+view. Preventing default does not undo the set's source-defined commit.
+
+`AWCSegmentedButtonSetStateScope(state)` exposes actual ordered Boolean selection
+through `AWCSegmentedButtonSetState.snapshot()`. Single-select arrows focus and
+activate the next hard-enabled child; multiselect arrows only focus. Right/Down
+advance in authored order even in RTL. Soft-disabled segments retain focusability.
+
+Use `AWCSegmentedButtonAppearanceScope(AWCSegmentedButtonAppearance(...))` for
+containerColor, selectedContainerColor, labelColor, selectedLabelColor,
+outlineColor, cornerRadius and iconSize. The named icon slot is additive to the
+property/checkmark graphic. Use `AWCSlotText` for literal slot text,
+`AWCMaterialSymbol` for a glyph, or `AWCSearchableLabelScope` to register the actual
+text represented by arbitrary custom composition. This preserves the source's
+initial authored-text decision without pretending native content has DOM
+`textContent`. See [the Segmented audit](audits/md-segmented-button.md) for measured
+geometry, event and keyboard evidence.
+
+### Split Button
+
+`md-split-button` renders two independently focusable native actions. The leading
+action emits `mdLeadingClick` with null detail. The trailing action commits its
+toggle before emitting `mdTrailingClick` with `{ checked }`; canceling the
+notification does not reverse that commit. `AWCSplitButtonStateScope(state)`
+observes the actual value through `state.snapshot()` without inventing a source
+component method. A property label and default slot remain additive.
+
+`AWCSplitButtonAppearanceScope(AWCSplitButtonAppearance(...))` exposes
+containerColor, labelColor, iconColor, outlineColor, cornerRadius and iconSize.
+The last field affects the leading glyph; the trailing glyph retains its
+source-defined size. Outlined ignores the container color hook.
+
+`AWCPopupScope` and `AWCPopupTargetScope("authored-id")` connect the trailing
+`controls` value to actual mounted native popup content. The accessibility action
+moves focus into that target. Application code still controls opening and
+closing; an absent target does not acquire a fake focus action. Popup kind,
+expanded state and the custom menu label are exposed on the trailing action.
+See [the Split Button audit](audits/md-split-button.md) for verification and the
+native equivalents of browser-only objects.
+
+### Loading Indicator
+
+`md-loading-indicator` renders the source's 48-vertex shape morph and rotation,
+with a 4.55-second cycle. It is an indeterminate progress indicator with one
+accessible label and polite live-region semantics; the label is not visual text.
+It has no default tabstop. A caller can explicitly attach a normal Compose
+`Modifier.focusRequester(...).focusable()`; actual focus draws the source ring.
+
+`AWCLoadingIndicatorAppearanceScope(AWCLoadingIndicatorAppearance(...))` exposes
+color, size, shapeSize, containerColor and containerShape. RGB and RGBA colors,
+explicit zero and inherited density are preserved. `AWCCornerShape` represents
+physical asymmetric/elliptical corners using `AWCCornerLength(points, fraction)`;
+fractions resolve against the respective box axis, followed by CSS overlap
+normalization. Finite signed coefficients support combinations such as 50% minus
+2 dp. The shape part has its own `AWCLoadingIndicatorShapeAppearanceScope` with
+width, height and color. Oversized shape width shrinks to the host while height
+can overflow and is clipped, matching the source flex layout.
+
+`AWCAccessibilityAppearanceScope` supplies optional native environment overrides.
+Reduced motion defaults to Android's animator preference and replaces the morph
+with a two-second circular opacity pulse. Android has no public CSS forced-palette
+mode: forcedColors defaults to false and is an explicit override using native
+surface/on-surface colors. Increased system contrast is not described as forced
+colors. These are environment preferences, not additional component properties.
+See [the Loading Indicator audit](audits/md-loading-indicator.md) for evidence.
+
+### Meter
+
+`md-meter` is a read-only native range display. All fourteen source properties
+are accepted, including the full `formatOptions` object. Omitted options format
+the position in the range as a localized percentage; an explicit empty map
+formats the clamped reading. `valueText` overrides both visible and accessible
+text. Invalid locale/option combinations use the source's raw-number fallback.
+Native ICU performs formatting; the Laboratory does not supply preformatted text.
+
+`AWCMeterAppearanceScope(AWCMeterAppearance(...))` exposes indicatorColor,
+trackColor, trackShape, height, labelColor, valueColor and size. Track shape uses
+`AWCCornerShape`; colors support RGB/RGBA. `AWCTheme(tokenOverrides=...)` also
+accepts bounded custom color-role names, preserving case and alpha. Circular
+size and linear height remain independent, including explicit zero.
+
+The host owns range semantics and the formatted description, with no default
+tabstop, action or activity announcement. `AWCMeterRangeKey` retains the exact
+Double minimum/maximum/value alongside Android's Float-based accessibility range.
+Native inspection distinguishes circular path bounds from painted stroke bounds.
+Reduced motion follows the Android animator preference; the explicit native
+forced-colors environment override uses onSurface/outline for fill/track.
+
+The bundled font is Roboto Latin. Arabic falls back to Android's installed
+Noto Naskh Arabic, which has different glyph advances from macOS Chrome's Geeza
+Pro. Exact Arabic formatting and the CSS line box are verified; cross-platform
+Arabic glyph width remains an explicit unresolved typography boundary. See
+[the Meter audit](audits/md-meter.md) for precise evidence and runtime limits.
+
+### Progress Indicator
+
+`md-progress-indicator` renders native flat/wavy linear and circular paths with
+all fourteen source properties. `AWCProgressIndicatorAppearanceScope` exposes
+the thirteen source color, physical corner and spacing hooks. Signed gap and
+trailing space, explicit zero thickness, inherited density and RGB/RGBA remain
+meaningful. The three source visual parts have actual native measurements.
+
+A mounted false→true `complete` transition runs the source completion sequence
+and emits one `mdComplete` with null detail. Initial true is inert; false does
+not reset an already completed indicator. Flat circular retains its inactive
+track; other modes self-hide while preserving layout. Indeterminate ignores
+complete. No component methods or slots are invented.
+
+`AWCProgressRangeKey` retains the exact Double accessible range alongside the
+native Float range. There is no default action, tabstop or live region. Android
+animator preferences supply reduced motion; `AWCAccessibilityAppearanceScope`
+can explicitly override native reduced/forced-color environments. See the
+[Progress Indicator audit](audits/md-progress-indicator.md) for source comparisons,
+real completion/retained-update checks and native rendering limits.

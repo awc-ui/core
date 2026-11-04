@@ -277,6 +277,18 @@
       "attribute": "move-all-left-label",
       "optional": false,
       "description": "Accessible label for the << button (localisable)."
+    },
+    {
+      "name": "selectAllLabel",
+      "type": "string",
+      "default": "'Select all {title}'",
+      "defaultValue": "Select all {title}",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "select-all-label",
+      "optional": false,
+      "description": "Accessible label for each header's select-all checkbox (localisable).\n`{title}` is replaced with that column's title."
     }
   ],
   "state": [
@@ -509,7 +521,7 @@
     "styleUrl": "md-transfer-list.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "c0250bae280f4d384df935d47c733f238794bc0e4f7aad59c94529fe887f3a31"
+    "sha256": "72e3d8bdb711318f890576d7fec1f4e4b59fea3dfc4e7e3c1017d840bfb87826"
   },
   "styles": [
     {
@@ -1180,6 +1192,17 @@
       ]
     },
     {
+      "selector": ".md-transfer-list__item--checked:focus-visible",
+      "context": null,
+      "declarations": [
+        {
+          "property": "background",
+          "value": "color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent)",
+          "important": false
+        }
+      ]
+    },
+    {
       "selector": ".md-transfer-list__item--disabled",
       "context": null,
       "declarations": [
@@ -1434,17 +1457,6 @@
       ]
     },
     {
-      "selector": ".md-transfer-list__controls md-icon-button,\n  :host-context([dir='rtl']) .md-transfer-list__controls md-icon-button,\n  :host([dir='rtl']) .md-transfer-list__controls md-icon-button",
-      "context": "@media (max-width: 640px)",
-      "declarations": [
-        {
-          "property": "transform",
-          "value": "rotate(90deg)",
-          "important": false
-        }
-      ]
-    },
-    {
       "selector": ":host(.md-transfer-list--disabled) .md-transfer-list__item",
       "context": null,
       "declarations": [
@@ -1467,6 +1479,17 @@
         {
           "property": "transform",
           "value": "scaleX(-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-transfer-list__controls md-icon-button,\n  :host-context([dir='rtl']) .md-transfer-list__controls md-icon-button,\n  :host([dir='rtl']) .md-transfer-list__controls md-icon-button",
+      "context": "@media (max-width: 640px)",
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "rotate(90deg)",
           "important": false
         }
       ]
@@ -1615,7 +1638,8 @@
         "moveAllLeftIcon",
         "emptyIcon",
         "countTemplate",
-        "density"
+        "density",
+        "selectAllLabel"
       ],
       "unsupportedEvents": [],
       "unsupportedMethods": [
@@ -1661,7 +1685,8 @@
         "moveAllLeftIcon",
         "emptyIcon",
         "countTemplate",
-        "density"
+        "density",
+        "selectAllLabel"
       ],
       "unsupportedEvents": [],
       "unsupportedMethods": [

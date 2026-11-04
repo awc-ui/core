@@ -498,7 +498,7 @@
     "styleUrl": "md-otp-field.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "ae8dba3214d3cb52652f6d7fc32a919785ec3ccf6f7721540f68d3b36492f8fe"
+    "sha256": "7bb9ea883e68c28b02d70df80f7bd64a27b5c79cfa57129e9cbc28ffca842aa4"
   },
   "styles": [
     {
@@ -1212,15 +1212,22 @@
         "validationType",
         "transform",
         "mask",
+        "autoSubmit",
+        "groupSize",
+        "inputMode",
+        "name",
+        "disabled",
         "readOnly",
         "required",
         "error",
         "errorText",
         "supportingText",
         "label",
-        "disabled",
+        "cellLabelTemplate",
+        "valueMissingLabel",
         "incompleteLabel",
-        "name"
+        "density",
+        "reserveSupportingSpace"
       ],
       "events": [
         "mdInput",
@@ -1229,19 +1236,7 @@
         "mdInvalidInput",
         "mdValidityChange"
       ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "autoSubmit",
-        "groupSize",
-        "inputMode",
-        "cellLabelTemplate",
-        "valueMissingLabel",
-        "density",
-        "reserveSupportingSpace"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "setFocus",
         "clear",
         "getValidity",
@@ -1249,54 +1244,73 @@
         "checkValidity",
         "reportValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "separator"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Single native one-time-code input with visual cells, sanitation, paste handling and completion. Per-cell focus and autoSubmit differ from web.",
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+        "Dedicated native OTP field (SwiftUI on AppKit / UIKit inputs, Compose BasicTextField): one real input per character with the source's single pipeline — strip whitespace → transform → validation-type filter → clamp — for typing, paste, autofill bursts and programmatic writes; the contiguous value model; groups with the separator slot; mask; density 0…−4; seven hooks.",
+        "Keyboard: Backspace clears the cell (or the previous one from an empty cell), Delete removes the character at the cell, ←/→/Home/End move between cells, every cell is a Tab stop, Enter submits the form; a paste anywhere replaces the whole code from cell 0; mdInput, mdChange (on completion and when focus leaves the group), mdComplete (a complete paste re-announces it), mdInvalidInput with the rejected text, mdValidityChange; auto-submit requests the form submission after mdComplete.",
+        "Methods through AWCOTPFieldController: setFocus() (first empty cell), clear() (silent), getValidity / setCustomValidity / checkValidity / reportValidity (customError, valueMissing with valueMissingLabel or incompleteLabel).",
+        "Forms: the code is the form value; an empty code submits no entry; reset clears it. Cell 0 carries the one-time-code content type (SMS autofill).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153 (paint, per-frame border motion, events). iOS has no pointer hover (touch), so the hover outline does not apply there."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "separator",
+        "cell",
+        "cells",
+        "supporting-text"
+      ],
+      "appearance": {
+        "api": ".awcOTPFieldAppearance(AWCOTPFieldAppearance)",
+        "fields": [
+          "cellGap",
+          "cellHeight",
+          "cellShape",
+          "cellWidth",
+          "focusColor",
+          "fontSize",
+          "outlineColor"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "disabled",
-        "error",
-        "errorText",
-        "label",
         "length",
-        "mask",
-        "name",
-        "readOnly",
-        "required",
-        "supportingText",
-        "transform",
+        "value",
         "validationType",
-        "value"
-      ],
-      "events": [
-        "mdChange",
-        "mdComplete",
-        "mdInput",
-        "mdInvalidInput"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
+        "transform",
+        "mask",
         "autoSubmit",
         "groupSize",
         "inputMode",
+        "name",
+        "disabled",
+        "readOnly",
+        "required",
+        "error",
+        "errorText",
+        "supportingText",
+        "label",
         "cellLabelTemplate",
         "valueMissingLabel",
         "incompleteLabel",
         "density",
         "reserveSupportingSpace"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdComplete",
+        "mdInvalidInput",
         "mdValidityChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "setFocus",
         "clear",
         "getValidity",
@@ -1304,15 +1318,39 @@
         "checkValidity",
         "reportValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "separator"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
-        "Uses a native constrained text entry; separated cells, grouping and automatic form submission are not yet ported."
+        "Dedicated native OTP field (SwiftUI on AppKit / UIKit inputs, Compose BasicTextField): one real input per character with the source's single pipeline — strip whitespace → transform → validation-type filter → clamp — for typing, paste, autofill bursts and programmatic writes; the contiguous value model; groups with the separator slot; mask; density 0…−4; seven hooks.",
+        "Keyboard: Backspace clears the cell (or the previous one from an empty cell), Delete removes the character at the cell, ←/→/Home/End move between cells, every cell is a Tab stop, Enter submits the form; a paste anywhere replaces the whole code from cell 0; mdInput, mdChange (on completion and when focus leaves the group), mdComplete (a complete paste re-announces it), mdInvalidInput with the rejected text, mdValidityChange; auto-submit requests the form submission after mdComplete.",
+        "Methods through AWCOTPFieldController: setFocus() (first empty cell), clear() (silent), getValidity / setCustomValidity / checkValidity / reportValidity (customError, valueMissing with valueMissingLabel or incompleteLabel).",
+        "Forms: the code is the form value; an empty code submits no entry; reset clears it. Cell 0 carries the one-time-code content type (SMS autofill).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153 (paint, per-frame border motion, events). iOS has no pointer hover (touch), so the hover outline does not apply there."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "separator",
+        "cell",
+        "cells",
+        "supporting-text"
+      ],
+      "appearance": {
+        "api": "AWCOTPFieldAppearanceScope(AWCOTPFieldAppearance)",
+        "fields": [
+          "cellGap",
+          "cellHeight",
+          "cellShape",
+          "cellWidth",
+          "focusColor",
+          "fontSize",
+          "outlineColor"
+        ]
+      }
     }
   }
 }

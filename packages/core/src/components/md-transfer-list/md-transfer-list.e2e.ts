@@ -147,3 +147,43 @@ describe('md-transfer-list browser behavior', () => {
     expect(moved).toHaveReceivedEventTimes(1);
   });
 });
+
+describe('md-transfer-list empty and restricted controls', () => {
+  it('selects and clears eligible rows with each column header, respecting the current filter', async () => {
+    const page = await newE2EPage(); const list = await mount(page);
+    const sourceAll = await page.find(`${SOURCE} [part="header"] md-checkbox`);
+    const targetAll = await page.find(`${TARGET} [part="header"] md-checkbox`);
+    await sourceAll.click(); await page.waitForChanges();
+    expect(await sourceAll.getProperty('checked')).toBe(true);
+    expect((await page.find(`${SOURCE} [part="count"]`)).textContent).toBe('2/2 selected');
+    expect((await page.find(`${SOURCE} [aria-disabled="true"][role="option"]`)).getAttribute('aria-selected')).toBe('false');
+    await sourceAll.click(); await page.waitForChanges();
+    expect((await page.find(`${SOURCE} [part="count"]`)).textContent).toBe('0/2 selected');
+    await (await page.find(`${SOURCE} [role="option"]`)).click(); await page.waitForChanges();
+    expect(await sourceAll.getProperty('indeterminate')).toBe(true);
+    await search(page, 'source', 'Cherry'); await sourceAll.click(); await page.waitForChanges();
+    const moved = await list.spyOnEvent('mdMove');
+    await move(page, 'Move selected to target');
+    expect(moved.lastEvent.detail).toEqual({ direction: 'right', moved: ['cherry'], target: ['banana', 'cherry'] });
+    expect(await sourceAll.getProperty('disabled')).toBe(true);
+    await targetAll.click(); await page.waitForChanges();
+    expect((await page.find(`${TARGET} [part="count"]`)).textContent).toBe('2/2 selected');
+    await targetAll.click(); await page.waitForChanges();
+    expect((await page.find(`${TARGET} [part="count"]`)).textContent).toBe('0/2 selected');
+    expect(await list.getProperty('value')).toEqual(['banana', 'cherry']);
+  });
+
+  it('accepts declarative JSON, hides bulk controls, and handles no-match searches without moving data', async () => {
+    const page = await newE2EPage();
+    await page.setContent(`<md-transfer-list single-step-only show-select-all="false" items='[{"value":"a","label":"Alpha"},{"value":"b","label":"Beta"}]'></md-transfer-list>`);
+    const list = await page.find('md-transfer-list'); const change = await list.spyOnEvent('mdChange');
+    expect(await page.find('md-transfer-list >>> [aria-label="Move all to target"]')).toBeNull();
+    await search(page, 'source', 'unmatched');
+    expect(await labels(page, 'source')).toEqual([]);
+    await list.callMethod('moveSelectedRight'); await list.callMethod('moveSelectedLeft'); await page.waitForChanges();
+    expect(change).not.toHaveReceivedEvent(); expect(await list.getProperty('value')).toEqual([]);
+    await search(page, 'source', '');
+    expect(await labels(page, 'source')).toEqual(['Alpha', 'Beta']);
+    list.setProperty('items', []); await page.waitForChanges(); expect(await labels(page, 'source')).toEqual([]);
+  });
+});

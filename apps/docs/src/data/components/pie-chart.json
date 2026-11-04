@@ -418,10 +418,57 @@
   ],
   "dataTypes": [
     {
+      "name": "MdChartTitleAlign",
+      "kind": "type",
+      "body": "'start' | 'center' | 'end'"
+    },
+    {
       "name": "MdPieDatum",
       "kind": "interface",
       "extends": "",
       "body": "  /** Slice label (used in legend, tooltip, a11y). */\n  label: string;\n  /** Slice value — proportional to the slice's angle. */\n  value: number;\n  /** Slice colour (MD3 role or raw CSS colour). */\n  color?: string;\n  /** Stable identifier (returned in click events). */\n  id?: string;\n  /** Whether this slice is \"selected\" (exploded outward). */\n  selected?: boolean;\n  /**\n   * Hide this slice — it keeps its legend chip (struck through, so it can be\n   * brought back) but contributes nothing to the ring.\n   *\n   * Setting it makes visibility YOURS: the chart otherwise remembers the\n   * reader's own legend toggles across data updates, and an explicit value here\n   * overrides that.\n   */\n  hidden?: boolean;\n  /**\n   * How far this slice reaches, 0..1 of the chart's outer radius — a SECOND\n   * dimension on top of the angle. Population density against land area, say:\n   * the angle is how big a country is, the radius how densely it is populated.\n   *\n   * Omitted means full radius, so a chart where only some slices set it still\n   * makes sense. Values are clamped, and a floor keeps a tiny one visible: a\n   * slice drawn at zero radius is indistinguishable from missing data.\n   */\n  radius?: number;\n  /**\n   * Slices drawn in a ring outside this one, dividing its own arc between them.\n   * Their values are taken in proportion to each other, so they do not have to\n   * add up to the parent's value — a parent whose children fall short is not\n   * silently redrawn smaller than the number it reports.\n   */\n  children?: MdPieDatum[];"
+    },
+    {
+      "name": "MdChartLegendPosition",
+      "kind": "type",
+      "body": "| 'top' | 'bottom' | 'left' | 'right' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end'"
+    },
+    {
+      "name": "MdChartTooltipTrigger",
+      "kind": "type",
+      "body": "'axis' | 'item' | 'none'"
+    },
+    {
+      "name": "MdChartTooltipRenderer",
+      "kind": "type",
+      "body": "(context: MdChartTooltipContext) => MdChartTooltipContent"
+    },
+    {
+      "name": "MdChartTooltipContext",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Index of the hovered x slot. On a chart whose series carry their own x,\n   *  this indexes the merged axis (see `utils/charts/xy.ts`), which is also\n   *  what `axisValue` is read from. */\n  dataIndex: number;\n  /** Raw x value at that slot — a category string, a number, or a Date. */\n  axisValue: MdChartAxisValue | undefined;\n  /** `axisValue` run through the x-axis `valueFormatter` — the string the\n   *  default tooltip uses as its header. */\n  axisLabel: string;\n  /** Visible series that HAVE a value at this x, in series order. A series with\n   *  no sample here is absent from this list (it is in `missing` instead). */\n  series: MdChartTooltipSeries[];\n  /** Visible series with NO value at this x, in series order. Usually empty;\n   *  populated for partial / irregular data, where it lets you render your own\n   *  \"no reading\" treatment. */\n  missing: MdChartTooltipSeries[];\n  /** Index of the emphasised series, or `-1` when nothing is emphasised (a\n   *  single-series chart never emphasises). */\n  focusedSeriesIndex: number;"
+    },
+    {
+      "name": "MdChartAxisValue",
+      "kind": "type",
+      "body": "string | number | Date"
+    },
+    {
+      "name": "MdChartTooltipSeries",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Index into the chart's `series` prop (0-based). Stable across hides:\n   *  hidden series are omitted entirely rather than renumbered. */\n  seriesIndex: number;\n  /** Series label — what the legend and the default tooltip show. */\n  label: string;\n  /** The series' resolved CSS colour (MD3 roles are already mapped to a real\n   *  colour, so this can go straight into a style). */\n  color: string;\n  /**\n   * Raw y value at the hovered x.\n   *   • `number`    — a real reading (entries in `series`)\n   *   • `null`      — the series HAS a datum here and it is null/non-finite:\n   *                   \"measured, no value\"\n   *   • `undefined` — the series has no datum here at all: it starts later,\n   *                   ends earlier, or was never sampled at this x\n   */\n  value: number | null | undefined;\n  /** `value` run through the chart's `valueFormatter` (or the series' own axis\n   *  formatter on a multi-axis chart). `''` for a missing value the formatter\n   *  chose not to name. */\n  formattedValue: string;\n  /** True for the series the pointer is nearest — the one the chart emphasises\n   *  while the others dim. At most one entry is focused. */\n  focused: boolean;\n  /** True for entries in `missing` — i.e. `value` is `null` or `undefined`. */\n  missing: boolean;"
+    },
+    {
+      "name": "MdChartTooltipContent",
+      "kind": "type",
+      "body": "Node | string | { unsafeHtml: string } | null | undefined"
+    },
+    {
+      "name": "MdChartAnimation",
+      "kind": "type",
+      "body": "'expressive' | 'grow' | 'fade' | 'draw' | 'stagger' | 'none'"
     }
   ],
   "callableProps": [

@@ -1,4 +1,5 @@
 import { createId } from '../../utils/id';
+import { ModalSession } from '../../utils/modal-session';
 import {
   Component,
   Host,
@@ -11,6 +12,27 @@ import {
   State,
   Element,
 } from '@stencil/core';
+
+function composedContains(container: Element, node: Element | null): boolean {
+  for (let current = node; current; ) {
+    if (current === container) return true;
+    current = current.parentElement ?? (current.getRootNode() as ShadowRoot).host ?? null;
+  }
+  return false;
+}
+
+function disabledFormControl(element: Element): boolean {
+  if (element.hasAttribute('disabled')) return true;
+  if (!['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(element.localName)) return false;
+  // A disabled fieldset still permits controls in its first legend. Keep links
+  // and authored non-form controls focusable rather than pruning the branch.
+  for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+    if (ancestor.localName !== 'fieldset' || !ancestor.hasAttribute('disabled')) continue;
+    const legend = Array.from(ancestor.children).find(child => child.localName === 'legend');
+    if (!legend?.contains(element)) return true;
+  }
+  return false;
+}
 
 /**
  * MD3 Bottom sheet — secondary content anchored to the bottom of the screen.
@@ -139,93 +161,118 @@ export class MdBottomSheet {
   // ── Internal state ──────────────────────────────────────
 
   @State() private hasSlottedClose = false;
+  @State() private hasSlottedHeadline = false;
   @State() private hasActions = false;
   @State() private dragging = false;
 
   private containerEl!: HTMLElement;
-  private previousFocus: HTMLElement | null = null;
   private headlineId = createId('md-bottom-sheet-headline');
+  private loaded = false;
+  private connected = false;
+  private modalSession = new ModalSession(() => this.el, () => this.cancelDrag());
+  private openFocusFrame?: number;
+  private slotObserver?: MutationObserver;
 
   private dragStartY = 0;
   private dragCurrentY = 0;
+  private dragPointerId?: number;
+  private dragTarget?: HTMLElement;
   private readonly DISMISS_THRESHOLD = 100;
 
   // ── Lifecycle ───────────────────────────────────────────
 
   connectedCallback() {
-    this.hasActions = !!this.el.querySelector('[slot="actions"]');
+    this.connected = true;
+    this.syncSlots();
+    this.observeSlots();
+    if (this.loaded && this.open) this.activateSession();
   }
 
   componentWillLoad() {
-    // Seed from the light DOM. The slotchange listener below cannot do this on
-    // its own: the `close` slot only renders once this flag (or `closeable`) is
-    // set, so waiting for slotchange means it never fires and a slotted close
-    // is silently dropped.
-    this.hasSlottedClose = Array.from(this.el.children).some(
-      (c) => c.getAttribute('slot') === 'close',
-    );
+    this.syncSlots();
   }
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
-
-    const closeSlot = shadow.querySelector(
-      'slot[name="close"]',
-    ) as HTMLSlotElement | null;
-    const actionsSlot = shadow.querySelector(
-      'slot[name="actions"]',
-    ) as HTMLSlotElement | null;
-
-    closeSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedClose = closeSlot.assignedElements().length > 0;
-    });
-    actionsSlot?.addEventListener('slotchange', () => {
-      this.hasActions = actionsSlot.assignedElements().length > 0;
-    });
-
+    this.loaded = true;
     if (this.open) {
       this.onOpenChange(true);
     }
   }
 
   disconnectedCallback() {
-    this.removeGlobalListeners();
-    document.body.style.overflow = '';
+    this.connected = false;
+    this.slotObserver?.disconnect();
+    this.slotObserver = undefined;
+    this.deactivateSession();
+  }
+
+  private syncSlots = () => {
+    const children = Array.from(this.el.children);
+    this.hasSlottedClose = children.some(child => child.getAttribute('slot') === 'close');
+    this.hasSlottedHeadline = children.some(child => child.getAttribute('slot') === 'headline');
+    this.hasActions = children.some(child => child.getAttribute('slot') === 'actions');
+  };
+
+  private observeSlots() {
+    if (this.slotObserver || typeof MutationObserver === 'undefined') return;
+    this.slotObserver = new MutationObserver(records => {
+      if (records.some(record => record.target === this.el ||
+        (record.type === 'attributes' && (record.target as Element).parentElement === this.el))) {
+        this.syncSlots();
+      }
+    });
+    this.slotObserver.observe(this.el, { childList: true, subtree: true, attributes: true, attributeFilter: ['slot'] });
   }
 
   // ── Watchers ────────────────────────────────────────────
 
   @Watch('open')
   onOpenChange(newVal: boolean) {
+    this.cancelOpenFocus();
+    if (!this.loaded || !this.connected) return;
     if (newVal) {
-      this.previousFocus = document.activeElement as HTMLElement;
-      document.body.style.overflow = 'hidden';
-      this.addGlobalListeners();
-      requestAnimationFrame(() => {
-        // The re-render that clears `inert` is scheduled *after* this watcher
-        // (Stencil runs @Watch before scheduleUpdate), so it may not have
-        // committed yet. Unlike aria-hidden, `inert` blocks .focus(); drop it
-        // imperatively — matching the declarative open state — so focus can
-        // enter the panel this frame instead of bouncing off an inert subtree.
-        this.containerEl?.removeAttribute('inert');
-        this.focusFirst();
-      });
+      this.activateSession();
       this.mdOpen.emit();
     } else {
-      this.removeGlobalListeners();
-      document.body.style.overflow = '';
-      // `preventScroll` because a bare focus() scrolls its target into view: an
-      // overlay opened programmatically (or whose opener has since scrolled out
-      // of sight) would yank the page on close.
-      this.previousFocus?.focus?.({ preventScroll: true });
-      this.previousFocus = null;
-      if (this.containerEl) {
-        // Clear any inline transform left over from a drag-then-snap-back.
-        this.containerEl.style.transform = '';
-      }
+      this.deactivateSession();
       this.mdClose.emit();
     }
+  }
+
+  private isTopSheet() {
+    return this.modalSession.isTop();
+  }
+
+  private activateSession() {
+    // Listeners belong to the acquired document, including during adoption.
+    if (this.modalSession.owns && this.modalSession.document !== this.el.ownerDocument) this.deactivateSession();
+    this.modalSession.acquire();
+    this.addGlobalListeners();
+    this.cancelOpenFocus();
+    this.openFocusFrame = requestAnimationFrame(() => {
+      this.openFocusFrame = undefined;
+      if (!this.connected || !this.open || !this.isTopSheet()) return;
+      this.containerEl?.removeAttribute('inert');
+      this.focusFirst();
+    });
+  }
+
+  private cancelOpenFocus() {
+    if (this.openFocusFrame === undefined) return;
+    cancelAnimationFrame(this.openFocusFrame);
+    this.openFocusFrame = undefined;
+  }
+
+  private deactivateSession() {
+    this.cancelOpenFocus();
+    this.cancelDrag();
+    this.removeGlobalListeners();
+    this.modalSession.release();
+  }
+
+  @Watch('showDragHandle')
+  onDragHandleChange() {
+    if (!this.showDragHandle) this.cancelDrag();
   }
 
   // ── Public methods ──────────────────────────────────────
@@ -243,19 +290,22 @@ export class MdBottomSheet {
   // ── Global listeners ────────────────────────────────────
 
   private addGlobalListeners() {
-    document.addEventListener('keydown', this.handleDocKeyDown, true);
-    document.addEventListener('focusin', this.handleDocFocusIn);
+    const doc = this.modalSession.document ?? this.el.ownerDocument;
+    // Authored editors and child overlays may consume Escape before the modal.
+    doc.addEventListener('keydown', this.handleDocKeyDown);
+    doc.addEventListener('focusin', this.handleDocFocusIn);
   }
 
   private removeGlobalListeners() {
-    document.removeEventListener('keydown', this.handleDocKeyDown, true);
-    document.removeEventListener('focusin', this.handleDocFocusIn);
+    const doc = this.modalSession.document ?? this.el.ownerDocument;
+    doc.removeEventListener('keydown', this.handleDocKeyDown);
+    doc.removeEventListener('focusin', this.handleDocFocusIn);
   }
 
   // ── Keyboard ────────────────────────────────────────────
 
   private handleDocKeyDown = (e: KeyboardEvent) => {
-    if (!this.open) return;
+    if (!this.open || !this.isTopSheet() || e.defaultPrevented) return;
 
     if (e.key === 'Escape') {
       e.preventDefault();
@@ -268,15 +318,15 @@ export class MdBottomSheet {
   // ── Focus trap via focusin ──────────────────────────────
 
   private handleDocFocusIn = () => {
-    if (!this.open) return;
+    if (!this.open || !this.isTopSheet()) return;
 
-    const active = document.activeElement;
-    if (!active) return;
-
-    if (active === this.el || this.el.contains(active)) return;
-
-    const isShadowEl = this.containerEl?.contains(active);
-    if (isShadowEl) return;
+    // The owning root is observable even when the sheet itself lives inside
+    // an enclosing closed shadow root. document.activeElement alone would be
+    // that outer host, making our own focus look like an escape from the trap.
+    const root = this.el.getRootNode() as Document | ShadowRoot;
+    let active = root.activeElement ?? this.el.ownerDocument.activeElement;
+    while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+    if (!active || composedContains(this.el, active)) return;
 
     this.focusFirst();
   };
@@ -284,6 +334,7 @@ export class MdBottomSheet {
   // ── Focus guard handlers (sentinel elements) ────────────
 
   private handleStartGuardFocus = () => {
+    if (!this.open || !this.isTopSheet()) return;
     const focusable = this.getFocusableElements();
     if (focusable.length > 0) {
       focusable[focusable.length - 1].focus();
@@ -293,6 +344,7 @@ export class MdBottomSheet {
   };
 
   private handleEndGuardFocus = () => {
+    if (!this.open || !this.isTopSheet()) return;
     const focusable = this.getFocusableElements();
     if (focusable.length > 0) {
       focusable[0].focus();
@@ -304,12 +356,13 @@ export class MdBottomSheet {
   // ── Private handlers ────────────────────────────────────
 
   private handleScrimClick = () => {
-    if (!this.scrimDismissible) return;
+    if (!this.open || !this.isTopSheet() || !this.scrimDismissible) return;
     this.mdCancel.emit();
     this.open = false;
   };
 
   private handleCloseClick = () => {
+    if (!this.open || !this.isTopSheet()) return;
     this.mdCancel.emit();
     this.open = false;
   };
@@ -317,21 +370,24 @@ export class MdBottomSheet {
   // ── Drag handling ───────────────────────────────────────
 
   private handleDragStart = (e: PointerEvent) => {
-    if (!this.open || !this.showDragHandle) return;
+    if (!this.open || !this.showDragHandle || !this.isTopSheet() || this.dragging || e.button !== 0 || e.isPrimary === false) return;
 
     this.dragging = true;
     this.dragStartY = e.clientY;
     this.dragCurrentY = 0;
+    this.dragPointerId = e.pointerId;
+    this.dragTarget = e.currentTarget as HTMLElement;
 
     if (this.containerEl) {
       this.containerEl.style.transition = 'none';
     }
 
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    try { this.dragTarget.setPointerCapture?.(e.pointerId); } catch { /* Pointer already released. */ }
   };
 
   private handleDragMove = (e: PointerEvent) => {
-    if (!this.dragging) return;
+    if (!this.dragging || e.pointerId !== this.dragPointerId) return;
+    if (!this.open || !this.showDragHandle || !this.isTopSheet()) { this.cancelDrag(); return; }
 
     const deltaY = e.clientY - this.dragStartY;
     this.dragCurrentY = Math.max(0, deltaY);
@@ -341,22 +397,31 @@ export class MdBottomSheet {
     }
   };
 
-  private handleDragEnd = () => {
-    if (!this.dragging) return;
-    this.dragging = false;
-
-    if (this.containerEl) {
-      this.containerEl.style.transition = '';
-    }
-
-    if (this.dragCurrentY > this.DISMISS_THRESHOLD) {
+  private handleDragEnd = (e: PointerEvent) => {
+    if (!this.dragging || e.pointerId !== this.dragPointerId) return;
+    if (!this.open || !this.showDragHandle || !this.isTopSheet()) { this.cancelDrag(); return; }
+    const dismiss = this.dragCurrentY > this.DISMISS_THRESHOLD;
+    this.cancelDrag();
+    if (dismiss) {
       this.mdCancel.emit();
       this.open = false;
-    } else if (this.containerEl) {
+    }
+  };
+
+  private cancelDrag = (e?: PointerEvent) => {
+    if (e && e.pointerId !== this.dragPointerId) return;
+    const target = this.dragTarget, pointerId = this.dragPointerId;
+    this.dragging = false;
+    this.dragPointerId = undefined;
+    this.dragTarget = undefined;
+    this.dragCurrentY = 0;
+    if (this.containerEl) {
+      this.containerEl.style.transition = '';
       this.containerEl.style.transform = '';
     }
-
-    this.dragCurrentY = 0;
+    if (pointerId !== undefined) {
+      try { target?.releasePointerCapture?.(pointerId); } catch { /* Capture ended with the gesture. */ }
+    }
   };
 
   // ── Focus management ────────────────────────────────────
@@ -373,37 +438,41 @@ export class MdBottomSheet {
 
   private getFocusableElements(): HTMLElement[] {
     const selector =
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), md-icon-button:not([disabled]), md-button:not([disabled]), md-text-field:not([disabled]), md-checkbox:not([disabled]), md-switch:not([disabled]), md-radio:not([disabled]), md-slider:not([disabled])';
-
-    // The focus-guard sentinels match the [tabindex] clause but must never
-    // receive wrap-around focus themselves — the trap would land (and in the
-    // spec env, recurse) on an invisible span instead of real content.
-    const shadowEls = (
-      Array.from(this.containerEl?.querySelectorAll(selector) ?? []) as HTMLElement[]
-    ).filter((el) => !el.classList.contains('md-bottom-sheet__focus-guard'));
-
-    const slots = this.containerEl?.querySelectorAll('slot') ?? [];
-    const slottedEls: HTMLElement[] = [];
-    slots.forEach((slot) => {
-      const assigned = (slot as HTMLSlotElement).assignedElements({
-        flatten: true,
-      });
-      assigned.forEach((el) => {
-        if ((el as HTMLElement).matches?.(selector)) {
-          slottedEls.push(el as HTMLElement);
-        }
-        const nested = (el as HTMLElement).querySelectorAll?.(selector);
-        if (nested) slottedEls.push(...(Array.from(nested) as HTMLElement[]));
-      });
-    });
-
-    return [...shadowEls, ...slottedEls];
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), audio[controls], video[controls], summary, [tabindex]';
+    const collected: HTMLElement[] = [];
+    const seen = new Set<Element>();
+    // Follow slot and shadow-root order instead of collecting all shadow
+    // controls before light-DOM controls. Hidden branches and sentinels are
+    // excluded, while actual inner inputs of custom elements remain reachable.
+    const visit = (element: Element) => {
+      if (seen.has(element)) return;
+      seen.add(element);
+      if (element.hasAttribute('hidden') || element.hasAttribute('inert') ||
+        element.classList.contains('md-bottom-sheet__focus-guard')) return;
+      const style = getComputedStyle(element);
+      if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return;
+      if (element.localName === 'slot') {
+        const assigned = (element as HTMLSlotElement).assignedElements({ flatten: true });
+        (assigned.length ? assigned : Array.from(element.children)).forEach(visit);
+        return;
+      }
+      const shadow = element.shadowRoot;
+      const tabIndex = element.getAttribute('tabindex');
+      const excluded = tabIndex !== null && Number(tabIndex) < 0;
+      if (shadow && excluded) return;
+      if (!excluded && !shadow?.delegatesFocus && element.matches(selector) && !disabledFormControl(element)) {
+        collected.push(element as HTMLElement);
+      }
+      Array.from((shadow ?? element).children).forEach(visit);
+    };
+    Array.from(this.containerEl?.children ?? []).forEach(visit);
+    return collected;
   }
 
   // ── Render ──────────────────────────────────────────────
 
   render() {
-    const hasHeadline = !!this.headline;
+    const hasHeadline = !!this.headline || this.hasSlottedHeadline;
     const showHeader = hasHeadline || this.closeable || this.hasSlottedClose;
 
     return (
@@ -427,7 +496,7 @@ export class MdBottomSheet {
           part="container"
           role="dialog"
           aria-modal="true"
-          aria-labelledby={hasHeadline ? this.headlineId : undefined}
+          aria-labelledby={hasHeadline && !this.sheetAriaLabel ? this.headlineId : undefined}
           aria-label={
             this.sheetAriaLabel ||
             (!hasHeadline ? 'Bottom sheet' : undefined)
@@ -448,7 +517,7 @@ export class MdBottomSheet {
             class="md-bottom-sheet__focus-guard"
             tabindex={0}
             aria-hidden="true"
-            onFocus={this.handleEndGuardFocus}
+            onFocus={this.handleStartGuardFocus}
           ></span>
 
           {this.showDragHandle && (
@@ -462,7 +531,8 @@ export class MdBottomSheet {
               onPointerDown={this.handleDragStart}
               onPointerMove={this.handleDragMove}
               onPointerUp={this.handleDragEnd}
-              onPointerCancel={this.handleDragEnd}
+              onPointerCancel={this.cancelDrag}
+              onLostPointerCapture={this.cancelDrag}
             >
               <div
                 class="md-bottom-sheet__drag-handle-indicator"
@@ -479,13 +549,13 @@ export class MdBottomSheet {
                   class="md-bottom-sheet__headline"
                   part="headline"
                 >
-                  <slot name="headline">{this.headline}</slot>
+                  <slot name="headline" onSlotchange={this.syncSlots}>{this.headline}</slot>
                 </span>
               )}
 
               {(this.closeable || this.hasSlottedClose) && (
                 <div class="md-bottom-sheet__close" part="close">
-                  <slot name="close">
+                  <slot name="close" onSlotchange={this.syncSlots}>
                     <md-icon-button
                       variant="standard"
                       icon="close"
@@ -520,7 +590,7 @@ export class MdBottomSheet {
 
           {this.hasActions && (
             <div class="md-bottom-sheet__actions" part="actions">
-              <slot name="actions"></slot>
+              <slot name="actions" onSlotchange={this.syncSlots}></slot>
             </div>
           )}
 
@@ -528,7 +598,7 @@ export class MdBottomSheet {
             class="md-bottom-sheet__focus-guard"
             tabindex={0}
             aria-hidden="true"
-            onFocus={this.handleStartGuardFocus}
+            onFocus={this.handleEndGuardFocus}
           ></span>
         </div>
       </Host>

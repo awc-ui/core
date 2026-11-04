@@ -85,7 +85,9 @@ export async function runBrowserCoverage({ root = repository, scope, resolveTool
     console.log(`Isolated component build complete: ${path.join(e2e, 'www/build')}`);
     if (scope.e2eTests.length) {
       manifest.stencilExit = 1;
-      await collect('e2e', 'Stencil execution', async () => { manifest.stencilExit = await run(process.execPath, [stencil, 'test', '--e2e', '--build=false', '--config', generatedConfig, '--maxWorkers=2', '--json', '--outputFile', path.join(e2e, 'results.json')], core); });
+      // Focus/keyboard contracts and V8 instrumentation share a browser process.
+      // Serialize suites to avoid competing pages during audited measurements.
+      await collect('e2e', 'Stencil execution', async () => { manifest.stencilExit = await run(process.execPath, [stencil, 'test', '--e2e', '--build=false', '--config', generatedConfig, '--maxWorkers=1', '--json', '--outputFile', path.join(e2e, 'results.json')], core); });
     }
     // Failed assertions still produce useful measured coverage. A malformed or
     // missing payload must not prevent the independent React run.

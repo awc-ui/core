@@ -1,0 +1,730 @@
+{
+ "tag": "md-toolbar",
+ "at": "2026-10-30T23:00:03.195Z",
+ "rows": [
+  {
+   "case": "default",
+   "web": {
+    "elements": [
+     "toolbar:Formatting",
+     "button:Undo",
+     "button:Redo",
+     "separator:",
+     "togglebutton:Bold",
+     "togglebutton:Italic"
+    ],
+    "texts": [],
+    "focus": [
+     "button:Undo"
+    ],
+    "contrast": {
+     "measured": 8,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "toolbar:Formatting",
+      "button:Undo",
+      "button:Redo",
+      "togglebutton:Bold {\"pressed\":\"false\"}",
+      "togglebutton:Italic {\"pressed\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Undo",
+      "button:Undo",
+      "button:Undo"
+     ],
+     "findings": [],
+     "contrastMeasured": 8
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "button:Undo",
+      "button:Redo",
+      "switch:Bold {\"checked\":\"false\"}",
+      "switch:Italic {\"checked\":\"false\"}"
+     ],
+     "texts": [
+      "Separator Vertical"
+     ],
+     "focus": [
+      "button:Undo",
+      "∅",
+      "button:Undo"
+     ],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "ios exposes text Web does not: \"Separator Vertical\"",
+       "status": "expected",
+       "reason": "The md-divider between the actions: Web role=separator; no native platform has a separator role, so the divider is the labelled element \"Separator\" (the md-divider convention; iOS adds its orientation as the value: \"Separator, Vertical\"). macOS drops it inside a role=toolbar container (Chrome's AXSplitter is optional there) and keeps it in generic mode."
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Undo\" target 40×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Redo\" target 40×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Bold\" target 40×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Italic\" target 40×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "button:Undo",
+      "button:Redo",
+      "togglebutton:Bold {\"pressed\":\"false\"}",
+      "togglebutton:Italic {\"pressed\":\"false\"}"
+     ],
+     "texts": [
+      "Formatting",
+      "Separator"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Undo",
+      "button:Undo",
+      "button:Undo"
+     ],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Formatting Separator\"",
+       "status": "expected",
+       "reason": "Web role=toolbar named by aria-label, and role=separator. Compose has neither role: the toolbar is a traversal group whose contentDescription carries the label (read before its controls), and the divider is described \"Separator\"; the checker reports both as text."
+      },
+      {
+       "kind": "target",
+       "detail": "android: button \"Undo\" target 88×96 below 48dp",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "android: togglebutton \"Bold\" target 88×96 below 48dp",
+       "status": "info"
+      },
+      {
+       "kind": "atf",
+       "detail": "ATF ERROR TouchTargetSizeCheck: This item's width is 44dp. Consider making the width of this touch target 48dp or larger. [android.view.View \"\"]",
+       "status": "expected",
+       "reason": "A floating toolbar packs its 40 dp icon buttons 4 dp apart (Web geometry, gap 4 px): 48 dp targets would overlap their neighbours, so each control keeps its 44 dp pitch; WCAG 2.5.8 (24 px) is met as on the Web and the paint parity verifies the geometry."
+      },
+      {
+       "kind": "atf",
+       "detail": "ATF ERROR TouchTargetSizeCheck: This item's width is 44dp. Consider making the width of this touch target 48dp or larger. [android.view.View \"\"]",
+       "status": "expected",
+       "reason": "A floating toolbar packs its 40 dp icon buttons 4 dp apart (Web geometry, gap 4 px): 48 dp targets would overlap their neighbours, so each control keeps its 44 dp pitch; WCAG 2.5.8 (24 px) is met as on the Web and the paint parity verifies the geometry."
+      }
+     ],
+     "contrastMeasured": 8,
+     "atf": {
+      "elements": 27,
+      "results": 2
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "docked",
+   "web": {
+    "elements": [
+     "toolbar:Formatting",
+     "button:Undo",
+     "button:Redo",
+     "separator:",
+     "togglebutton:Bold",
+     "togglebutton:Italic"
+    ],
+    "texts": [],
+    "focus": [
+     "button:Undo"
+    ],
+    "contrast": {
+     "measured": 8,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "toolbar:Formatting",
+      "button:Undo",
+      "button:Redo",
+      "togglebutton:Bold {\"pressed\":\"false\"}",
+      "togglebutton:Italic {\"pressed\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Undo",
+      "button:Undo"
+     ],
+     "findings": [],
+     "contrastMeasured": 8
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "button:Undo",
+      "button:Redo",
+      "switch:Bold {\"checked\":\"false\"}",
+      "switch:Italic {\"checked\":\"false\"}"
+     ],
+     "texts": [
+      "Separator Vertical"
+     ],
+     "focus": [
+      "button:Undo",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "ios exposes text Web does not: \"Separator Vertical\"",
+       "status": "expected",
+       "reason": "The md-divider between the actions: Web role=separator; no native platform has a separator role, so the divider is the labelled element \"Separator\" (the md-divider convention; iOS adds its orientation as the value: \"Separator, Vertical\"). macOS drops it inside a role=toolbar container (Chrome's AXSplitter is optional there) and keeps it in generic mode."
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Undo\" target 40×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Redo\" target 40×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Bold\" target 40×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Italic\" target 40×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "button:Undo",
+      "button:Redo",
+      "togglebutton:Bold {\"pressed\":\"false\"}",
+      "togglebutton:Italic {\"pressed\":\"false\"}"
+     ],
+     "texts": [
+      "Formatting",
+      "Separator"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Undo",
+      "button:Undo"
+     ],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Formatting Separator\"",
+       "status": "expected",
+       "reason": "Web role=toolbar named by aria-label, and role=separator. Compose has neither role: the toolbar is a traversal group whose contentDescription carries the label (read before its controls), and the divider is described \"Separator\"; the checker reports both as text."
+      }
+     ],
+     "contrastMeasured": 8,
+     "atf": {
+      "elements": 26,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "vertical",
+   "web": {
+    "elements": [
+     "toolbar:Formatting",
+     "button:Undo",
+     "button:Redo",
+     "separator:",
+     "togglebutton:Bold",
+     "togglebutton:Italic"
+    ],
+    "texts": [],
+    "focus": [
+     "button:Undo"
+    ],
+    "contrast": {
+     "measured": 8,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "toolbar:Formatting",
+      "button:Undo",
+      "button:Redo",
+      "togglebutton:Bold {\"pressed\":\"false\"}",
+      "togglebutton:Italic {\"pressed\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Undo",
+      "button:Undo"
+     ],
+     "findings": [],
+     "contrastMeasured": 8
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "button:Undo",
+      "button:Redo",
+      "switch:Bold {\"checked\":\"false\"}",
+      "switch:Italic {\"checked\":\"false\"}"
+     ],
+     "texts": [
+      "Separator Vertical"
+     ],
+     "focus": [
+      "button:Undo",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "ios exposes text Web does not: \"Separator Vertical\"",
+       "status": "expected",
+       "reason": "The md-divider between the actions: Web role=separator; no native platform has a separator role, so the divider is the labelled element \"Separator\" (the md-divider convention; iOS adds its orientation as the value: \"Separator, Vertical\"). macOS drops it inside a role=toolbar container (Chrome's AXSplitter is optional there) and keeps it in generic mode."
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Undo\" target 40×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Redo\" target 40×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Bold\" target 40×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Italic\" target 40×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "button:Undo",
+      "button:Redo",
+      "togglebutton:Bold {\"pressed\":\"false\"}",
+      "togglebutton:Italic {\"pressed\":\"false\"}"
+     ],
+     "texts": [
+      "Formatting",
+      "Separator"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Undo",
+      "button:Undo"
+     ],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Formatting Separator\"",
+       "status": "expected",
+       "reason": "Web role=toolbar named by aria-label, and role=separator. Compose has neither role: the toolbar is a traversal group whose contentDescription carries the label (read before its controls), and the divider is described \"Separator\"; the checker reports both as text."
+      },
+      {
+       "kind": "target",
+       "detail": "android: button \"Undo\" target 96×88 below 48dp",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "android: togglebutton \"Bold\" target 96×88 below 48dp",
+       "status": "info"
+      },
+      {
+       "kind": "atf",
+       "detail": "ATF ERROR TouchTargetSizeCheck: This item's height is 44dp. Consider making the height of this touch target 48dp or larger. [android.view.View \"\"]",
+       "status": "expected",
+       "reason": "A floating toolbar packs its 40 dp icon buttons 4 dp apart (Web geometry, gap 4 px): 48 dp targets would overlap their neighbours, so each control keeps its 44 dp pitch; WCAG 2.5.8 (24 px) is met as on the Web and the paint parity verifies the geometry."
+      },
+      {
+       "kind": "atf",
+       "detail": "ATF ERROR TouchTargetSizeCheck: This item's height is 44dp. Consider making the height of this touch target 48dp or larger. [android.view.View \"\"]",
+       "status": "expected",
+       "reason": "A floating toolbar packs its 40 dp icon buttons 4 dp apart (Web geometry, gap 4 px): 48 dp targets would overlap their neighbours, so each control keeps its 44 dp pitch; WCAG 2.5.8 (24 px) is met as on the Web and the paint parity verifies the geometry."
+      }
+     ],
+     "contrastMeasured": 8,
+     "atf": {
+      "elements": 27,
+      "results": 2
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "generic",
+   "web": {
+    "elements": [
+     "button:Undo",
+     "button:Redo",
+     "separator:",
+     "togglebutton:Bold",
+     "togglebutton:Italic"
+    ],
+    "texts": [],
+    "focus": [
+     "button:Undo",
+     "button:Redo",
+     "togglebutton:Bold"
+    ],
+    "contrast": {
+     "measured": 8,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "button:Undo",
+      "button:Redo",
+      "togglebutton:Bold {\"pressed\":\"false\"}",
+      "togglebutton:Italic {\"pressed\":\"false\"}"
+     ],
+     "texts": [
+      "Separator"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Undo",
+      "button:Redo",
+      "togglebutton:Bold"
+     ],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "macos exposes text Web does not: \"Separator\"",
+       "status": "expected",
+       "reason": "The md-divider between the actions: Web role=separator; no native platform has a separator role, so the divider is the labelled element \"Separator\" (the md-divider convention; iOS adds its orientation as the value: \"Separator, Vertical\"). macOS drops it inside a role=toolbar container (Chrome's AXSplitter is optional there) and keeps it in generic mode."
+      }
+     ],
+     "contrastMeasured": 8
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "button:Undo",
+      "button:Redo",
+      "switch:Bold {\"checked\":\"false\"}",
+      "switch:Italic {\"checked\":\"false\"}"
+     ],
+     "texts": [
+      "Separator Vertical"
+     ],
+     "focus": [
+      "button:Undo",
+      "button:Redo",
+      "switch:Bold"
+     ],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "ios exposes text Web does not: \"Separator Vertical\"",
+       "status": "expected",
+       "reason": "The md-divider between the actions: Web role=separator; no native platform has a separator role, so the divider is the labelled element \"Separator\" (the md-divider convention; iOS adds its orientation as the value: \"Separator, Vertical\"). macOS drops it inside a role=toolbar container (Chrome's AXSplitter is optional there) and keeps it in generic mode."
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Undo\" target 40×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Redo\" target 40×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Bold\" target 40×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Italic\" target 40×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "button:Undo",
+      "button:Redo",
+      "togglebutton:Bold {\"pressed\":\"false\"}",
+      "togglebutton:Italic {\"pressed\":\"false\"}"
+     ],
+     "texts": [
+      "Separator"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Undo",
+      "button:Redo",
+      "togglebutton:Bold"
+     ],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Separator\"",
+       "status": "expected",
+       "reason": "The md-divider between the actions: Web role=separator; no native platform has a separator role, so the divider is the labelled element \"Separator\" (the md-divider convention; iOS adds its orientation as the value: \"Separator, Vertical\"). macOS drops it inside a role=toolbar container (Chrome's AXSplitter is optional there) and keeps it in generic mode."
+      },
+      {
+       "kind": "target",
+       "detail": "android: button \"Undo\" target 88×96 below 48dp",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "android: togglebutton \"Bold\" target 88×96 below 48dp",
+       "status": "info"
+      },
+      {
+       "kind": "atf",
+       "detail": "ATF ERROR TouchTargetSizeCheck: This item's width is 44dp. Consider making the width of this touch target 48dp or larger. [android.view.View \"\"]",
+       "status": "expected",
+       "reason": "A floating toolbar packs its 40 dp icon buttons 4 dp apart (Web geometry, gap 4 px): 48 dp targets would overlap their neighbours, so each control keeps its 44 dp pitch; WCAG 2.5.8 (24 px) is met as on the Web and the paint parity verifies the geometry."
+      },
+      {
+       "kind": "atf",
+       "detail": "ATF ERROR TouchTargetSizeCheck: This item's width is 44dp. Consider making the width of this touch target 48dp or larger. [android.view.View \"\"]",
+       "status": "expected",
+       "reason": "A floating toolbar packs its 40 dp icon buttons 4 dp apart (Web geometry, gap 4 px): 48 dp targets would overlap their neighbours, so each control keeps its 44 dp pitch; WCAG 2.5.8 (24 px) is met as on the Web and the paint parity verifies the geometry."
+      }
+     ],
+     "contrastMeasured": 8,
+     "atf": {
+      "elements": 27,
+      "results": 2
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

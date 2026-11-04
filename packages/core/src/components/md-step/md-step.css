@@ -92,7 +92,7 @@
 }
 
 /* Staggered entrance — opacity only, so measured geometry is stable from the
-   first frame. --md-step-idx is stamped by the parent stepper. */
+   first frame. --md-step-idx is stamped by the parent stepper (@private --md-step-idx: not a hook). */
 @keyframes md-step-enter {
   from { opacity: 0; }
 }

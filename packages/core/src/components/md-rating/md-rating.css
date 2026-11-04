@@ -148,11 +148,20 @@
 .md-rating__icon--fg {
   color: var(--_active-color);
   font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+  /* A partial item fills from its inline-start side (the glyph itself is laid
+     out LTR, so the clip edge is chosen by the host's direction). */
+  clip-path: inset(0 var(--_fill-clip, 0%) 0 0);
+}
+
+:host(:dir(rtl)) .md-rating__icon--fg {
+  clip-path: inset(0 0 0 var(--_fill-clip, 0%));
 }
 
 /* Outline-empty styling: use the filled glyph with the inactive
-   colour for both layers so the outline silhouette is preserved. */
-:host([outline-empty]) .md-rating__icon--bg {
+   colour for both layers so the outline silhouette is preserved.
+   Keyed on a class, not the attribute: an authored `outline-empty="false"`
+   sets the prop to false but leaves the attribute in place. */
+:host(.md-rating--outline-empty) .md-rating__icon--bg {
   font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }
 
@@ -251,10 +260,10 @@
 
 /* ── RTL mirroring ─────────────────────────────────────────────── */
 
-:host-context([dir="rtl"]) .md-rating__items,
-:host([dir="rtl"]) .md-rating__items {
-  flex-direction: row-reverse;
-}
+/* The item row is a plain flex row, so it already follows the reading
+   direction (first item at the inline start). A `row-reverse` here would
+   reverse it a second time and un-mirror RTL. The partial-fill clip is
+   mirrored on `.md-rating__icon--fg` above. */
 
 /* ── Reduced motion ────────────────────────────────────────────── */
 

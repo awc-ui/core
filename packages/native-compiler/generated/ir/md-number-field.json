@@ -569,6 +569,10 @@
             "value": "this.handleFieldChange"
           },
           {
+            "name": "onMdSearch",
+            "value": "this.containFieldEvent"
+          },
+          {
             "name": "onKeyDown",
             "value": "this.handleFieldKeyDown"
           },
@@ -641,7 +645,7 @@
     "styleUrl": "md-number-field.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "b050db70dce538322b22f9c4227865d97b7d86093c666b79667770e86145c874"
+    "sha256": "fbee0c45a6b822be254a81046ffe340ea9f8e8cb4542d20a09529af6556feb8c"
   },
   "styles": [
     {
@@ -951,46 +955,40 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
+        "variant",
         "label",
         "placeholder",
         "supportingText",
         "error",
         "errorText",
+        "disabled",
         "readOnly",
         "required",
+        "name",
+        "density",
         "value",
+        "locale",
+        "formatOptions",
         "min",
         "max",
         "step",
-        "steppers",
-        "incrementLabel",
-        "decrementLabel",
-        "disabled",
-        "name"
-      ],
-      "events": [
-        "mdInput",
-        "mdChange"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "variant",
-        "density",
-        "locale",
-        "formatOptions",
         "smallStep",
         "largeStep",
         "snapOnStep",
         "allowOutOfRange",
         "allowWheelScrub",
+        "steppers",
+        "incrementLabel",
+        "decrementLabel",
         "valueMissingLabel",
         "reserveSupportingSpace"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdInput",
+        "mdChange",
         "mdValidityChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "setFocus",
         "select",
         "stepUp",
@@ -1000,56 +998,70 @@
         "reportValidity",
         "setCustomValidity"
       ],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native text entry uses decimal dot. Bounds constrain steppers; locale formatting and arbitrary typed out-of-range normalization are not implemented.",
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+        "Dedicated native number field composed on the native text field (SwiftUI, Compose): all 27 properties — filled and outlined, density 0…−4, inline / split / no steppers, min / max / step / smallStep / largeStep, snapOnStep, allowOutOfRange, the opt-in wheel scrub, locale and Intl.NumberFormat formatOptions (the source's own parsing, formatting and key filter) — mdInput / mdChange with value, formattedValue and reason, mdValidityChange, five hooks, and the field part through the text field hooks.",
+        "Keyboard: ArrowUp / ArrowDown step (Shift: largeStep; Alt: smallStep snapped to the nearest step), Home / End go to min / max, Enter commits and submits the form; typed text stays verbatim while editing and is committed on blur or Enter; disallowed keys and pastes are refused. Press-and-hold on a stepper repeats after 400 ms every 60 ms; a mouse press keeps the input focused, a touch does not (the source's pointer-type contract).",
+        "Methods through AWCNumberFieldController: setFocus(), select(), stepUp(times) / stepDown(times), getValidity / checkValidity / reportValidity / setCustomValidity (customError, else valueMissing with errorText or valueMissingLabel); value and formattedValue are readable.",
+        "Forms: registers the numeric value with the native form (name, required, reset to the initial value without events).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153 (paint incl. Intl formats, per-frame motion, events, hold timing). iOS has no scroll-wheel input, so allowWheelScrub has no effect there; a tap focuses on release (UIKit convention)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "field"
+      ],
+      "appearance": {
+        "api": ".awcNumberFieldAppearance(AWCNumberFieldAppearance)",
+        "fields": [
+          "width",
+          "minWidth",
+          "stepperIconSize",
+          "stepperColor",
+          "splitStepperSize"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "allowOutOfRange",
-        "decrementLabel",
-        "disabled",
+        "variant",
+        "label",
+        "placeholder",
+        "supportingText",
         "error",
         "errorText",
-        "incrementLabel",
-        "label",
-        "max",
-        "min",
-        "name",
-        "placeholder",
+        "disabled",
         "readOnly",
         "required",
-        "step",
-        "steppers",
-        "supportingText",
-        "value",
-        "variant"
-      ],
-      "events": [
-        "mdChange",
-        "mdInput"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
+        "name",
         "density",
+        "value",
         "locale",
         "formatOptions",
+        "min",
+        "max",
+        "step",
         "smallStep",
         "largeStep",
         "snapOnStep",
+        "allowOutOfRange",
         "allowWheelScrub",
+        "steppers",
+        "incrementLabel",
+        "decrementLabel",
         "valueMissingLabel",
         "reserveSupportingSpace"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdInput",
+        "mdChange",
         "mdValidityChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "setFocus",
         "select",
         "stepUp",
@@ -1059,12 +1071,32 @@
         "reportValidity",
         "setCustomValidity"
       ],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+        "Dedicated native number field composed on the native text field (SwiftUI, Compose): all 27 properties — filled and outlined, density 0…−4, inline / split / no steppers, min / max / step / smallStep / largeStep, snapOnStep, allowOutOfRange, the opt-in wheel scrub, locale and Intl.NumberFormat formatOptions (the source's own parsing, formatting and key filter) — mdInput / mdChange with value, formattedValue and reason, mdValidityChange, five hooks, and the field part through the text field hooks.",
+        "Keyboard: ArrowUp / ArrowDown step (Shift: largeStep; Alt: smallStep snapped to the nearest step), Home / End go to min / max, Enter commits and submits the form; typed text stays verbatim while editing and is committed on blur or Enter; disallowed keys and pastes are refused. Press-and-hold on a stepper repeats after 400 ms every 60 ms; a mouse press keeps the input focused, a touch does not (the source's pointer-type contract).",
+        "Methods through AWCNumberFieldController: setFocus(), select(), stepUp(times) / stepDown(times), getValidity / checkValidity / reportValidity / setCustomValidity (customError, else valueMissing with errorText or valueMissingLabel); value and formattedValue are readable.",
+        "Forms: registers the numeric value with the native form (name, required, reset to the initial value without events).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153 (paint incl. Intl formats, per-frame motion, events, hold timing). iOS has no scroll-wheel input, so allowWheelScrub has no effect there; a tap focuses on release (UIKit convention)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "field"
+      ],
+      "appearance": {
+        "api": "AWCNumberFieldAppearanceScope(AWCNumberFieldAppearance)",
+        "fields": [
+          "width",
+          "minWidth",
+          "stepperIconSize",
+          "stepperColor",
+          "splitStepperSize"
+        ]
+      }
     }
   }
 }

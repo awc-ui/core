@@ -91,10 +91,13 @@ extension AWCNativeView {
         if initialFormProperties == nil { initialFormProperties = local }
         let control = nativeFormControl
         var rules = control.rules
-        if node.tag == "md-text-field", s("type") == "number" {
+        // md-text-field validates with the input's own constraint validation (Chrome's flags and messages).
+        let fieldValidator: ((AWCValue) -> String?)? = ["md-text-field", "md-number-field", "md-otp-field"].contains(node.tag) ? { [fieldValidityBox] _ in let v = fieldValidityBox.evaluate(); return v.valid ? nil : v.validationMessage } : nil
+        if fieldValidator != nil { rules = AWCFormRules() }
+        if node.tag == "md-text-field", s("type") == "number", fieldValidator == nil {
             rules.stepBase = control.number("min") ?? node.properties["value"]?.number.flatMap { $0.isFinite ? $0 : nil } ?? 0
         }
-        form.register(id: formRegistrationID, name: s("name"), value: control.value, rules: rules, disabled: b("disabled"),
+        form.register(id: formRegistrationID, name: s("name"), value: control.value, rules: rules, disabled: b("disabled"), validator: fieldValidator,
                       onReset: { value in
                           applyFormValue(value)
                           if node.tag == "md-checkbox" { local["indeterminate"] = initialFormProperties?["indeterminate"] ?? .bool(false) }

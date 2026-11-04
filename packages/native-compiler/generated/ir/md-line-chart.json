@@ -1067,25 +1067,25 @@
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 633
+      "line": 635
     },
     {
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 748
+      "line": 753
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 823
+      "line": 829
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 823
+      "line": 829
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -1099,7 +1099,7 @@
     "styleUrl": "md-line-chart.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "ea150cce42c6b02a273ddee1d5adc1bde643acdfd7e7a9a8d90f9bd3328212c9"
+    "sha256": "7eba99c64550960bee455804380586adb8c150a4ff50169d9555244566b1d7c4"
   },
   "styles": [
     {
@@ -1910,27 +1910,65 @@
       "properties": [
         "label",
         "subtitle",
+        "markLines",
+        "titleAlign",
         "series",
-        "heightProp",
+        "xAxis",
+        "yAxis",
+        "yAxes",
+        "curve",
+        "stack",
+        "connectNulls",
+        "showMarks",
+        "lineWidth",
+        "markSize",
+        "area",
+        "showLine",
         "legend",
+        "tooltip",
+        "grid",
+        "axisTicks",
+        "inverted",
+        "showLabels",
+        "seriesLabels",
+        "zoom",
+        "locale",
+        "labelEmpty",
+        "labelPlot",
+        "labelPoint",
+        "labelZoomStart",
+        "labelZoomEnd",
+        "summary",
+        "tableLabels",
+        "valueFormatter",
+        "tooltipRenderer",
+        "heightProp",
+        "noAnimation",
+        "animation",
+        "animationDuration",
         "loading",
         "loadingLabel",
-        "labelEmpty",
-        "summary",
-        "showMarks",
-        "showLine",
-        "lineWidth",
-        "grid",
-        "connectNulls",
-        "showLabels",
-        "area"
+        "density"
       ],
       "events": [
         "mdMarkerClick",
+        "mdLineClick",
+        "mdAreaClick",
+        "mdAxisClick",
         "mdLegendClick",
-        "mdReady"
+        "mdHover",
+        "mdReady",
+        "mdZoom"
       ],
-      "methods": [],
+      "methods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "toDataURL",
+        "getInstance",
+        "setZoom",
+        "resetZoom"
+      ],
       "slots": [
         "header",
         "empty",
@@ -1938,117 +1976,95 @@
         "loading",
         "footer"
       ],
-      "unsupportedProperties": [
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
+        "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcChartAppearance(AWCChartAppearance)",
+        "fields": [
+          "blockSize",
+          "minBlockSize",
+          "aspectRatio",
+          "background",
+          "padding",
+          "shape",
+          "emptyColor",
+          "emptyBackground",
+          "emptyFont",
+          "emptyFontSize",
+          "emptyIconSize",
+          "zoomSize",
+          "zoomTrackColor",
+          "zoomWindowColor",
+          "zoomHandleColor",
+          "zoomBandColor"
+        ]
+      }
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "label",
+        "subtitle",
         "markLines",
         "titleAlign",
+        "series",
         "xAxis",
         "yAxis",
         "yAxes",
         "curve",
         "stack",
-        "markSize",
-        "tooltip",
-        "axisTicks",
-        "inverted",
-        "seriesLabels",
-        "zoom",
-        "locale",
-        "labelPlot",
-        "labelPoint",
-        "labelZoomStart",
-        "labelZoomEnd",
-        "tableLabels",
-        "valueFormatter",
-        "tooltipRenderer",
-        "noAnimation",
-        "animation",
-        "animationDuration",
-        "density"
-      ],
-      "unsupportedEvents": [
-        "mdLineClick",
-        "mdAreaClick",
-        "mdAxisClick",
-        "mdHover",
-        "mdZoom"
-      ],
-      "unsupportedMethods": [
-        "refreshTheme",
-        "resize",
-        "replay",
-        "toDataURL",
-        "getInstance",
-        "setZoom",
-        "resetZoom"
-      ],
-      "unsupportedSlots": [],
-      "notes": [
-        "Native Canvas plots. Supports scalar/y/value points and gaps; linear curves, unstacked single-axis. Tap probes first visible series. JS formatters, zoom, marks, multi-axis, stack, smooth curves and exact pointer event metadata remain unsupported."
-      ],
-      "verification": "not-device-verified"
-    },
-    "android": {
-      "status": "adapter-implemented",
-      "properties": [
-        "area",
         "connectNulls",
-        "grid",
-        "heightProp",
-        "label",
-        "labelEmpty",
-        "legend",
-        "lineWidth",
-        "loading",
-        "loadingLabel",
-        "markSize",
-        "series",
         "showMarks",
-        "subtitle",
-        "summary",
-        "xAxis"
-      ],
-      "events": [
-        "mdLegendClick",
-        "mdMarkerClick",
-        "mdReady"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "markLines",
-        "titleAlign",
-        "yAxis",
-        "yAxes",
-        "curve",
-        "stack",
+        "lineWidth",
+        "markSize",
+        "area",
         "showLine",
+        "legend",
         "tooltip",
+        "grid",
         "axisTicks",
         "inverted",
         "showLabels",
         "seriesLabels",
         "zoom",
         "locale",
+        "labelEmpty",
         "labelPlot",
         "labelPoint",
         "labelZoomStart",
         "labelZoomEnd",
+        "summary",
         "tableLabels",
         "valueFormatter",
         "tooltipRenderer",
+        "heightProp",
         "noAnimation",
         "animation",
         "animationDuration",
+        "loading",
+        "loadingLabel",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdMarkerClick",
         "mdLineClick",
         "mdAreaClick",
         "mdAxisClick",
+        "mdLegendClick",
         "mdHover",
+        "mdReady",
         "mdZoom"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "refreshTheme",
         "resize",
         "replay",
@@ -2057,18 +2073,45 @@
         "setZoom",
         "resetZoom"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "header",
         "empty",
         "loader",
         "loading",
         "footer"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+        "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
+        "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCChartAppearanceScope(AWCChartAppearance)",
+        "fields": [
+          "blockSize",
+          "minBlockSize",
+          "aspectRatio",
+          "background",
+          "padding",
+          "shape",
+          "emptyColor",
+          "emptyBackground",
+          "emptyFont",
+          "emptyFontSize",
+          "emptyIconSize",
+          "zoomSize",
+          "zoomTrackColor",
+          "zoomWindowColor",
+          "zoomHandleColor",
+          "zoomBandColor"
+        ]
+      }
     }
   }
 }

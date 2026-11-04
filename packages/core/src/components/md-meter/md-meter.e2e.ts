@@ -23,6 +23,63 @@ async function rects(page: E2EPage) {
 const settle = () => new Promise((r) => setTimeout(r, 450));
 
 describe('md-meter (e2e)', () => {
+  it('keeps circular geometry, visible text and ARIA in sync as range and shape change', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<md-meter variant="circular" value="25" size="80" thickness="8" label="Quota" show-label show-value color="success"></md-meter>');
+    const meter = await page.find('md-meter');
+    const circle = await page.find('md-meter >>> [part="indicator"]');
+    expect(circle.getAttribute('r')).toBe('36');
+    expect(circle.getAttribute('stroke-dashoffset')).toBe('0.75');
+    expect((await page.find('md-meter >>> [part="label"]')).textContent).toBe('Quota');
+    expect((await page.find('md-meter >>> [part="value"]')).textContent).toBe(meter.getAttribute('aria-valuetext'));
+    meter.setProperty('value', 200);
+    meter.setProperty('valueText', 'Full');
+    await page.waitForChanges();
+    expect(meter.getAttribute('aria-valuenow')).toBe('100');
+    expect((await page.find('md-meter >>> [part="value"]')).textContent).toBe('Full');
+    expect((await page.find('md-meter >>> [part="indicator"]')).getAttribute('stroke-dashoffset')).toBe('0');
+    meter.setProperty('max', -10);
+    meter.setProperty('valueText', '');
+    await page.waitForChanges();
+    expect(meter.getAttribute('aria-valuemax')).toBe('0');
+    expect(meter.getAttribute('aria-valuenow')).toBe('0');
+    expect((await page.find('md-meter >>> [part="indicator"]')).getAttribute('stroke-dashoffset')).toBe('1');
+    meter.setProperty('variant', 'linear');
+    await page.waitForChanges();
+    expect(await page.find('md-meter >>> svg')).toBeNull();
+    expect((await page.find('md-meter >>> [part="label"]')).textContent).toBe('Quota');
+  });
+
+  it('sanitizes non-finite values and invalid formatting without producing invalid ARIA', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<md-meter show-value></md-meter>');
+    await page.$eval('md-meter', (meter: any) => {
+      meter.min = Number.NaN;
+      meter.max = Number.POSITIVE_INFINITY;
+      meter.value = Number.NaN;
+      meter.formatOptions = { style: 'currency', currency: 'USD' };
+      meter.locale = 'en-US';
+      meter.thickness = Number.NaN;
+      meter.color = 'invalid role';
+    });
+    await page.waitForChanges();
+    const meter = await page.find('md-meter');
+    expect(meter.getAttribute('aria-valuemin')).toBe('0');
+    expect(meter.getAttribute('aria-valuemax')).toBe('100');
+    expect(meter.getAttribute('aria-valuenow')).toBe('0');
+    expect(meter.getAttribute('aria-valuetext')).toBe('$0.00');
+    await page.$eval('md-meter', (meter: any) => {
+      meter.value = 25;
+      meter.formatOptions = { style: 'currency', currency: 'not-a-currency' };
+      meter.variant = 'circular';
+      meter.size = Number.NaN;
+      meter.thickness = -1;
+    });
+    await page.waitForChanges();
+    expect(meter.getAttribute('aria-valuetext')).toBe('25');
+    expect((await page.find('md-meter >>> svg')).getAttribute('viewBox')).toBe('0 0 48 48');
+    expect((await page.find('md-meter >>> [part="indicator"]')).getAttribute('r')).toBe('22');
+  });
   it('hydrates and paints the fill at the value percentage of the track', async () => {
     const page = await newE2EPage();
     await page.setContent(

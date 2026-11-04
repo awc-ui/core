@@ -485,7 +485,9 @@
   --_rest-es: var(--md-sys-shape-corner-small, 8px);
   --_rest-ee: var(--md-sys-shape-corner-small, 8px);
   color: var(--md-sys-color-on-surface, #1C1B1F);
-  gap: 8px;
+  /* The vertical variants tighten the gap to 8px; the documented
+     `--md-menu-item-gap` hook still wins, as it does in the baseline variant. */
+  gap: var(--md-menu-item-gap, 8px);
   border-radius: var(--md-sys-shape-corner-small, 8px);
   /* The vertical variants tighten icons to 20px; retargeting the same lever
      keeps them on the density curve instead of freezing at 20px. */
@@ -537,7 +539,7 @@
   --_rest-es: var(--md-sys-shape-corner-small, 8px);
   --_rest-ee: var(--md-sys-shape-corner-small, 8px);
   color: var(--md-sys-color-on-tertiary-container, #31111D);
-  gap: 8px;
+  gap: var(--md-menu-item-gap, 8px);
   border-radius: var(--md-sys-shape-corner-small, 8px);
   --_icon-size: var(--md-menu-item-icon-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)));
 }

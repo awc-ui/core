@@ -212,6 +212,10 @@
           {
             "name": "name",
             "value": "icon"
+          },
+          {
+            "name": "onSlotchange",
+            "value": "event => {\n          this.hasSlottedIcon = (event.currentTarget as HTMLSlotElement).assignedElements().length > 0;\n        }"
           }
         ],
         "children": [
@@ -269,22 +273,10 @@
   },
   "diagnostics": [
     {
-      "code": "SHADOW_DOM",
-      "severity": "warning",
-      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 54
-    },
-    {
-      "code": "DOM_QUERY",
-      "severity": "warning",
-      "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 57
-    },
-    {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 59
+      "line": 93
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -298,7 +290,7 @@
     "styleUrl": "md-fab-menu-item.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "b93c5e25e123454a265dbf31d609fbc21052743ec73de7f76a34b6489ff482f1"
+    "sha256": "cf1557f280c207c97af8af24d8040fabd178a554776bb26c2da2c104d0976442"
   },
   "styles": [
     {
@@ -1019,33 +1011,53 @@
         "icon",
         "label",
         "disabled",
-        "softDisabled"
+        "softDisabled",
+        "rovingFocusVisible",
+        "density"
       ],
       "events": [
         "mdClick"
       ],
       "methods": [],
       "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
-        "rovingFocusVisible",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+        "",
         "icon"
       ],
-      "notes": [],
-      "verification": "not-device-verified"
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native menu-item renderer matches source min-height, density typography, asymmetric icon padding, gap, inherited palettes, custom glyph size, shape, ripple and focus state. Hard/soft disabled block activation while menu-driven native roving focus can still target an item as the custom Web host permits.",
+        "Public AWCNode.symbol and AWCNode.slotText support the icon slot; explicit empty/whitespace authored icon elements suppress fallback while retaining the resolved icon box. Empty label reveals authored default content. Material symbol names are decorative, and native aria-label supplies an explicit accessible name.",
+        "Native pointer, Enter/Space and accessibility emit cancelable scoped mdClick with null detail and truthful activation metadata. Canceling the custom event does not veto parent menu close; stopping propagation does. Five typed appearance fields support inherited defaults and optional nodeID-targeted local overrides without styling sibling items.",
+        "Three public parts expose actual native inspector geometry and resolved metrics. Actual macOS palette/geometry/slot/focus/input fixtures and host input/lifecycle checks are recorded in audits/md-fab-menu.md; iOS SDK/device execution is unavailable in this environment."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "label"
+      ],
+      "appearance": {
+        "api": "AWCFabMenuItemAppearance / View.awcFabMenuItemAppearance",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "iconSize",
+          "cornerRadius"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "density",
         "disabled",
         "icon",
         "label",
+        "rovingFocusVisible",
         "softDisabled"
       ],
       "events": [
@@ -1056,17 +1068,47 @@
         "",
         "icon"
       ],
-      "unsupportedProperties": [
-        "rovingFocusVisible",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native menu item supports all six properties, icon and fallback label slots, actual density geometry, native ripple and roving focus. Void mdClick callbacks use null; scoped event detail is an empty map with truthful activation metadata. Native text shaping remains platform-specific; runtime acceptance is recorded separately in the menu audit."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "label"
+      ],
+      "appearance": {
+        "api": "AWCFabMenuItemAppearance / AWCFabMenuItemAppearanceScope",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "iconSize",
+          "cornerRadius"
+        ]
+      },
+      "nativeEquivalents": {
+        "SLOT_INTROSPECTION": {
+          "status": "implemented",
+          "api": "AWCSlotsScope / native subcomposition",
+          "description": "Actual authored icon content, including explicit empty Text, controls icon fallback and padding.",
+          "limitations": [
+            "Native composition replaces assignedElements."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionEvent",
+          "description": "Cancelable synchronous native delivery preserves pointer and keyboard metadata and allows propagation to the parent menu to be stopped.",
+          "limitations": [
+            "DOM MouseEvent and KeyboardEvent are not fabricated."
+          ]
+        }
+      }
     }
   }
 }

@@ -12,13 +12,13 @@ public enum AWCExamples {
         case "md-button": set(["variant": "filled", "size": "md"]); children = [text("Continue")]
         case "md-icon-button": set(["icon": "favorite", "toggle": true, "selectedIcon": "favorite"])
         case "md-fab": set(["icon": "add", "label": "New project", "extended": true])
-        case "md-fab-menu-item": set(["icon": "edit", "label": "Write a note"])
+        case "md-fab-menu-item": set(["icon": "edit", "label": "New document"])
         case "md-split-button": set(["icon": "check", "label": "Publish", "menuLabel": "More actions"])
         case "md-checkbox", "md-radio", "md-switch": set(["value": "updates"]); children = [text("Receive project updates")]
         case "md-chip": set(["label": "Design system", "variant": "filter", "removable": true, "icon": "star"])
         case "md-button-group", "md-segmented-button-set":
             children = ["Day", "Week", "Month"].enumerated().map { index, label in AWCNode(id: "segment-\(index)", tag: tag == "md-button-group" ? "md-button" : "md-segmented-button", properties: ["label": .string(label), "value": .string(label.lowercased()), "selected": .bool(index == 0)], children: tag == "md-button-group" ? [text(label)] : []) }
-        case "md-segmented-button": set(["label": "Week", "value": "week", "icon": "calendar_month"])
+        case "md-segmented-button": set(["label": "Day", "value": "day", "selected":true])
         case "md-text-field": set(["label": "Project name", "placeholder": "e.g. AWC Native", "supportingText": "A name your team will recognize", "clearable": "internal"])
         case "md-number-field": set(["label": "Team members", "value": 5, "min": 1, "max": 30, "step": 1])
         case "md-otp-field": set(["label": "Verification code", "length": 6, "supportingText": "Enter the six-digit code", "value": "12"])
@@ -29,37 +29,51 @@ public enum AWCExamples {
         case "md-date-picker": set(["label": "Start date", "value": "2026-10-07"])
         case "md-time-picker": set(["label": "Meeting time", "value": "14:30"])
         case "md-color-picker": set(["value": "#6750A4", "showHex": true, "presets": ["#6750A4", "#386A20", "#006A6A", "#BA1A1A"]])
-        case "md-avatar": set(["name": "Alex Morgan", "size": "lg"])
+        case "md-avatar": set(["name": "Alex Morgan", "size": "large"])
         case "md-badge": set(["variant": "large", "value": "12"])
-        case "md-status-dot": set(["state": "success", "label": "All systems operational"])
-        case "md-skeleton": set(["lines": 3, "variant": "text", "width": "260px"])
-        case "md-progress-indicator": set(["value": 0.65, "max": 1, "variant": "linear", "label": "Upload progress"])
-        case "md-meter": set(["value": 65, "max": 100, "showLabel": true, "showValue": true, "label": "Storage used"])
+        case "md-status-dot": set(["state": "online", "label": "All systems operational"])
+        case "md-skeleton": set(["lines": 3, "variant": "text", "animation": "wave", "fullWidth": true])
+        case "md-progress-indicator": set(["value":64,"wave":true,"label":"Building native components"])
+        case "md-meter": set(["value": 72, "max": 100, "showLabel": true, "showValue": true, "label": "Storage used"])
         case "md-loading-indicator": set(["label": "Loading your workspace"])
         case "md-ripple": children = [text("Tap to see native feedback")]
-        case "md-card": set(["variant": "outlined", "interactive": true, "fullWidth": true]); children = [text("AWC Native", slot: "headline"), text("Your component library, rendered with native controls."), AWCNode(tag: "md-button", children: [text("Explore")], slot: "actions")]
-        case "md-accordion": children = ["Getting started", "Tokens and themes", "Native events"].enumerated().map { index, title in AWCNode(tag: "md-accordion-item", properties: ["headline": .string(title), "expanded": .bool(index == 0)], children: [text("This section uses SwiftUI disclosure state and accepts composed native children.")]) }; set(["exclusive": true])
-        case "md-accordion-item": set(["headline": "Getting started", "supportingText": "Learn the portable component API", "expanded": true]); children = [text("Pass properties and children to AWCNativeView, then observe the emitted events.")]
+        // Laboratory recipe content: the card itself keeps its source defaults.
+        case "md-card": children = [text("✧"), text("Ideas take shape."), text("A shared design language, built for every surface."), AWCNode(tag: "md-button", properties: ["variant": "text"], children: [text("Explore workspace")])]
+        case "md-accordion": children = [("A shared design language", "Built for every surface", "Colors, spacing, shapes, and component contracts come from the same AWC source.", true), ("Native by design", "Platform-specific implementations", "Native views retain each platform's own controls and behavior.", false)].enumerated().map { index, item in AWCNode(id: "accordion-item-\(index)", tag: "md-accordion-item", properties: ["headline": .string(item.0), "supportingText": .string(item.1), "expanded": .bool(item.3)], children: [text(item.2)]) }
+        case "md-accordion-item": set(["headline": "A shared design language", "supportingText": "Built for every surface", "expanded": true]); children = [text("Colors, spacing, shapes, and component contracts come from the same AWC source.")]
         case "md-list": set(["selectionMode": "single-select"]); children = ["Design review", "Prototype", "Release"].map { AWCNode(tag: "md-list-item", properties: ["headline": .string($0), "supportingText": "Project milestone", "leadingIcon": "folder"]) }
         case "md-list-item": set(["type": "button", "headline": "Design review", "supportingText": "Today, 14:30", "leadingIcon": "calendar_month", "selectionMode": "single-select"])
         case "md-app-bar": set(["headline": "Workspace", "subtitle": "Build something useful", "leadingIcon": "menu", "variant": "large"])
-        case "md-toolbar": children = ["edit", "share", "delete"].map { AWCNode(tag: "md-icon-button", properties: ["icon": .string($0), "variant": "tonal"]) }
-        case "md-navigation-bar", "md-navigation-rail", "md-tabs":
-            children = ["Home", "Projects", "Settings"].enumerated().map { index, title in AWCNode(tag: tag == "md-tabs" ? "md-tab" : tag == "md-navigation-rail" ? "md-navigation-rail-tab" : "md-navigation-tab", properties: ["label": .string(title), "icon": .string(["home", "folder", "settings"][index]), "value": .string(title.lowercased()), "active": .bool(index == 0)]) }
-        case "md-navigation-tab", "md-navigation-rail-tab", "md-tab": set(["label": "Projects", "icon": "folder", "active": true])
-        case "md-tab-panels": children = [AWCNode(tag: "md-tab-panel", properties: ["active": true], children: [text("Overview panel content")]), AWCNode(tag: "md-tab-panel", properties: ["active": false], children: [text("Hidden details panel")])]
-        case "md-tab-panel": set(["active": true]); children = [text("Overview"), text("Compose arbitrary native components inside a tab panel."), AWCNode(tag: "md-button", children: [text("Continue")])]
-        case "md-breadcrumbs": children = ["Home", "Projects", "AWC Native"].enumerated().map { index, title in AWCNode(tag: "md-breadcrumb-item", properties: ["current": .bool(index == 2)], children: [text(title)]) }
-        case "md-breadcrumb-item": children = [text("Projects")]
+        case "md-toolbar": set(["variant": "floating", "ariaLabelProp": "Formatting"])
+            children = [("undo", "Undo", false), ("redo", "Redo", false), ("", "", false), ("format_bold", "Bold", true), ("format_italic", "Italic", true)].map { icon, label, toggle in
+                icon.isEmpty ? AWCNode(tag: "md-divider", properties: ["vertical": true])
+                    : AWCNode(tag: "md-icon-button", properties: ["icon": .string(icon), "aria-label": .string(label)].merging(toggle ? ["toggle": true] : [:]) { a, _ in a }) }
+        case "md-tabs": set(["ariaLabelProp": "Workspace sections"]); children = ["Overview", "Activity", "Settings"].map { AWCNode(tag: "md-tab", properties: ["label": .string($0)]) }
+        case "md-navigation-bar": children = [("Home", "home"), ("Explore", "explore"), ("Saved", "bookmark")].map { AWCNode(tag: "md-navigation-tab", properties: ["label": .string($0.0), "icon": .string($0.1)]) }
+        case "md-navigation-rail":
+            children = ["Home", "Projects", "Settings"].enumerated().map { index, title in AWCNode(tag: tag == "md-navigation-rail" ? "md-navigation-rail-tab" : "md-navigation-tab", properties: ["label": .string(title), "icon": .string(["home", "folder", "settings"][index]), "value": .string(title.lowercased()), "active": .bool(index == 0)]) }
+        case "md-navigation-tab": set(["label": "Home", "icon": "home", "active": true])
+        case "md-navigation-rail-tab": set(["label": "Projects", "icon": "folder", "active": true])
+        case "md-tab": set(["label": "Overview", "active": true])
+        case "md-tab-panels": children = ["Your workspace, across every platform.", "Recent activity will appear here.", "Make this workspace your own."].enumerated().map { index, copy in AWCNode(tag: "md-tab-panel", properties: ["active": .bool(index == 0)], children: [text(copy)]) }
+        case "md-tab-panel": set(["active": true]); children = [text("Your workspace, across every platform.")]
+        case "md-breadcrumbs": children = [("Home", "#home", "home"), ("Projects", "#projects", ""), ("AWC Native", "", "")].map { title, href, icon in
+            AWCNode(tag: "md-breadcrumb-item", properties: (href.isEmpty ? [:] : ["href": .string(href)]).merging(icon.isEmpty ? [:] : ["icon": .string(icon)]) { a, _ in a }, children: [text(title)]) }
+        case "md-breadcrumb-item": set(["href": "#projects"]); children = [text("Projects")]
         case "md-stepper": set(["active": 0, "nav": true]); children = ["Account", "Workspace", "Review"].map { AWCNode(tag: "md-step", properties: ["label": .string($0), "description": .string("Set up your \($0.lowercased())")], children: [text("Complete this section, then continue to the next step.")]) }
         case "md-step": set(["label": "Workspace", "description": "Choose a project name", "active": true]); children = [node(for: "md-text-field")]
         case "md-dialog", "md-bottom-sheet", "md-side-sheet": set(["headline": "Project details", "open": false, "closeable": true]); children = [text("This overlay is presented by the operating system."), node(for: "md-text-field")]
-        case "md-menu", "md-fab-menu": set(["open": true, "listLabel": "Project actions", "menuLabel": "Create"]); children = ["Edit project", "Share with team", "Archive"].map { AWCNode(tag: tag == "md-fab-menu" ? "md-fab-menu-item" : "md-menu-item", properties: ["headline": .string($0), "label": .string($0), "icon": "edit"]) }
-        case "md-menu-item": set(["headline": "Notifications", "type": "checkbox", "supportingText": "Get updates about this project"])
-        case "md-sub-menu-item": set(["headline": "Share"]); children = [AWCNode(tag: "md-menu-item", properties: ["headline": "Copy link"]), AWCNode(tag: "md-menu-item", properties: ["headline": "Invite team"])]
-        case "md-menu-item-group": set(["label": "Workspace"]); children = [AWCNode(tag: "md-menu-item", properties: ["headline": "Overview"]), AWCNode(tag: "md-menu-item", properties: ["headline": "Settings"])]
+        case "md-menu": return AWCPreviewMenu.menu(for: AWCNode(id: "demo-menu", tag: "md-menu", properties: properties))
+        case "md-fab-menu":
+            set(["open":false,"anchor":"demo-fab-anchor","placement":"down"])
+            children=zip(["edit","folder","photo"],["New document","New folder","Upload image"]).enumerated().map {index,pair in
+                AWCNode(id:"demo-fab-item-\(index)",tag:"md-fab-menu-item",properties:["icon":.string(pair.0),"label":.string(pair.1)])
+            }
+        case "md-menu-item": set(["headline": "New project", "supportingText": "Start something new"])
+        case "md-sub-menu-item": set(["headline": "Export"]); children = [AWCNode(tag: "md-menu", children: [AWCNode(tag: "md-menu-item", properties: ["headline": "SwiftUI"]), AWCNode(tag: "md-menu-item", properties: ["headline": "Compose"])], slot: "submenu")]
+        case "md-menu-item-group": set(["label": "Workspace"]); children = [AWCNode(tag: "md-menu-item", properties: ["headline": "New project", "supportingText": "Start something new"]), AWCNode(tag: "md-menu-item", properties: ["headline": "Duplicate", "trailingText": "⌘D"])]
         case "md-snackbar": set(["message": "Project saved", "action": "Undo", "open": true, "closeable": true, "autoHide": false])
-        case "md-tooltip": set(["text": "This is rendered as native SwiftUI content.", "subhead": "Component details", "variant": "rich", "open": true])
+        case "md-tooltip": set(["text": "One source. Every surface."]); children=[AWCNode(id:"demo-tooltip-anchor",tag:"md-button",properties:["variant":"tonal"],children:[text("Hover or focus me")])]
         case "md-search": set(["placeholder": "Search your workspace", "open": true]); children = [AWCNode(tag: "md-list-item", properties: ["headline": "AWC Native", "supportingText": "Recently opened", "leadingIcon": "folder"])]
         case "md-table", "md-table-container", "md-table-head", "md-table-body", "md-table-foot", "md-table-row", "md-table-cell", "md-table-toolbar", "md-table-sort-label", "md-table-pagination", "md-table-expand-toggle": return tableExample(tag)
         case "md-transfer-list": set(["items": choices, "value": ["design"], "searchable": true])

@@ -9,8 +9,8 @@
 
    Measurements (MD3 spec):
      Shape:               12px corner radius (shape-corner-medium)
-     Left/right padding:  16px (applied to default slot via consumer)
-     Padding between:     8px max (layout concern of consumer)
+     Left/right padding:  16px (density-sensitive, overridable)
+     Padding between:     8px (density-sensitive, overridable)
      Label text:          start-aligned
 
    PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
@@ -26,6 +26,8 @@
      --md-card-height                Explicit block-size (default: auto)
      --md-card-min-height            Minimum block-size
      --md-card-max-height            Maximum block-size
+     --md-card-padding               Content padding
+     --md-card-gap                   Gap between authored content items
 
    ATTRIBUTES:
      full-width    Stretch the card to 100% of its container's inline-size
@@ -150,7 +152,7 @@
 /* ==========================================================
    3. INTERACTIVE & DRAGGABLE STATES
    Interactive cards behave like buttons with state layers.
-   Draggable cards support native HTML drag-and-drop with
+   Draggable cards support pointer gestures with
    the dragged state layer and elevation changes.
    ========================================================== */
 
@@ -313,7 +315,7 @@
 }
 
 /* Soft-disabled: disabled visuals but remains focusable */
-:host([soft-disabled]) {
+:host(.md-card--interactive[soft-disabled]) {
   cursor: default;
   pointer-events: auto;
   --_container-elevation: var(--md-sys-elevation-0, none) !important;
@@ -321,7 +323,7 @@
   color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
 }
 
-:host([soft-disabled]) .md-card__state-layer {
+:host(.md-card--interactive[soft-disabled]) .md-card__state-layer {
   display: none;
 }
 

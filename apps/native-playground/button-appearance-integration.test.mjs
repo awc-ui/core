@@ -63,3 +63,25 @@ test('complete button AI guide includes inherited/local style examples on both n
   assert.match(guide.markdown, /\.awcButtonAppearance\(\.init/);
   assert.match(guide.markdown, /CSS parts remain Web selectors/);
 });
+
+test('a fixed state-layer opacity travels as ::part(state-layer) on Web and as stateLayerOpacity natively', () => {
+  const fixed = { buttonAppearanceDefaults: { stateLayerOpacity: 0.1 }, buttonAppearance: { stateLayerOpacity: 0.2 } };
+  const payload = nativeRenderRequest('md-button', {}, false, fixed);
+  assert.deepEqual(validateRenderRequest(payload, new Set(['md-button'])).buttonAppearance, { stateLayerOpacity: 0.2 });
+  assert.throws(() => validateRenderRequest({ ...payload, buttonAppearance: { stateLayerOpacity: -0.1 } }, new Set(['md-button'])), error => error.code === 'INVALID_BUTTON_APPEARANCE');
+  const defaultsRule = '.awc-appearance-defaults md-button::part(state-layer) { opacity: 0.1; }', localRule = 'md-button.awc-appearance::part(state-layer) { opacity: 0.2; }';
+  const wrappers = { html: ['<style>', '</style>'], react: ['<style>{"', '"}</style>'], vue: ['<style scoped>', '</style>'], svelte: ['<style>', '</style>'], angular: ['styles: ["', '"],'] };
+  for (const [platform, [open, close]] of Object.entries(wrappers)) {
+    const snippet = usageSnippet(button, {}, platform, { ...fixed, text: 'Continue' });
+    const start = snippet.indexOf(open), defaults = snippet.indexOf(defaultsRule), local = snippet.indexOf(localRule);
+    assert.ok(start >= 0 && start < defaults && defaults < local && local < snippet.indexOf(close, local), `${platform}: ${snippet}`);
+    assert.match(snippet, /(class|className)=("|\{")awc-appearance-defaults/, platform);
+    assert.match(snippet, /(class|className)=("|\{")awc-appearance"/, platform);
+    assert.doesNotMatch(snippet, /--md-button-state-layer-opacity|stateLayerOpacity|style=""/, platform);
+  }
+  const swift = usageSnippet(button, {}, 'swift', { ...fixed, text: 'Continue' });
+  assert.match(swift, /\.awcButtonAppearance\(\.init\(stateLayerOpacity: 0\.2\)\)/);
+  const kotlin = usageSnippet(button, {}, 'android', { ...fixed, text: 'Continue' });
+  assert.match(kotlin, /stateLayerOpacity = 0\.2/);
+  for (const snippet of [swift, kotlin]) assert.doesNotMatch(snippet, /::part/);
+});

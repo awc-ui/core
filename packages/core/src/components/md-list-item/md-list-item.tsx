@@ -246,6 +246,10 @@ export class MdListItem {
    *  the shadow boundary in Chromium. */
   @State() private hasLeadingVideo = false;
   @State() private pressed = false;
+  /** The inner primary element (button / link rows) holds keyboard-visible focus.
+   *  `:focus-visible` on a shadow-tree element is not observable from `:host()`
+   *  (`:host(:has(...))` only sees light DOM), so the row mirrors it as a class. */
+  @State() private primaryFocusVisible = false;
   @State() private hostedByList = false;
 
   private observer: MutationObserver | null = null;
@@ -888,7 +892,27 @@ export class MdListItem {
     this.mdItemClick.emit({ index: this.computeIndex(), selected: this.selected });
   };
 
+  /**
+   * True when `event` comes from authored light-DOM content inside this row —
+   * a trailing control, slotted field, or an `expanded-content` child (row or
+   * arbitrary content). Only focusable elements receive keys, so such an
+   * origin is an authored control that owns its keys: the row must neither
+   * activate, toggle, nor reorder from them (multi-action rows promise that
+   * secondary controls keep their own keyboard behaviour). The row's own
+   * shadow-internal targets (inner primary, caret, drag handle) are not light-
+   * DOM descendants and keep the row behaviour.
+   */
+  private isAuthoredKeyTarget(event: Event): boolean {
+    const path = (typeof event.composedPath === 'function' ? event.composedPath() : [event.target]) as EventTarget[];
+    for (const node of path) {
+      if (node === this.el) return false;
+      if (node instanceof Node && node !== this.el && this.el.contains(node)) return true;
+    }
+    return false;
+  }
+
   private handleKeyDown = (e: KeyboardEvent) => {
+    if (this.isAuthoredKeyTarget(e)) return;
     /* Keyboard reorder works for any reorderable row (even non-interactive
        text rows), so it is handled BEFORE the isInteractive gate. Alt+Arrow
        asks the parent list to move this row; the list ignores it when it is
@@ -943,11 +967,20 @@ export class MdListItem {
     if (this.isInteractive && !this.isEffectivelyDisabled) this.pressed = true;
   };
 
+  private handlePrimaryBlur = () => {
+    this.primaryFocusVisible = false;
+  };
+
   private handlePointerUp = () => {
     this.pressed = false;
   };
 
-  private handleFocus = () => {
+  private handleFocus = (event?: FocusEvent) => {
+    if (event && this.primaryEl && event.target === this.primaryEl) {
+      let visible = false;
+      try { visible = this.primaryEl.matches(':focus-visible'); } catch { /* selector engines without :focus-visible */ }
+      this.primaryFocusVisible = visible;
+    }
     if (this.hostedByList && this.isInteractive) {
       this.mdRequestActivation.emit();
     }
@@ -1102,6 +1135,10 @@ export class MdListItem {
               initials={this.leadingAvatarLabel || undefined}
               size="medium"
               shape="circle"
+              /* The row owns the avatar tones (M3 list: primary-container /
+                 on-primary-container, themable via --md-list-item-leading-avatar-*
+                 forwarded in CSS). md-avatar's name palette would override both. */
+              colorFromName={false}
             ></md-avatar>
           ) : this.leadingImage ? (
             <span class="md-list-item__image-wrap" part="image-wrap">
@@ -1307,6 +1344,7 @@ export class MdListItem {
           tabindex={tabIndex ?? undefined}
           aria-disabled={this.isEffectivelyDisabled ? 'true' : null}
           onFocus={this.handleFocus}
+          onBlur={this.handlePrimaryBlur}
           ref={el => setRef(el as HTMLElement | undefined)}
         >
           {this.renderLeading()}
@@ -1322,6 +1360,7 @@ export class MdListItem {
         tabindex={tabIndex ?? undefined}
         aria-disabled={this.isEffectivelyDisabled ? 'true' : null}
         onFocus={this.handleFocus}
+        onBlur={this.handlePrimaryBlur}
         ref={el => setRef(el as HTMLElement | undefined)}
       >
         {this.renderLeading()}
@@ -1432,6 +1471,7 @@ export class MdListItem {
           'md-list-item--expanded': this.expandable && this.expanded,
           'md-list-item--reorderable': this.reorderable,
           'md-list-item--roving-focus-visible': this.rovingFocusVisible,
+          'md-list-item--primary-focus-visible': hasPrimaryAction && this.primaryFocusVisible,
         }}
         role={role}
         aria-disabled={this.isEffectivelyDisabled ? 'true' : null}

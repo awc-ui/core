@@ -213,7 +213,9 @@
    possible with these two keyframe windows. Both bars start off-screen-left so
    neither pops in mid-track at load. */
 .md-progress-indicator__bar--primary {
-  inset-inline-start: -145%;
+  /* The sweep keyframes use physical translateX coordinates. Mirror the
+     entire container for RTL, including this initial physical offset. */
+  left: -145%;
   animation: md-linear-primary-translate 2000ms linear infinite;
   animation-delay: -1666ms;
 }
@@ -222,7 +224,7 @@
   animation-delay: -1666ms;
 }
 .md-progress-indicator__bar--secondary {
-  inset-inline-start: -55%;
+  left: -55%;
   animation: md-linear-secondary-translate 2000ms linear infinite;
 }
 .md-progress-indicator__bar--secondary > .md-progress-indicator__bar-inner {
@@ -302,8 +304,7 @@
 
 /* RTL: flip the indeterminate animation (the bars translate with physical %,
    so the container flip reverses their sweep direction). */
-:host-context([dir="rtl"]).md-progress-indicator--indeterminate .md-progress-indicator__linear,
-:host([dir="rtl"]).md-progress-indicator--indeterminate .md-progress-indicator__linear {
+:host(.md-progress-indicator--indeterminate:dir(rtl)) .md-progress-indicator__linear {
   transform: scaleX(-1);
 }
 

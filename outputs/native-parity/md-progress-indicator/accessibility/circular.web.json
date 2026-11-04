@@ -1,0 +1,69 @@
+{
+ "tag": "md-progress-indicator",
+ "case": "circular",
+ "html": "<md-progress-indicator data-ax-node=\"n0\" id=\"example-md-progress-indicator\"></md-progress-indicator>",
+ "props": {
+  "n0": {
+   "complete": false,
+   "density": 0,
+   "fourColor": false,
+   "indeterminate": false,
+   "label": "Uploading",
+   "max": 100,
+   "size": 0,
+   "thickness": 4,
+   "value": 30,
+   "variant": "circular",
+   "wave": true,
+   "waveAmplitude": 0,
+   "waveLength": 0,
+   "waveSpeed": 0
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "progressbar",
+    "name": "Uploading",
+    "ignored": false,
+    "value": 30,
+    "valuemin": 0,
+    "valuemax": 100,
+    "valuetext": "",
+    "frame": [
+     16,
+     16,
+     48,
+     48
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

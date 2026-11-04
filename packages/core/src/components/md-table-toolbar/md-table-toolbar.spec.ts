@@ -44,4 +44,37 @@ describe('md-table-toolbar', () => {
     expect(shadow?.querySelector('[part="main"]')).toBeTruthy();
     expect(shadow?.querySelector('[part="actions"]')).toBeTruthy();
   });
+
+  it('updates leading content after selection mode recreates its slot', async () => {
+    const page = await create('<md-table-toolbar headline="Invoices"><span slot="leading">€</span></md-table-toolbar>');
+    const toolbar = page.root as HTMLMdTableToolbarElement;
+    const leading = toolbar.querySelector('[slot="leading"]')!;
+    const hidden = () => (toolbar.shadowRoot!.querySelector('[part="leading"]') as HTMLElement).hidden;
+    expect(hidden()).toBe(false);
+
+    toolbar.numSelected = 2;
+    await page.waitForChanges();
+    expect(toolbar.shadowRoot!.querySelector('slot[name="leading"]')).toBeNull();
+    toolbar.numSelected = 0;
+    await page.waitForChanges();
+    const recreated = toolbar.shadowRoot!.querySelector('slot[name="leading"]')!;
+    leading.remove();
+    recreated.dispatchEvent(new Event('slotchange'));
+    await page.waitForChanges();
+    expect(hidden()).toBe(true);
+    toolbar.appendChild(leading);
+    recreated.dispatchEvent(new Event('slotchange'));
+    await page.waitForChanges();
+    expect(hidden()).toBe(false);
+  });
+
+  it('reveals assigned leading content when an initially selected toolbar returns to default mode', async () => {
+    const page = await create('<md-table-toolbar num-selected="1"><span slot="leading">Back</span></md-table-toolbar>');
+    const toolbar = page.root as HTMLMdTableToolbarElement;
+    toolbar.numSelected = 0;
+    await page.waitForChanges();
+    toolbar.shadowRoot!.querySelector('slot[name="leading"]')!.dispatchEvent(new Event('slotchange'));
+    await page.waitForChanges();
+    expect((toolbar.shadowRoot!.querySelector('[part="leading"]') as HTMLElement).hidden).toBe(false);
+  });
 });

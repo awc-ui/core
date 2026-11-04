@@ -1,5 +1,21 @@
 import { Component, Host, h, Prop, State, Element } from '@stencil/core';
 
+/**
+ * @csspart shape - The rectangular, rounded or circular painted block.
+ * @csspart line - Every painted text row, including the final tapered row.
+ * @csspart line-last - The tapered final row when multiple text rows are rendered.
+ * @cssprop --md-skeleton-color - Base placeholder color.
+ * @cssprop --md-skeleton-highlight - Wave shimmer highlight color.
+ * @cssprop --md-skeleton-radius - Text and rectangular corner shape.
+ * @cssprop --md-skeleton-rounded-radius - Rounded variant corner shape.
+ * @cssprop --md-skeleton-width - Default inline size.
+ * @cssprop --md-skeleton-height - Block size or text row height.
+ * @cssprop --md-skeleton-size - Default circular size.
+ * @cssprop --md-skeleton-line-gap - Gap between text rows.
+ * @cssprop --md-skeleton-pulse-duration - Recurring pulse duration.
+ * @cssprop --md-skeleton-wave-duration - Recurring wave duration.
+ * @cssprop --md-skeleton-bloom-duration - Entrance animation duration.
+ */
 @Component({
   tag: 'md-skeleton',
   styleUrl: 'md-skeleton.css',
@@ -13,8 +29,8 @@ export class MdSkeleton {
    * - `text` — single short rectangle the height of a body line. With
    *   `lines > 1` the last line gets a tapered width so it reads as a
    *   "last line of a paragraph".
-   * - `rectangular` — fills the inline + block sizes you give it; no
-   *   border-radius unless you set `--md-skeleton-radius`.
+   * - `rectangular` — fills the inline + block sizes you give it, with
+   *   the extra-small corner token or `--md-skeleton-radius`.
    * - `rounded` — same as `rectangular` but with the MD3 medium corner
    *   radius (or your override). Good for cards / images.
    * - `circular` — perfect circle (1:1 aspect). Use for avatar / icon
@@ -66,7 +82,7 @@ export class MdSkeleton {
   @Prop({ attribute: 'full-height', reflect: true }) fullHeight: boolean = false;
 
   /**
-   * Accessible label. Defaults to "Loading…". Pass a more specific
+   * Accessible label. Defaults to "Loading". Pass a more specific
    * label when the skeleton represents a recognisable region
    * ("Loading article") for better screen-reader context.
    */
@@ -91,15 +107,11 @@ export class MdSkeleton {
   private motionQuery?: MediaQueryList;
   private motionListener?: () => void;
 
-  componentWillLoad() {
-    if (typeof window !== 'undefined' && window.matchMedia) {
-      this.motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-      this.prefersReducedMotion = this.motionQuery.matches;
-    }
-  }
-
-  componentDidLoad() {
-    if (!this.motionQuery) return;
+  connectedCallback() {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    this.motionQuery ??= window.matchMedia('(prefers-reduced-motion: reduce)');
+    this.prefersReducedMotion = this.motionQuery.matches;
+    if (this.motionListener) return;
     this.motionListener = () => {
       this.prefersReducedMotion = this.motionQuery!.matches;
     };
@@ -109,6 +121,7 @@ export class MdSkeleton {
   disconnectedCallback() {
     if (this.motionQuery && this.motionListener) {
       this.motionQuery.removeEventListener('change', this.motionListener);
+      this.motionListener = undefined;
     }
   }
 

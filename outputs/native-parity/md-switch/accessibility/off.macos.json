@@ -1,0 +1,214 @@
+{
+ "tag": "md-switch",
+ "case": "off",
+ "request": {
+  "tag": "md-switch",
+  "properties": {
+   "aria-label": "Enable notifications"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "actions": [
+        "AXPress"
+       ],
+       "description": "Enable notifications",
+       "enabled": true,
+       "expanded": false,
+       "focused": false,
+       "frame": [
+        294,
+        32,
+        52,
+        48
+       ],
+       "identifier": "example-md-switch",
+       "invalid": "false",
+       "required": false,
+       "role": "AXCheckBox",
+       "roleDescription": "switch",
+       "selected": false,
+       "subrole": "AXSwitch",
+       "value": false
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      112
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    112
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "F2D93CB2-ADB6-4749-9DDB-22C6581B12DB",
+    "properties": {
+     "text": "Receive project updates"
+    },
+    "tag": "#text"
+   }
+  ],
+  "id": "example-md-switch",
+  "properties": {
+   "aria-label": "Enable notifications",
+   "density": 0,
+   "disabled": false,
+   "icons": false,
+   "name": "",
+   "required": false,
+   "selected": false,
+   "selectedIcon": "check",
+   "showOnlySelectedIcon": false,
+   "softDisabled": false,
+   "unselectedIcon": "close",
+   "value": "updates",
+   "valueMissingLabel": "Please turn this on if you want to proceed."
+  },
+  "tag": "md-switch"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Enable notifications",
+    "frame": [
+     294,
+     32,
+     52,
+     48
+    ],
+    "identifier": "example-md-switch",
+    "role": "AXCheckBox",
+    "subrole": "AXSwitch"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Enable notifications",
+    "frame": [
+     294,
+     32,
+     52,
+     48
+    ],
+    "identifier": "example-md-switch",
+    "role": "AXCheckBox",
+    "subrole": "AXSwitch"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 48,
+     "width": 52,
+     "x": 294,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "active": false,
+     "containerX": -4,
+     "containerY": 4,
+     "focusRing": false,
+     "focusVisible": false,
+     "focused": false,
+     "handleColor": [
+      0.4745098352432251,
+      0.45490193367004395,
+      0.4941176772117615,
+      1
+     ],
+     "handleSize": 16,
+     "hostHeight": 48,
+     "hover": false,
+     "icon": "",
+     "iconColor": [
+      0.9019607901573181,
+      0.8784313797950745,
+      0.9137254953384399,
+      1
+     ],
+     "layerColor": [
+      0.10980392247438431,
+      0.10588235408067703,
+      0.12156864255666733,
+      1
+     ],
+     "layerOpacity": 0,
+     "layerSize": 40,
+     "outlineColor": [
+      0.4745098352432251,
+      0.45490193367004395,
+      0.4941176772117615,
+      1
+     ],
+     "pressed": false,
+     "renderTime": 1031507687.5237086,
+     "selected": false,
+     "tabindex": 0,
+     "trackColor": [
+      0.9019607901573181,
+      0.8784313797950745,
+      0.9137254953384399,
+      1
+     ],
+     "trackHeight": 32,
+     "trackWidth": 52
+    },
+    "name": "md-switch"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

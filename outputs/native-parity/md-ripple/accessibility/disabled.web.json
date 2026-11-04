@@ -1,0 +1,92 @@
+{
+ "tag": "md-ripple",
+ "case": "disabled",
+ "html": "<button type=\"button\" style=\"position:relative;overflow:hidden;padding:16px 24px;border:0;border-radius:16px;background:var(--md-sys-color-surface-container-highest);color:var(--md-sys-color-on-surface);font:500 14px/20px Roboto,sans-serif;letter-spacing:.1px\">Tap to see the ripple<md-ripple data-ax-node=\"n0\" id=\"example-md-ripple\">Tap to see native feedback</md-ripple></button>",
+ "props": {
+  "n0": {
+   "disabled": true
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "button",
+    "name": "Tap to see the ripple",
+    "ignored": false,
+    "invalid": "false",
+    "focusable": true,
+    "frame": [
+     16,
+     16,
+     176.1875,
+     52
+    ],
+    "children": [
+     {
+      "role": "StaticText",
+      "name": "Tap to see the ripple",
+      "ignored": false,
+      "frame": [
+       40,
+       34,
+       128.1875,
+       16
+      ],
+      "children": [
+       {
+        "role": "InlineTextBox",
+        "name": "Tap to see the ripple",
+        "ignored": false
+       }
+      ]
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "button",
+   "role": "button",
+   "name": "Tap to see the ripple",
+   "frame": [
+    16,
+    16,
+    176.1875,
+    52
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

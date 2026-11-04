@@ -1315,6 +1315,18 @@ export function computeMultiAxisLayout(spec: LineChartSpec, theme: EngineTheme, 
     texts.push({ x: plot.x + plot.width / 2, y: height - legendBandBottom - 2, text: spec.xLabel, color: theme.textColor, fontSize: theme.labelSize, align: 'center', baseline: 'bottom', key: 'x-axis-title' });
   }
 
+  // Reference annotations share the horizontal scale, regardless of which
+  // value axis each series uses. Keep off-window lines out of the plot.
+  for (const ml of spec.markLines ?? []) {
+    const mv = spec.xScale === 'category' ? Number(ml.value) : toNumeric(ml.value, spec.xScale);
+    const px = plot.x + x.scale(mv);
+    if (!Number.isFinite(px) || px < plot.x - 1 || px > plot.x + plot.width + 1) continue;
+    gridlines.push({ x1: px, y1: plot.y, x2: px, y2: plot.y + plot.height, color: ml.color ?? theme.axisLineColor, width: 1.5, dash: dashPattern(ml.dash ?? 'dashed', 1.5) });
+    if (ml.label) {
+      texts.push({ x: px + 4, y: plot.y + 2, text: ml.label, color: theme.textColorMuted, fontSize: theme.labelSize, align: 'start', baseline: 'top', key: `markline-${Math.round(px)}` });
+    }
+  }
+
   const legend: LegendItem[] =
     spec.legend === 'none' ? [] : spec.series.map((s, si) => ({ label: s.label, color: s.color, seriesIndex: si, hidden: s.hidden, x: 0, y: 0 }));
   const xLabels: string[] = [];

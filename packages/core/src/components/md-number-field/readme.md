@@ -104,6 +104,8 @@ display string. `mdValidityChange`
 (`{ valid, validationMessage, flags: Record<string, boolean> }`, `bubbles: true`,
 **not composed**, and silent on mount). `mdInput` / `mdChange` **are** composed
 — the value events cross a shadow boundary, the validity event does not.
+The inner `md-text-field`'s own events (`mdInput`, `mdChange`, `mdSearch`)
+are contained at the host; only the three events above reach the page.
 
 **Typed vs stepped** — the two value paths are deliberately different. Typed
 text is kept verbatim while editing, parses leniently, commits on blur or Enter,
@@ -201,6 +203,9 @@ renders no `<slot>`).
   hijacked, so pinch-zoom keeps working. The listener sits on the **host**,
   registered non-passive, and calls `preventDefault()` — while the input is
   focused the page will not scroll under the pointer. Scrolling down decrements.
+  Only the vertical axis steps: a horizontal-only scroll (trackpad pan, tilt
+  wheel) is left to the page, except with `Shift`, which browsers report as
+  `deltaX` and which steps by `large-step`.
   A drag-to-scrub surface is deliberately out of scope: a niche gesture built on
   pointer lock, whose behaviour is unreliable in Safari.
 - **`readonly` blocks every edit path** — typing, arrow stepping, `Home`/`End`,

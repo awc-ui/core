@@ -310,6 +310,9 @@ export class MdCheckbox {
     if (this.isDisabled) return;
     if (e.key === ' ') {
       e.preventDefault();
+      // One press, one activation: a held Space repeats keydown, which would
+      // otherwise flip the box (and emit mdChange) on every repeat.
+      if (e.repeat) return;
       this.pressed = true;
       triggerRipple(this.el);
       this.handleClick();

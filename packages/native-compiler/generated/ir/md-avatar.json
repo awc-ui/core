@@ -299,7 +299,7 @@
     "styleUrl": "md-avatar.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "ab0383d758f19474a45564c430355d372183410150481924576f7883c93b5549"
+    "sha256": "9de6cfe5d2298fafaa6ab130233a85b07bbbf3c5a37edbdd0d98ec4e563de4d1"
   },
   "styles": [
     {
@@ -984,63 +984,138 @@
         "initials",
         "size",
         "shape",
-        "label"
+        "label",
+        "colorFromName",
+        "loading",
+        "crossorigin",
+        "density"
       ],
       "events": [
         "mdLoad",
         "mdError"
       ],
       "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "colorFromName",
-        "loading",
-        "crossorigin",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "slots": [
         ""
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "AsyncImage loads remote images. Native image cache/loading replaces browser loading/crossorigin."
+        "Dedicated native avatar: all eleven properties (image → initials → default slot → person icon; size presets with density 0…−4 and custom CSS lengths: unitless px, px, rem, em, vw, vh, vmin, vmax, pt, pc, in, cm, mm, q with calc/min/max/clamp; circle, rounded and square shapes with physical corners), mdLoad/mdError with { src }, the default slot, twenty-five appearance hooks and three typed part targets.",
+        "Identity as in the source: explicit initials (trimmed, three graphemes, locale upper-case) or the first and last name tokens; the name palette bucket uses the source's JavaScript hash; role img with the label, alt or name, otherwise hidden from assistive technology.",
+        "As in the source, a name palette wins over containerColor/labelColor (they color neutral avatars); the fourteen palette hooks (missing from the CEM) recolor their own bucket.",
+        "Images decode natively from data:, file: and http(s) sources; loading=lazy has no viewport deferral and crossorigin has no CORS semantics (a crossorigin change re-requests a displayed image, as Chrome does). Inline SVG slot content has no native equivalent; native views go in the slot.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "image",
+        "initials",
+        "icon"
+      ],
+      "appearance": {
+        "api": ".awcAvatarAppearance(AWCAvatarAppearance)",
+        "fields": [
+          "size",
+          "containerColor",
+          "containerShape",
+          "labelColor",
+          "labelFontFamily",
+          "labelFontSize",
+          "labelFontWeight",
+          "labelLetterSpacing",
+          "iconSize",
+          "outlineColor",
+          "outlineWidth",
+          "palette1Container",
+          "palette1Label",
+          "palette2Container",
+          "palette2Label",
+          "palette3Container",
+          "palette3Label",
+          "palette4Container",
+          "palette4Label",
+          "palette5Container",
+          "palette5Label",
+          "palette6Container",
+          "palette6Label",
+          "palette7Container",
+          "palette7Label"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "src",
         "alt",
-        "initials",
-        "label",
         "name",
-        "shape",
+        "initials",
         "size",
-        "src"
-      ],
-      "events": [
-        "mdError",
-        "mdLoad"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
+        "shape",
+        "label",
         "colorFromName",
         "loading",
         "crossorigin",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "events": [
+        "mdLoad",
+        "mdError"
+      ],
+      "methods": [],
+      "slots": [
         ""
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native asynchronous HTTP(S) bitmap loading with initials/name fallback. CSS loading/crossorigin policies do not map to Android."
+        "Dedicated native avatar: all eleven properties (image → initials → default slot → person icon; size presets with density 0…−4 and custom CSS lengths: unitless px, px, rem, em, vw, vh, vmin, vmax, pt, pc, in, cm, mm, q with calc/min/max/clamp; circle, rounded and square shapes with physical corners), mdLoad/mdError with { src }, the default slot, twenty-five appearance hooks and three typed part targets.",
+        "Identity as in the source: explicit initials (trimmed, three graphemes, locale upper-case) or the first and last name tokens; the name palette bucket uses the source's JavaScript hash; role img with the label, alt or name, otherwise hidden from assistive technology.",
+        "As in the source, a name palette wins over containerColor/labelColor (they color neutral avatars); the fourteen palette hooks (missing from the CEM) recolor their own bucket.",
+        "Images decode natively from data:, file: and http(s) sources; loading=lazy has no viewport deferral and crossorigin has no CORS semantics (a crossorigin change re-requests a displayed image, as Chrome does). Inline SVG slot content has no native equivalent; native views go in the slot.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "image",
+        "initials",
+        "icon"
+      ],
+      "appearance": {
+        "api": "AWCAvatarAppearanceScope(AWCAvatarAppearance)",
+        "fields": [
+          "size",
+          "containerColor",
+          "containerShape",
+          "labelColor",
+          "labelFontFamily",
+          "labelFontSize",
+          "labelFontWeight",
+          "labelLetterSpacing",
+          "iconSize",
+          "outlineColor",
+          "outlineWidth",
+          "palette1Container",
+          "palette1Label",
+          "palette2Container",
+          "palette2Label",
+          "palette3Container",
+          "palette3Label",
+          "palette4Container",
+          "palette4Label",
+          "palette5Container",
+          "palette5Label",
+          "palette6Container",
+          "palette6Label",
+          "palette7Container",
+          "palette7Label"
+        ]
+      }
     }
   }
 }

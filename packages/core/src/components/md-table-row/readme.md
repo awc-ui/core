@@ -89,9 +89,11 @@ takes the detail panel (rendered only when `expandable`).
   on every slot change — you do not have to set it. Keeping it in markup is
   still worth it for head/foot rows: the prop reflects its `body` default until
   the first stamp, so explicit markup avoids a first-paint flash.
-- **`value` is the row's identity** in `md-table`'s selection state. Without it
-  the table falls back to the row's index *within the selected set*, which is
-  unstable — always set a `value` on selectable rows.
+- **`value` is the row's identity** in `md-table`'s selection state and in
+  `mdRowClick` / `mdRowSelectionChange`. Without it the row is identified by
+  its 0-based index among the table's body rows (head/foot rows: within their
+  group), as a string. That index shifts when rows are inserted, removed or
+  re-sorted — always set a `value` on selectable rows.
 - **`mdRowClick` only fires when `clickable` is set**, and it is suppressed for
   clicks that land on an interactive descendant (`md-checkbox`, `md-radio`,
   `md-button`, `md-icon-button`, `md-switch`, `md-fab`, `md-chip`, `button`,
@@ -220,7 +222,13 @@ appears only on `expandable` rows (inside the `treegrid` the table promotes
 itself to). `aria-selected` and `aria-rowindex` are written by `md-table`, only
 on selectable body rows of a selection-enabled table. A `clickable` row is
 keyboard-activatable and shows a 2px inset focus ring — check that a sticky
-header or footer does not cover it while scrolling.
+header or footer does not cover it while scrolling. In forced colours a
+selected row paints `Highlight` with `HighlightText` cells (pinned cells
+included) and opts out of forced-colour adjustment
+(`forced-color-adjust: none`, inherited by its cells and their content) so the
+text is not backplated with `Canvas`; content you put in a selected row's cells
+therefore renders with its own colours there — use system colours in your own
+forced-colours rules.
 
 **RTL** — cell order, dividers and pinning mirror with the table; the row itself
 uses logical properties throughout.

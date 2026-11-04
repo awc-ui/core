@@ -125,3 +125,49 @@ describe('md-organization-chart browser behavior', () => {
     expect(selection).toHaveReceivedEventTimes(2);
   });
 });
+
+describe('md-organization-chart dynamic inputs', () => {
+  it('toggles nonselectable branches by keyboard and pointer, then recovers from empty JSON data', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<md-organization-chart selection-mode="none" expand-label="Show team" collapse-label="Hide team"></md-organization-chart>');
+    const chart = await page.find('md-organization-chart');
+    await chart.setProperty('nodes', JSON.stringify({ id: 'lead', name: 'Avery', accent: '#6750a4', children: [{ id: 'vacancy', name: 'Vacant' }] }));
+    await page.waitForChanges();
+    const toggle = await chart.spyOnEvent('mdNodeToggle');
+    const selection = await chart.spyOnEvent('mdSelectionChange');
+    await (await page.find('md-organization-chart >>> [data-id="lead"]')).press('Enter');
+    expect(toggle.lastEvent.detail.expanded).toBe(false);
+    expect(await page.find('md-organization-chart >>> [data-id="vacancy"]')).toBeNull();
+    await (await page.find('md-organization-chart >>> [part="toggle"]')).click(); await page.waitForChanges();
+    expect(toggle.lastEvent.detail.expanded).toBe(true);
+    expect(await page.find('md-organization-chart >>> [data-id="vacancy"]')).not.toBeNull();
+    await (await page.find('md-organization-chart >>> [data-id="vacancy"]')).press('Space');
+    expect(selection).not.toHaveReceivedEvent();
+    await chart.setProperty('collapsible', false); await page.waitForChanges();
+    expect(await page.find('md-organization-chart >>> [part="toggle"]')).toBeNull();
+    await chart.setProperty('nodes', '{invalid JSON'); await page.waitForChanges();
+    expect(await page.find('md-organization-chart >>> [part="empty"]')).not.toBeNull();
+    await chart.setProperty('nodes', ''); await page.waitForChanges();
+    expect(await page.find('md-organization-chart >>> [role="tree"]')).toBeNull();
+    await chart.setProperty('nodes', JSON.stringify([{ id: 'restored', name: 'Restored team' }])); await page.waitForChanges();
+    expect((await page.find('md-organization-chart >>> [data-id="restored"]')).getAttribute('tabindex')).toBe('0');
+  });
+});
+
+
+describe('md-organization-chart selected connector geometry', () => {
+  it('tracks right, centered and left selections without marking unrelated branches', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<md-organization-chart selection-mode="multiple" style="width:900px"></md-organization-chart>');
+    const chart = await page.find('md-organization-chart');
+    await chart.setProperty('nodes', [{ id: 'root', name: 'Director', children: [{ id: 'left', name: 'Left team' }, { id: 'middle', name: 'Middle team' }, { id: 'right', name: 'Right team' }] }]); await page.waitForChanges();
+    for (const id of ['right', 'middle', 'left']) {
+      await chart.setProperty('selectedIds', [id]); await page.waitForChanges();
+      expect(await page.evaluate(() => Array.from(document.querySelector('md-organization-chart')!.shadowRoot!.querySelectorAll('[part~="branch-on-path"]'), branch => branch.getAttribute('data-id')))).toEqual(['root', id]);
+      if (id !== 'middle') expect(await page.evaluate(() => parseFloat((document.querySelector('md-organization-chart')!.shadowRoot!.querySelector('[data-id="root"] > [role="group"]') as HTMLElement).style.getPropertyValue('--_trail-w')))).toBeGreaterThan(0);
+    }
+    await (await page.find('md-organization-chart >>> [data-id="left"]')).press('Enter'); await page.waitForChanges();
+    expect(await chart.getProperty('selectedIds')).toEqual([]);
+    expect(await page.findAll('md-organization-chart >>> [part~="branch-on-path"]')).toHaveLength(0);
+  });
+});

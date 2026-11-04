@@ -848,13 +848,13 @@
       "code": "CALLABLE_PROP",
       "severity": "warning",
       "message": "Callable props require target-specific callback signatures.",
-      "line": 171
+      "line": 170
     },
     {
       "code": "DOM_OBSERVER",
       "severity": "warning",
       "message": "Native layout measurement must replace ResizeObserver.",
-      "line": 211
+      "line": 210
     },
     {
       "code": "CSS_RUNTIME",
@@ -866,13 +866,13 @@
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 507
+      "line": 556
     },
     {
       "code": "CANCELABLE_EVENT",
       "severity": "warning",
       "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
-      "line": 59
+      "line": 58
     }
   ],
   "source": {
@@ -880,7 +880,7 @@
     "styleUrl": "md-pie-chart.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "3812ef19575f342c4bc211e7b2cc2776edfdf6b1c035b8b19b5c1b243f54cd63"
+    "sha256": "88abf798621dd17de670aac780d4f74ce59036205dfa693ce8215d1194538d28"
   },
   "styles": [
     {
@@ -1585,127 +1585,53 @@
       "status": "adapter-implemented",
       "properties": [
         "label",
-        "subtitle",
+        "titleAlign",
         "data",
         "innerRadius",
+        "outerRadius",
         "startAngle",
         "endAngle",
         "paddingAngle",
+        "cornerRadius",
         "showLabels",
         "labelMode",
+        "monochrome",
+        "gradient",
+        "highlight",
         "legend",
-        "heightProp",
+        "tooltip",
+        "locale",
+        "subtitle",
+        "summary",
+        "tableLabels",
+        "labelEmpty",
         "loading",
         "loadingLabel",
-        "labelEmpty",
-        "summary"
+        "labelPlot",
+        "labelPoint",
+        "tooltipRenderer",
+        "valueFormatter",
+        "ringWidths",
+        "heightProp",
+        "noAnimation",
+        "animation",
+        "animationDuration",
+        "density"
       ],
       "events": [
         "mdSliceClick",
         "mdLegendClick",
         "mdReady"
       ],
-      "methods": [],
+      "methods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "drill",
+        "toDataURL",
+        "getInstance"
+      ],
       "slots": [
-        "header",
-        "empty",
-        "loader",
-        "loading",
-        "footer"
-      ],
-      "unsupportedProperties": [
-        "titleAlign",
-        "outerRadius",
-        "cornerRadius",
-        "monochrome",
-        "gradient",
-        "highlight",
-        "tooltip",
-        "locale",
-        "tableLabels",
-        "labelPlot",
-        "labelPoint",
-        "tooltipRenderer",
-        "valueFormatter",
-        "ringWidths",
-        "noAnimation",
-        "animation",
-        "animationDuration",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "refreshTheme",
-        "resize",
-        "replay",
-        "drill",
-        "toDataURL",
-        "getInstance"
-      ],
-      "unsupportedSlots": [
-        "center"
-      ],
-      "notes": [
-        "Native Canvas pie/donut. Negative values clamp to zero. Hit testing supports full circle; custom partial sweeps are visual only. Gradients/ring widths and browser tooltip renderer unsupported."
-      ],
-      "verification": "not-device-verified"
-    },
-    "android": {
-      "status": "adapter-implemented",
-      "properties": [
-        "data",
-        "endAngle",
-        "heightProp",
-        "innerRadius",
-        "label",
-        "labelEmpty",
-        "legend",
-        "loading",
-        "loadingLabel",
-        "startAngle",
-        "subtitle",
-        "summary"
-      ],
-      "events": [
-        "mdLegendClick",
-        "mdReady",
-        "mdSliceClick"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "titleAlign",
-        "outerRadius",
-        "paddingAngle",
-        "cornerRadius",
-        "showLabels",
-        "labelMode",
-        "monochrome",
-        "gradient",
-        "highlight",
-        "tooltip",
-        "locale",
-        "tableLabels",
-        "labelPlot",
-        "labelPoint",
-        "tooltipRenderer",
-        "valueFormatter",
-        "ringWidths",
-        "noAnimation",
-        "animation",
-        "animationDuration",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "refreshTheme",
-        "resize",
-        "replay",
-        "drill",
-        "toDataURL",
-        "getInstance"
-      ],
-      "unsupportedSlots": [
         "header",
         "center",
         "empty",
@@ -1713,11 +1639,123 @@
         "loading",
         "footer"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+        "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
+        "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL.",
+        "The center slot is centred on the ring centre and capped at the hole, as in the source."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcChartAppearance(AWCChartAppearance)",
+        "fields": [
+          "blockSize",
+          "minBlockSize",
+          "aspectRatio",
+          "background",
+          "padding",
+          "shape",
+          "emptyColor",
+          "emptyBackground",
+          "emptyFont",
+          "emptyFontSize",
+          "emptyIconSize",
+          "centerColor"
+        ]
+      }
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "label",
+        "titleAlign",
+        "data",
+        "innerRadius",
+        "outerRadius",
+        "startAngle",
+        "endAngle",
+        "paddingAngle",
+        "cornerRadius",
+        "showLabels",
+        "labelMode",
+        "monochrome",
+        "gradient",
+        "highlight",
+        "legend",
+        "tooltip",
+        "locale",
+        "subtitle",
+        "summary",
+        "tableLabels",
+        "labelEmpty",
+        "loading",
+        "loadingLabel",
+        "labelPlot",
+        "labelPoint",
+        "tooltipRenderer",
+        "valueFormatter",
+        "ringWidths",
+        "heightProp",
+        "noAnimation",
+        "animation",
+        "animationDuration",
+        "density"
+      ],
+      "events": [
+        "mdSliceClick",
+        "mdLegendClick",
+        "mdReady"
+      ],
+      "methods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "drill",
+        "toDataURL",
+        "getInstance"
+      ],
+      "slots": [
+        "header",
+        "center",
+        "empty",
+        "loader",
+        "loading",
+        "footer"
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
+        "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL.",
+        "The center slot is centred on the ring centre and capped at the hole, as in the source."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCChartAppearanceScope(AWCChartAppearance)",
+        "fields": [
+          "blockSize",
+          "minBlockSize",
+          "aspectRatio",
+          "background",
+          "padding",
+          "shape",
+          "emptyColor",
+          "emptyBackground",
+          "emptyFont",
+          "emptyFontSize",
+          "emptyIconSize",
+          "centerColor"
+        ]
+      }
     }
   }
 }

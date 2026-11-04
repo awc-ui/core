@@ -1,0 +1,280 @@
+{
+  "capturedAt": "2026-10-20T21:31:25.991Z",
+  "pointerInput": "synthetic PointerEvents; capture rejects non-physical IDs and is guarded in fixture",
+  "scenarios": [
+    {
+      "scenario": "authored-keyboard",
+      "prevented": false,
+      "events": []
+    },
+    {
+      "scenario": "authored-pointer",
+      "events": [],
+      "dragged": false
+    },
+    {
+      "scenario": "pointer-ownership",
+      "events": [
+        {
+          "type": "mdDragStart",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 20,
+            "offsetY": 0,
+            "startX": 10,
+            "startY": 10
+          }
+        },
+        {
+          "type": "mdDragMove",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 20,
+            "offsetY": 0,
+            "startX": 10,
+            "startY": 10
+          }
+        }
+      ],
+      "transform": "translate(20px, 0px)"
+    },
+    {
+      "scenario": "pointercancel",
+      "events": [
+        {
+          "type": "mdDragStart",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        },
+        {
+          "type": "mdDragMove",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        }
+      ],
+      "dragged": false,
+      "transform": ""
+    },
+    {
+      "scenario": "lostpointercapture",
+      "events": [
+        {
+          "type": "mdDragStart",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        },
+        {
+          "type": "mdDragMove",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        }
+      ],
+      "dragged": false,
+      "transform": ""
+    },
+    {
+      "scenario": "toggle-disabled",
+      "events": [
+        {
+          "type": "mdDragStart",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        },
+        {
+          "type": "mdDragMove",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        }
+      ],
+      "dragged": false,
+      "transform": ""
+    },
+    {
+      "scenario": "toggle-softDisabled",
+      "events": [
+        {
+          "type": "mdDragStart",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        },
+        {
+          "type": "mdDragMove",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        }
+      ],
+      "dragged": false,
+      "transform": ""
+    },
+    {
+      "scenario": "toggle-dragEnabled",
+      "events": [
+        {
+          "type": "mdDragStart",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        },
+        {
+          "type": "mdDragMove",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        }
+      ],
+      "dragged": false,
+      "transform": ""
+    },
+    {
+      "scenario": "authored-style-restoration",
+      "transform": "scale(0.9)",
+      "transformPriority": "important",
+      "zIndex": "7",
+      "zIndexPriority": "important"
+    },
+    {
+      "scenario": "generic-focusable",
+      "role": null,
+      "tabindex": null
+    },
+    {
+      "scenario": "dynamic-attributes",
+      "initial": "button",
+      "enabled": null,
+      "disabled": "button"
+    },
+    {
+      "scenario": "reconnect-observation",
+      "role": null,
+      "tabindex": null
+    },
+    {
+      "scenario": "reentrant-disabled",
+      "events": [
+        {
+          "type": "mdDragStart",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        }
+      ],
+      "transform": "",
+      "connected": true
+    },
+    {
+      "scenario": "reentrant-dragEnabled",
+      "events": [
+        {
+          "type": "mdDragStart",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        }
+      ],
+      "transform": "",
+      "connected": true
+    },
+    {
+      "scenario": "reentrant-disconnect",
+      "events": [
+        {
+          "type": "mdDragStart",
+          "detail": {
+            "clientX": 30,
+            "clientY": 10,
+            "offsetX": 30,
+            "offsetY": 0,
+            "startX": 0,
+            "startY": 10
+          }
+        }
+      ],
+      "transform": "",
+      "connected": false
+    },
+    {
+      "scenario": "shadow-control",
+      "role": null,
+      "tabindex": null
+    },
+    {
+      "scenario": "shadow-attribute-observation",
+      "disabledRole": "button",
+      "enabledRole": null
+    },
+    {
+      "scenario": "shadow-detach",
+      "role": "button"
+    }
+  ]
+}

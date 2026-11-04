@@ -122,6 +122,10 @@ export function buildDataTableHtml(opts: {
     label?: string;
     data: readonly (number | null | undefined)[];
     range?: readonly MdChartRangeDatum[];
+    /** This column's own formatter, for a table whose columns are different
+     *  kinds of number (a pie's value beside its share). Omitted → the
+     *  table-wide `valueFormatter`. */
+    format?: (v: number | null) => string;
   }[];
   valueFormatter?: (v: number | null) => string;
   /** BCP-47 locale for the default number / date formatting. */
@@ -156,13 +160,14 @@ export function buildDataTableHtml(opts: {
   for (let i = 0; i < n; i++) {
     const cells = opts.series
       .map(s => {
+        const fmt = s.format ?? fmtY;
         if (s.range) {
           const b = normalizeRange(s.range[i]);
           // En dash, not a hyphen: a screen reader reads "3 to 9" for a range
           // and "3 minus 9" for a hyphen between two numbers.
-          return `<td>${escapeHtml(b ? `${fmtY(b[0])}–${fmtY(b[1])}` : fmtY(null))}</td>`;
+          return `<td>${escapeHtml(b ? `${fmt(b[0])}–${fmt(b[1])}` : fmt(null))}</td>`;
         }
-        return `<td>${escapeHtml(fmtY(s.data[i] ?? null))}</td>`;
+        return `<td>${escapeHtml(fmt(s.data[i] ?? null))}</td>`;
       })
       .join('');
     const rowHeader = hasX ? fmtX(opts.xAxisData![i]) : String(i + 1);

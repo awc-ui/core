@@ -1,4 +1,4 @@
-import { Component, Host, h, Prop, Element, State } from '@stencil/core';
+import { Component, Host, h, Prop, Element, State, Watch } from '@stencil/core';
 
 /**
  * Material Design 3 — Table Toolbar.
@@ -63,24 +63,62 @@ export class MdTableToolbar {
 
   private parentTable: HTMLElement | null = null;
   private boundListener: ((e: Event) => void) | null = null;
+  private loaded = false;
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
-    this.bindSlotChanges(shadow);
+    this.syncSlots();
+    this.loaded = true;
+    this.bindTable();
+  }
 
-    if (this.autoBind) {
-      this.parentTable = this.el.closest('md-table-container')?.querySelector('md-table') ?? null;
-      if (!this.parentTable) return;
-      this.boundListener = (e: Event) => {
-        const detail = (e as CustomEvent).detail as { count: number };
-        this.numSelected = detail?.count ?? 0;
-      };
-      this.parentTable.addEventListener('mdSelectionChange', this.boundListener);
-    }
+  connectedCallback() {
+    // Re-attach after a move (disconnect + reconnect); the first connection is
+    // bound from componentDidLoad once the slots exist.
+    if (this.loaded) this.bindTable();
   }
 
   disconnectedCallback() {
+    this.unbindTable();
+  }
+
+  @Watch('autoBind')
+  onAutoBindChange() {
+    if (this.loaded) this.bindTable();
+  }
+
+  /**
+   * Track the container's `<md-table>`: listen for future `mdSelectionChange`
+   * events AND seed from its current selection, so a toolbar that binds after
+   * rows were selected (late insertion, re-connection) shows the right count.
+   */
+  private bindTable() {
+    this.unbindTable();
+    if (!this.autoBind) return;
+    const table = this.el.closest('md-table-container')?.querySelector('md-table') ?? null;
+    if (!table) return;
+    let heard = false;
+    const listener = (e: Event) => {
+      heard = true;
+      const detail = (e as CustomEvent).detail as { count: number };
+      this.numSelected = detail?.count ?? 0;
+    };
+    this.parentTable = table;
+    this.boundListener = listener;
+    table.addEventListener('mdSelectionChange', listener);
+    const t = table as HTMLElement & {
+      componentOnReady?: () => Promise<unknown>;
+      getSelection?: () => Promise<{ count: number }>;
+    };
+    Promise.resolve(t.componentOnReady?.())
+      .then(() => t.getSelection?.())
+      .then((state) => {
+        // A live event that arrived meanwhile is newer than this snapshot.
+        if (state && !heard && this.boundListener === listener) this.numSelected = state.count ?? 0;
+      })
+      .catch(() => {});
+  }
+
+  private unbindTable() {
     if (this.parentTable && this.boundListener) {
       this.parentTable.removeEventListener('mdSelectionChange', this.boundListener);
     }
@@ -88,25 +126,16 @@ export class MdTableToolbar {
     this.boundListener = null;
   }
 
-  private bindSlotChanges(shadow: ShadowRoot) {
+  private syncSlots = () => {
+    const shadow = this.el.shadowRoot;
+    if (!shadow) return;
     const leadingSlot = shadow.querySelector('slot[name="leading"]') as HTMLSlotElement | null;
     const actionsSlot = shadow.querySelector('slot[name="actions"]') as HTMLSlotElement | null;
     const selSlot = shadow.querySelector('slot[name="selection-actions"]') as HTMLSlotElement | null;
-
-    leadingSlot?.addEventListener('slotchange', () => {
-      this.hasLeading = leadingSlot.assignedElements().length > 0;
-    });
-    actionsSlot?.addEventListener('slotchange', () => {
-      this.hasActions = actionsSlot.assignedElements().length > 0;
-    });
-    selSlot?.addEventListener('slotchange', () => {
-      this.hasSelectionActions = selSlot.assignedElements().length > 0;
-    });
-
     this.hasLeading = !!leadingSlot && leadingSlot.assignedElements().length > 0;
     this.hasActions = !!actionsSlot && actionsSlot.assignedElements().length > 0;
     this.hasSelectionActions = !!selSlot && selSlot.assignedElements().length > 0;
-  }
+  };
 
   private get inSelectionMode(): boolean {
     return this.numSelected > 0;
@@ -130,7 +159,7 @@ export class MdTableToolbar {
         aria-label={this.headline || 'Table toolbar'}
       >
         <div class="md-table-toolbar__leading" part="leading" hidden={!this.hasLeading && !this.inSelectionMode}>
-          {!this.inSelectionMode && <slot name="leading" />}
+          {!this.inSelectionMode && <slot name="leading" onSlotchange={this.syncSlots} />}
         </div>
 
         <div class="md-table-toolbar__main" part="main">
@@ -159,9 +188,9 @@ export class MdTableToolbar {
 
         <div class="md-table-toolbar__actions" part="actions">
           {this.inSelectionMode ? (
-            <slot name="selection-actions" />
+            <slot name="selection-actions" onSlotchange={this.syncSlots} />
           ) : (
-            <slot name="actions" />
+            <slot name="actions" onSlotchange={this.syncSlots} />
           )}
         </div>
       </Host>

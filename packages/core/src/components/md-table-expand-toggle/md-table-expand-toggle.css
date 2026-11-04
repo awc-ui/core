@@ -7,7 +7,8 @@
    the row's accordion zone opens on its own matched spring.
 
    PUBLIC CSS CUSTOM PROPERTIES:
-     --md-table-expand-toggle-rotation   Expanded rotation (default 90deg)
+     --md-table-expand-toggle-rotation   Expanded rotation (default 90deg;
+                                         applied after the RTL mirror)
    ========================================================== */
 
 :host {
@@ -23,6 +24,19 @@ md-icon-button {
 
 :host(.md-table-expand-toggle--expanded) md-icon-button {
   transform: rotate(var(--md-table-expand-toggle-rotation, 90deg));
+}
+
+/* RTL: the collapsed chevron points toward the inline END (into the row it
+   reveals), so it mirrors like the family's other directional chevrons
+   (md-table-pagination). Mirror-then-rotate keeps the expanded caret pointing
+   down, and the transition still only interpolates the rotation. `:dir()`
+   follows the inherited direction (attribute or ancestor) in every engine,
+   unlike `:host-context()`. */
+:host(:dir(rtl)) md-icon-button {
+  transform: scaleX(-1);
+}
+:host(:dir(rtl).md-table-expand-toggle--expanded) md-icon-button {
+  transform: scaleX(-1) rotate(var(--md-table-expand-toggle-rotation, 90deg));
 }
 
 @media (prefers-reduced-motion: reduce) {

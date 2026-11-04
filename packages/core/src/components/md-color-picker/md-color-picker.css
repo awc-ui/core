@@ -499,6 +499,13 @@
   opacity: 0.5;
 }
 
+/* Presets are buttons (disabled natively), so they keep hit-testing; they
+   still take the same dimmed treatment as the other disabled surfaces. */
+:host(.md-color-picker--disabled) .md-color-picker__preset {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* ==========================================================
    11. REDUCED MOTION
    ========================================================== */
@@ -527,9 +534,14 @@
   .md-color-picker__preset {
     border: 1px solid CanvasText;
   }
+  /* Every colour-bearing surface keeps its author colours: the swatches ARE the
+     information. The presets and the current-colour preview were missing, so
+     forced colours painted them all Canvas (blank circles). */
   .md-color-picker__plate,
   .md-color-picker__hue,
-  .md-color-picker__alpha {
+  .md-color-picker__alpha,
+  .md-color-picker__preview,
+  .md-color-picker__preset {
     forced-color-adjust: none;
   }
 }

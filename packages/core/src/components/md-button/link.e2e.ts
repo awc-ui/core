@@ -185,4 +185,50 @@ describe('md-button · programmatic and keyboard activation still navigate', () 
     expect(await page.evaluate(() => (window as unknown as { __opens: number }).__opens)).toBe(0);
     expect(await page.evaluate(() => location.hash)).toBe('#target');
   }, 60000);
+
+  it('shows the focus ring and focus state layer when the link is keyboard-focused', async () => {
+    const page = await newE2EPage();
+    await page.setContent(`<button id="before">Before</button><md-button id="b" variant="text" href="#target">Open</md-button>`);
+    await page.waitForChanges();
+    await page.focus('#before');
+    await page.keyboard.press('Tab');
+    await new Promise(r => setTimeout(r, 250));
+    const s = await page.evaluate(() => {
+      const host = document.getElementById('b')!;
+      const cs = getComputedStyle(host), layer = getComputedStyle(host.shadowRoot!.querySelector('.md-button__state-layer')!);
+      return { color: cs.outlineColor, style: cs.outlineStyle, width: cs.outlineWidth, layer: layer.opacity };
+    });
+    // The anchor holds focus inside the shadow root, so the host itself never matches :focus-visible; the ring and
+    // the focus layer must still show (WCAG 2.4.7).
+    expect(s.style).toBe('solid');
+    expect(s.color).not.toBe('rgba(0, 0, 0, 0)');
+    expect(s.width).toBe('3px');
+    expect(Number(s.layer)).toBeCloseTo(0.12, 2);
+    // Pointer focus is not focus-visible: no ring after a click.
+    await page.focus('#before');
+    await page.click('#b');
+    await new Promise(r => setTimeout(r, 250));
+    const after = await page.evaluate(() => getComputedStyle(document.getElementById('b')!).outlineColor);
+    expect(after).toBe('rgba(0, 0, 0, 0)');
+  }, 60000);
+
+  it('the link anchor covers the whole button, so its ripple and state match a plain button', async () => {
+    const page = await newE2EPage();
+    await page.setContent(`<md-button id="a" href="#target">Open link</md-button><br><md-button id="b">Open link</md-button>
+      <md-button id="c" variant="outlined" size="lg" href="#t">Outlined</md-button><br><md-button id="d" variant="outlined" size="lg">Outlined</md-button>`);
+    await page.waitForChanges();
+    const r = await page.evaluate(() => {
+      const box = (el: Element) => { const r = el.getBoundingClientRect(); return [r.width, r.height]; };
+      const a = document.getElementById('a')!, b = document.getElementById('b')!, c = document.getElementById('c')!, d = document.getElementById('d')!;
+      const anchorA = a.shadowRoot!.querySelector('.md-button__anchor')!, anchorC = c.shadowRoot!.querySelector('.md-button__anchor')!;
+      const border = parseFloat(getComputedStyle(c).borderTopWidth);
+      return { a: box(a), b: box(b), anchorA: box(anchorA), c: box(c), d: box(d), anchorC: box(anchorC), border };
+    });
+    // Same layout as the plain button.
+    expect(r.a[0]).toBeCloseTo(r.b[0], 1); expect(r.a[1]).toBeCloseTo(r.b[1], 1);
+    expect(r.c[0]).toBeCloseTo(r.d[0], 1); expect(r.c[1]).toBeCloseTo(r.d[1], 1);
+    // The anchor fills the button inside its border (the md-ripple measures its parent, the anchor).
+    expect(r.anchorA[0]).toBeCloseTo(r.a[0], 1); expect(r.anchorA[1]).toBeCloseTo(r.a[1], 1);
+    expect(r.anchorC[0]).toBeCloseTo(r.c[0] - 2 * r.border, 1); expect(r.anchorC[1]).toBeCloseTo(r.c[1] - 2 * r.border, 1);
+  }, 60000);
 });

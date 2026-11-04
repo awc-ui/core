@@ -1569,3 +1569,28 @@ export const HorizontalAppBar: Story = {
     });
   },
 };
+
+export const RuntimeOverflowAndMenuSelection: Story = {
+  render: () => html`<md-navigation-rail orientation="horizontal" max-visible="1"><md-navigation-rail-tab label="Home" icon="home" value="home"></md-navigation-rail-tab><md-navigation-rail-tab label="Files" icon="folder" value="files"><md-menu slot="submenu" quick><md-menu-item headline="Shared"></md-menu-item></md-menu></md-navigation-rail-tab><md-navigation-rail-tab label="Settings" icon="settings" value="settings"></md-navigation-rail-tab></md-navigation-rail>`,
+  play: async ({ canvasElement }) => {
+    const rail = canvasElement.querySelector('md-navigation-rail') as HTMLMdNavigationRailElement;
+    await waitFor(() => expect(rail.classList.contains('hydrated')).toBe(true));
+    await waitFor(() => expect(rail.shadowRoot!.querySelector('.md-navigation-rail__overflow-trigger')).not.toBeNull());
+    const trigger = rail.shadowRoot!.querySelector('.md-navigation-rail__overflow-trigger') as HTMLElement;
+    trigger.click();
+    const overflow = rail.shadowRoot!.querySelector('md-menu') as HTMLMdMenuElement;
+    await waitFor(() => expect(overflow.open).toBe(true));
+    (overflow.querySelectorAll('md-menu-item')[1] as HTMLElement).click();
+    await waitFor(() => expect(rail.activeIndex).toBe(2));
+    rail.maxVisible = 3; await waitFor(() => expect(rail.querySelectorAll('[data-overflowed]')).toHaveLength(0));
+    const files = rail.querySelectorAll('md-navigation-rail-tab')[1] as HTMLMdNavigationRailTabElement;
+    files.focus(); files.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, composed: true }));
+    const menu = files.querySelector('md-menu') as HTMLMdMenuElement;
+    await waitFor(() => expect(menu.open).toBe(true));
+    (menu.querySelector('md-menu-item') as HTMLElement).click();
+    await files.clearSubmenuSelection();
+    expect((menu.querySelector('md-menu-item') as HTMLMdMenuItemElement).selected).toBe(false);
+    await rail.expand(); await waitFor(() => expect(files.expanded).toBe(true));
+    await rail.collapse(); await waitFor(() => expect(files.expanded).toBe(false));
+  },
+};

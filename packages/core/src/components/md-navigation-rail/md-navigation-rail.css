@@ -738,7 +738,10 @@
   flex-shrink: 0;
 }
 
-:host(.md-navigation-rail--horizontal) .md-navigation-rail__logo {
+/* :not([hidden]) — this rule's specificity beats `.md-navigation-rail__logo[hidden]`,
+   so without the guard an EMPTY logo wrapper came back as a 16px brand gutter (plus the
+   container gap) at the bar's start edge. */
+:host(.md-navigation-rail--horizontal) .md-navigation-rail__logo:not([hidden]) {
   inline-size: auto;
   min-block-size: 0;
   flex: 0 0 auto;
@@ -763,6 +766,9 @@
 
 :host(.md-navigation-rail--horizontal) .md-navigation-rail__fab {
   flex: 0 0 auto;
+  /* The vertical wrapper spans the rail (inline-size: 100%); in the bar's row that
+     pushed every destination and the footer past the clipped end. */
+  inline-size: auto;
 }
 
 /* The footer trails on the inline axis instead of the block end. */

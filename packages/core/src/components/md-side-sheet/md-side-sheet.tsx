@@ -1,6 +1,7 @@
 import { createId } from '../../utils/id';
 import { Component, Host, h, Prop, Event, EventEmitter, Method, Watch, State, Element } from '@stencil/core';
 import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
+import { ModalSession } from '../../utils/modal-session';
 
 /**
  * MD3 Side sheet — anchored panel for secondary content and actions.
@@ -30,6 +31,9 @@ export class MdSideSheet {
   @Element() el!: HTMLElement;
 
   private overlayLifecycle = new OverlayLifecycle(() => this.el, () => this.open);
+  private modalSession = new ModalSession(() => this.el);
+  private loaded = false;
+  private connected = false;
 
   /** Whether the sheet is visible */
   @Prop({ mutable: true, reflect: true }) open: boolean = false;
@@ -88,18 +92,19 @@ export class MdSideSheet {
   // ── Internal state ──────────────────────────────────────
 
   @State() private hasActions = false;
+  @State() private hasSlottedHeadline = false;
 
   private slotObserver?: MutationObserver;
   private containerEl!: HTMLElement;
-  private previousFocus: HTMLElement | null = null;
   private openFocusFrame?: number;
   private headlineId = createId('md-side-sheet-headline');
 
   // ── Lifecycle ───────────────────────────────────────────
 
   connectedCallback() {
+    this.connected = true;
     this.overlayLifecycle.connected();
-    this.syncActions();
+    this.syncSlots();
     // React can append children after the host connects. The actions slot is
     // conditional, so its own slotchange cannot discover the first insertion.
     // Observe only changes that affect this host's direct slot assignments.
@@ -108,7 +113,7 @@ export class MdSideSheet {
         if (records.some((record) => record.type === 'childList'
           ? record.target === this.el
           : record.target.parentNode === this.el)) {
-          this.syncActions();
+          this.syncSlots();
         }
       });
       this.slotObserver.observe(this.el, {
@@ -118,14 +123,16 @@ export class MdSideSheet {
         subtree: true,
       });
     }
+    if (this.loaded && this.open && this.variant === 'modal') this.activateSession();
   }
 
   componentWillLoad() {
-    this.syncActions();
+    this.syncSlots();
   }
 
   componentDidLoad() {
-    this.syncActions();
+    this.loaded = true;
+    this.syncSlots();
     this.overlayLifecycle.loaded();
 
     if (this.open) {
@@ -134,17 +141,18 @@ export class MdSideSheet {
   }
 
   disconnectedCallback() {
+    this.connected = false;
     this.slotObserver?.disconnect();
     this.slotObserver = undefined;
-    this.cancelOpenFocus();
+    this.deactivateSession();
     this.overlayLifecycle.disconnect();
-    this.removeGlobalListeners();
-    document.body.style.overflow = '';
   }
 
-  private syncActions = () => {
+  private syncSlots = () => {
     // Nested slot attributes belong to their own component, not this sheet.
-    this.hasActions = Array.from(this.el.children).some((child) => child.getAttribute('slot') === 'actions');
+    const children = Array.from(this.el.children);
+    this.hasActions = children.some(child => child.getAttribute('slot') === 'actions');
+    this.hasSlottedHeadline = children.some(child => child.getAttribute('slot') === 'headline');
   };
 
   // ── Watchers ────────────────────────────────────────────
@@ -152,38 +160,42 @@ export class MdSideSheet {
   @Watch('open')
   onOpenChange(newVal: boolean) {
     this.cancelOpenFocus();
-    if (newVal) this.overlayLifecycle.opened();
-    else this.overlayLifecycle.closed();
+    if (!this.loaded || !this.connected) return;
     if (newVal) {
-      this.addGlobalListeners();
-      if (this.variant === 'modal') {
-        this.previousFocus = document.activeElement as HTMLElement;
-        document.body.style.overflow = 'hidden';
-        this.openFocusFrame = requestAnimationFrame(() => {
-          this.openFocusFrame = undefined;
-          if (!this.open || !this.el.isConnected) return;
-          // The re-render that clears `inert` is scheduled *after* this watcher
-          // (Stencil runs @Watch before scheduleUpdate), so it may not have
-          // committed yet. Unlike aria-hidden, `inert` blocks .focus(); drop it
-          // imperatively — matching the declarative open state — so focus can
-          // enter the panel this frame instead of bouncing off an inert subtree.
-          this.containerEl?.removeAttribute('inert');
-          this.focusFirst();
-        });
-      }
+      this.overlayLifecycle.opened();
+      if (this.variant === 'modal') this.activateSession();
       this.mdOpen.emit();
     } else {
-      this.removeGlobalListeners();
-      if (this.variant === 'modal') {
-        document.body.style.overflow = '';
-        // `preventScroll` because a bare focus() scrolls its target into view: an
-        // overlay opened programmatically (or whose opener has since scrolled out
-        // of sight) would yank the page on close.
-        this.previousFocus?.focus?.({ preventScroll: true });
-        this.previousFocus = null;
-      }
+      this.overlayLifecycle.closed();
+      this.deactivateSession();
       this.mdClose.emit();
     }
+  }
+
+  @Watch('variant')
+  onVariantChange() {
+    if (!this.loaded || !this.connected || !this.open) return;
+    if (this.variant === 'modal') this.activateSession();
+    else this.deactivateSession();
+  }
+
+  private activateSession() {
+    if (this.modalSession.owns && this.modalSession.document !== this.el.ownerDocument) this.deactivateSession();
+    this.modalSession.acquire();
+    this.addGlobalListeners();
+    this.cancelOpenFocus();
+    this.openFocusFrame = requestAnimationFrame(() => {
+      this.openFocusFrame = undefined;
+      if (!this.connected || !this.open || this.variant !== 'modal' || !this.modalSession.isTop()) return;
+      this.containerEl?.removeAttribute('inert');
+      this.focusFirst();
+    });
+  }
+
+  private deactivateSession() {
+    this.cancelOpenFocus();
+    this.removeGlobalListeners();
+    this.modalSession.release();
   }
 
   // ── Public methods ──────────────────────────────────────
@@ -214,26 +226,22 @@ export class MdSideSheet {
   // ── Global listeners ──────────────────────────────────────
 
   private addGlobalListeners() {
-    // ONLY a modal sheet listens on the document. A `standard` sheet is a
-    // non-modal inline region — it has no scrim and does not trap focus, so it
-    // must not answer a document-level Escape either. It used to: every open
-    // sheet on the page registered this listener, so one Escape (aimed at a
-    // modal, or at nothing) collapsed every inline sheet on the page at once.
-    if (this.variant !== 'modal') return;
+    const doc = this.modalSession.document ?? this.el.ownerDocument;
     // Nested menus get the first chance to consume Escape.
-    document.addEventListener('keydown', this.handleDocKeyDown);
-    document.addEventListener('focusin', this.handleDocFocusIn);
+    doc.addEventListener('keydown', this.handleDocKeyDown);
+    doc.addEventListener('focusin', this.handleDocFocusIn);
   }
 
   private removeGlobalListeners() {
-    document.removeEventListener('keydown', this.handleDocKeyDown);
-    document.removeEventListener('focusin', this.handleDocFocusIn);
+    const doc = this.modalSession.document ?? this.el.ownerDocument;
+    doc.removeEventListener('keydown', this.handleDocKeyDown);
+    doc.removeEventListener('focusin', this.handleDocFocusIn);
   }
 
   // ── Keyboard ────────────────────────────────────────────
 
   private handleDocKeyDown = (e: KeyboardEvent) => {
-    if (!this.open || this.variant !== 'modal' || e.defaultPrevented) return;
+    if (!this.open || this.variant !== 'modal' || !this.modalSession.isTop() || e.defaultPrevented) return;
 
     if (e.key === 'Escape') {
       e.preventDefault();
@@ -247,22 +255,18 @@ export class MdSideSheet {
   // ── Focus trap via focusin ──────────────────────────────
 
   private handleDocFocusIn = () => {
-    if (!this.open || this.variant !== 'modal') return;
-
-    const active = document.activeElement;
-    if (!active) return;
-
-    if (active === this.el || this.el.contains(active)) return;
-
-    const isShadowEl = this.containerEl?.contains(active);
-    if (isShadowEl) return;
-
+    if (!this.open || this.variant !== 'modal' || !this.modalSession.isTop()) return;
+    const root = this.el.getRootNode() as Document | ShadowRoot;
+    let active = root.activeElement ?? this.el.ownerDocument.activeElement;
+    while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+    if (!active || composedContains(this.el, active)) return;
     this.focusFirst();
   };
 
   // ── Focus guard handlers (sentinel elements) ────────────
 
   private handleStartGuardFocus = () => {
+    if (!this.open || this.variant !== 'modal' || !this.modalSession.isTop()) return;
     const focusable = this.getFocusableElements();
     if (focusable.length > 0) {
       focusable[focusable.length - 1].focus();
@@ -272,6 +276,7 @@ export class MdSideSheet {
   };
 
   private handleEndGuardFocus = () => {
+    if (!this.open || this.variant !== 'modal' || !this.modalSession.isTop()) return;
     const focusable = this.getFocusableElements();
     if (focusable.length > 0) {
       focusable[0].focus();
@@ -283,17 +288,19 @@ export class MdSideSheet {
   // ── Private handlers ────────────────────────────────────
 
   private handleScrimClick = () => {
-    if (!this.scrimDismissible) return;
+    if (!this.open || this.variant !== 'modal' || !this.modalSession.isTop() || !this.scrimDismissible) return;
     this.mdCancel.emit();
     this.open = false;
   };
 
   private handleCloseClick = () => {
+    if (!this.open || !this.connected || (this.variant === 'modal' && !this.modalSession.isTop())) return;
     this.mdCancel.emit();
     this.open = false;
   };
 
   private handleBackClick = () => {
+    if (!this.open || this.variant !== 'modal' || !this.showBack || !this.modalSession.isTop()) return;
     this.mdBack.emit();
   };
 
@@ -310,33 +317,44 @@ export class MdSideSheet {
   }
 
   private getFocusableElements(): HTMLElement[] {
-    const selector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), md-icon-button:not([disabled]), md-button:not([disabled]), md-text-field:not([disabled]), md-checkbox:not([disabled]), md-switch:not([disabled]), md-radio:not([disabled]), md-slider:not([disabled])';
-
-    const shadowEls = Array.from(
-      this.containerEl?.querySelectorAll(selector) ?? [],
-    ) as HTMLElement[];
-
-    const slots = this.containerEl?.querySelectorAll('slot') ?? [];
-    const slottedEls: HTMLElement[] = [];
-    slots.forEach((slot) => {
-      const assigned = (slot as HTMLSlotElement).assignedElements({ flatten: true });
-      assigned.forEach((el) => {
-        if ((el as HTMLElement).matches?.(selector)) {
-          slottedEls.push(el as HTMLElement);
-        }
-        const nested = (el as HTMLElement).querySelectorAll?.(selector);
-        if (nested) slottedEls.push(...(Array.from(nested) as HTMLElement[]));
-      });
-    });
-
-    return [...shadowEls, ...slottedEls];
+    const selector =
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), audio[controls], video[controls], summary, [tabindex]';
+    const collected: HTMLElement[] = [];
+    const seen = new Set<Element>();
+    // Follow slot and shadow-root order instead of collecting all shadow
+    // controls before light-DOM controls. Hidden branches and sentinels are
+    // excluded, while actual inner inputs of custom elements remain reachable.
+    const visit = (element: Element) => {
+      if (seen.has(element)) return;
+      seen.add(element);
+      if (element.hasAttribute('hidden') || element.hasAttribute('inert') ||
+        element.classList.contains('md-side-sheet__focus-guard')) return;
+      const style = element.ownerDocument.defaultView?.getComputedStyle(element);
+      if (style?.display === 'none' || style?.visibility === 'hidden' || style?.visibility === 'collapse') return;
+      if (element.localName === 'slot') {
+        const assigned = (element as HTMLSlotElement).assignedElements({ flatten: true });
+        (assigned.length ? assigned : Array.from(element.children)).forEach(visit);
+        return;
+      }
+      const shadow = element.shadowRoot;
+      const tabIndex = element.getAttribute('tabindex');
+      const excluded = tabIndex !== null && Number(tabIndex) < 0;
+      if (shadow && excluded) return;
+      if (element.localName === 'input' && element.getAttribute('type') === 'hidden') return;
+      if (!excluded && !shadow?.delegatesFocus && element.matches(selector) && !disabledFormControl(element)) {
+        collected.push(element as HTMLElement);
+      }
+      Array.from((shadow ?? element).children).forEach(visit);
+    };
+    Array.from(this.containerEl?.children ?? []).forEach(visit);
+    return collected;
   }
 
   // ── Render ──────────────────────────────────────────────
 
   render() {
     const isModal = this.variant === 'modal';
-    const hasHeadline = !!this.headline;
+    const hasHeadline = !!this.headline || this.hasSlottedHeadline;
     const showBackBtn = isModal && this.showBack;
 
     return (
@@ -363,7 +381,7 @@ export class MdSideSheet {
           part="container"
           role={isModal ? 'dialog' : 'region'}
           aria-modal={isModal ? 'true' : undefined}
-          aria-labelledby={hasHeadline ? this.headlineId : undefined}
+          aria-labelledby={hasHeadline && !this.sheetAriaLabel ? this.headlineId : undefined}
           aria-label={this.sheetAriaLabel || (!hasHeadline ? 'Side sheet' : undefined)}
           aria-hidden={!this.open ? 'true' : undefined}
           // A closed sheet stays in the DOM (slid off-screen for the
@@ -384,7 +402,7 @@ export class MdSideSheet {
               class="md-side-sheet__focus-guard"
               tabindex={0}
               aria-hidden="true"
-              onFocus={this.handleEndGuardFocus}
+              onFocus={this.handleStartGuardFocus}
             ></span>
           )}
 
@@ -407,7 +425,7 @@ export class MdSideSheet {
               class="md-side-sheet__headline"
               part="headline"
             >
-              <slot name="headline">{this.headline}</slot>
+              <slot name="headline" onSlotchange={this.syncSlots}>{this.headline}</slot>
             </span>
 
             {this.closeable && (
@@ -438,7 +456,7 @@ export class MdSideSheet {
 
           {this.hasActions && (
             <div class="md-side-sheet__actions" part="actions">
-              <slot name="actions"></slot>
+              <slot name="actions" onSlotchange={this.syncSlots}></slot>
             </div>
           )}
 
@@ -447,7 +465,7 @@ export class MdSideSheet {
               class="md-side-sheet__focus-guard"
               tabindex={0}
               aria-hidden="true"
-              onFocus={this.handleStartGuardFocus}
+              onFocus={this.handleEndGuardFocus}
             ></span>
           )}
         </div>
@@ -455,3 +473,25 @@ export class MdSideSheet {
     );
   }
 }
+
+function composedContains(container: Element, node: Element | null): boolean {
+  for (let current = node; current; ) {
+    if (current === container) return true;
+    current = current.parentElement ?? (current.getRootNode() as ShadowRoot).host ?? null;
+  }
+  return false;
+}
+
+function disabledFormControl(element: Element): boolean {
+  if (element.hasAttribute('disabled')) return true;
+  if (!['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(element.localName)) return false;
+  // A disabled fieldset still permits controls in its first legend. Keep links
+  // and authored non-form controls focusable rather than pruning the branch.
+  for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+    if (ancestor.localName !== 'fieldset' || !ancestor.hasAttribute('disabled')) continue;
+    const legend = Array.from(ancestor.children).find(child => child.localName === 'legend');
+    if (!legend?.contains(element)) return true;
+  }
+  return false;
+}
+

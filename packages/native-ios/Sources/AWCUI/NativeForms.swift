@@ -177,6 +177,8 @@ public enum AWCFormEncoding {
     public let id = UUID()
     public private(set) var validationMessages: [String: String] = [:]
     public private(set) var revision = 0
+    /// Increments on every reset: inline validation presentations hide with it.
+    public private(set) var resetCount = 0
     public private(set) var lastActionCanceled = false
     public var onSubmit: (AWCFormSubmission) -> Void
     public var onInvalid: ([String: String]) -> Void
@@ -283,7 +285,7 @@ public enum AWCFormEncoding {
             return (id, value, callback)
         }
         for (id, value, _) in normalized { fields[id]?.value = value }
-        validationMessages = [:]; revision &+= 1
+        validationMessages = [:]; resetCount &+= 1; revision &+= 1
         for (_, value, callback) in normalized { callback?(value) }; onReset(values); return true
     }
 }

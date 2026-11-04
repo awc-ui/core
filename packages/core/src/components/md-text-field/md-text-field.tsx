@@ -73,7 +73,7 @@ export class MdTextField {
   @Prop() showPasswordLabel: string = 'Show password';
   /** Accessible name for the password toggle while the value is revealed. */
   @Prop() hidePasswordLabel: string = 'Hide password';
-  /** Density scale: 0 (default 56px), -1 (52px), -2 (48px), -3 (44px). */
+  /** Density scale: 0 (default 56px), -1 (52px), -2 (48px), -3 (44px), -4 (40px). */
   @Prop({ reflect: true }) density: 0 | -1 | -2 | -3 | -4 = 0;
   /**
    * Multi-line mode.

@@ -1,6 +1,8 @@
+import { exerciseColorValues } from '../../../../packages/core/src/components/md-color-picker/test-utils/editing.browser';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { expect, waitFor } from 'storybook/test';
 import { html } from 'lit';
+import { exerciseColorChannels, exerciseColorPopover } from '../../../../packages/core/src/components/md-color-picker/test-utils/editing.browser';
 import { t } from '../i18n';
 
 /** Shadow-piercing helpers for play(): testing-library queries can't cross
@@ -897,4 +899,19 @@ export const Responsiveness: Story = {
       </section>
     </div>
   `,
+};
+
+export const ChannelEditing: Story = {
+  render: () => html`<div><md-color-picker alpha value="#FF0000"></md-color-picker></div>`,
+  play: async ({ canvasElement }) => { await exerciseColorChannels(canvasElement.querySelector('md-color-picker') as HTMLElement); },
+};
+
+export const ReplaceablePopoverTrigger: Story = {
+  render: () => html`<div><button data-outside>Outside</button><md-color-picker variant="popover"><button slot="trigger">Choose color</button></md-color-picker></div>`,
+  play: async ({ canvasElement }) => { await exerciseColorPopover(canvasElement.querySelector('md-color-picker') as HTMLElement); },
+};
+
+export const ControlledColorFormats: Story = {
+ render: () => html`<md-color-picker alpha></md-color-picker>`,
+ play: async ({ canvasElement }) => exerciseColorValues(canvasElement.querySelector('md-color-picker') as HTMLElement),
 };

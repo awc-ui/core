@@ -1,0 +1,305 @@
+{
+ "tag": "md-segmented-button-set",
+ "at": "2026-10-29T11:11:39.460Z",
+ "rows": [
+  {
+   "case": "single",
+   "web": {
+    "elements": [
+     "radiogroup:",
+     "radio:Day",
+     "radio:Week",
+     "radio:Month"
+    ],
+    "texts": [],
+    "focus": [
+     "radio:Day",
+     "radio:Week",
+     "radio:Month"
+    ],
+    "contrast": {
+     "measured": 6,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "radio:Day {\"selected\":\"true\",\"checked\":\"true\"}",
+      "radio:Week {\"checked\":\"false\"}",
+      "radio:Month {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "radio:Day",
+      "radio:Week",
+      "radio:Month",
+      "radio:Day"
+     ],
+     "findings": [],
+     "contrastMeasured": 3
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "checkbox:Day {\"selected\":\"true\",\"checked\":\"true\"}",
+      "checkbox:Week {\"checked\":\"false\"}",
+      "checkbox:Month {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "focus": [
+      "checkbox:Day",
+      "checkbox:Week",
+      "checkbox:Month",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: checkbox \"Day\" target 116×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: checkbox \"Week\" target 116×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: checkbox \"Month\" target 117×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "radio:Day {\"checked\":\"true\"}",
+      "radio:Week {\"checked\":\"false\"}",
+      "radio:Month {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "radio:Day",
+      "radio:Week",
+      "radio:Month",
+      "radio:Day"
+     ],
+     "findings": [],
+     "contrastMeasured": 3,
+     "atf": {
+      "elements": 21,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "multiselect",
+   "web": {
+    "elements": [
+     "checkbox:Day",
+     "checkbox:Week",
+     "checkbox:Month"
+    ],
+    "texts": [],
+    "focus": [
+     "checkbox:Day",
+     "checkbox:Week",
+     "checkbox:Month"
+    ],
+    "contrast": {
+     "measured": 6,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "checkbox:Day {\"selected\":\"true\",\"checked\":\"true\"}",
+      "checkbox:Week {\"checked\":\"false\"}",
+      "checkbox:Month {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "checkbox:Day",
+      "checkbox:Week",
+      "checkbox:Month",
+      "checkbox:Day"
+     ],
+     "findings": [],
+     "contrastMeasured": 3
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "checkbox:Day {\"selected\":\"true\",\"checked\":\"true\"}",
+      "checkbox:Week {\"checked\":\"false\"}",
+      "checkbox:Month {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "focus": [
+      "checkbox:Day",
+      "checkbox:Week",
+      "checkbox:Month",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: checkbox \"Day\" target 116×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: checkbox \"Week\" target 116×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: checkbox \"Month\" target 117×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "checkbox:Day {\"checked\":\"true\"}",
+      "checkbox:Week {\"checked\":\"false\"}",
+      "checkbox:Month {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "checkbox:Day",
+      "checkbox:Week",
+      "checkbox:Month",
+      "checkbox:Day"
+     ],
+     "findings": [],
+     "contrastMeasured": 3,
+     "atf": {
+      "elements": 21,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

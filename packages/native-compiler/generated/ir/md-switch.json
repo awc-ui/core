@@ -1634,88 +1634,136 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "selected",
-        "required",
         "valueMissingLabel",
+        "selected",
         "disabled",
         "softDisabled",
+        "required",
         "name",
-        "value"
+        "value",
+        "icons",
+        "showOnlySelectedIcon",
+        "selectedIcon",
+        "unselectedIcon",
+        "density"
       ],
       "events": [
         "mdInput",
         "mdChange",
         "mdValidityChange"
       ],
-      "methods": [],
+      "methods": [
+        "setFocus",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
       "slots": [
         "selected-icon",
         "unselected-icon"
       ],
-      "unsupportedProperties": [
-        "icons",
-        "showOnlySelectedIcon",
-        "selectedIcon",
-        "unselectedIcon",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "setFocus",
-        "getValidity",
-        "checkValidity",
-        "reportValidity",
-        "setCustomValidity"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+        "Dedicated native switch: all twelve properties (icons, showOnlySelectedIcon and custom selectedIcon/unselectedIcon glyphs, density 0…−4), the cancelable mdInput before mdChange, mdValidityChange, the selected-icon/unselected-icon slots, twelve appearance hooks and four typed part targets.",
+        "Methods through AWCSelectionControlController: setFocus() shows the programmatic focus ring; getValidity/checkValidity/reportValidity/setCustomValidity follow the source's constraint validation (valueMissingLabel, custom message first); reportValidity() presents the message inline and focuses the switch.",
+        "Pointer press/leave/release, Space on key-down (repeats ignored), Enter inert, soft disabled focusable but inert; the native form registers the value and resets without events.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS runs through the simulator harness; VoiceOver/TalkBack execution remains unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "track",
+        "state-layer",
+        "handle",
+        "icon"
+      ],
+      "appearance": {
+        "api": ".awcSwitchAppearance(AWCSwitchAppearance)",
+        "fields": [
+          "trackWidth",
+          "trackHeight",
+          "handleSize",
+          "trackColor",
+          "trackOutlineColor",
+          "handleColor",
+          "selectedTrackColor",
+          "selectedHandleColor",
+          "iconColor",
+          "selectedIconColor",
+          "stateLayerColor",
+          "focusRingColor"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "disabled",
-        "name",
-        "required",
-        "selected",
-        "softDisabled",
-        "value"
-      ],
-      "events": [
-        "mdChange",
-        "mdInput"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
         "valueMissingLabel",
+        "selected",
+        "disabled",
+        "softDisabled",
+        "required",
+        "name",
+        "value",
         "icons",
         "showOnlySelectedIcon",
         "selectedIcon",
         "unselectedIcon",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdInput",
+        "mdChange",
         "mdValidityChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "setFocus",
         "getValidity",
         "checkValidity",
         "reportValidity",
         "setCustomValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "selected-icon",
         "unselected-icon"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+        "Dedicated native switch: all twelve properties (icons, showOnlySelectedIcon and custom selectedIcon/unselectedIcon glyphs, density 0…−4), the cancelable mdInput before mdChange, mdValidityChange, the selected-icon/unselected-icon slots, twelve appearance hooks and four typed part targets.",
+        "Methods through AWCSelectionControlController: setFocus() shows the programmatic focus ring; getValidity/checkValidity/reportValidity/setCustomValidity follow the source's constraint validation (valueMissingLabel, custom message first); reportValidity() presents the message inline and focuses the switch.",
+        "Pointer press/leave/release, Space on key-down (repeats ignored), Enter inert, soft disabled focusable but inert; the native form registers the value and resets without events.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS runs through the simulator harness; VoiceOver/TalkBack execution remains unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "track",
+        "state-layer",
+        "handle",
+        "icon"
+      ],
+      "appearance": {
+        "api": "AWCSwitchAppearanceScope(AWCSwitchAppearance)",
+        "fields": [
+          "trackWidth",
+          "trackHeight",
+          "handleSize",
+          "trackColor",
+          "trackOutlineColor",
+          "handleColor",
+          "selectedTrackColor",
+          "selectedHandleColor",
+          "iconColor",
+          "selectedIconColor",
+          "stateLayerColor",
+          "focusRingColor"
+        ]
+      }
     }
   }
 }

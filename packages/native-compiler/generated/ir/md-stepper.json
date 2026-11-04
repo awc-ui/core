@@ -376,9 +376,6 @@
     {
       "name": "--md-stepper-gap",
       "description": "Spacing between steps (vertical orientation only)."
-    },
-    {
-      "name": "--md-stepper-step-count"
     }
   ],
   "render": {
@@ -582,13 +579,13 @@
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 488
+      "line": 497
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 488
+      "line": 497
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -602,7 +599,7 @@
     "styleUrl": "md-stepper.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "151c46202a24a71052e35f37c1b84827512f97180fb8e0f6645c59837d6c8851"
+    "sha256": "391a9ee026eaeacd34036689a6527a1a75a9c6fef56699870bad09d27aac71ea"
   },
   "styles": [
     {
@@ -1100,82 +1097,98 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
+        "orientation",
+        "indicator",
+        "variant",
+        "mode",
         "active",
         "autoComplete",
         "nav",
         "readonly",
         "nextDisabled",
         "loading",
-        "mode",
+        "lazy",
         "label",
+        "stepWord",
+        "ofWord",
+        "completedWord",
+        "currentWord",
+        "errorWord",
+        "optionalWord",
         "nextLabel",
         "backLabel",
-        "finishLabel"
+        "finishLabel",
+        "density"
       ],
       "events": [
         "mdBeforeChange",
         "mdStepChange",
         "mdComplete"
       ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
-        "orientation",
-        "indicator",
-        "variant",
-        "lazy",
-        "stepWord",
-        "ofWord",
-        "completedWord",
-        "currentWord",
-        "errorWord",
-        "optionalWord",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "next",
         "prev",
         "goTo",
         "reset"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "content"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native linear/nonlinear progression. mdBeforeChange is an observation; it cannot cancel via preventDefault. Layout is vertical in this adapter."
+        "Dedicated native stepper: horizontal row (shared content slot or per-step panels), vertical rail with per-step panels and Back / Continue, mobile bar (dots or \"Step N of M\"), numbered / dot indicators, density, RTL; linear / non-linear reachability, auto-complete, the cancelable mdBeforeChange, mdStepChange, mdComplete, the polite / assertive announcements; the stylesheet transitions and keyframe animations; hooks through AWCStepperAppearance; next() / prev() / goTo() / reset() through AWCStepperController.",
+        "Host property changes follow the Stencil watchers: a host write to active runs @Watch('active') (clamp, auto-complete, mdStepChange after the update); the component's own writes (active, completed, error) persist until the host changes that property.",
+        "The built-in Back / Continue / Finish are native md-buttons; their own events stay internal, as the source stops them.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint (142 cases + per-step hooks and step density), the state / motion replays per frame (20 runs, plain and reduced motion) with the md* events, the announcements and the keyframe animations each step starts."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcStepperAppearance(AWCStepperAppearance)",
+        "fields": [
+          "indicatorSize",
+          "indicatorRing",
+          "indicatorColor",
+          "indicatorText",
+          "activeColor",
+          "activeText",
+          "activeHaloColor",
+          "completedColor",
+          "completedText",
+          "errorColor",
+          "errorText",
+          "connectorColor",
+          "connectorFilledColor",
+          "connectorThickness",
+          "labelColor",
+          "labelActiveColor",
+          "descriptionColor",
+          "stateLayerColor",
+          "panelPaddingBlockStart",
+          "gap",
+          "connectorDuration",
+          "expandDuration",
+          "collapseDuration"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "active",
-        "backLabel",
-        "finishLabel",
-        "loading",
-        "nextDisabled",
-        "nextLabel",
-        "readonly"
-      ],
-      "events": [
-        "mdBeforeChange",
-        "mdComplete",
-        "mdStepChange"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
         "orientation",
         "indicator",
         "variant",
         "mode",
+        "active",
         "autoComplete",
         "nav",
+        "readonly",
+        "nextDisabled",
+        "loading",
         "lazy",
         "label",
         "stepWord",
@@ -1184,22 +1197,66 @@
         "currentWord",
         "errorWord",
         "optionalWord",
+        "nextLabel",
+        "backLabel",
+        "finishLabel",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdBeforeChange",
+        "mdStepChange",
+        "mdComplete"
+      ],
+      "methods": [
         "next",
         "prev",
         "goTo",
         "reset"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "content"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native stepper: horizontal row (shared content slot or per-step panels), vertical rail with per-step panels and Back / Continue, mobile bar (dots or \"Step N of M\"), numbered / dot indicators, density, RTL; linear / non-linear reachability, auto-complete, the cancelable mdBeforeChange, mdStepChange, mdComplete, the polite / assertive announcements; the stylesheet transitions and keyframe animations; hooks through AWCStepperAppearance; next() / prev() / goTo() / reset() through AWCStepperController.",
+        "Host property changes follow the Stencil watchers: a host write to active runs @Watch('active') (clamp, auto-complete, mdStepChange after the update); the component's own writes (active, completed, error) persist until the host changes that property.",
+        "The built-in Back / Continue / Finish are native md-buttons; their own events stay internal, as the source stops them.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint (142 cases + per-step hooks and step density), the state / motion replays per frame (20 runs, plain and reduced motion) with the md* events, the announcements and the keyframe animations each step starts."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCStepperAppearanceScope(AWCStepperAppearance)",
+        "fields": [
+          "indicatorSize",
+          "indicatorRing",
+          "indicatorColor",
+          "indicatorText",
+          "activeColor",
+          "activeText",
+          "activeHaloColor",
+          "completedColor",
+          "completedText",
+          "errorColor",
+          "errorText",
+          "connectorColor",
+          "connectorFilledColor",
+          "connectorThickness",
+          "labelColor",
+          "labelActiveColor",
+          "descriptionColor",
+          "stateLayerColor",
+          "panelPaddingBlockStart",
+          "gap",
+          "connectorDuration",
+          "expandDuration",
+          "collapseDuration"
+        ]
+      }
     }
   }
 }

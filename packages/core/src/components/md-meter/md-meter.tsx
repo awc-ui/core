@@ -165,7 +165,13 @@ export class MdMeter {
     const lo = this.saneMin;
     const hi = this.saneMax;
     if (hi === lo) return 0;
-    return ((this.clampedValue - lo) / (hi - lo)) * 100;
+    const span = hi - lo;
+    // Opposite-sign finite endpoints can overflow their difference. Scaling
+    // first preserves the position in that interval without Infinity/Infinity.
+    const fraction = Number.isFinite(span)
+      ? (this.clampedValue - lo) / span
+      : (this.clampedValue / 2 - lo / 2) / (hi / 2 - lo / 2);
+    return Math.min(1, Math.max(0, fraction)) * 100;
   }
 
   /**

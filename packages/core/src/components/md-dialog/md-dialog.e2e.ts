@@ -115,3 +115,17 @@ describe('md-dialog e2e', () => {
   });
 
 });
+
+describe('md-dialog dismissal lifecycle', () => {
+  it('honors protected scrim dismissal then resolves close and restores its opener', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<button id="open">Open</button><md-dialog scrim-dismissible="false" aria-label="Confirm">Confirmation text</md-dialog>');
+    await page.click('#open'); const dialog = await page.find('md-dialog'); const cancel = await dialog.spyOnEvent('mdCancel');
+    await dialog.callMethod('show'); await page.waitForChanges(); await page.mouse.click(5, 5); await page.waitForChanges();
+    expect(await dialog.getProperty('open')).toBe(true); expect(cancel).not.toHaveReceivedEvent();
+    await page.$eval('md-dialog', el => (el.shadowRoot!.querySelector('[part="container"]') as HTMLElement).focus()); await page.keyboard.press('Escape'); await dialog.callMethod('whenClosed'); await page.waitForChanges();
+    expect(await dialog.getProperty('open')).toBe(false); expect(cancel).toHaveReceivedEventTimes(1);
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('open');
+    await dialog.callMethod('close'); await dialog.callMethod('whenClosed');
+  });
+});

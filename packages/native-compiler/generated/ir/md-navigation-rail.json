@@ -803,7 +803,7 @@
           },
           {
             "kind": "expression",
-            "source": "this.overflowCount > 0 && (\n            <div class=\"md-navigation-rail__overflow\" part=\"overflow\">\n              <button\n                id={this.overflowId}\n                type=\"button\"\n                class=\"md-navigation-rail__overflow-trigger\"\n                part=\"overflow-trigger\"\n                aria-haspopup=\"menu\"\n                aria-label={this.overflowLabel}\n                onClick={this.toggleOverflow}\n              >\n                <span class=\"material-symbols-outlined md-navigation-rail__overflow-icon\" aria-hidden=\"true\">\n                  {this.overflowIcon}\n                </span>\n                <span class=\"md-navigation-rail__overflow-label\">{this.overflowLabel}</span>\n              </button>\n              {/* md-menu resolves `anchor` against its own root first, so an id\n                  inside this shadow root is enough. */}\n              {/* The trigger sits at the END of the destinations, so a vertical\n                  rail opens UPWARD — downward would run off the bottom of a\n                  bounded rail and be clipped. */}\n              <md-menu\n                anchor={this.overflowId}\n                placement={this.orientation === 'horizontal' ? 'bottom-end' : 'top-start'}\n              >\n                {this.overflowedTabs.map((tab) => (\n                  <md-menu-item\n                    key={tab.getAttribute('value') || tab.getAttribute('label') || ''}\n                    headline={tab.getAttribute('label') || ''}\n                    onClick={() => this.selectOverflowed(tab)}\n                  >\n                    {tab.getAttribute('icon') && (\n                      <span slot=\"leading-icon\" class=\"material-symbols-outlined\">\n                        {tab.getAttribute('icon')}\n                      </span>\n                    )}\n                  </md-menu-item>\n                ))}\n              </md-menu>\n            </div>\n          )"
+            "source": "this.overflowCount > 0 && (\n            <div class=\"md-navigation-rail__overflow\" part=\"overflow\">\n              <button\n                id={this.overflowId}\n                type=\"button\"\n                class=\"md-navigation-rail__overflow-trigger\"\n                part=\"overflow-trigger\"\n                aria-haspopup=\"menu\"\n                aria-label={this.overflowLabel}\n                onClick={this.toggleOverflow}\n              >\n                <span class=\"material-symbols-outlined md-navigation-rail__overflow-icon\" aria-hidden=\"true\">\n                  {this.overflowIcon}\n                </span>\n                <span class=\"md-navigation-rail__overflow-label\">{this.overflowLabel}</span>\n              </button>\n              {/* md-menu resolves `anchor` against its own root first, so an id\n                  inside this shadow root is enough. */}\n              {/* The trigger sits at the END of the destinations, so a vertical\n                  rail opens UPWARD — downward would run off the bottom of a\n                  bounded rail and be clipped. */}\n              <md-menu\n                anchor={this.overflowId}\n                placement={this.orientation === 'horizontal' ? 'bottom-end' : 'top-start'}\n              >\n                {this.overflowedTabs.map((tab) => (\n                  <md-menu-item\n                    key={tab.getAttribute('value') || tab.getAttribute('label') || ''}\n                    headline={tab.getAttribute('label') || ''}\n                    disabled={this.isDestinationDisabled(tab)}\n                    onClick={() => this.selectOverflowed(tab)}\n                  >\n                    {tab.getAttribute('icon') && (\n                      <span slot=\"leading-icon\" class=\"material-symbols-outlined\">\n                        {tab.getAttribute('icon')}\n                      </span>\n                    )}\n                  </md-menu-item>\n                ))}\n              </md-menu>\n            </div>\n          )"
           },
           {
             "kind": "text",
@@ -1021,7 +1021,7 @@
     "styleUrl": "md-navigation-rail.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "53a611108c87176873a4cd8709057e9a8857c29d6a1a101bd67ab5673a2a0f0a"
+    "sha256": "5c882ab2a70dd50eacf68dea6fe7f5b71c4f7bddf94099b040992648830ad61c"
   },
   "styles": [
     {
@@ -2775,7 +2775,7 @@
       ]
     },
     {
-      "selector": ":host(.md-navigation-rail--horizontal) .md-navigation-rail__logo",
+      "selector": ":host(.md-navigation-rail--horizontal) .md-navigation-rail__logo:not([hidden])",
       "context": null,
       "declarations": [
         {
@@ -2844,6 +2844,11 @@
         {
           "property": "flex",
           "value": "0 0 auto",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "auto",
           "important": false
         }
       ]

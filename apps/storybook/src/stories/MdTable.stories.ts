@@ -3256,3 +3256,117 @@ export const FullDataGrid: Story = {
     `;
   },
 };
+
+/** The public API behind a small editable, paginated data view. */
+export const PublicApiWorkflow: Story = {
+  render: () => html`
+    <md-table-container min-height="180px" max-height="360px" variant="outlined">
+      <md-table-toolbar slot="top" auto-bind headline="Quarterly invoices" supporting-text="Three invoices" label-selected="%count% invoices selected">
+        <span slot="leading">€</span><button slot="actions">Export</button><button slot="selection-actions">Archive selected</button>
+      </md-table-toolbar>
+      <md-table label="Quarterly invoices" selection="multiple" column-template="1fr 120px" sticky-footer>
+        <md-table-head><md-table-row>
+          <md-table-cell><md-table-sort-label column="customer">Customer</md-table-sort-label></md-table-cell>
+          <md-table-cell numeric><md-table-sort-label column="amount" default-order="desc">Amount</md-table-sort-label></md-table-cell>
+        </md-table-row></md-table-head>
+        <md-table-body>
+          <md-table-row value="alpha" clickable expandable><md-table-cell>Alpha</md-table-cell><md-table-cell numeric>120</md-table-cell><p slot="expanded">Invoice paid on 12 March.</p></md-table-row>
+          <md-table-row value="beta" clickable><md-table-cell>Beta <button>Open invoice</button></md-table-cell><md-table-cell numeric>240</md-table-cell></md-table-row>
+          <md-table-row value="gamma" disabled><md-table-cell>Gamma</md-table-cell><md-table-cell numeric>360</md-table-cell></md-table-row>
+        </md-table-body>
+        <md-table-foot><md-table-row><md-table-cell>Total</md-table-cell><md-table-cell numeric>720</md-table-cell></md-table-row></md-table-foot>
+      </md-table>
+      <md-table-pagination slot="bottom" count="23" rows-per-page="10" rows-per-page-options="5,10,all" show-first-last></md-table-pagination>
+    </md-table-container>`,
+  play: async ({ canvasElement, step }) => {
+    const table = await whenHydrated(canvasElement.querySelector('md-table')!) as HTMLMdTableElement;
+    const container = canvasElement.querySelector('md-table-container') as HTMLMdTableContainerElement;
+    const toolbar = await whenHydrated(canvasElement.querySelector('md-table-toolbar')!) as HTMLMdTableToolbarElement;
+    const pagination = await whenHydrated(canvasElement.querySelector('md-table-pagination')!) as HTMLMdTablePaginationElement;
+    const rows = bodyRows(table) as HTMLMdTableRowElement[];
+    for (const row of rows) await whenHydrated(row);
+    const sort = await whenHydrated(table.querySelector('md-table-sort-label')!) as HTMLMdTableSortLabelElement;
+    await step('Selection, row activation and nested controls keep their distinct contracts', async () => {
+      const clicked: string[] = [];
+      const listener = (event: Event) => clicked.push((event as CustomEvent).detail.value);
+      table.addEventListener('mdRowClick', listener);
+      rows[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+      expect(clicked).toEqual(['alpha']);
+      (rows[1].querySelector('button') as HTMLButtonElement).click();
+      rows[2].click();
+      expect(clicked).toEqual(['alpha']);
+      await table.selectAll();
+      await waitFor(() => expect(toolbar.numSelected).toBe(2));
+      expect((await table.getSelection()).values).toEqual(['alpha', 'beta']);
+      await waitFor(() => expect(toolbar.shadowRoot!.querySelector('[part="selection-caption"]')?.textContent).toContain('2 invoices selected'));
+      await rows[0].toggle(); await waitFor(() => expect(rows[0].expanded).toBe(true));
+      await rows[0].toggle(); await waitFor(() => expect(rows[0].expanded).toBe(false));
+      await table.toggleSelectAll();
+      await waitFor(() => expect(toolbar.numSelected).toBe(0));
+      table.removeEventListener('mdRowClick', listener);
+    });
+    await step('Sort state is shared with headers and disabled labels ignore activation', async () => {
+      const button = sort;
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+      await waitFor(() => { expect(table.sortBy).toBe('customer'); expect(table.sortOrder).toBe('asc'); });
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }));
+      await waitFor(() => expect(table.sortOrder).toBe('desc'));
+      sort.disabled = true;
+      await waitFor(() => expect(button.getAttribute('aria-disabled')).toBe('true'));
+      button.click(); expect(table.sortOrder).toBe('desc');
+      sort.disabled = false;
+      sort.icon = 'expand_more'; sort.iconPosition = 'start';
+      await table.setSort('amount', 'asc');
+      await waitFor(() => expect(sort.active).toBe(false));
+    });
+    await step('Pagination clamps navigation and rows per page without leaking internal select changes', async () => {
+      const button = (part: string) => pagination.shadowRoot!.querySelector(`[part="${part}"]`) as HTMLMdIconButtonElement;
+      button('last-button').click(); await waitFor(() => expect(pagination.page).toBe(2));
+      button('prev-button').click(); await waitFor(() => expect(pagination.page).toBe(1));
+      button('first-button').click(); await waitFor(() => expect(pagination.page).toBe(0));
+      button('next-button').click(); await waitFor(() => expect(pagination.page).toBe(1));
+      await pagination.setRowsPerPage(5); await waitFor(() => expect(pagination.page).toBe(0));
+      const internalChanges: Event[] = [];
+      const onChange = (event: Event) => internalChanges.push(event);
+      canvasElement.addEventListener('mdChange', onChange);
+      const select = pagination.shadowRoot!.querySelector('md-select')!;
+      await select.show();
+      await waitFor(() => expect(select.shadowRoot!.querySelector('md-menu-item[id$="-opt-23"]')).toBeTruthy());
+      (select.shadowRoot!.querySelector('md-menu-item[id$="-opt-23"]') as HTMLElement).click();
+      await waitFor(() => expect(pagination.rowsPerPage).toBe(23));
+      await waitFor(() => expect(button('next-button').disabled).toBe(true));
+      expect(internalChanges).toHaveLength(0);
+      canvasElement.removeEventListener('mdChange', onChange);
+      await pagination.goToPage(100); expect(pagination.page).toBe(0);
+    });
+    await step('Frozen layout, pinning and visibility preserve the data cells', async () => {
+      table.frozenHeader = true;
+      await waitFor(() => expect(container.classList.contains('md-table-container--frozen-header')).toBe(true));
+      expect(table.querySelector('md-table-foot')!.getAttribute('role')).toBe('presentation');
+      expect(await table.pinColumn(1, 'start')).toBe('start');
+      await waitFor(() => expect(rows[0].querySelector('md-table-cell')!.textContent).toBe('120'));
+      table.pinMode = 'static';
+      expect(await table.setColumnVisibility(0, false)).toBe(false);
+      await waitFor(() => expect(rows[0].querySelector('[data-md-col="0"]')!.hasAttribute('data-md-col-hidden')).toBe(true));
+      expect(await table.setColumnVisibility(0, true)).toBe(true);
+      expect(await table.pinColumn(1, 'none')).toBeNull();
+      table.frozenHeader = false;
+      await waitFor(() => expect(table.querySelector('md-table-foot')!.getAttribute('role')).toBe('rowgroup'));
+      await waitFor(() => expect(container.classList.contains('md-table-container--frozen-header')).toBe(false));
+      expect(rows[0].querySelector('md-table-cell')!.textContent).toBe('Alpha');
+    });
+    await step('Loading, empty and data states remain mutually exclusive', async () => {
+      table.loadingMode = 'skeleton'; table.loadingRows = 2; table.loading = true;
+      await waitFor(() => expect(table.shadowRoot!.querySelectorAll('[part="skeleton-row"]')).toHaveLength(2));
+      table.loading = false; table.empty = true;
+      await waitFor(() => expect(table.shadowRoot!.querySelector('[part="empty"]')).toBeTruthy());
+      table.empty = false;
+      await waitFor(() => expect(table.shadowRoot!.querySelector('[part="empty"]')).toBeNull());
+      const leading = toolbar.querySelector('[slot="leading"]')!; leading.remove();
+      await waitFor(() => expect(toolbar.shadowRoot!.querySelector('[part="leading"]')!.hasAttribute('hidden')).toBe(true));
+      toolbar.append(leading);
+      await waitFor(() => expect(toolbar.shadowRoot!.querySelector('[part="leading"]')!.hasAttribute('hidden')).toBe(false));
+      await table.animateNextChange();
+    });
+  },
+};

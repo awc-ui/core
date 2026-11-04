@@ -1,6 +1,38 @@
 import { newE2EPage } from '@stencil/core/testing';
 
 describe('md-table-container e2e', () => {
+  it('tracks a dynamically inserted frozen table and arms pagination before consumer row changes', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<md-table-container max-height="220px" min-height="100px"><md-table-pagination slot="bottom" count="20"></md-table-pagination></md-table-container>');
+    await page.evaluate(() => {
+      const container = document.querySelector('md-table-container')!;
+      const table = document.createElement('md-table');
+      table.frozenHeader = true;
+      table.innerHTML = '<md-table-body><md-table-row><md-table-cell>A</md-table-cell></md-table-row></md-table-body>';
+      container.appendChild(table);
+    });
+    await page.waitForChanges();
+    await page.waitForFunction(() => document.querySelector('md-table-container')!.classList.contains('md-table-container--frozen-header'));
+    const table = await page.find('md-table');
+    await table.setProperty('frozenHeader', false);
+    await page.waitForChanges();
+    await page.waitForFunction(() => !document.querySelector('md-table-container')!.classList.contains('md-table-container--frozen-header'));
+    const order = await page.evaluate(async () => {
+      const container = document.querySelector('md-table-container')!;
+      const table = container.querySelector('md-table')!;
+      const pagination = container.querySelector('md-table-pagination')!;
+      const calls: string[] = [];
+      table.addEventListener('mdMotionArm', () => calls.push('capture'));
+      pagination.addEventListener('mdPageChange', () => calls.push('consumer'));
+      await pagination.goToPage(1);
+      return calls;
+    });
+    expect(order).toEqual(['capture', 'consumer']);
+    expect(await page.evaluate(() => getComputedStyle(document.querySelector('md-table-container')!).getPropertyValue('--_min-h'))).toBe('100px');
+    await page.evaluate(() => document.querySelector('md-table')!.remove());
+    await page.waitForChanges();
+    expect((await page.find('md-table-container')).className).not.toContain('--frozen-header');
+  });
   it.each(['ltr', 'rtl'])('keeps top and bottom controls stationary while a mobile table scrolls (%s)', async (direction) => {
     const page = await newE2EPage();
     await page.setViewport({ width: 390, height: 844 });

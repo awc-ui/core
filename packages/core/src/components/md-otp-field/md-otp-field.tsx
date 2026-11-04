@@ -438,8 +438,33 @@ export class MdOtpField {
       this.syncCellDom();
       return;
     }
-    const raw = input.value;
+    let raw = input.value;
     const prev = this.value;
+
+    // A keystroke into a filled cell replaces its character. Select-on-focus
+    // covers cells that focus moves into, but after the last character focus
+    // stays put with the caret after it, so the browser appends: take only the
+    // typed text. Bursts (autofill, IME) arrive without `insertText` and keep
+    // the whole-value path.
+    const typed = e as InputEvent;
+    const had = this.chars[index];
+    if (
+      had &&
+      typed.inputType === 'insertText' &&
+      typed.data &&
+      raw.length === had.length + typed.data.length
+    ) {
+      const { clean: one } = this.sanitize(typed.data);
+      if (one) {
+        const changed = this.updateValue(prev.slice(0, index) + one.charAt(0) + prev.slice(index + 1));
+        this.syncCellDom();
+        this.focusCell(Math.min(index + 1, this.cellCount - 1));
+        if (changed) this.mdInput.emit(this.value);
+        this.maybeComplete(prev, false);
+        return;
+      }
+      raw = typed.data; // filtered out below: reports mdInvalidInput, restores the cell
+    }
 
     if (raw === '') {
       // Native deletion (cut / context-menu delete). Backspace/Delete keys are

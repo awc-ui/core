@@ -121,6 +121,16 @@
       "name": "hasFab",
       "type": "inferred",
       "initializer": "false"
+    },
+    {
+      "name": "hasLeading",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
+      "name": "hasTrailing",
+      "type": "inferred",
+      "initializer": "false"
     }
   ],
   "events": [],
@@ -207,7 +217,7 @@
     "attributes": [
       {
         "name": "class",
-        "value": "{\n          'md-toolbar': true,\n          [`md-toolbar--${this.variant}`]: true,\n          [`md-toolbar--${this.color}`]: true,\n          [`md-toolbar--${this.layout}`]: isFloating,\n          [`md-toolbar--align-${this.alignment}`]: true,\n          'md-toolbar--vertical': isVertical,\n          'md-toolbar--generic': !isToolbar,\n        }"
+        "value": "{\n          'md-toolbar': true,\n          [`md-toolbar--${this.variant}`]: true,\n          [`md-toolbar--${this.color}`]: true,\n          [`md-toolbar--${this.layout}`]: isFloating,\n          [`md-toolbar--align-${this.alignment}`]: true,\n          'md-toolbar--vertical': isVertical,\n          'md-toolbar--generic': !isToolbar,\n          'md-toolbar--has-leading': this.hasLeading,\n          'md-toolbar--has-trailing': this.hasTrailing,\n        }"
       },
       {
         "name": "role",
@@ -341,37 +351,37 @@
       "code": "DOM_OBSERVER",
       "severity": "warning",
       "message": "DOM mutation observation has no direct native counterpart.",
-      "line": 92
+      "line": 97
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 99
+      "line": 104
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 105
+      "line": 122
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 181
+      "line": 205
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 182
+      "line": 206
     },
     {
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 311
+      "line": 336
     }
   ],
   "source": {
@@ -379,7 +389,7 @@
     "styleUrl": "md-toolbar.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "94d9f87e0e0bcde2c7fd06ccf5bed4894849d9d2ad38a0c33a187faf248495f6"
+    "sha256": "89766cbe16bec6d00b1fa7caa1bdd6b7df329e8761fc1fdd0bd6a991c0ba2081"
   },
   "styles": [
     {
@@ -1005,7 +1015,33 @@
       ]
     },
     {
-      "selector": "::slotted([slot=\"leading\"])",
+      "selector": ":host(.md-toolbar--has-leading) slot[name=\"leading\"],\n:host(.md-toolbar--has-trailing) slot[name=\"trailing\"]",
+      "context": null,
+      "declarations": [
+        {
+          "property": "display",
+          "value": "flex",
+          "important": false
+        },
+        {
+          "property": "align-items",
+          "value": "center",
+          "important": false
+        },
+        {
+          "property": "flex-shrink",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "var(--_section-gap, var(--_gap))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--has-leading) slot[name=\"leading\"]",
       "context": null,
       "declarations": [
         {
@@ -1016,12 +1052,39 @@
       ]
     },
     {
-      "selector": "::slotted([slot=\"trailing\"])",
+      "selector": ":host(.md-toolbar--has-trailing) slot[name=\"trailing\"]",
       "context": null,
       "declarations": [
         {
           "property": "margin-inline-start",
           "value": "auto",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--docked.md-toolbar--align-space-between)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_section-gap",
+          "value": "var(--md-toolbar-gap, max(4px, calc(32px + var(--md-sys-density-scale, 0) * 2px)))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-toolbar--vertical) slot[name=\"leading\"],\n:host(.md-toolbar--vertical) slot[name=\"trailing\"]",
+      "context": null,
+      "declarations": [
+        {
+          "property": "flex-direction",
+          "value": "column",
+          "important": false
+        },
+        {
+          "property": "margin-inline",
+          "value": "0",
           "important": false
         }
       ]
@@ -1152,66 +1215,101 @@
       "status": "adapter-implemented",
       "properties": [
         "variant",
+        "color",
         "layout",
-        "ariaLabelProp"
+        "alignment",
+        "containerSemantics",
+        "ariaLabelProp",
+        "ariaLabelledby",
+        "density"
       ],
       "events": [],
-      "methods": [],
+      "methods": [
+        "setFocus"
+      ],
       "slots": [
         "",
         "leading",
         "trailing",
         "fab"
       ],
-      "unsupportedProperties": [
-        "color",
-        "alignment",
-        "containerSemantics",
-        "ariaLabelledby",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "setFocus"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Preserves authored child order and native horizontal/vertical layout."
+        "Dedicated native toolbar (SwiftUI / Compose): docked bar and floating pill (horizontal or vertical), standard / vibrant colours, the leading / default / trailing sections with their gaps and alignment, the paired FAB, density, and the opt-in scrolling / wrapping overflow, computed from the authored children as the source.",
+        "Roving focus over the icon buttons and buttons (one Tab stop, arrows on the bar's axis, Home / End, wrap; soft-disabled members reachable, hidden / disabled / aria-hidden ones skipped; other controls keep their own stop), re-synced when children change; the toolbar-only icon-button tints; role toolbar with orientation and name, or a generic container.",
+        "Hooks through .awcToolbarAppearance(…) / AWCToolbarAppearanceScope; setFocus() through AWCToolbarController.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration, roving focus, Tab order, the dynamic re-sync, pointer state layers, RTL and density."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": ".awcToolbarAppearance(AWCToolbarAppearance)",
+        "fields": [
+          "containerColor",
+          "iconColor",
+          "containerShape",
+          "containerHeight",
+          "padding",
+          "gap",
+          "fabGap",
+          "overflowX",
+          "overflowY",
+          "flexWrap",
+          "scrollbarWidth"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "density"
-      ],
-      "events": [],
-      "methods": [],
-      "slots": [
-        "",
-        "leading",
-        "trailing"
-      ],
-      "unsupportedProperties": [
         "variant",
         "color",
         "layout",
         "alignment",
         "containerSemantics",
         "ariaLabelProp",
-        "ariaLabelledby"
+        "ariaLabelledby",
+        "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [],
+      "methods": [
         "setFocus"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
+        "leading",
+        "trailing",
         "fab"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native toolbar (SwiftUI / Compose): docked bar and floating pill (horizontal or vertical), standard / vibrant colours, the leading / default / trailing sections with their gaps and alignment, the paired FAB, density, and the opt-in scrolling / wrapping overflow, computed from the authored children as the source.",
+        "Roving focus over the icon buttons and buttons (one Tab stop, arrows on the bar's axis, Home / End, wrap; soft-disabled members reachable, hidden / disabled / aria-hidden ones skipped; other controls keep their own stop), re-synced when children change; the toolbar-only icon-button tints; role toolbar with orientation and name, or a generic container.",
+        "Hooks through .awcToolbarAppearance(…) / AWCToolbarAppearanceScope; setFocus() through AWCToolbarController.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration, roving focus, Tab order, the dynamic re-sync, pointer state layers, RTL and density."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCToolbarAppearanceScope(AWCToolbarAppearance)",
+        "fields": [
+          "containerColor",
+          "iconColor",
+          "containerShape",
+          "containerHeight",
+          "padding",
+          "gap",
+          "fabGap",
+          "overflowX",
+          "overflowY",
+          "flexWrap",
+          "scrollbarWidth"
+        ]
+      }
     }
   }
 }

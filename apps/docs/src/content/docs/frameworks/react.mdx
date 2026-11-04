@@ -16,6 +16,18 @@ tree-shaking, client rendering, React server rendering, and **Next.js SSR**.
 npm install @awc-ui/react @awc-ui/core
 ```
 
+Load Core's global stylesheet once in the app entry or root layout, before
+rendering components:
+
+```tsx
+import "@awc-ui/core/css/tokens.css";
+```
+
+This includes design tokens and first-paint protection. Unfinished component
+hosts stay hidden until the first render adds `.hydrated`; element registration
+(`:defined`) alone does not mean a lazy component has rendered. Client rendering
+can still change layout because this guard does not reserve final dimensions.
+
 For a client-rendered React application, import the typed wrapper:
 
 ```tsx
@@ -51,11 +63,9 @@ export default function Page() {
 }
 ```
 
-Load the global design tokens in the root layout:
-
-```tsx
-import "@awc-ui/core/css/tokens.css";
-```
+Keep the global stylesheet in the root layout. Fully rendered server components
+already carry their hydration markers and remain visible before client
+JavaScript runs; preserve those markers when integrating server rendering.
 
 Allow Next.js to process the workspace packages:
 

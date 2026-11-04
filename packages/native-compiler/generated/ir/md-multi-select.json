@@ -864,6 +864,12 @@
       "name": "--md-multi-select-chip-radius"
     },
     {
+      "name": "--md-multi-select-chip-height"
+    },
+    {
+      "name": "--md-multi-select-chip-outline"
+    },
+    {
       "name": "--md-multi-select-caret-color"
     },
     {
@@ -883,12 +889,6 @@
     },
     {
       "name": "--md-multi-select-inline-chips-block-start"
-    },
-    {
-      "name": "--md-multi-select-chip-height"
-    },
-    {
-      "name": "--md-multi-select-chip-outline"
     },
     {
       "name": "--md-multi-select-clear-size"
@@ -1179,19 +1179,19 @@
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 864
+      "line": 874
     },
     {
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 1301
+      "line": 1311
     },
     {
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 1304
+      "line": 1314
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -1205,7 +1205,7 @@
     "styleUrl": "md-multi-select.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "a2e5859ca672f89c66f17cd107a6d5c8b642e48aeb04cacb0c55a48900e6b9c4"
+    "sha256": "f3c6eac5061e2776036c2637e5089b80190f085014ee5e73a1a7f7ca0ef85a09"
   },
   "styles": [
     {
@@ -1230,6 +1230,16 @@
         {
           "property": "--_chip-radius",
           "value": "var(--md-multi-select-chip-radius, 8px)",
+          "important": false
+        },
+        {
+          "property": "--_chip-height",
+          "value": "var(--md-multi-select-chip-height, var(--md-chip-container-height, 32px))",
+          "important": false
+        },
+        {
+          "property": "--_chip-outline",
+          "value": "var(--md-multi-select-chip-outline, var(--md-chip-outline-color, var(--md-sys-color-outline-variant, #CAC4D0)))",
           "important": false
         },
         {
@@ -1514,6 +1524,22 @@
         {
           "property": "contain",
           "value": "inline-size",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-multi-select__chips md-chip,\n.md-multi-select__inline-chips md-chip,\n.md-multi-select__inline-measure md-chip",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--md-chip-container-height",
+          "value": "var(--_chip-height)",
+          "important": false
+        },
+        {
+          "property": "--md-chip-outline-color",
+          "value": "var(--_chip-outline)",
           "important": false
         }
       ]
@@ -1834,7 +1860,7 @@
         },
         {
           "property": "block-size",
-          "value": "var(--md-multi-select-chip-height, 32px)",
+          "value": "var(--_chip-height)",
           "important": false
         },
         {
@@ -1844,7 +1870,7 @@
         },
         {
           "property": "border",
-          "value": "1px solid var(--md-multi-select-chip-outline, var(--md-sys-color-outline-variant, #CAC4D0))",
+          "value": "1px solid var(--_chip-outline)",
           "important": false
         },
         {
@@ -2640,31 +2666,45 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
+        "valueMissingLabel",
+        "reserveSupportingSpace",
+        "variant",
         "label",
         "placeholder",
         "supportingText",
         "error",
         "errorText",
+        "disabled",
+        "softDisabled",
         "required",
+        "density",
         "options",
+        "filterable",
         "value",
         "maxSelected",
         "showSelectAll",
         "selectAllLabel",
+        "placement",
+        "maxHeight",
+        "matchTriggerWidth",
         "displayMode",
+        "chipOverflow",
+        "chipPosition",
+        "trigger",
+        "triggerIcon",
+        "triggerLabel",
         "searchPlaceholder",
+        "filterLabel",
         "noResultsText",
         "noOptionsText",
         "loadingText",
         "loading",
         "clearable",
+        "clearIcon",
         "clearLabel",
         "dropdownIcon",
-        "open",
-        "valueMissingLabel",
-        "disabled",
-        "softDisabled",
-        "name"
+        "name",
+        "open"
       ],
       "events": [
         "mdChange",
@@ -2674,31 +2714,7 @@
         "mdClear",
         "mdValidityChange"
       ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "reserveSupportingSpace",
-        "variant",
-        "density",
-        "virtualize",
-        "filterable",
-        "filterMode",
-        "rowHeight",
-        "placement",
-        "maxHeight",
-        "matchTriggerWidth",
-        "chipOverflow",
-        "chipPosition",
-        "trigger",
-        "triggerIcon",
-        "triggerLabel",
-        "countFormatter",
-        "filterLabel",
-        "searchingLabel",
-        "clearIcon"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "show",
         "close",
         "focusTrigger",
@@ -2711,69 +2727,60 @@
         "reportValidity",
         "setCustomValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "",
         "trigger",
+        "loader",
+        "dropdown-icon"
+      ],
+      "unsupportedProperties": [
+        "virtualize",
+        "filterMode",
+        "rowHeight",
+        "countFormatter",
+        "searchingLabel"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
         "trigger-leading",
         "trigger-trailing",
-        "loader",
-        "dropdown-icon",
         "menu-header",
         "menu-loader"
       ],
       "notes": [
-        "Selection supports chips, remove, clear, disabled options and maximum count; count/text layout and anchor placement differ.",
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+        "Dedicated native renderer (SwiftUI / Compose): chips (bottom / top / sides / inline with count or wrap overflow), the button trigger, select-all, max-selected, filterable search, clear and remove, on the md-menu listbox; verified against the Mac Chrome 153 oracles (paint 1222 checks; interaction states, full and reduced).",
+        "Not supported: virtualize (not virtualized: the native lists render every option (loadOptions / options replace the list)).",
+        "Not supported: filterMode (filtering is local (contains); the source's remote mode is the app's (setQuery / loadOptions)).",
+        "Not supported: rowHeight (virtualization row height (no virtualized list)).",
+        "Not supported: countFormatter (a JavaScript function value).",
+        "Not supported: searchingLabel (remote-search status text (no remote mode))."
       ],
       "verification": "not-device-verified"
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "clearLabel",
-        "clearable",
-        "disabled",
-        "error",
-        "errorText",
-        "filterable",
-        "label",
-        "loading",
-        "maxHeight",
-        "maxSelected",
-        "name",
-        "noOptionsText",
-        "noResultsText",
-        "open",
-        "options",
-        "placeholder",
-        "required",
-        "searchPlaceholder",
-        "selectAllLabel",
-        "showSelectAll",
-        "softDisabled",
-        "supportingText",
-        "value"
-      ],
-      "events": [
-        "mdChange",
-        "mdClear",
-        "mdClose",
-        "mdOpen",
-        "mdRemove"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
         "valueMissingLabel",
         "reserveSupportingSpace",
         "variant",
+        "label",
+        "placeholder",
+        "supportingText",
+        "error",
+        "errorText",
+        "disabled",
+        "softDisabled",
+        "required",
         "density",
-        "virtualize",
-        "filterMode",
-        "rowHeight",
+        "options",
+        "filterable",
+        "value",
+        "maxSelected",
+        "showSelectAll",
+        "selectAllLabel",
         "placement",
+        "maxHeight",
         "matchTriggerWidth",
         "displayMode",
         "chipOverflow",
@@ -2781,17 +2788,28 @@
         "trigger",
         "triggerIcon",
         "triggerLabel",
-        "countFormatter",
+        "searchPlaceholder",
         "filterLabel",
-        "searchingLabel",
+        "noResultsText",
+        "noOptionsText",
         "loadingText",
+        "loading",
+        "clearable",
         "clearIcon",
-        "dropdownIcon"
+        "clearLabel",
+        "dropdownIcon",
+        "name",
+        "open"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdChange",
+        "mdOpen",
+        "mdClose",
+        "mdRemove",
+        "mdClear",
         "mdValidityChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "show",
         "close",
         "focusTrigger",
@@ -2804,18 +2822,34 @@
         "reportValidity",
         "setCustomValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "trigger",
+        "loader",
+        "dropdown-icon"
+      ],
+      "unsupportedProperties": [
+        "virtualize",
+        "filterMode",
+        "rowHeight",
+        "countFormatter",
+        "searchingLabel"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [
         "trigger-leading",
         "trigger-trailing",
-        "loader",
-        "dropdown-icon",
         "menu-header",
         "menu-loader"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+        "Dedicated native renderer (SwiftUI / Compose): chips (bottom / top / sides / inline with count or wrap overflow), the button trigger, select-all, max-selected, filterable search, clear and remove, on the md-menu listbox; verified against the Mac Chrome 153 oracles (paint 1222 checks; interaction states, full and reduced).",
+        "Not supported: virtualize (not virtualized: the native lists render every option (loadOptions / options replace the list)).",
+        "Not supported: filterMode (filtering is local (contains); the source's remote mode is the app's (setQuery / loadOptions)).",
+        "Not supported: rowHeight (virtualization row height (no virtualized list)).",
+        "Not supported: countFormatter (a JavaScript function value).",
+        "Not supported: searchingLabel (remote-search status text (no remote mode))."
       ],
       "verification": "not-device-verified"
     }

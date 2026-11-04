@@ -1,0 +1,351 @@
+{
+ "tag": "md-toolbar",
+ "case": "default",
+ "request": {
+  "tag": "md-toolbar",
+  "properties": {
+   "variant": "floating",
+   "ariaLabelProp": "Formatting"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Undo",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          231.5,
+          44,
+          40,
+          40
+         ],
+         "identifier": "B616CA1C-7CAB-46D2-A9EE-CE9890F39088",
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "button",
+         "selected": false
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Redo",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          275.5,
+          44,
+          40,
+          40
+         ],
+         "identifier": "942BD206-8D9E-424C-8BB6-C9B65FAC5E61",
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "button",
+         "selected": false
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Bold",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          324.5,
+          44,
+          40,
+          40
+         ],
+         "identifier": "C08FFE6F-A850-4732-AB6C-3B7EE5882B25",
+         "invalid": "false",
+         "required": false,
+         "role": "AXCheckBox",
+         "roleDescription": "toggle button",
+         "selected": false,
+         "subrole": "AXToggle",
+         "value": false
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Italic",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          368.5,
+          44,
+          40,
+          40
+         ],
+         "identifier": "733CAAE2-C24D-4722-8A21-1A76B7649508",
+         "invalid": "false",
+         "required": false,
+         "role": "AXCheckBox",
+         "roleDescription": "toggle button",
+         "selected": false,
+         "subrole": "AXToggle",
+         "value": false
+        }
+       ],
+       "description": "Formatting",
+       "focused": false,
+       "frame": [
+        199.5,
+        8,
+        241,
+        112
+       ],
+       "identifier": "example-md-toolbar",
+       "orientation": "AXHorizontalOrientation",
+       "role": "AXToolbar",
+       "roleDescription": "toolbar"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      128
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    128
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "B616CA1C-7CAB-46D2-A9EE-CE9890F39088",
+    "properties": {
+     "aria-label": "Undo",
+     "icon": "undo"
+    },
+    "tag": "md-icon-button"
+   },
+   {
+    "children": [],
+    "id": "942BD206-8D9E-424C-8BB6-C9B65FAC5E61",
+    "properties": {
+     "aria-label": "Redo",
+     "icon": "redo"
+    },
+    "tag": "md-icon-button"
+   },
+   {
+    "children": [],
+    "id": "C1F2B9DB-732F-4FEF-B7C8-63C10F91141D",
+    "properties": {
+     "vertical": true
+    },
+    "tag": "md-divider"
+   },
+   {
+    "children": [],
+    "id": "C08FFE6F-A850-4732-AB6C-3B7EE5882B25",
+    "properties": {
+     "aria-label": "Bold",
+     "icon": "format_bold",
+     "toggle": true
+    },
+    "tag": "md-icon-button"
+   },
+   {
+    "children": [],
+    "id": "733CAAE2-C24D-4722-8A21-1A76B7649508",
+    "properties": {
+     "aria-label": "Italic",
+     "icon": "format_italic",
+     "toggle": true
+    },
+    "tag": "md-icon-button"
+   }
+  ],
+  "id": "example-md-toolbar",
+  "properties": {
+   "alignment": "start",
+   "ariaLabelProp": "Formatting",
+   "ariaLabelledby": "",
+   "color": "standard",
+   "containerSemantics": "toolbar",
+   "density": 0,
+   "layout": "horizontal",
+   "variant": "floating"
+  },
+  "tag": "md-toolbar"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Undo",
+    "frame": [
+     231.5,
+     44,
+     40,
+     40
+    ],
+    "identifier": "B616CA1C-7CAB-46D2-A9EE-CE9890F39088",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Undo",
+    "frame": [
+     231.5,
+     44,
+     40,
+     40
+    ],
+    "identifier": "B616CA1C-7CAB-46D2-A9EE-CE9890F39088",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Undo",
+    "frame": [
+     231.5,
+     44,
+     40,
+     40
+    ],
+    "identifier": "B616CA1C-7CAB-46D2-A9EE-CE9890F39088",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 64,
+     "width": 193,
+     "x": 223.5,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "activeID": "B616CA1C-7CAB-46D2-A9EE-CE9890F39088",
+     "background": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "density": 0,
+     "elevation": 0,
+     "fabGap": 8,
+     "height": 64,
+     "ink": [
+      0.28627450980392155,
+      0.27058823529411763,
+      0.30980392156862746,
+      1
+     ],
+     "label": "Formatting",
+     "margin": 16,
+     "members": [
+      "B616CA1C-7CAB-46D2-A9EE-CE9890F39088",
+      "942BD206-8D9E-424C-8BB6-C9B65FAC5E61",
+      "C08FFE6F-A850-4732-AB6C-3B7EE5882B25",
+      "733CAAE2-C24D-4722-8A21-1A76B7649508"
+     ],
+     "orientation": "horizontal",
+     "padding": 0,
+     "radius": 0,
+     "role": "toolbar",
+     "zIndex": 0
+    },
+    "name": "md-toolbar"
+   },
+   {
+    "bounds": {
+     "height": 64,
+     "width": 193,
+     "x": 223.5,
+     "y": 32
+    },
+    "id": "component.container",
+    "metrics": {
+     "background": [
+      0.9529411764705882,
+      0.9294117647058824,
+      0.9686274509803922,
+      1
+     ],
+     "elevation": 2,
+     "gap": 4,
+     "justify": "start",
+     "padding": 8,
+     "radius": 32,
+     "scroll": 0,
+     "scrollMax": 0,
+     "sectionGap": 4
+    },
+    "name": "container",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

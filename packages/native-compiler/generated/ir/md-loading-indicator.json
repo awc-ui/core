@@ -672,40 +672,68 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "label"
+        "variant",
+        "label",
+        "density"
       ],
       "events": [],
       "methods": [],
       "slots": [],
-      "unsupportedProperties": [
-        "variant",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
-    },
-    "android": {
-      "status": "adapter-implemented",
-      "properties": [
-        "label"
-      ],
-      "events": [],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "variant",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native morph renderer uses the exact seven 48-vertex polygons, rounded keyframe offsets, 4550ms cycle, cubic overshoot and rotation from Web. Native reduced-motion becomes the source 2s circle opacity pulse; native increased contrast maps to system semantic foreground/surface. Label is a named indeterminate progress semantic, not visible text.",
+        "All five appearance hooks support inherited fieldwise defaults/local overrides, RGBA, intentional zero sizes and structured physical/elliptical/percentage corner radii. AWCLoadingIndicatorShapeAppearance independently overrides the actual exposed shape width, height and color. Finite extreme radius coefficients use overflow-safe proportional CSS overlap normalization.",
+        "Actual SwiftUI/AppKit fixture passed 1798 checks across 84 hydrated Web theme configurations and 16 paused animation samples, plus real animation/focus/accessibility/hide transitions. Native inspection reports actual root and shape geometry, including zero, and clears hidden nodes. iOS SDK/device validation is unavailable; platform boundaries and host evidence are recorded in audits/md-loading-indicator.md."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "shape"
+      ],
+      "appearance": {
+        "api": "AWCLoadingIndicatorAppearance / View.awcLoadingIndicatorAppearance",
+        "fields": [
+          "color",
+          "size",
+          "shapeSize",
+          "containerColor",
+          "containerShape"
+        ]
+      }
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "density",
+        "label",
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native polygon animation preserves source geometry, colors, density, clipping, exact keyframes and typed corner radii. AWCLoadingIndicatorShapeAppearanceScope styles the measured shape part. Android animation preference supplies reduced motion; explicit AWCAccessibilityAppearanceScope forcedColors is a native environment override, not inferred from system contrast. No default tabstop is added; caller focus modifiers opt into native focus. Runtime verification is recorded separately."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "shape"
+      ],
+      "appearance": {
+        "api": "AWCLoadingIndicatorAppearance / AWCLoadingIndicatorAppearanceScope / AWCCornerShape",
+        "fields": [
+          "color",
+          "size",
+          "shapeSize",
+          "containerColor",
+          "containerShape"
+        ]
+      }
     }
   }
 }

@@ -398,7 +398,7 @@
           },
           {
             "name": "aria-labelledby",
-            "value": "this.asListbox ? undefined : this.anchor || undefined"
+            "value": "this.asListbox || SUPPORTS_LABEL_REFLECTION ? undefined : this.anchor || undefined"
           }
         ],
         "children": [
@@ -446,55 +446,55 @@
       "code": "DOM_OBSERVER",
       "severity": "warning",
       "message": "DOM mutation observation has no direct native counterpart.",
-      "line": 147
+      "line": 153
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Document access requires a native adapter.",
-      "line": 216
+      "line": 228
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 282
+      "line": 294
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 282
+      "line": 294
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 435
+      "line": 447
     },
     {
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 448
+      "line": 460
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 1265
+      "line": 1294
     },
     {
       "code": "DOM_MUTATION",
       "severity": "warning",
       "message": "classList depends on browser semantics and requires a native adapter.",
-      "line": 1383
+      "line": 1412
     },
     {
       "code": "CANCELABLE_EVENT",
       "severity": "warning",
       "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
-      "line": 24
+      "line": 30
     }
   ],
   "source": {
@@ -502,7 +502,7 @@
     "styleUrl": "md-menu.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "8e661b1e39b36c1c69a10e3bde6ef67c72f4253c331b80b5be608659fb6b4fd0"
+    "sha256": "1b3ebf69b90eed9d6a88a7a9b975cbab214e9652d6fbe5252f316e8c0e91c697"
   },
   "styles": [
     {
@@ -1521,6 +1521,22 @@
       ]
     },
     {
+      "selector": ".md-menu__surface,\n  :host(.md-menu--open) .md-menu__surface,\n  :host(.md-menu--closing) .md-menu__surface",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
       "selector": ":host([hidden])",
       "context": null,
       "declarations": [
@@ -1558,63 +1574,6 @@
       "status": "adapter-implemented",
       "properties": [
         "open",
-        "persistent",
-        "emptyText",
-        "layout",
-        "listLabel"
-      ],
-      "events": [
-        "mdOpen",
-        "mdClose"
-      ],
-      "methods": [],
-      "slots": [
-        "",
-        "header"
-      ],
-      "unsupportedProperties": [
-        "anchor",
-        "placement",
-        "quick",
-        "variant",
-        "useGap",
-        "matchAnchorWidth",
-        "responsive",
-        "autoFocus",
-        "maxHeight",
-        "listbox",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "setComboboxElement",
-        "setVirtualProvider",
-        "getScrollViewport",
-        "show",
-        "reposition",
-        "whenClosed",
-        "close"
-      ],
-      "unsupportedSlots": [],
-      "notes": [
-        "Native expandable menu surface; anchor selectors and popover collision placement have no native equivalent."
-      ],
-      "verification": "not-device-verified"
-    },
-    "android": {
-      "status": "adapter-implemented",
-      "properties": [
-        "open"
-      ],
-      "events": [
-        "mdClose",
-        "mdOpen"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
         "anchor",
         "placement",
         "quick",
@@ -1631,23 +1590,119 @@
         "listbox",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "setComboboxElement",
-        "setVirtualProvider",
+      "events": [
+        "mdOpen",
+        "mdClose"
+      ],
+      "methods": [
         "getScrollViewport",
         "show",
         "reposition",
         "whenClosed",
         "close"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "header"
       ],
-      "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "setComboboxElement",
+        "setVirtualProvider"
       ],
-      "verification": "not-device-verified"
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native renderer (SwiftUI / Compose): the baseline, standard and vibrant surfaces, the standard and grouped (gap) layouts, the header slot, empty text, density, a capped scrolling viewport (max-height, --md-menu-max-block-size) and the 150 ms scale-and-fade entrance and exit (quick and Reduce Motion snap), verified against the Mac Chrome 153 oracles (paint, interaction states and motion).",
+        "Anchored menus present in the nearest AWCMenuScope (the menus' top layer): bottom/top-start/end placement against the anchor's live frame (physical, as the source), flipped and kept inside the viewport margin, match-anchor-width and the responsive full-width surface. Outside a scope a menu renders in flow.",
+        "Source behaviour: auto-focus of the first row, roving focus with typeahead, Escape and Tab close the tree and restore focus to the anchor, outside clicks close non-persistent menus, opening a menu closes its open peers; mdOpen / mdClose as the source. listbox exposes the surface as a listbox of options.",
+        "show({ autoFocus }), close(), whenClosed() and reposition() through AWCMenuScopeState.menu(id); getScrollViewport() returns the viewport geometry (scrollTop, scrollHeight, clientHeight) rather than an element. setComboboxElement() and setVirtualProvider() are the DOM combobox and virtualization plumbing of md-select / md-autocomplete and have no native counterpart.",
+        "The six menu hooks and the five row hooks (inherited by every row) through .awcMenuAppearance(…) / AWCMenuAppearanceScope."
+      ],
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": ".awcMenuAppearance(AWCMenuAppearance)",
+        "fields": [
+          "minWidth",
+          "maxWidth",
+          "maxBlockSize",
+          "viewportMargin",
+          "groupGap",
+          "sectionGap",
+          "itemHeight",
+          "itemPaddingInline",
+          "itemGap",
+          "itemIconSize",
+          "itemCheckSize"
+        ]
+      }
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "open",
+        "anchor",
+        "placement",
+        "quick",
+        "variant",
+        "layout",
+        "useGap",
+        "emptyText",
+        "matchAnchorWidth",
+        "responsive",
+        "persistent",
+        "autoFocus",
+        "maxHeight",
+        "listLabel",
+        "listbox",
+        "density"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose"
+      ],
+      "methods": [
+        "getScrollViewport",
+        "show",
+        "reposition",
+        "whenClosed",
+        "close"
+      ],
+      "slots": [
+        "",
+        "header"
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [
+        "setComboboxElement",
+        "setVirtualProvider"
+      ],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native renderer (SwiftUI / Compose): the baseline, standard and vibrant surfaces, the standard and grouped (gap) layouts, the header slot, empty text, density, a capped scrolling viewport (max-height, --md-menu-max-block-size) and the 150 ms scale-and-fade entrance and exit (quick and Reduce Motion snap), verified against the Mac Chrome 153 oracles (paint, interaction states and motion).",
+        "Anchored menus present in the nearest AWCMenuScope (the menus' top layer): bottom/top-start/end placement against the anchor's live frame (physical, as the source), flipped and kept inside the viewport margin, match-anchor-width and the responsive full-width surface. Outside a scope a menu renders in flow.",
+        "Source behaviour: auto-focus of the first row, roving focus with typeahead, Escape and Tab close the tree and restore focus to the anchor, outside clicks close non-persistent menus, opening a menu closes its open peers; mdOpen / mdClose as the source. listbox exposes the surface as a listbox of options.",
+        "show({ autoFocus }), close(), whenClosed() and reposition() through AWCMenuScopeState.menu(id); getScrollViewport() returns the viewport geometry (scrollTop, scrollHeight, clientHeight) rather than an element. setComboboxElement() and setVirtualProvider() are the DOM combobox and virtualization plumbing of md-select / md-autocomplete and have no native counterpart.",
+        "The six menu hooks and the five row hooks (inherited by every row) through .awcMenuAppearance(…) / AWCMenuAppearanceScope."
+      ],
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCMenuAppearanceScope(AWCMenuAppearance)",
+        "fields": [
+          "minWidth",
+          "maxWidth",
+          "maxBlockSize",
+          "viewportMargin",
+          "groupGap",
+          "sectionGap",
+          "itemHeight",
+          "itemPaddingInline",
+          "itemGap",
+          "itemIconSize",
+          "itemCheckSize"
+        ]
+      }
     }
   }
 }

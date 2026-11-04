@@ -1,0 +1,94 @@
+{
+ "tag": "md-split-button",
+ "case": "soft-disabled",
+ "elements": [
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    245.33333333333331,
+    380,
+    99.66666666666669,
+    40
+   ],
+   "label": "Publish",
+   "traits": [
+    "button",
+    "notEnabled"
+   ]
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    347,
+    380,
+    48,
+    40
+   ],
+   "hint": "Menu button",
+   "label": "More actions",
+   "traits": [
+    "button",
+    "notEnabled"
+   ],
+   "value": "Collapsed"
+  }
+ ],
+ "focus": [
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     245.33333333333331,
+     380,
+     99.66666666666669,
+     40
+    ],
+    "label": "Publish",
+    "traits": [
+     "button",
+     "notEnabled"
+    ]
+   }
+  },
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     347,
+     380,
+     48,
+     40
+    ],
+    "hint": "Menu button",
+    "label": "More actions",
+    "traits": [
+     "button",
+     "notEnabled"
+    ],
+    "value": "Collapsed"
+   }
+  },
+  {}
+ ],
+ "id": "md-split-button/soft-disabled",
+ "image": {
+  "scale": 3,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "ios": "26.3.1",
+ "platform": "ios"
+}

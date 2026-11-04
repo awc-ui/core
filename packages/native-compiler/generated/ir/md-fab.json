@@ -1550,64 +1550,149 @@
       "properties": [
         "variant",
         "size",
+        "disabled",
+        "softDisabled",
+        "lowered",
+        "ripple",
         "icon",
         "label",
         "extended",
-        "disabled",
-        "softDisabled"
+        "density"
       ],
       "events": [
         "mdClick"
       ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "lowered",
-        "ripple",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "setMenuIcon"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "icon"
       ],
-      "notes": [],
-      "verification": "not-device-verified"
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated SwiftUI FAB implements all three icon-only sizes, seven source palettes, five density rungs and lowered/hover/focus/pressed elevation. Any nonempty label uses the standard extended geometry; actual natural Roboto text measurement drives the source spatial/opacity transition, and collapsed labelled FABs retain minimum width56 at every density. Oversized explicit icons stay centered before clipping.",
+        "Native pointer, Enter/Space keydown and accessibility activation emit one cancelable scoped mdClick. Detail is null because the source DOM MouseEvent has no native object equivalent; public event.activation supplies truthful native ID/source. There is no selected payload, toggle, navigation or mdChange side effect. Hard-disabled excludes focus; soft-disabled remains focusable and inert. Authored aria-label or label supplies the native accessible name; decorative Material glyph names are not spoken.",
+        "AWCNode.symbol(name, slot: \"icon\") uses the bundled Material font at resolved iconSize. AWCNode.slotText creates element-like authored content, including empty/whitespace, and literal text inherits host typography/letter spacing independently of glyph size. Temporary icon overrides suppress slots without modifying authored children. Native children support arbitrary reusable composition; browser slot nodes are not executed.",
+        "Attach a retained AWCFabController using View.awcFabController. Its async setMenuIcon(String?) accepts nonempty whitespace without trimming; nil or empty clears the temporary override and reveals the latest authored icon/slot. It remains callable while disabled. Live preview invokes the real controller before command completion; FAB Menu manages its own separate anchor morph lifecycle.",
+        "All five public appearance hooks map to validated AWCFabAppearance fields with scoped fieldwise inheritance. Container disabled precedence follows source CSS, while explicit inner iconColor/labelColor still win. The three visual parts have measured native inspector counterparts; arbitrary CSS selector execution remains a Web API.",
+        "Passed141 shared FAB metric/palette/slot contracts and94 actual offscreen SwiftUI geometry/pixel/interaction/controller checks, plus the real JSON live-host method test. Library and all preview products compile on macOS. This machine has Command Line Tools only; iOS SDK/device/VoiceOver runtime remains unverified. See audits/md-fab.md."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "label"
+      ],
+      "appearance": {
+        "api": "AWCFabAppearance / View.awcFabAppearance",
+        "fields": [
+          "containerColor",
+          "iconColor",
+          "iconSize",
+          "cornerRadius",
+          "labelColor"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "density",
         "disabled",
+        "extended",
         "icon",
         "label",
+        "lowered",
+        "ripple",
+        "size",
         "softDisabled",
         "variant"
       ],
       "events": [
         "mdClick"
       ],
-      "methods": [],
+      "methods": [
+        "setMenuIcon"
+      ],
       "slots": [
         "icon"
       ],
-      "unsupportedProperties": [
-        "size",
-        "lowered",
-        "ripple",
-        "extended",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "setMenuIcon"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated Compose FAB preserves source sizes, density, seven palettes, labelled extended/collapsed geometry and motion, lowered elevation, disabled state, pointer ripple, keyboard focus and activation. The icon slot retains authored content during controller overrides. mdClick callback detail is null in place of a DOM MouseEvent; scoped AWCActionEvent detail is an empty map and truthful input metadata is available through activation. Android elevation rasterization and native text shaping remain platform-specific. Menu-owned shape/icon-morph choreography is verified with the menu component separately."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "label"
+      ],
+      "appearance": {
+        "api": "AWCFabAppearance / AWCFabAppearanceScope",
+        "fields": [
+          "containerColor",
+          "iconColor",
+          "iconSize",
+          "cornerRadius",
+          "labelColor"
+        ]
+      },
+      "nativeEquivalents": {
+        "SHADOW_DOM": {
+          "status": "implemented",
+          "api": "AWCComponent content / AWCSlotsScope",
+          "description": "Retained named icon composition replaces shadow content. Public typed appearance and measured visual parts replace the five source hooks.",
+          "limitations": [
+            "No DOM nodes or CSS selector engine are exposed."
+          ]
+        },
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Compose label measurement and named icon composition",
+          "description": "The actual native text layout supplies label width; retained slot composition supplies current icon content.",
+          "limitations": [
+            "Arbitrary DOM traversal is not reproduced."
+          ]
+        },
+        "SLOT_INTROSPECTION": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry / native subcomposition",
+          "description": "Actual authored slot layout determines fallback presence, including explicit empty Text elements. Temporary menu icons hide rather than discard authored content.",
+          "limitations": [
+            "Native composables replace HTMLElement assignments."
+          ]
+        },
+        "ANIMATION_FRAME": {
+          "status": "implemented",
+          "api": "Compose animation frame clock",
+          "description": "The initial target is applied without mount animation. Subsequent extent and label changes use the source spatial and effects curves; native reduced-motion settings disable motion.",
+          "limitations": [
+            "Native frame timing replaces requestAnimationFrame."
+          ]
+        },
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "Bundled Roboto and Compose TextMeasurer",
+          "description": "Native layout and font resolution remeasure label width when content, typography or density changes, without document.fonts.",
+          "limitations": [
+            "Native glyph shaping and physical-pixel rounding can differ from browser text rendering."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionEvent",
+          "description": "Cancelable native capture/target/bubble delivery provides actual input metadata; no default action is attached to FAB notification. Callback detail is null; the scoped map is empty.",
+          "limitations": [
+            "DOM MouseEvent and browser propagation objects are not fabricated."
+          ]
+        }
+      }
     }
   }
 }

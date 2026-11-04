@@ -185,12 +185,20 @@ export class MdButton {
    *
    * Bubbles and is composed.
    */
-  @Event({ bubbles: true, composed: true })
+  @Event({ cancelable: false, bubbles: true, composed: true })
   mdChange!: EventEmitter<MdButtonChangeDetail>;
 
   @State() private hasSlottedLeadingIcon = false;
   @State() private hasSlottedTrailingIcon = false;
   @State() private pressed = false;
+  /** Keyboard focus on the inner link anchor. The anchor holds focus inside the shadow root, so the host never matches
+   *  :focus-visible (and :host(:has()) cannot see shadow content): the host mirrors the anchor's state as a class. */
+  @State() private anchorFocusVisible = false;
+  private handleAnchorFocus = (e: FocusEvent) => {
+    const anchor = e.currentTarget as HTMLElement;
+    this.anchorFocusVisible = typeof anchor.matches === 'function' && anchor.matches(':focus-visible');
+  };
+  private handleAnchorBlur = () => { this.anchorFocusVisible = false; };
 
   private get isDisabled() {
     return this.disabled || this.softDisabled || this.loading;
@@ -343,6 +351,8 @@ export class MdButton {
           'md-button--connected-left': this.connectedLeft,
           'md-button--connected-right': this.connectedRight,
           'md-button--full-width': this.fullWidth,
+          'md-button--anchor-focus-visible': !!linkHref && this.anchorFocusVisible,
+          'md-button--link': !!linkHref,
         }}
         role={this.roleOverride || (linkHref ? null : 'button')}
         aria-disabled={isEffectivelyDisabled ? 'true' : 'false'}
@@ -375,6 +385,8 @@ export class MdButton {
             rel={opensNewContext ? SAFE_LINK_REL : undefined}
             tabindex={this.groupTabindex !== null ? String(this.groupTabindex) : '0'}
             aria-disabled={isEffectivelyDisabled ? 'true' : null}
+            onFocus={this.handleAnchorFocus}
+            onBlur={this.handleAnchorBlur}
           >
             {this.renderContent(isEffectivelyDisabled, hasLeadingIcon, hasTrailingIcon)}
           </a>
@@ -397,11 +409,11 @@ export class MdButton {
         {this.ripple && <md-ripple disabled={isEffectivelyDisabled}></md-ripple>}
         <span class="md-button__state-layer" part="state-layer" aria-hidden="true"></span>
         <slot name="leading-icon">
-          {hasLeadingIcon && <span class="md-button__icon material-symbols-outlined" part="icon">{this.icon}</span>}
+          {hasLeadingIcon && <span class="md-button__icon material-symbols-outlined" part="icon" aria-hidden="true">{this.icon}</span>}
         </slot>
         <span class="md-button__label" part="label"><slot /></span>
         <slot name="trailing-icon">
-          {hasTrailingIcon && <span class="md-button__trailing-icon material-symbols-outlined" part="trailing-icon">{this.trailingIcon}</span>}
+          {hasTrailingIcon && <span class="md-button__trailing-icon material-symbols-outlined" part="trailing-icon" aria-hidden="true">{this.trailingIcon}</span>}
         </slot>
         {this.loading && (
           /* md-loading-indicator, not a hand-rolled ring: never ship a custom

@@ -990,6 +990,32 @@ describe('md-search', () => {
       expect(page.root).toHaveClass('md-search--has-slotted-leading');
     });
 
+    it('keeps initially supplied leading content interactive without dismissing the search', async () => {
+      const page = await create('<md-search open><button slot="leading">Category</button></md-search>');
+      const selected = jest.fn(); page.root!.addEventListener('mdLeadingIconClick', selected);
+      (page.root!.shadowRoot!.querySelector('[part="leading"]') as HTMLElement).click();
+      await page.waitForChanges();
+      expect(page.root).toHaveClass('md-search--has-slotted-leading');
+      expect(page.rootInstance.open).toBe(true);
+      expect(selected).toHaveBeenCalledTimes(1);
+    });
+
+    it('observes leading content on the new slot after switching from an icon trigger to a docked bar', async () => {
+      const page = await createBare('<md-search></md-search>');
+      page.root!.layout = 'docked'; await page.waitForChanges();
+      const leading = page.doc.createElement('button'); leading.slot = 'leading'; page.root!.append(leading);
+      await dispatchSlotChange(page, 'leading', [leading]);
+      page.root!.open = true; await page.waitForChanges();
+      (page.root!.shadowRoot!.querySelector('[part="leading"]') as HTMLElement).click();
+      await page.waitForChanges();
+      expect(page.rootInstance.open).toBe(true);
+      leading.remove(); await dispatchSlotChange(page, 'leading', []);
+      (page.root!.shadowRoot!.querySelector('[part="leading"]') as HTMLElement).click();
+      await page.waitForChanges();
+      expect(page.root).not.toHaveClass('md-search--has-slotted-leading');
+      expect(page.rootInstance.open).toBe(false);
+    });
+
     it('updates has-slotted-trailing when the trailing slot fires slotchange', async () => {
       const page = await create('<md-search></md-search>');
       const trailing = page.doc.createElement('button');

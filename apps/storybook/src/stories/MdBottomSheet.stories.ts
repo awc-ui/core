@@ -2150,3 +2150,50 @@ export const SlottedCloseDismiss: Story = {
     });
   },
 };
+
+export const ProtectedDismissalAndDynamicActions: Story = {
+  render: () => html`<button id="lifecycle-open">Open sheet</button><md-bottom-sheet headline="Review changes" variant="detached" closeable scrim-dismissible="false" bottom-divider><input aria-label="Note"><button slot="actions">Apply</button></md-bottom-sheet>`,
+  play: async ({ canvasElement }) => {
+    const sheet = canvasElement.querySelector('md-bottom-sheet') as HTMLMdBottomSheetElement;
+    await waitFor(() => expect(sheet.classList.contains('hydrated')).toBe(true));
+    const opener = canvasElement.querySelector('#lifecycle-open') as HTMLButtonElement; opener.focus();
+    await sheet.show(); await waitFor(() => expect(sheet.open).toBe(true));
+    const scrim = sheet.shadowRoot!.querySelector('[part="scrim"]') as HTMLElement;
+    scrim.click(); expect(sheet.open).toBe(true);
+    sheet.scrimDismissible = true; await new Promise(resolve => requestAnimationFrame(resolve));
+    scrim.click(); await waitFor(() => expect(sheet.open).toBe(false));
+    expect(document.activeElement).toBe(opener);
+    await sheet.show(); await waitFor(() => expect(sheet.open).toBe(true));
+    sheet.querySelector('[slot="actions"]')!.remove();
+    await waitFor(() => expect(sheet.shadowRoot!.querySelector('[part="actions"]')).toBeNull());
+    (sheet.shadowRoot!.querySelector('.md-bottom-sheet__close md-icon-button') as HTMLElement).click();
+    await waitFor(() => expect(sheet.open).toBe(false));
+    expect(document.body.style.overflow).toBe('');
+  },
+};
+
+export const EmptyFocusTrapAndCloseSlotRemoval: Story = {
+  render: () => html`<button id="empty-sheet-opener">Open notice</button>
+    <md-bottom-sheet headline="Notice" aria-label="Notice"><button slot="close">Custom close</button><p>Read-only information.</p></md-bottom-sheet>`,
+  play: async ({ canvasElement }) => {
+    const sheet = canvasElement.querySelector('md-bottom-sheet') as HTMLMdBottomSheetElement;
+    await waitFor(() => expect(sheet.classList.contains('hydrated')).toBe(true));
+    const opener = canvasElement.querySelector('#empty-sheet-opener') as HTMLButtonElement;
+    const close = sheet.querySelector('[slot="close"]')!;
+    expect(sheet.shadowRoot!.querySelector('[part="close"]')).not.toBeNull();
+    close.remove();
+    await waitFor(() => expect(sheet.shadowRoot!.querySelector('[part="close"]')).toBeNull());
+    opener.focus(); await sheet.show();
+    const container = containerOf(sheet);
+    await waitFor(() => expect(sheet.shadowRoot!.activeElement).toBe(container));
+    // With no interactive content, both ends of the tab cycle must return to
+    // the named dialog itself instead of an invisible sentinel/background.
+    for (const guard of Array.from(sheet.shadowRoot!.querySelectorAll<HTMLElement>('.md-bottom-sheet__focus-guard'))) {
+      guard.focus(); expect(sheet.shadowRoot!.activeElement).toBe(container);
+    }
+    opener.focus(); expect(sheet.shadowRoot!.activeElement).toBe(container);
+    await sheet.close();
+    await waitFor(() => expect(document.activeElement).toBe(opener));
+    expect(document.body.style.overflow).toBe('');
+  },
+};

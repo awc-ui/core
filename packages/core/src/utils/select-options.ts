@@ -133,9 +133,32 @@ export function collectOptions(
   ) as SelectOptionEl[];
 
   if (slotted.length > 0) {
-    return slotted.map(fromElement);
+    // `hidden` removes an option from the list, like `<option hidden>` in a
+    // native select: not rendered, not reachable, not selectable, not part of
+    // "Select all". Its label still names the trigger when it is the current
+    // value (see `hiddenOptionLabel`).
+    return slotted.filter((el) => !isHiddenOption(el)).map(fromElement);
   }
   return (optionsProp ?? []).map(fromInit);
+}
+
+function isHiddenOption(el: HTMLElement): boolean {
+  return el.hidden || el.hasAttribute('hidden');
+}
+
+/**
+ * Label of a hidden slotted option with this value, or '' — the native
+ * placeholder pattern `<option value="" hidden selected>Choose…</option>`
+ * names the closed select without being offered in its list.
+ */
+export function hiddenOptionLabel(host: HTMLElement, value: string): string {
+  const match = Array.from(host.children).find(
+    (c) =>
+      c.tagName.toLowerCase() === 'md-select-option' &&
+      isHiddenOption(c as HTMLElement) &&
+      ((c as SelectOptionEl).value ?? c.getAttribute('value') ?? '') === value,
+  ) as SelectOptionEl | undefined;
+  return match ? fromElement(match).label : '';
 }
 
 /** Label for a single value, or '' if not found. */

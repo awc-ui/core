@@ -365,40 +365,40 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "label"
+        "label",
+        "density"
       ],
       "events": [],
       "methods": [],
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
+      "notes": [
+        "A labelled group (role group) with its label row; the grouped layout of its md-menu draws it as a card; density as the source."
+      ],
       "verification": "not-device-verified"
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "label"
+        "label",
+        "density"
       ],
       "events": [],
       "methods": [],
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "A labelled group (role group) with its label row; the grouped layout of its md-menu draws it as a card; density as the source."
       ],
       "verification": "not-device-verified"
     }

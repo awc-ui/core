@@ -2220,22 +2220,14 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
+        "variant",
+        "size",
+        "disabled",
+        "softDisabled",
         "icon",
         "label",
         "trailingIcon",
         "trailingChecked",
-        "disabled",
-        "softDisabled"
-      ],
-      "events": [
-        "mdLeadingClick",
-        "mdTrailingClick"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "variant",
-        "size",
         "menuLabel",
         "haspopup",
         "controls",
@@ -2243,22 +2235,60 @@
         "ripple",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "events": [
+        "mdLeadingClick",
+        "mdTrailingClick"
+      ],
+      "methods": [],
+      "slots": [
         ""
       ],
-      "notes": [],
-      "verification": "not-device-verified"
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated two-control renderer implements all fourteen source properties, five size tiers, inherited/local density, four palettes, exact split gap, full-width leading truncation, RTL logical geometry, independent pointer/focus/ripple states and checked trailing shape/rotation. Base outer radius and trailing glyph size retain their source density behavior; the shape-morph opt-out retains the source asymmetric corner rule.",
+        "Independent native tab entries and accessibility names honor label/host aria-label and menuLabel. Hard-disabled removes both entries; soft-disabled remains focusable and inert. mdLeadingClick detail is null; mdTrailingClick detail is {checked} after committing state. Canceling either event does not undo the state. Native activation metadata identifies actual pointer, keyboard or accessibility input. Unchanged authored trailingChecked preserves interaction state across other property updates.",
+        "Public AWCPopupScope and AWCPopupTargetScope(id:) connect controls to actual mounted native groups. The trailing control exposes popup kind and expansion plus a native linked target and localized Move to popup action. That action moves focus into an actual eligible child or the mounted group; unresolved/unmounted IDs expose no action. Presentation remains application-owned; no automatic menu creation or open/close behavior is invented.",
+        "The default child slot is additive after the authored icon and label. Six scoped AWCSplitButtonAppearance hooks support fieldwise inherited defaults/local overrides. Seven visual parts have real measured inspection nodes. Outlined borders consume layout, while disabled and outlined palette precedence follows source. Arbitrary DOM selectors/ARIA attribute objects are replaced by these typed native equivalents.",
+        "Actual macOS SwiftUI/AppKit verification passed945 checks against50 hydrated Web fixtures, plus13 direct live-host pointer/keyboard/state/layout checks. Both preview renderers compile and correlate splitButtonChecked with the captured frame. See audits/md-split-button.md. No iOS SDK/device runtime is available; UIKit branches have not been executed."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "leading",
+        "trailing",
+        "leading-state-layer",
+        "trailing-state-layer",
+        "icon",
+        "label",
+        "trailing-icon"
+      ],
+      "appearance": {
+        "api": "AWCSplitButtonAppearance / View.awcSplitButtonAppearance",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "outlineColor",
+          "cornerRadius",
+          "iconSize"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "controls",
+        "density",
         "disabled",
         "fullWidth",
+        "haspopup",
         "icon",
         "label",
         "menuLabel",
+        "ripple",
+        "size",
         "softDisabled",
         "trailingChecked",
         "trailingIcon",
@@ -2272,20 +2302,52 @@
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "size",
-        "haspopup",
-        "controls",
-        "ripple",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native Split Button has independent focus/action targets, source size and density geometry, additive default content, six typed appearance hooks and committed trailing state. AWCPopupScope/AWCPopupTargetScope connect controls IDs to mounted native popup focus without opening or closing it. Runtime acceptance is recorded separately in the parity audit."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "leading",
+        "trailing",
+        "leading-state-layer",
+        "trailing-state-layer",
+        "icon",
+        "label",
+        "trailing-icon"
+      ],
+      "appearance": {
+        "api": "AWCSplitButtonAppearance / AWCSplitButtonAppearanceScope",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "outlineColor",
+          "cornerRadius",
+          "iconSize"
+        ]
+      },
+      "nativeEquivalents": {
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "Compose semantics / AWCPopupScope / AWCPopupTargetScope",
+          "description": "Real native names, expanded state and popup target focus replace browser accessibility relationships and development-time name validation.",
+          "limitations": [
+            "Android has no DOM aria-controls graph; a mounted target is connected by a real native accessibility focus action and typed relationship metadata."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionTargetScope / onEvent",
+          "description": "Synchronous native phases preserve null leading detail and post-commit trailing checked detail; cancellation does not roll back source state.",
+          "limitations": [
+            "DOM events are not fabricated. Scoped rawDetail preserves the null leading payload; native activation records actual source input."
+          ]
+        }
+      }
     }
   }
 }

@@ -86,6 +86,7 @@ struct FocusFixture: View {
         let baseline = pixels(host)
         pointerClick()
         check(state.clicks == 1, "A real pointer down/up activates the visual SwiftUI button once")
+        check(state.activationSources.last == .pointer, "Real pointer events carry truthful native pointer provenance")
         check(window.firstResponder === target, "Pointer activation retains the actual native first responder")
         check(pixels(host) == baseline, "After pointer release/leave the button pixels return to baseline without retained focus ring or tint")
         _ = window.makeFirstResponder(nil); _ = window.makeFirstResponder(target); pump()
@@ -103,6 +104,10 @@ struct FocusFixture: View {
         window.sendEvent(enter); pump()
         check(state.clicks == 4 && window.firstResponder === target, "Native Enter activates after pointer focus without losing the responder")
         check(pixels(host) != baseline, "Keyboard use on a pointer-focused button restores visible focus")
+        check(state.activationSources.last == .keyboard, "Responder Enter carries keyboard provenance")
+        check(target.accessibilityPerformPress(), "Native accessibility press activates the button")
+        pump()
+        check(state.clicks == 5 && state.activationSources.last == .accessibility, "Native accessibility activation has distinct truthful provenance")
         window.close(); pump()
     }
     static func checkNativeKeyboardRipple() {
@@ -206,6 +211,10 @@ struct FocusFixture: View {
         check(view("unknown").accessibilityRole() == .button, "Unknown role safely exposes actual button role")
         check(!view("soft").isAccessibilityEnabled() && !view("soft").accessibilityPerformPress(), "Blocked AX action remains inert")
         check(view("cell").accessibilityPerformPress() && state.events.contains { $0.nodeID == "cell" && $0.name == "mdClick" }, "Minus-one gridcell retains actual accessibility activation")
+        let beforeButtonAction = state.events.count
+        check(view("z").accessibilityPerformPress(), "Direct grouped md-button remains actionable")
+        pump()
+        check(Array(state.events.dropFirst(beforeButtonAction).map(\.name)) == ["mdClick", "mdChange", "mdSelectionChange"], "Direct group props enable toggle and group selection observes the committed child change")
         _ = window.makeFirstResponder(view("z")); pump(); state.disableLast = true; pump()
         check(!view("z").canBecomeKeyView && view("a").canBecomeKeyView, "Mounted hard-disable recomputes group entry")
         window.close(); pump()
@@ -218,13 +227,14 @@ struct FocusFixture: View {
 @Observable final class FocusModalityFixtureState {
     let pointer = AWCNativePointerState()
     var clicks = 0
+    var activationSources: [AWCActivationMetadata.Source] = []
 }
 struct FocusModalityFixture: View {
     let state: FocusModalityFixtureState
     var body: some View {
         AWCNativeView(node: .init(id: "modality-target", tag: "md-button",
             properties: ["variant": "filled", "size": "md", "ripple": false], children: [.text("Continue")]), onEvent: { event in
-                if event.name == "mdClick" { state.clicks += 1 }
+                if event.name == "mdClick" { state.clicks += 1; state.activationSources.append(event.activation?.source ?? .unknown) }
             })
             .padding(24).frame(width: 320, height: 140, alignment: .topLeading).background(Color.white)
             .environment(\.awcNativePointerState, state.pointer)
@@ -240,7 +250,7 @@ struct KeyboardRippleFixture: View {
         AWCNativeView(node: .init(id: "keyboard-ripple-target", tag: "md-button",
             properties: ["variant": "filled", "size": "md", "shapeMorph": false].merging(properties) { _, value in value },
             children: [.text("Continue")]), onEvent: { event in
-                if event.name == "mdClick" { state.clicks += 1 }
+                if event.name == "mdClick" { state.clicks += 1; state.activationSources.append(event.activation?.source ?? .unknown) }
             })
             .padding(24).frame(width: 320, height: 140, alignment: .topLeading).background(Color.white)
             .environment(\.awcNativePointerState, state.pointer)

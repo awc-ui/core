@@ -807,8 +807,18 @@ export class MdMultiSelect {
     this.value = [];
     this.mdChange.emit([]);
     this.mdClear.emit();
-    this.fieldEl?.focus?.();
+    this.refocusAfterClear();
   };
+
+  /** Put focus back in the trigger input after the clear button, which holds
+   *  focus and unmounts once the value is empty. `host.focus()` cannot do it:
+   *  with delegatesFocus it is a no-op while focus is already inside the field
+   *  (the button is slotted into it), so focus fell to <body>. */
+  private refocusAfterClear() {
+    const field = this.fieldEl as (HTMLElement & { setFocus?: () => Promise<void> }) | undefined;
+    if (field?.setFocus) void field.setFocus();
+    else field?.focus?.();
+  }
 
   private toggleSelectAll = (e?: CustomEvent) => {
     e?.stopPropagation(); // don't leak the option's internal mdClick — see toggleValue

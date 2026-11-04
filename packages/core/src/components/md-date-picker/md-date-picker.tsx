@@ -435,6 +435,10 @@ export class MdDatePicker {
   private yearMenuButtonEl?: HTMLElement;
   private restoreFocusEl: HTMLElement | null = null;
   private gridShouldFocus = false;
+  /** Year cell holding the modal year grid's roving tab stop (`null` = the view year). */
+  @State() private yearFocus: number | null = null;
+  /** Move DOM focus to the `yearFocus` cell after the next render. */
+  private yearGridShouldFocus: 'open' | 'move' | null = null;
   private menuShouldFocus: 'month' | 'year' | null = null;
   private menuRestoreFocus: 'month' | 'year' | null = null;
   /** Modal year grid should scroll the active year into view after paint. */
@@ -1069,12 +1073,15 @@ export class MdDatePicker {
 
   private onFieldCommit = () => {
     const raw = this.inputDraft.trim();
+    // Enter commits, and the field's own `change` on blur re-commits the same
+    // text — only a commit that changes `value` is an `mdChange`.
+    const previous = this.value;
     if (!raw) {
       this.value = '';
       this.inputDraft = '';
       this.error = false;
       this.errorText = '';
-      this.emitChange();
+      if (previous !== '') this.emitChange();
       this.syncTextFieldDisplay();
       return;
     }
@@ -1093,7 +1100,7 @@ export class MdDatePicker {
     this.error = false;
     this.errorText = '';
     this.syncViewToValue();
-    this.emitChange();
+    if (this.value !== previous) this.emitChange();
     this.syncTextFieldDisplay();
   };
 
@@ -1723,6 +1730,11 @@ export class MdDatePicker {
     this.focusedDate = new Date(year, this.viewMonth, 1);
     this.emitMenuSelect('year', year, String(year));
     this.emitViewChange('year-menu');
+    // The picked cell unmounts with the year grid; land focus on the day grid
+    // (the view the pick returns to) instead of dropping it to <body>.
+    if (this.isNodeInYearGrid(this.el.shadowRoot?.activeElement ?? null)) {
+      this.gridShouldFocus = true;
+    }
     void this.closeYearViewAnimated();
   }
 
@@ -1731,16 +1743,131 @@ export class MdDatePicker {
     this.yearViewClosing = false;
     this.viewMode = 'year';
     this.captureYearListRange();
+    this.yearFocus = this.nearestEnabledYear(this.viewYear, 1);
     this.yearGridShouldScroll = true;
+    this.yearGridShouldFocus = 'open';
     this.emitMenuOpen('year');
+  }
+
+  private isNodeInYearGrid(node: Element | null): boolean {
+    return !!node?.closest?.('[part~="year-grid"]');
+  }
+
+  /**
+   * First selectable year at or after `from` in direction `step` (±1) within
+   * the year list; falls back to the opposite direction, then to `from`.
+   */
+  private nearestEnabledYear(from: number, step: 1 | -1): number {
+    const { minYear, maxYear } = this.getYearListBounds();
+    const start = Math.max(minYear, Math.min(maxYear, from));
+    for (const dir of [step, -step]) {
+      for (let y = start; y >= minYear && y <= maxYear; y += dir) {
+        if (!this.isDisabledYear(y)) return y;
+      }
+    }
+    return start;
+  }
+
+  /** The year cell that owns the roving tab stop in the modal year grid. */
+  private yearFocusTarget(): number {
+    return this.yearFocus ?? this.nearestEnabledYear(this.viewYear, 1);
+  }
+
+  /**
+   * Keyboard grid navigation for the modal year grid (WAI-ARIA grid pattern).
+   * Three years per row; horizontal arrows follow the visual direction, so they
+   * are mirrored in RTL. Disabled years are skipped. Enter / Space reach the
+   * focused `md-button` cell, which activates it (`selectYear`).
+   */
+  private handleYearGridKeyDown = (e: KeyboardEvent) => {
+    if (e.defaultPrevented || this.viewMode !== 'year' || this.yearViewClosing) return;
+    if (e.altKey || e.metaKey) return;
+    const columns = 3;
+    const pageYears = columns * 6;
+    const { minYear, maxYear } = this.getYearListBounds();
+    const current = this.yearFocusTarget();
+    const inlineStep = this.isRtl() ? -1 : 1;
+    const rowStart = minYear + Math.floor((current - minYear) / columns) * columns;
+    let target: number;
+    let step: 1 | -1;
+    switch (e.key) {
+      case 'ArrowRight':
+        target = current + inlineStep;
+        step = inlineStep as 1 | -1;
+        break;
+      case 'ArrowLeft':
+        target = current - inlineStep;
+        step = -inlineStep as 1 | -1;
+        break;
+      case 'ArrowDown':
+        target = current + columns;
+        step = 1;
+        break;
+      case 'ArrowUp':
+        target = current - columns;
+        step = -1;
+        break;
+      case 'PageDown':
+        target = current + pageYears;
+        step = 1;
+        break;
+      case 'PageUp':
+        target = current - pageYears;
+        step = -1;
+        break;
+      case 'Home':
+        target = e.ctrlKey ? minYear : rowStart;
+        step = 1;
+        break;
+      case 'End':
+        target = e.ctrlKey ? maxYear : Math.min(maxYear, rowStart + columns - 1);
+        step = -1;
+        break;
+      default:
+        return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.key.startsWith('Arrow') && (target < minYear || target > maxYear)) return;
+    const next = this.nearestEnabledYear(target, step);
+    if (this.isDisabledYear(next)) return;
+    this.yearFocus = next;
+    this.yearGridShouldFocus = 'move';
+  };
+
+  /** Focus the roving year cell; waits for the cell's `md-button` to hydrate. */
+  private focusYearCell(reason: 'open' | 'move') {
+    const scrollEl = this.getModalYearGridScrollEl();
+    const cell = scrollEl?.querySelector<HTMLElement>(`[data-year="${this.yearFocusTarget()}"]`);
+    if (!scrollEl || !cell) return;
+    const focus = () => {
+      if (this.viewMode !== 'year' || !cell.isConnected) return;
+      // On open the grid is already centred on the view year; on move keep the
+      // cell inside the scroll viewport without scrolling the page.
+      cell.focus({ preventScroll: true });
+      if (reason === 'move') {
+        const viewport = scrollEl.getBoundingClientRect();
+        const box = cell.getBoundingClientRect();
+        if (box.top < viewport.top) scrollEl.scrollTop -= viewport.top - box.top;
+        else if (box.bottom > viewport.bottom) scrollEl.scrollTop += box.bottom - viewport.bottom;
+      }
+    };
+    const ready = (cell as HTMLElement & { componentOnReady?: () => Promise<unknown> }).componentOnReady;
+    if (typeof ready === 'function') {
+      void ready.call(cell).then(focus);
+    } else {
+      focus();
+    }
   }
 
   /** Animated close for modal / range year grid (toggle, pick). */
   private async closeYearViewAnimated() {
     if (this.viewMode !== 'year' || this.yearViewClosing) return;
 
+    this.yearGridShouldFocus = null;
     if (this.prefersReducedMotion()) {
       this.viewMode = 'calendar';
+      this.yearFocus = null;
       this.clearYearListRange();
       return;
     }
@@ -1749,6 +1876,7 @@ export class MdDatePicker {
     await this.delay(this.selectionBloomOutMs());
     this.yearViewClosing = false;
     this.viewMode = 'calendar';
+    this.yearFocus = null;
     this.clearYearListRange();
     this.beginModalCalendarBloom();
   }
@@ -2038,12 +2166,16 @@ export class MdDatePicker {
     }
 
     let next: Date | null = null;
+    // The day grid is mirrored in RTL (the week runs right-to-left), so the
+    // horizontal arrows follow the visual direction: ArrowRight moves to the
+    // cell painted to the right, which is the previous day in RTL.
+    const inlineStep = this.isRtl() ? -1 : 1;
     switch (this.resolveNavigationKey(e)) {
       case 'ArrowRight':
-        next = addDays(this.focusedDate, 1);
+        next = addDays(this.focusedDate, inlineStep);
         break;
       case 'ArrowLeft':
-        next = addDays(this.focusedDate, -1);
+        next = addDays(this.focusedDate, -inlineStep);
         break;
       case 'ArrowDown':
         next = addDays(this.focusedDate, 7);
@@ -2074,6 +2206,10 @@ export class MdDatePicker {
       case 'Enter': {
         if (!this.isDayGridKeyTarget(e.target)) return;
         e.preventDefault();
+        // Handled here: keep the day cell's own md-button Enter activation
+        // (a later listener on the same element) from selecting the day a
+        // second time after the commit.
+        e.stopImmediatePropagation();
         if (this.isDisabledDate(this.focusedDate)) return;
         this.selectDay({ date: this.focusedDate, outOfMonth: false });
         this.commit();
@@ -2082,6 +2218,7 @@ export class MdDatePicker {
       case ' ': {
         if (!this.isDayGridKeyTarget(e.target)) return;
         e.preventDefault();
+        e.stopImmediatePropagation();
         this.selectDay({ date: this.focusedDate, outOfMonth: false });
         return;
       }
@@ -2207,6 +2344,27 @@ export class MdDatePicker {
     }
   }
 
+  /**
+   * The trigger and typed-entry `md-text-field`s emit their own composed
+   * `mdInput` / `mdChange` (string details). The picker re-emits them as its
+   * own `{ value }` / `{ value, date }` events, so the inner ones stop here —
+   * otherwise a listener on the picker hears every keystroke twice and a
+   * stray string-detail `mdChange` after each commit.
+   */
+  @Listen('mdInput')
+  swallowNestedMdInput(e: Event) {
+    if ((e.composedPath?.()[0] ?? e.target) !== this.el) {
+      e.stopImmediatePropagation();
+    }
+  }
+
+  @Listen('mdChange')
+  swallowNestedMdChange(e: Event) {
+    if ((e.composedPath?.()[0] ?? e.target) !== this.el) {
+      e.stopImmediatePropagation();
+    }
+  }
+
   @Listen('mdClose')
   swallowNestedMdClose(e: Event) {
     if ((e.composedPath?.()[0] ?? e.target) !== this.el) {
@@ -2215,6 +2373,10 @@ export class MdDatePicker {
   }
 
   private onPanelKeyDown = (e: KeyboardEvent) => {
+    // The document capture listener (`routePickerKeyDown`) has already handled
+    // this key (Escape dismisses there) — handling it again emitted a second
+    // `mdCancel`.
+    if (e.defaultPrevented) return;
     if (e.key === 'Escape') {
       e.preventDefault();
       if (this.isDocked && (this.monthMenuOpen || this.yearMenuOpen)) {
@@ -2286,6 +2448,17 @@ export class MdDatePicker {
     if (this.yearGridShouldScroll) {
       this.yearGridShouldScroll = false;
       this.afterModalYearGridPaint();
+      if (this.yearGridShouldFocus) {
+        const reason = this.yearGridShouldFocus;
+        this.yearGridShouldFocus = null;
+        this.focusYearCell(reason);
+      }
+      return;
+    }
+    if (this.yearGridShouldFocus && this.viewMode === 'year') {
+      const reason = this.yearGridShouldFocus;
+      this.yearGridShouldFocus = null;
+      this.focusYearCell(reason);
       return;
     }
     if (this.menuRestoreFocus) {
@@ -2873,6 +3046,7 @@ export class MdDatePicker {
 
   private renderYearGrid(closing = false) {
         const current = this.viewYear;
+    const focusTarget = this.yearFocusTarget();
     const { minYear, maxYear } = this.getYearListBounds();
     const years: number[] = [];
     for (let y = minYear; y <= maxYear; y++) years.push(y);
@@ -2888,7 +3062,13 @@ export class MdDatePicker {
           class="md-date-picker__year-grid-scroll"
           part="year-grid-scroll year-grid-viewport"
         >
-          <div class="md-date-picker__year-grid" part="year-grid" role="grid" aria-label={this.yearGridLabel}>
+          <div
+            class="md-date-picker__year-grid"
+            part="year-grid"
+            role="grid"
+            aria-label={this.yearGridLabel}
+            onKeyDown={this.handleYearGridKeyDown}
+          >
         {Array.from({ length: Math.ceil(years.length / 3) }, (_unused, r) => (
           <div class="md-date-picker__year-row" part="year-row" role="row">
             {years.slice(r * 3, r * 3 + 3).map((y) => {
@@ -2914,6 +3094,7 @@ export class MdDatePicker {
               shape="square"
               selected={sel}
               roleOverride="gridcell"
+              groupTabindex={y === focusTarget ? 0 : -1}
               data-year={String(y)}
               aria-selected={sel ? 'true' : 'false'}
               aria-disabled={disabled ? 'true' : undefined}

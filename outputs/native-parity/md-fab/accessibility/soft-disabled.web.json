@@ -1,0 +1,125 @@
+{
+ "tag": "md-fab",
+ "case": "soft-disabled",
+ "html": "<md-fab data-ax-node=\"n0\" id=\"example-md-fab\"></md-fab>",
+ "props": {
+  "n0": {
+   "density": 0,
+   "disabled": false,
+   "extended": true,
+   "icon": "add",
+   "label": "New project",
+   "lowered": false,
+   "ripple": true,
+   "size": "standard",
+   "softDisabled": true,
+   "variant": "primary-container"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "button",
+    "name": "New project",
+    "ignored": false,
+    "disabled": true,
+    "focusable": true,
+    "frame": [
+     16,
+     16,
+     147,
+     56
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       }
+      ]
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "StaticText",
+        "name": "New project",
+        "ignored": false,
+        "frame": [
+         68,
+         36,
+         75.03125,
+         16
+        ],
+        "children": [
+         {
+          "role": "InlineTextBox",
+          "name": "New project",
+          "ignored": false
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-fab",
+   "role": "button",
+   "name": "New project",
+   "frame": [
+    16,
+    16,
+    147,
+    56
+   ],
+   "props": {
+    "disabled": true,
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

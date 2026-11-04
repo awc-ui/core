@@ -662,9 +662,9 @@
 
 /* Inner-primary keyboard focus. The row uses no delegatesFocus (that broke
    focusable option-row hosts), so keyboard focus lands on the inner primary and
-   the host does NOT match :focus-visible — :has() drives the chassis focus
+   the host does NOT match :focus-visible — the row mirrors the primary's :focus-visible as .md-list-item--primary-focus-visible to drive the chassis focus
    feedback for button / link / menuitem rows instead. */
-:host(.md-list-item--interactive:has(.md-list-item__primary:focus-visible)) .md-list-item__state-layer {
+:host(.md-list-item--interactive.md-list-item--primary-focus-visible) .md-list-item__state-layer {
   opacity: var(--_focus-state-layer-opacity);
 }
 
@@ -708,6 +708,7 @@
    elevation shadows above neighbours when both apply.
    ========================================================== */
 :host(.md-list-item--interactive:focus-visible),
+:host(.md-list-item--interactive.md-list-item--primary-focus-visible),
 :host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) {
   box-shadow: inset 0 0 0 3px var(--md-sys-color-secondary, #625b71);
   outline: none;
@@ -718,7 +719,7 @@
    itself isn't focused for button / link / menuitem rows — see the state-layer
    note above). Kept on the host so the ring hugs the chassis edge, not the
    padding-inset primary. */
-:host(.md-list-item--interactive:has(.md-list-item__primary:focus-visible)) {
+:host(.md-list-item--interactive.md-list-item--primary-focus-visible) {
   box-shadow: inset 0 0 0 3px var(--md-sys-color-secondary, #625b71);
   outline: none;
   z-index: 1;
@@ -784,6 +785,7 @@
    back with short4 + standard while press-in uses the base medium4 +
    emphasized-decelerate curve (CSS uses the pre-change transition). */
 :host(.md-list-item--interactive:focus-visible),
+:host(.md-list-item--interactive.md-list-item--primary-focus-visible),
 :host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),
 :host(.md-list-item--selected),
 :host(.md-list-item--interactive:active),
@@ -798,6 +800,7 @@
 }
 
 :host(.md-list-item--interactive:focus-visible) .md-list-item__row,
+:host(.md-list-item--interactive.md-list-item--primary-focus-visible) .md-list-item__row,
 :host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__row,
 :host(.md-list-item--selected) .md-list-item__row,
 :host(.md-list-item--interactive:active) .md-list-item__row,
@@ -811,8 +814,10 @@
 }
 
 :host(.md-list-item--interactive:focus-visible),
+:host(.md-list-item--interactive.md-list-item--primary-focus-visible),
 :host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),
 :host(.md-list-item--interactive:focus-visible) .md-list-item__row,
+:host(.md-list-item--interactive.md-list-item--primary-focus-visible) .md-list-item__row,
 :host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__row {
   border-start-start-radius: max(var(--_container-shape-start-start), var(--_focus-container-shape));
   border-start-end-radius:   max(var(--_container-shape-start-end),   var(--_focus-container-shape));
@@ -889,6 +894,7 @@
    ========================================================== */
 :host(.md-list-item--selected.md-list-item--interactive:hover),
 :host(.md-list-item--selected.md-list-item--interactive:focus-visible),
+:host(.md-list-item--selected.md-list-item--interactive.md-list-item--primary-focus-visible),
 :host(.md-list-item--selected.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),
 :host(.md-list-item--selected.md-list-item--interactive:active),
 :host(.md-list-item--selected.md-list-item--pressed),
@@ -905,6 +911,7 @@
 :host(.md-list-item--expandable.md-list-item--selected),
 :host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:hover),
 :host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:focus-visible),
+:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive.md-list-item--primary-focus-visible),
 :host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:active),
 :host(.md-list-item--expandable.md-list-item--selected.md-list-item--pressed),
 :host(.md-list-item--expandable.md-list-item--selected.md-list-item--dragged) {
@@ -1536,6 +1543,34 @@ md-tooltip.md-list-item__supporting-tooltip--empty {
     animation: none;
     transform: scale(1);
     opacity: 1;
+  }
+
+  /* The state rules above re-declare their transitions with higher specificity
+     (shape-morph exit timing, the open panel, the two-class drag handle, the
+     reorder sibling shift), which silently re-enabled motion. Snap them too —
+     only the host elevation keeps its short box-shadow fade. */
+  :host(.md-list-item--interactive:focus-visible),
+  :host(.md-list-item--interactive.md-list-item--primary-focus-visible),
+  :host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),
+  :host(.md-list-item--selected),
+  :host(.md-list-item--interactive:active),
+  :host(.md-list-item--pressed),
+  :host(.md-list-item--dragged) {
+    transition-property: box-shadow;
+  }
+
+  :host(.md-list-item--interactive:focus-visible) .md-list-item__row,
+  :host(.md-list-item--interactive.md-list-item--primary-focus-visible) .md-list-item__row,
+  :host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__row,
+  :host(.md-list-item--selected) .md-list-item__row,
+  :host(.md-list-item--interactive:active) .md-list-item__row,
+  :host(.md-list-item--pressed) .md-list-item__row,
+  :host(.md-list-item--dragged) .md-list-item__row,
+  :host(.md-list-item--expanded) .md-list-item__expanded-panel,
+  :host(.md-list-item--expanded) .md-list-item__expanded-panel-inner,
+  .md-list-item__drag-handle.material-symbols-outlined,
+  :host(.md-list-item--shifting) {
+    transition: none;
   }
 }
 

@@ -289,6 +289,7 @@ export class MdAreaChart {
   @Watch('tooltip') @Watch('zoom') @Watch('connectNulls')
   @Watch('showMarks') @Watch('lineWidth') @Watch('markSize') @Watch('label') @Watch('subtitle') @Watch('titleAlign') @Watch('fillOpacity') @Watch('showLine') @Watch('grid') @Watch('axisTicks') @Watch('showLabels') @Watch('inverted') @Watch('loading')
   @Watch('animation') @Watch('animationDuration') @Watch('tooltipRenderer') @Watch('valueFormatter')
+  @Watch('locale') @Watch('noAnimation') @Watch('seriesLabels')
   onAnyPropChange() {
     this.applyEngine();
     this.rebuildA11yTable();

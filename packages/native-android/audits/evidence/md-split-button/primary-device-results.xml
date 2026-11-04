@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="dev.awc.playground.NativeSplitButtonParityTest" tests="11" failures="1" errors="0" skipped="0" time="25.33" timestamp="2026-10-20T19:12:17" hostname="localhost">
+  <properties>
+    <property name="device" value="AwcNative(AVD) - 16" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="all50WebFixturesMatchBothHalvesTypographyAndActualGlyphBounds" classname="dev.awc.playground.NativeSplitButtonParityTest" time="4.735" />
+  <testcase name="allSixAppearanceHooksAffectPaintAndSlotsRemainAdditiveAcrossLabelChanges" classname="dev.awc.playground.NativeSplitButtonParityTest" time="2.111" />
+  <testcase name="actualGeneratedStateOpacityPaintsIndependentSplitAndSegmentStates" classname="dev.awc.playground.NativeSplitButtonParityTest" time="1.249">
+    <failure>java.lang.AssertionError: Failed to capture a node to bitmap.
+Reason: Expected exactly '1' node but could not find any node that satisfies: ((OnClick is defined) &amp;&amp; (Text + InputText + EditableText contains 'Action' (ignoreCase: false)))
+
+at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+at androidx.compose.ui.test.AndroidImageHelpers_androidKt.captureToImage(AndroidImageHelpers.android.kt:51)
+at dev.awc.playground.NativeSplitButtonParityTest.actualGeneratedStateOpacityPaintsIndependentSplitAndSegmentStates$expectOverlay(NativeSplitButtonParityTest.kt:173)
+at dev.awc.playground.NativeSplitButtonParityTest.actualGeneratedStateOpacityPaintsIndependentSplitAndSegmentStates(NativeSplitButtonParityTest.kt:183)
+</failure>
+  </testcase>
+  <testcase name="realPointerKeyboardAndCancellationKeepIndependentActionsAndCommittedState" classname="dev.awc.playground.NativeSplitButtonParityTest" time="2.543" />
+  <testcase name="controlsResolveActualNativePopupFocusWithoutCreatingOrOpeningIt" classname="dev.awc.playground.NativeSplitButtonParityTest" time="1.933" />
+  <testcase name="outlinedInspectionUsesTheSamePhysicalBorderAsNativeLayoutAndPaint" classname="dev.awc.playground.NativeSplitButtonParityTest" time="1.749" />
+  <testcase name="splitButtonCapturesIndependentNativeActionsAdditiveSlotsAndActualCheckedState" classname="dev.awc.playground.LivePreviewHostTest" time="1.609" />
+  <testcase name="fabMenuMethodsStayIndependentOfStreamingAndCorrelateActualLifecycleAndItemEvents" classname="dev.awc.playground.LivePreviewHostTest" time="2.63" />
+  <testcase name="all35WebFixturesMatchMeasuredRootPartsGridAndDensity" classname="dev.awc.playground.NativeSegmentedParityTest" time="3.037" />
+  <testcase name="all12NarrowWebGridsPreservePaddingFloorsOverflowAndRtlPositions" classname="dev.awc.playground.NativeSegmentedParityTest" time="1.515" />
+  <testcase name="smallInspectionOmitsUnusedTypographyAndLargeRestoresActualLabelMetrics" classname="dev.awc.playground.NativeBadgeParityTest" time="1.725" />
+</testsuite>

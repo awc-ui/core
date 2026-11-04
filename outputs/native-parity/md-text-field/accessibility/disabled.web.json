@@ -1,0 +1,274 @@
+{
+ "tag": "md-text-field",
+ "case": "disabled",
+ "html": "<md-text-field data-ax-node=\"n0\" id=\"example-md-text-field\"></md-text-field>",
+ "props": {
+  "n0": {
+   "appearFocused": false,
+   "autoCapitalize": "",
+   "autocomplete": "",
+   "chipsWrap": false,
+   "clearable": "internal",
+   "debounce": 0,
+   "density": 0,
+   "disabled": true,
+   "enterKeyHint": "",
+   "error": false,
+   "errorText": "",
+   "focusBorderWidth": 3,
+   "formatOn": "blur",
+   "hidePasswordLabel": "Hide password",
+   "inputAriaAutocomplete": "",
+   "inputExpanded": false,
+   "inputMode": "",
+   "inputRole": "",
+   "label": "Project name",
+   "multiline": false,
+   "name": "",
+   "passwordToggle": false,
+   "pattern": "",
+   "placeholder": "e.g. AWC Native",
+   "prefixText": "",
+   "readOnly": false,
+   "required": false,
+   "reserveSupportingSpace": false,
+   "restrict": "",
+   "showPasswordLabel": "Show password",
+   "speechLang": "",
+   "speechToText": false,
+   "spellcheck": true,
+   "suffixText": "",
+   "supportingText": "A name your team will recognize",
+   "throttle": 0,
+   "type": "text",
+   "value": "AWC Native",
+   "variant": "filled"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "generic",
+    "name": "",
+    "ignored": false,
+    "disabled": true,
+    "invalid": "false",
+    "frame": [
+     16,
+     16,
+     608,
+     76
+    ],
+    "children": [
+     {
+      "role": "generic",
+      "name": "",
+      "ignored": false,
+      "frame": [
+       16,
+       16,
+       608,
+       56
+      ],
+      "children": [
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         39,
+         24,
+         534,
+         40
+        ],
+        "children": [
+         {
+          "role": "LabelText",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           39,
+           24,
+           70.703125,
+           16
+          ],
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Project name",
+            "ignored": false,
+            "frame": [
+             39,
+             25,
+             70.703125,
+             14
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Project name",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "textbox",
+            "name": "Project name",
+            "ignored": false,
+            "description": "A name your team will recognize",
+            "value": "AWC Native",
+            "disabled": true,
+            "invalid": "false",
+            "editable": "plaintext",
+            "readonly": false,
+            "required": false,
+            "frame": [
+             39,
+             40,
+             534,
+             24
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "generic",
+              "name": "",
+              "ignored": false,
+              "frame": [
+               39,
+               40,
+               534,
+               24
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "AWC Native",
+                "ignored": false,
+                "frame": [
+                 39,
+                 43,
+                 91.546875,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "AWC Native",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "button",
+        "name": "Clear",
+        "ignored": false,
+        "disabled": true,
+        "invalid": "false",
+        "frame": [
+         567,
+         24,
+         40,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         }
+        ]
+       },
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         16,
+         71,
+         608,
+         1
+        ]
+       }
+      ]
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "StaticText",
+          "name": "A name your team will recognize",
+          "ignored": false,
+          "frame": [
+           32,
+           77,
+           172.765625,
+           14
+          ],
+          "children": [
+           {
+            "role": "InlineTextBox",
+            "name": "A name your team will recognize",
+            "ignored": false
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

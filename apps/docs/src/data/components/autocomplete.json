@@ -516,6 +516,11 @@
       "kind": "interface",
       "extends": "",
       "body": "  /** Stable identifier — emitted in the picker `value` and used for matching. */\n  value: string;\n  /** Visible label rendered in the menu, chips, and the trigger text. */\n  label: string;\n  /** Disabled options stay visible but cannot be selected. */\n  disabled: boolean;\n  /** Optional Material Symbols leading-icon glyph. */\n  icon?: string;\n  /** Optional CSS colour applied to the leading icon (e.g. a status/swatch hue).\n   *  Any CSS `<color>` — hex, `rgb()`, or a theme token like\n   *  `var(--md-sys-color-primary)`. Ignored when the option has no `icon`, and\n   *  not carried on the virtualized (WASM) path — huge datasets fall back to the\n   *  `--md-{multi-}select-option-icon-color` token. */\n  iconColor?: string;\n  /** Optional secondary text rendered under the label in the menu. */\n  supportingText?: string;\n  /** Initial-selected hint carried by the option element / array entry. */\n  selected?: boolean;"
+    },
+    {
+      "name": "FilterMode",
+      "kind": "type",
+      "body": "'substring' | 'prefix' | 'fuzzy'"
     }
   ],
   "callableProps": [],

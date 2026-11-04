@@ -122,6 +122,11 @@ export class MdAppBar {
   @State() private searchKeyboardModality = false;
 
   private searchInput?: HTMLInputElement;
+  /** Trailing actions this component hid to enforce the 3-action cap. Only these are
+   *  ever unhidden again — an author's own `hidden` is never overridden. */
+  private capHidden = new WeakSet<HTMLElement>();
+  private trailingObserver?: MutationObserver;
+  private warnedCount = 0;
 
   connectedCallback() {
     if (typeof document === 'undefined') return;
@@ -130,6 +135,8 @@ export class MdAppBar {
   }
 
   disconnectedCallback() {
+    this.trailingObserver?.disconnect();
+    this.trailingObserver = undefined;
     if (typeof document === 'undefined') return;
     document.removeEventListener('keydown', this.trackSearchKeyboardModality, true);
     document.removeEventListener('pointerdown', this.trackSearchPointerModality, true);
@@ -191,6 +198,12 @@ export class MdAppBar {
     searchTrailingSlot?.addEventListener('slotchange', syncSearchTrailing);
     trailingSlot?.addEventListener('slotchange', syncTrailing);
     syncTrailing();
+    // An author toggling `hidden` on a trailing action changes which actions count
+    // toward the cap without a slotchange, so re-enforce on that attribute too.
+    if (typeof MutationObserver !== 'undefined') {
+      this.trailingObserver = new MutationObserver(syncTrailing);
+      this.trailingObserver.observe(this.el, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
+    }
   }
 
   /**
@@ -198,18 +211,30 @@ export class MdAppBar {
    * warns in development when consumers assign too many action icons.
    */
   private enforceTrailingSlotLimit(trailingSlot: HTMLSlotElement | null) {
-    const assigned = trailingSlot?.assignedElements({ flatten: true }) ?? [];
-    if (assigned.length > MdAppBar.MAX_TRAILING_ICONS) {
+    const assigned = (trailingSlot?.assignedElements({ flatten: true }) ?? []) as HTMLElement[];
+    // An action the AUTHOR hid (not one this component hid for the cap) is not shown
+    // and does not take one of the three places; it is left exactly as authored.
+    const shown = assigned.filter((el) => {
+      if (el.hidden && !this.capHidden.has(el)) return false;
+      if (!el.hidden) this.capHidden.delete(el);
+      return true;
+    });
+    // Warn once per distinct over-limit count (the cap's own `hidden` writes re-run this).
+    const over = shown.length > MdAppBar.MAX_TRAILING_ICONS ? shown.length : 0;
+    const warn = over > 0 && over !== this.warnedCount;
+    this.warnedCount = over;
+    if (warn) {
       console.warn(
         `[md-app-bar] The trailing slot supports at most ${MdAppBar.MAX_TRAILING_ICONS} action icons; ` +
-          `${assigned.length} were provided. Icons beyond the limit are hidden.`,
+          `${shown.length} were provided. Icons beyond the limit are hidden.`,
       );
     }
-    assigned.forEach((node, index) => {
-      const el = node as HTMLElement;
+    shown.forEach((el, index) => {
       if (index >= MdAppBar.MAX_TRAILING_ICONS) {
-        el.hidden = true;
-      } else if (el.hidden) {
+        if (!el.hidden) el.hidden = true;
+        this.capHidden.add(el);
+      } else if (this.capHidden.has(el)) {
+        this.capHidden.delete(el);
         el.hidden = false;
       }
     });
@@ -267,8 +292,12 @@ export class MdAppBar {
 
   private handleSearchKeyDown = (event: KeyboardEvent) => {
     if (this.searchDisabled) return;
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === 'Enter') {
       event.preventDefault();
+      this.emitSearchActivate();
+    } else if (event.key === ' ') {
+      // Space still announces activation, but it is a character in this text field:
+      // preventing it made multi-word queries impossible to type.
       this.emitSearchActivate();
     }
   };

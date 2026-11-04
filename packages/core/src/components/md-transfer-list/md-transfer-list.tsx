@@ -133,6 +133,12 @@ export class MdTransferList {
   /** Accessible label for the << button (localisable). */
   @Prop({ attribute: 'move-all-left-label' }) moveAllLeftLabel: string = 'Move all to source';
 
+  /**
+   * Accessible label for each header's select-all checkbox (localisable).
+   * `{title}` is replaced with that column's title.
+   */
+  @Prop({ attribute: 'select-all-label' }) selectAllLabel: string = 'Select all {title}';
+
   /** Fires on every change to the target value. */
   @Event() mdChange: EventEmitter<string[]>;
 
@@ -149,12 +155,24 @@ export class MdTransferList {
   @State() private targetQuery: string = '';
 
   @Watch('value')
+  @Watch('items')
   syncCheckedSets() {
-    // Drop any checked items that no longer exist on the side they came from.
-    const known = new Set(this.itemList.map((i) => i.value));
-    this.sourceChecked = new Set(Array.from(this.sourceChecked).filter((v) => known.has(v)));
-    this.targetChecked = new Set(Array.from(this.targetChecked).filter((v) => known.has(v)));
+    // Drop any checked items that no longer exist on the side they came from —
+    // moved across by a controlled `value`, or removed from `items` — so a check
+    // never resurrects when the item comes back.
+    const source = new Set(this.sourceItems.map((i) => i.value));
+    const target = new Set(this.targetItems.map((i) => i.value));
+    this.sourceChecked = new Set(Array.from(this.sourceChecked).filter((v) => source.has(v)));
+    this.targetChecked = new Set(Array.from(this.targetChecked).filter((v) => target.has(v)));
   }
+
+  /** Nested md-* controls emit composed events (a string `mdChange` from the
+   *  search field, `{checked}` from the select-all checkbox, `mdClick` from the
+   *  movers). They are internals, not this component's API: contain them so a
+   *  host `mdChange` listener only ever sees the `string[]` contract. */
+  private containEvent = (e: Event) => {
+    e.stopPropagation();
+  };
 
   /** Move selected items to the target side. */
   @Method()
@@ -287,8 +305,11 @@ export class MdTransferList {
             checked={allChecked}
             indeterminate={someChecked}
             disabled={this.disabled || eligibleVisible.length === 0}
-            onMdChange={this.toggleSelectAll(side)}
-            aria-label={`Select all ${title}`}
+            onMdChange={(e: CustomEvent) => {
+              e.stopPropagation();
+              this.toggleSelectAll(side)();
+            }}
+            aria-label={this.selectAllLabel.split('{title}').join(title)}
           />
         )}
         <div class="md-transfer-list__header-title" part="header-title">
@@ -318,9 +339,13 @@ export class MdTransferList {
         clearable="internal"
         disabled={this.disabled}
         onMdInput={(e: CustomEvent<string>) => {
+          e.stopPropagation();
           if (side === 'source') this.sourceQuery = e.detail ?? '';
           else this.targetQuery = e.detail ?? '';
         }}
+        onMdChange={this.containEvent}
+        onMdSearch={this.containEvent}
+        onMdClear={this.containEvent}
       >
         {this.searchIcon && (
           <span slot="leading-icon" class="material-symbols-outlined" aria-hidden="true">
@@ -436,6 +461,7 @@ export class MdTransferList {
             icon={this.moveAllRightIcon}
             disabled={this.disabled || !sourceAvailable}
             aria-label={this.moveAllRightLabel}
+            onMdClick={this.containEvent}
             onClick={this.moveAllRight}
           ></md-icon-button>
         )}
@@ -444,6 +470,7 @@ export class MdTransferList {
           icon={this.moveRightIcon}
           disabled={this.disabled || sourceCount === 0}
           aria-label={this.moveRightLabel}
+          onMdClick={this.containEvent}
           onClick={this.moveRight}
         ></md-icon-button>
         <md-icon-button
@@ -451,6 +478,7 @@ export class MdTransferList {
           icon={this.moveLeftIcon}
           disabled={this.disabled || targetCount === 0}
           aria-label={this.moveLeftLabel}
+          onMdClick={this.containEvent}
           onClick={this.moveLeft}
         ></md-icon-button>
         {!this.singleStepOnly && (
@@ -459,6 +487,7 @@ export class MdTransferList {
             icon={this.moveAllLeftIcon}
             disabled={this.disabled || !targetAvailable}
             aria-label={this.moveAllLeftLabel}
+            onMdClick={this.containEvent}
             onClick={this.moveAllLeft}
           ></md-icon-button>
         )}

@@ -7,7 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 
 /**
- * Shared native md-button appearance. Colors are #RRGGBB; dimensions are dp
+ * Shared native md-button appearance. Colors are #RRGGBB or #RRGGBBAA; dimensions are dp
  * (typography is sp). Null or invalid fields inherit the surrounding scope.
  * Numeric fields use Double for the same JSON-shaped API as generated props.
  */
@@ -20,6 +20,7 @@ data class AWCButtonAppearance(
     val loadingColor: String? = null,
     val stateLayerColor: String? = null,
     val outlineColor: String? = null,
+    val focusRingColor: String? = null,
     val iconSize: Double? = null,
     val trailingIconSize: Double? = null,
     val loadingSize: Double? = null,
@@ -35,6 +36,13 @@ data class AWCButtonAppearance(
     val hoverOpacity: Double? = null,
     val focusOpacity: Double? = null,
     val pressedOpacity: Double? = null,
+    val width: Double? = null,
+    val minWidth: Double? = null,
+    val maxWidth: Double? = null,
+    val height: Double? = null,
+    val minHeight: Double? = null,
+    /** Fixed state-layer opacity in every enabled state (the source `::part(state-layer) { opacity }` rule). */
+    val stateLayerOpacity: Double? = null,
 ) {
     val values: Map<String, AWCValue> get() = mapOf(
         "containerColor" to containerColor,
@@ -44,6 +52,7 @@ data class AWCButtonAppearance(
         "loadingColor" to loadingColor,
         "stateLayerColor" to stateLayerColor,
         "outlineColor" to outlineColor,
+        "focusRingColor" to focusRingColor,
         "iconSize" to iconSize,
         "trailingIconSize" to trailingIconSize,
         "loadingSize" to loadingSize,
@@ -59,6 +68,12 @@ data class AWCButtonAppearance(
         "hoverOpacity" to hoverOpacity,
         "focusOpacity" to focusOpacity,
         "pressedOpacity" to pressedOpacity,
+        "width" to width,
+        "minWidth" to minWidth,
+        "maxWidth" to maxWidth,
+        "height" to height,
+        "minHeight" to minHeight,
+        "stateLayerOpacity" to stateLayerOpacity,
     ).filterValues { it != null }
 
     /** Ignore malformed fields individually; never clamp them into a surprise style. */
@@ -71,7 +86,7 @@ data class AWCButtonAppearance(
     companion object {
         fun fromValues(values: Map<String, AWCValue>): AWCButtonAppearance {
             fun color(name: String): String? = (values[name] as? String)
-                ?.takeIf { it.matches(Regex("#[0-9a-fA-F]{6}")) }?.uppercase(java.util.Locale.ROOT)
+                ?.takeIf { it.matches(Regex("#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?")) }?.uppercase(java.util.Locale.ROOT)
             fun number(name: String, minimum: Double, maximum: Double, integer: Boolean = false): Double? =
                 (values[name] as? Number)?.toDouble()?.takeIf {
                     it.isFinite() && it in minimum..maximum && (!integer || it == kotlin.math.floor(it))
@@ -84,6 +99,7 @@ data class AWCButtonAppearance(
                 loadingColor = color("loadingColor"),
                 stateLayerColor = color("stateLayerColor"),
                 outlineColor = color("outlineColor"),
+                focusRingColor = color("focusRingColor"),
                 iconSize = number("iconSize", 8.0, 128.0),
                 trailingIconSize = number("trailingIconSize", 8.0, 128.0),
                 loadingSize = number("loadingSize", 8.0, 128.0),
@@ -99,6 +115,12 @@ data class AWCButtonAppearance(
                 hoverOpacity = number("hoverOpacity", 0.0, 1.0),
                 focusOpacity = number("focusOpacity", 0.0, 1.0),
                 pressedOpacity = number("pressedOpacity", 0.0, 1.0),
+                width = number("width", 0.0, 2400.0),
+                minWidth = number("minWidth", 0.0, 2400.0),
+                maxWidth = number("maxWidth", 0.0, 2400.0),
+                height = number("height", 0.0, 2400.0),
+                minHeight = number("minHeight", 0.0, 2400.0),
+                stateLayerOpacity = number("stateLayerOpacity", 0.0, 1.0),
             )
         }
     }

@@ -198,9 +198,7 @@ function collapseMultilineProps(source) {
 /**
  * One-level index of the library's exported type aliases, so a prop typed
  * `MdAvatarShape` can be tested as the union it actually is. Built once from
- * every .ts/.tsx under the components dir plus the shared types barrel; only
- * single-line `type X = …;` declarations are indexed, which is the shape every
- * enum-ish prop alias in this library uses.
+ * every .ts/.tsx under src, including multiline `type X = …;` declarations.
  */
 /** `export interface X { … }` bodies, kept verbatim for the docs' type blocks. */
 const INTERFACES = new Map();
@@ -344,7 +342,7 @@ function collectTypeModels(component) {
           ? { name, kind: 'interface', extends: decl.extends, body: decl.body }
           : { name, kind: 'type', body: alias },
       );
-      if (decl) pull(decl.body + ' ' + (decl.extends ?? ''), depth + 1);
+      pull(decl ? decl.body + ' ' + (decl.extends ?? '') : alias, depth + 1);
     }
   };
 
@@ -353,12 +351,12 @@ function collectTypeModels(component) {
      Not simply "props without an attribute": several of these now accept a JSON
      string on the attribute as well as the array on the property, which gave
      them an attribute and would have silently dropped them from the model. The
-     shape is what needs documenting either way. Enum-ish aliases
-     (`MdAvatarShape`) are excluded — the props table's type column says it all. */
+     shape is what needs documenting either way. Include named literal aliases
+     too: a name alone does not expose the valid values to readers or editors. */
   const dataProps = component.props.filter(
     (p) =>
       /=>|\[\]|\{/.test(p.type) ||
-      namedTypesIn(p.type).some((n) => INTERFACES.has(n)),
+      namedTypesIn(p.type).some((n) => INTERFACES.has(n) || TYPE_ALIASES.has(n)),
   );
   for (const p of dataProps) pull(p.type);
   const dataTypes = out.slice();
@@ -516,6 +514,17 @@ function parseTsx(source) {
     }
   }
 
+  // Conditional JSX part names cannot be found by the literal-attribute scan.
+  // Explicit source annotations declare those branches without trusting arbitrary
+  // CSS header prose as API (which previously invented non-existent part names).
+  for (const comment of source.matchAll(/\/\*\*[\s\S]*?\*\//g)) {
+    for (const match of comment[0].matchAll(/^\s*\*?\s*@csspart\s+([\w-]+)\s+-\s+(.+)$/gm)) {
+      if (!component.cssParts.some(part => part.name === match[1])) {
+        component.cssParts.push({ name: match[1], description: match[2].trim() });
+      }
+    }
+  }
+
   /*
    * Parts forwarded from a child component with `exportparts`. These are every
    * bit as public as the ones a component declares itself — md-area-chart
@@ -621,7 +630,11 @@ function parseCss(source, tagName) {
     }
   }
 
+  // Runtime internals the component writes itself (`@private --md-x-y` in a CSS comment) are not public hooks.
+  const privateProps = new Set([...source.matchAll(/@private\s+(--[\w-]+)/g)].map((m) => m[1]));
+  for (const name of privateProps) { const i = cssCustomProps.findIndex((p) => p.name === name); if (i >= 0) cssCustomProps.splice(i, 1); }
   for (const m of source.matchAll(new RegExp(`var\\((${escapeRegex(prefix)}[\\w-]+)`, 'g'))) {
+    if (privateProps.has(m[1])) continue;
     if (!cssCustomProps.find((p) => p.name === m[1])) {
       cssCustomProps.push({ name: m[1], description: '' });
     }

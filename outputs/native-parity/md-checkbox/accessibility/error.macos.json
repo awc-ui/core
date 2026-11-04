@@ -1,0 +1,209 @@
+{
+ "tag": "md-checkbox",
+ "case": "error",
+ "request": {
+  "tag": "md-checkbox",
+  "properties": {
+   "aria-label": "Accept terms",
+   "error": true,
+   "errorText": "You must accept the terms"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "enabled": true,
+       "frame": [
+        296,
+        32,
+        48,
+        66
+       ],
+       "identifier": "example-md-checkbox",
+       "role": "AXStaticText",
+       "roleDescription": "text",
+       "value": "You must accept the terms"
+      },
+      {
+       "actions": [
+        "AXPress"
+       ],
+       "description": "Accept terms",
+       "enabled": true,
+       "expanded": false,
+       "focused": false,
+       "frame": [
+        296,
+        32,
+        48,
+        66
+       ],
+       "help": "You must accept the terms",
+       "identifier": "example-md-checkbox",
+       "invalid": "true",
+       "required": false,
+       "role": "AXCheckBox",
+       "roleDescription": "checkbox",
+       "selected": false,
+       "value": false
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      130
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    130
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "10638D66-6CE7-4C8E-8DD2-879057FDEBBC",
+    "properties": {
+     "text": "Receive project updates"
+    },
+    "tag": "#text"
+   }
+  ],
+  "id": "example-md-checkbox",
+  "properties": {
+   "aria-label": "Accept terms",
+   "checked": false,
+   "density": 0,
+   "disabled": false,
+   "error": true,
+   "errorText": "You must accept the terms",
+   "indeterminate": false,
+   "name": "",
+   "required": false,
+   "softDisabled": false,
+   "supportingText": "",
+   "value": "updates",
+   "valueMissingLabel": "Please check this box if you want to proceed."
+  },
+  "tag": "md-checkbox"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 66,
+     "width": 48,
+     "x": 296,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "active": false,
+     "checked": false,
+     "containerColor": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "containerSize": 18,
+     "containerX": 15,
+     "focusRing": false,
+     "focusVisible": false,
+     "focused": false,
+     "glyph": "check",
+     "glyphOpacity": 1,
+     "glyphScale": 1,
+     "hostHeight": 66,
+     "hover": false,
+     "iconColor": [
+      1,
+      1,
+      1,
+      1
+     ],
+     "iconOpacity": 0,
+     "iconSize": 18,
+     "indeterminate": false,
+     "layerColor": [
+      0.10980392247438431,
+      0.10588235408067703,
+      0.12156864255666733,
+      1
+     ],
+     "layerOpacity": 0,
+     "outlineColor": [
+      0.7019608020782471,
+      0.14901959896087646,
+      0.11764705926179886,
+      1
+     ],
+     "outlineWidth": 2,
+     "pressed": false,
+     "renderTime": 1031521101.9653752,
+     "ringOffset": -4,
+     "scale": 1,
+     "stateLayerSize": 40,
+     "support": "You must accept the terms",
+     "supportColor": [
+      0.7019608020782471,
+      0.14901959896087646,
+      0.11764705926179886,
+      1
+     ],
+     "supportWidth": 144,
+     "supportX": 311,
+     "supportY": 82,
+     "tabindex": 0,
+     "targetColor": null,
+     "touch": 48,
+     "waveOpacity": 0,
+     "waveScale": null
+    },
+    "name": "md-checkbox"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

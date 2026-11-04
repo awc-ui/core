@@ -130,3 +130,36 @@ describe('md-sparkline e2e', () => {
     expect(b.left).toBeGreaterThan(0);
   });
 });
+
+describe('md-sparkline live configuration', () => {
+  it('changes variants and marker modes, preserves reference bands and reports actual datum clicks', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<md-sparkline no-animation show-marks="all" height="100px" style="display:block;width:300px"></md-sparkline>');
+    const chart = await page.find('md-sparkline');
+    await chart.setProperty('data', [4, null, 9, 1, 6]);
+    await chart.setProperty('labels', ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
+    await chart.setProperty('referenceAreas', [{ from: 0, to: 2, label: 'Campaign', color: '#ff0000' }, { from: 3, to: 4 }]);
+    await page.evaluate(() => { document.querySelector('md-sparkline')!.valueFormatter = value => `$${value}`; });
+    await page.waitForChanges(); await chart.callMethod('resize');
+    expect(chart.getAttribute('aria-label')).toContain('Campaign');
+    for (const [mode, count] of [['all', 4], ['none', 0], ['edges', 2], ['extremes', 2]] as const) {
+      await chart.setProperty('showMarks', mode); await page.waitForChanges();
+      expect(await page.evaluate(async () => (await document.querySelector('md-sparkline')!.getInstance())!.getScene()!.markers.length)).toBe(count);
+    }
+    await chart.setProperty('variant', 'area'); await page.waitForChanges();
+    expect(await page.evaluate(async () => (await document.querySelector('md-sparkline')!.getInstance())!.getScene()!.areas.length)).toBeGreaterThan(0);
+    await chart.setProperty('variant', 'bar'); await page.waitForChanges();
+    expect(await page.evaluate(async () => (await document.querySelector('md-sparkline')!.getInstance())!.getScene()!.bars.length)).toBe(4);
+    const clicked = await chart.spyOnEvent('mdSparkClick');
+    const point = await page.evaluate(async () => { const host = document.querySelector('md-sparkline')!; const bar = (await host.getInstance())!.getScene()!.bars[0]; const rect = host.shadowRoot!.querySelector('canvas')!.getBoundingClientRect(); return { x: rect.left + bar.x + bar.w / 2, y: rect.top + bar.y + bar.h / 2 }; });
+    const nextClick = clicked.next();
+    await page.mouse.click(point.x, point.y);
+    expect((await nextClick).value.detail).toEqual({ dataIndex: 0, value: 4 });
+    await chart.setProperty('variant', 'line'); await chart.setProperty('color', 'rgb(10, 20, 30)'); await page.waitForChanges();
+    await chart.callMethod('refreshTheme');
+    expect(await page.evaluate(async () => (await document.querySelector('md-sparkline')!.getInstance())!.getScene()!.lines.length)).toBeGreaterThan(0);
+    await chart.setProperty('data', [null]); await page.waitForChanges();
+    expect(chart.getAttribute('aria-label')).toContain('no data');
+    expect(await page.evaluate(async () => { const host = document.querySelector('md-sparkline')!; host.remove(); return await host.getInstance(); })).toBeNull();
+  });
+});

@@ -246,12 +246,16 @@ export class MdRadio {
 
   /**
    * Group-coordination hook. Sibling radios call this so the whole group agrees
-   * on validity; exposed as a @Method because a sibling can only reach this
-   * component through its public element interface.
+   * on validity and on its single tab stop; exposed as a @Method because a
+   * sibling can only reach this component through its public element interface.
+   * Without the roving refresh, the first enabled radio of a group that started
+   * with nothing checked kept `tabindex="0"` after an arrow key checked another
+   * member — two tab stops in one group.
    */
   @Method()
   async syncValidityFromGroup() {
     this.syncValidity();
+    this.updateRovingTabIndex();
   }
 
   /** Restore the initial selection when the owning form is reset. */
@@ -484,6 +488,9 @@ export class MdRadio {
     const next = (idx + direction + enabled.length) % enabled.length;
     const target = enabled[next];
     target.focus();
+    // Arrowing onto the radio that is already checked (a group with a single
+    // available member) only moves focus: native radio groups re-announce nothing.
+    if ((target as unknown as RadioElement).checked) return;
     target.setAttribute('checked', '');
     triggerRipple(target);
     target.dispatchEvent(new CustomEvent('mdChange', {

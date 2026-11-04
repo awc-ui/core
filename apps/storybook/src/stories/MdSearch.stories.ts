@@ -1,6 +1,8 @@
+import { exerciseSearchExternalTrigger } from '../../../../packages/core/src/components/md-search/test-utils/interactions.browser';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { expect, waitFor } from 'storybook/test';
 import { html } from 'lit';
+import { exerciseSearchQueries, exerciseSearchVoice } from '../../../../packages/core/src/components/md-search/test-utils/interactions.browser';
 import { t } from '../i18n';
 
 // ────────────────────────────────────────────────────────────────────────
@@ -304,6 +306,17 @@ const meta: Meta = {
 };
 export default meta;
 type Story = StoryObj;
+
+export const QueryEditingContract: Story = {
+  render: () => html`<md-search input-aria-label="Search products" layout="docked"></md-search>`,
+  play: async ({ canvasElement }) => exerciseSearchQueries(canvasElement.querySelector('md-search') as HTMLElement),
+};
+
+export const VoiceRecognitionContract: Story = {
+  parameters: { docs: { description: { story: 'Uses a deterministic Web Speech adapter to demonstrate interim results, final queries and retry behavior without microphone access.' } } },
+  render: () => html`<md-search input-aria-label="Search products" layout="docked"></md-search>`,
+  play: async ({ canvasElement }) => exerciseSearchVoice(canvasElement.querySelector('md-search') as HTMLElement),
+};
 
 // ────────────────────────────────────────────────────────────────────────
 // Playground
@@ -2517,4 +2530,9 @@ export const TrailingActionClick: Story = {
       await new Promise((r) => setTimeout(r, 300)); // settle the close animation
     });
   },
+};
+
+export const ExternalTriggerContract: Story = {
+ render: () => html`<md-search label="Search catalogue"></md-search>`,
+ play: async ({ canvasElement }) => exerciseSearchExternalTrigger(canvasElement.querySelector('md-search') as HTMLElement),
 };

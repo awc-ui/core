@@ -204,7 +204,8 @@
 
 :host(.md-app-bar--medium) {
   --_flex-expanded-height: var(--md-app-bar-medium-height, calc(112px + var(--md-sys-density-scale, 0) * 4px));
-  --_expanded-padding-block-end: var(--md-sys-spacing-inset-xl, 24px);
+  /* The public hook must win here too: this per-variant default used to replace it. */
+  --_expanded-padding-block-end: var(--md-app-bar-expanded-padding-block-end, var(--md-sys-spacing-inset-xl, 24px));
 }
 
 :host(.md-app-bar--medium.md-app-bar--with-subtitle) {
@@ -213,7 +214,7 @@
 
 :host(.md-app-bar--large) {
   --_flex-expanded-height: var(--md-app-bar-large-height, calc(120px + var(--md-sys-density-scale, 0) * 4px));
-  --_expanded-padding-block-end: 28px;
+  --_expanded-padding-block-end: var(--md-app-bar-expanded-padding-block-end, 28px);
 }
 
 :host(.md-app-bar--large:not(.md-app-bar--search)) {
@@ -708,6 +709,10 @@
   --md-icon-button-icon-color: var(--_trailing-icon-color);
   --md-icon-button-state-layer-color: var(--_trailing-icon-color);
   --md-avatar-size: var(--_avatar-size);
+  /* Trailing actions take their own touch target (defaults to the leading size); the
+     documented `--md-app-bar-trailing-icon-touch-size` hook was otherwise never read. */
+  --md-icon-button-container-width: var(--_trailing-icon-touch-size);
+  --md-icon-button-container-height: var(--_trailing-icon-touch-size);
 }
 
 /* Enforced in TSX when >3 trailing children are assigned; belt-and-suspenders hide. */

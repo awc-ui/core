@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Native md-button appearance, inherited by descendants and merged field by field.
-/// Colors are #RRGGBB. Invalid values are ignored, so they cannot erase a valid
+/// Colors are #RRGGBB or #RRGGBBAA. Invalid values are ignored, so they cannot erase a valid
 /// inherited value. Nil leaves the theme/source default in effect.
 public struct AWCButtonAppearance: Equatable, Sendable {
     public let containerColor: String?
@@ -26,6 +26,15 @@ public struct AWCButtonAppearance: Equatable, Sendable {
     public let hoverOpacity: Double?
     public let focusOpacity: Double?
     public let pressedOpacity: Double?
+    public let focusRingColor: String?
+    /// Fixed state-layer opacity in every enabled state: the source `::part(state-layer) { opacity }` rule outranks the
+    /// internal hover/focus/pressed rules. Nil keeps the per-state opacities.
+    public let stateLayerOpacity: Double?
+    public let width: Double?
+    public let minWidth: Double?
+    public let maxWidth: Double?
+    public let height: Double?
+    public let minHeight: Double?
 
     public init(
         containerColor: String? = nil,
@@ -49,7 +58,14 @@ public struct AWCButtonAppearance: Equatable, Sendable {
         gap: Double? = nil,
         hoverOpacity: Double? = nil,
         focusOpacity: Double? = nil,
-        pressedOpacity: Double? = nil
+        pressedOpacity: Double? = nil,
+        focusRingColor: String? = nil,
+        width: Double? = nil,
+        minWidth: Double? = nil,
+        maxWidth: Double? = nil,
+        height: Double? = nil,
+        minHeight: Double? = nil,
+        stateLayerOpacity: Double? = nil
     ) {
         self.containerColor = Self.hex(containerColor)
         self.labelColor = Self.hex(labelColor)
@@ -73,6 +89,13 @@ public struct AWCButtonAppearance: Equatable, Sendable {
         self.hoverOpacity = Self.number(hoverOpacity, 0...1)
         self.focusOpacity = Self.number(focusOpacity, 0...1)
         self.pressedOpacity = Self.number(pressedOpacity, 0...1)
+        self.focusRingColor = Self.hex(focusRingColor)
+        self.width = Self.number(width, 0...2400)
+        self.minWidth = Self.number(minWidth, 0...2400)
+        self.maxWidth = Self.number(maxWidth, 0...2400)
+        self.height = Self.number(height, 0...2400)
+        self.minHeight = Self.number(minHeight, 0...2400)
+        self.stateLayerOpacity = Self.number(stateLayerOpacity, 0...1)
     }
 
     /// Strict JSON values: booleans and numeric strings are not accepted as numbers.
@@ -105,7 +128,11 @@ public struct AWCButtonAppearance: Equatable, Sendable {
             gap: number("gap"),
             hoverOpacity: number("hoverOpacity"),
             focusOpacity: number("focusOpacity"),
-            pressedOpacity: number("pressedOpacity")
+            pressedOpacity: number("pressedOpacity"),
+            focusRingColor: text("focusRingColor"),
+            width: number("width"), minWidth: number("minWidth"), maxWidth: number("maxWidth"),
+            height: number("height"), minHeight: number("minHeight"),
+            stateLayerOpacity: number("stateLayerOpacity")
         )
     }
 
@@ -132,12 +159,16 @@ public struct AWCButtonAppearance: Equatable, Sendable {
             gap: local.gap ?? gap,
             hoverOpacity: local.hoverOpacity ?? hoverOpacity,
             focusOpacity: local.focusOpacity ?? focusOpacity,
-            pressedOpacity: local.pressedOpacity ?? pressedOpacity
+            pressedOpacity: local.pressedOpacity ?? pressedOpacity,
+            focusRingColor: local.focusRingColor ?? focusRingColor,
+            width: local.width ?? width, minWidth: local.minWidth ?? minWidth, maxWidth: local.maxWidth ?? maxWidth,
+            height: local.height ?? height, minHeight: local.minHeight ?? minHeight,
+            stateLayerOpacity: local.stateLayerOpacity ?? stateLayerOpacity
         )
     }
 
     private static func hex(_ value: String?) -> String? {
-        guard let value, value.utf8.count == 7, value.first == "#",
+        guard let value, (value.utf8.count == 7 || value.utf8.count == 9), value.first == "#",
               value.dropFirst().utf8.allSatisfy({ (48...57).contains($0) || (65...70).contains($0) || (97...102).contains($0) }) else { return nil }
         return value.uppercased()
     }

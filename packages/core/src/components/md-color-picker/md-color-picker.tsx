@@ -124,6 +124,8 @@ export class MdColorPicker {
   private alphaRect?: DOMRect;
   private pointerDragKind: 'sat' | 'hue' | 'alpha' | null = null;
   private outsideClickHandler?: (e: MouseEvent) => void;
+  /** Set while an outside click is closing the popover (focus stays put). */
+  private dismissingOutside = false;
 
   /** Instance-unique prefix so each channel <label> can be associated with
    *  its <input> via for/id without colliding across multiple pickers. */
@@ -187,7 +189,13 @@ export class MdColorPicker {
 
   @Watch('value')
   onValueChange(newVal: string) {
-    if (newVal === this.lastEmitted) return;
+    // The sentinel only swallows the echo of our own emit (the watch runs
+    // synchronously on that assignment). It is one-shot: a later controlled
+    // value that happens to equal the last emitted string must still apply.
+    if (newVal === this.lastEmitted) {
+      this.lastEmitted = '';
+      return;
+    }
     this.applyValue(newVal, false);
   }
 
@@ -503,6 +511,13 @@ export class MdColorPicker {
     return raw.map((s) => String(s).trim()).filter(Boolean);
   }
 
+  /** Presets accept every parseable form (`#f00`, `#ff0000`, `rgb()`…), so
+   *  compare parsed colours, not the raw strings. */
+  private isSelectedPreset(preset: string): boolean {
+    const parsed = parseColor(preset);
+    return !!parsed && hsvaToHex(parsed, true) === hsvaToHex(this.hsva, true);
+  }
+
   private onPresetClick = (hex: string) => {
     if (this.disabled) return;
     this.applyValue(hex, true);
@@ -536,6 +551,16 @@ export class MdColorPicker {
 
   @Watch('open')
   onOpenChange(value: boolean) {
+    // Closing removes the panel. If focus is inside it (Escape, close(), a
+    // controlled open=false), hand it back to the consumer's trigger instead of
+    // letting it fall to <body>. An outside click keeps focus where the user
+    // clicked. Runs before the re-render, so the panel is still in the tree.
+    if (!value && !this.dismissingOutside) {
+      const active = this.el.shadowRoot?.activeElement;
+      const popover = this.el.shadowRoot?.querySelector('[part="popover"]');
+      if (active && popover?.contains(active)) this.wiredTrigger?.focus();
+    }
+    this.dismissingOutside = false;
     this.mdOpenChange.emit({ open: value });
     this.syncOutsideClickListener();
     // The trigger is the consumer's element, so nothing re-renders it — its
@@ -597,6 +622,7 @@ export class MdColorPicker {
       if (path.includes(this.el)) return;
       const target = e.target as Node | null;
       if (target && this.el.contains(target)) return;
+      this.dismissingOutside = true;
       this.open = false;
     };
     document.addEventListener('mousedown', this.outsideClickHandler, true);
@@ -607,6 +633,18 @@ export class MdColorPicker {
       document.removeEventListener('mousedown', this.outsideClickHandler, true);
     }
     this.outsideClickHandler = undefined;
+  }
+
+  /** Escape that starts inside the picker (its panel or its trigger) is the
+   *  open popover's: consume it here, before an ancestor modal's document
+   *  listener runs, so a picker inside md-dialog closes only itself. */
+  @Listen('keydown')
+  onHostKeyDown(e: KeyboardEvent) {
+    if (this.variant === 'popover' && this.open && e.key === 'Escape' && !e.isComposing) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.open = false;
+    }
   }
 
   @Listen('keydown', { target: 'window' })
@@ -887,7 +925,7 @@ export class MdColorPicker {
             part="preset"
             role="option"
             aria-label={hex}
-            aria-selected={hsvaToHex(this.hsva, false).toLowerCase() === hex.toLowerCase() ? 'true' : 'false'}
+            aria-selected={this.isSelectedPreset(hex) ? 'true' : 'false'}
             style={{ backgroundColor: hex }}
             disabled={this.disabled}
             onClick={() => this.onPresetClick(hex)}

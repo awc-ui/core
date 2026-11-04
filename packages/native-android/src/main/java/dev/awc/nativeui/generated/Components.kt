@@ -821,6 +821,7 @@ fun AWCDatePicker(
 data class AWCDialogProperties(
     val `open`: Boolean = false,
     val `headline`: String = "",
+    val `dialogAriaLabel`: String = "",
     val `icon`: String = "",
     val `fullscreen`: Boolean = false,
     val `scrimDismissible`: Boolean = true,
@@ -832,7 +833,7 @@ data class AWCDialogProperties(
     val `headerDivider`: Boolean = false,
     val `density`: Double = 0.0
 ) {
-    val values: Map<String, AWCValue> get() = mapOf("open" to this.`open`, "headline" to this.`headline`, "icon" to this.`icon`, "fullscreen" to this.`fullscreen`, "scrimDismissible" to this.`scrimDismissible`, "locale" to this.`locale`, "closeLabel" to this.`closeLabel`, "cancelLabel" to this.`cancelLabel`, "okLabel" to this.`okLabel`, "divider" to this.`divider`, "headerDivider" to this.`headerDivider`, "density" to this.`density`).filterValues { it != null }
+    val values: Map<String, AWCValue> get() = mapOf("open" to this.`open`, "headline" to this.`headline`, "dialogAriaLabel" to this.`dialogAriaLabel`, "icon" to this.`icon`, "fullscreen" to this.`fullscreen`, "scrimDismissible" to this.`scrimDismissible`, "locale" to this.`locale`, "closeLabel" to this.`closeLabel`, "cancelLabel" to this.`cancelLabel`, "okLabel" to this.`okLabel`, "divider" to this.`divider`, "headerDivider" to this.`headerDivider`, "density" to this.`density`).filterValues { it != null }
 }
 
 @Composable
@@ -2842,11 +2843,12 @@ data class AWCTablePaginationProperties(
     val `labelNextPage`: String = "Next page",
     val `labelLastPage`: String = "Last page",
     val `labelAll`: String = "All",
+    val `label`: String = "Pagination",
     val `compact`: Boolean = false,
     val `disabled`: Boolean = false,
     val `density`: Double = 0.0
 ) {
-    val values: Map<String, AWCValue> get() = mapOf("count" to this.`count`, "page" to this.`page`, "rowsPerPage" to this.`rowsPerPage`, "rowsPerPageOptions" to this.`rowsPerPageOptions`, "showFirstLast" to this.`showFirstLast`, "labelDisplayedRows" to this.`labelDisplayedRows`, "labelRowsPerPage" to this.`labelRowsPerPage`, "labelFirstPage" to this.`labelFirstPage`, "labelPreviousPage" to this.`labelPreviousPage`, "labelNextPage" to this.`labelNextPage`, "labelLastPage" to this.`labelLastPage`, "labelAll" to this.`labelAll`, "compact" to this.`compact`, "disabled" to this.`disabled`, "density" to this.`density`).filterValues { it != null }
+    val values: Map<String, AWCValue> get() = mapOf("count" to this.`count`, "page" to this.`page`, "rowsPerPage" to this.`rowsPerPage`, "rowsPerPageOptions" to this.`rowsPerPageOptions`, "showFirstLast" to this.`showFirstLast`, "labelDisplayedRows" to this.`labelDisplayedRows`, "labelRowsPerPage" to this.`labelRowsPerPage`, "labelFirstPage" to this.`labelFirstPage`, "labelPreviousPage" to this.`labelPreviousPage`, "labelNextPage" to this.`labelNextPage`, "labelLastPage" to this.`labelLastPage`, "labelAll" to this.`labelAll`, "label" to this.`label`, "compact" to this.`compact`, "disabled" to this.`disabled`, "density" to this.`density`).filterValues { it != null }
 }
 
 @Composable
@@ -3230,9 +3232,10 @@ data class AWCTransferListProperties(
     val `moveRightLabel`: String = "Move selected to target",
     val `moveLeftLabel`: String = "Move selected to source",
     val `moveAllRightLabel`: String = "Move all to target",
-    val `moveAllLeftLabel`: String = "Move all to source"
+    val `moveAllLeftLabel`: String = "Move all to source",
+    val `selectAllLabel`: String = "Select all {title}"
 ) {
-    val values: Map<String, AWCValue> get() = mapOf("items" to this.`items`, "value" to this.`value`, "sourceTitle" to this.`sourceTitle`, "targetTitle" to this.`targetTitle`, "searchable" to this.`searchable`, "sourceSearchPlaceholder" to this.`sourceSearchPlaceholder`, "targetSearchPlaceholder" to this.`targetSearchPlaceholder`, "showSelectAll" to this.`showSelectAll`, "searchIcon" to this.`searchIcon`, "moveRightIcon" to this.`moveRightIcon`, "moveLeftIcon" to this.`moveLeftIcon`, "moveAllRightIcon" to this.`moveAllRightIcon`, "moveAllLeftIcon" to this.`moveAllLeftIcon`, "emptyIcon" to this.`emptyIcon`, "emptyText" to this.`emptyText`, "countTemplate" to this.`countTemplate`, "density" to this.`density`, "disabled" to this.`disabled`, "singleStepOnly" to this.`singleStepOnly`, "moveRightLabel" to this.`moveRightLabel`, "moveLeftLabel" to this.`moveLeftLabel`, "moveAllRightLabel" to this.`moveAllRightLabel`, "moveAllLeftLabel" to this.`moveAllLeftLabel`).filterValues { it != null }
+    val values: Map<String, AWCValue> get() = mapOf("items" to this.`items`, "value" to this.`value`, "sourceTitle" to this.`sourceTitle`, "targetTitle" to this.`targetTitle`, "searchable" to this.`searchable`, "sourceSearchPlaceholder" to this.`sourceSearchPlaceholder`, "targetSearchPlaceholder" to this.`targetSearchPlaceholder`, "showSelectAll" to this.`showSelectAll`, "searchIcon" to this.`searchIcon`, "moveRightIcon" to this.`moveRightIcon`, "moveLeftIcon" to this.`moveLeftIcon`, "moveAllRightIcon" to this.`moveAllRightIcon`, "moveAllLeftIcon" to this.`moveAllLeftIcon`, "emptyIcon" to this.`emptyIcon`, "emptyText" to this.`emptyText`, "countTemplate" to this.`countTemplate`, "density" to this.`density`, "disabled" to this.`disabled`, "singleStepOnly" to this.`singleStepOnly`, "moveRightLabel" to this.`moveRightLabel`, "moveLeftLabel" to this.`moveLeftLabel`, "moveAllRightLabel" to this.`moveAllRightLabel`, "moveAllLeftLabel" to this.`moveAllLeftLabel`, "selectAllLabel" to this.`selectAllLabel`).filterValues { it != null }
 }
 
 @Composable

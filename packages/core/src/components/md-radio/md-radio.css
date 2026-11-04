@@ -285,7 +285,11 @@
    ========================================================== */
 
 @media (prefers-reduced-motion: reduce) {
+  /* Repeat the pressed selector: `:host(.md-radio--pressed) .md-radio__container`
+     is more specific than the bare class, so without it the press squish
+     still animated under reduced motion (as md-checkbox's C2). */
   .md-radio__container,
+  :host(.md-radio--pressed) .md-radio__container,
   .md-radio__state-layer,
   .md-radio__outer,
   .md-radio__inner {

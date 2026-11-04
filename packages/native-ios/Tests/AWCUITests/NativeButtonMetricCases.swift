@@ -50,6 +50,27 @@ enum NativeButtonMetricCases {
             check(compact.fontSize == compactFonts[index] && compact.lineHeight == compactLines[index], "\(size) density -4 typography taper")
         }
 
+        // Independent source-cascade table for all five variants in normal,
+        // toggle-off, toggle-on and disabled states. Loading shares normal colors.
+        let variants = ["filled", "tonal", "outlined", "text", "elevated"]
+        let containers: [String?] = ["primary", "secondary-container", nil, nil, "surface-container-low"]
+        let labels = ["on-primary", "on-secondary-container", "primary", "primary", "primary"]
+        let offContainers: [String?] = ["surface-container-highest", "surface-container-highest", nil, nil, "surface-container-highest"]
+        let offLabels = ["primary", "on-surface-variant", "primary", "on-surface-variant", "on-surface-variant"]
+        for (index, variant) in variants.enumerated() {
+            for state in ["normal", "loading", "toggle-off", "toggle-on", "disabled"] {
+                let disabled = state == "disabled", toggle = state.hasPrefix("toggle") || disabled, selected = state == "toggle-on" || disabled
+                let palette = AWCNativeButtonPalette(variant: variant, toggle: toggle, selected: selected, disabled: disabled)
+                let expectedContainer: String? = disabled ? (["text", "outlined"].contains(variant) ? nil : "on-surface") : state == "toggle-off" ? offContainers[index] : (variant == "outlined" && selected ? "secondary-container" : containers[index])
+                let expectedLabel = disabled ? "on-surface" : state == "toggle-off" ? offLabels[index] : (variant == "outlined" && selected ? "on-secondary-container" : labels[index])
+                check(palette.containerRole == expectedContainer && palette.labelRole == expectedLabel, "\(variant) \(state) source palette")
+                check(palette.labelOpacity == (disabled ? 0.38 : 1) && palette.containerOpacity == (disabled ? 0.12 : 1), "\(variant) \(state) source disabled alpha")
+                let expectedOutline: String? = variant == "outlined" && (!selected || disabled) ? (disabled ? "on-surface" : "outline") : nil
+                check(palette.outlineRole == expectedOutline && palette.outlineOpacity == (disabled ? 0.12 : 1), "\(variant) \(state) outline cascade")
+                check(palette.hoverElevation == (disabled || (variant == "elevated" && state == "toggle-off") ? 0 : variant == "elevated" ? 2 : ["filled", "tonal"].contains(variant) ? 1 : 0), "\(variant) \(state) hover elevation")
+            }
+        }
+
         // Distinct token values verify that each size resolves the intended role,
         // instead of accidentally obtaining an equal default from an old role.
         let tokens = [

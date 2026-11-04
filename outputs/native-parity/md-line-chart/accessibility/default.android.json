@@ -1,0 +1,463 @@
+{
+ "tag": "md-line-chart",
+ "case": "default",
+ "id": "md-line-chart/default",
+ "platform": "android",
+ "sdk": 36,
+ "windows": [
+  {
+   "type": 1,
+   "display": 51,
+   "title": "",
+   "root": {
+    "class": "android.widget.FrameLayout",
+    "actions": [
+     {
+      "id": 16908342,
+      "name": "showOnScreen"
+     }
+    ],
+    "frame": [
+     0,
+     0,
+     1280,
+     776
+    ],
+    "children": [
+     {
+      "class": "android.widget.LinearLayout",
+      "important": false,
+      "actions": [
+       {
+        "id": 16908342,
+        "name": "showOnScreen"
+       }
+      ],
+      "frame": [
+       0,
+       0,
+       1280,
+       776
+      ],
+      "children": [
+       {
+        "class": "android.widget.FrameLayout",
+        "important": false,
+        "actions": [
+         {
+          "id": 16908342,
+          "name": "showOnScreen"
+         }
+        ],
+        "frame": [
+         0,
+         0,
+         1280,
+         776
+        ],
+        "children": [
+         {
+          "class": "android.widget.FrameLayout",
+          "important": false,
+          "actions": [
+           {
+            "id": 16908342,
+            "name": "showOnScreen"
+           }
+          ],
+          "frame": [
+           0,
+           0,
+           1280,
+           776
+          ],
+          "children": [
+           {
+            "class": "androidx.compose.ui.platform.ComposeView",
+            "actions": [
+             {
+              "id": 16908342,
+              "name": "showOnScreen"
+             }
+            ],
+            "frame": [
+             0,
+             0,
+             1280,
+             776
+            ],
+            "children": [
+             {
+              "class": "android.view.View",
+              "important": false,
+              "frame": [
+               0,
+               0,
+               1280,
+               776
+              ],
+              "children": [
+               {
+                "class": "android.view.View",
+                "important": false,
+                "frame": [
+                 0,
+                 0,
+                 1280,
+                 776
+                ],
+                "virtualId": 3,
+                "children": [
+                 {
+                  "class": "android.view.View",
+                  "contentDescription": "Monthly revenue, Line chart, with 2 series, from Jan to Jun.",
+                  "actions": [
+                   {
+                    "id": 131072,
+                    "name": "setSelection"
+                   },
+                   {
+                    "id": 256,
+                    "name": "nextGranularity"
+                   },
+                   {
+                    "id": 512,
+                    "name": "previousGranularity"
+                   }
+                  ],
+                  "frame": [
+                   64,
+                   64,
+                   1152,
+                   648
+                  ],
+                  "virtualId": 11,
+                  "children": [
+                   {
+                    "class": "android.view.View",
+                    "contentDescription": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+                    "stateDescription": "",
+                    "focusable": true,
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     },
+                     {
+                      "id": 131072,
+                      "name": "setSelection"
+                     },
+                     {
+                      "id": 256,
+                      "name": "nextGranularity"
+                     },
+                     {
+                      "id": 512,
+                      "name": "previousGranularity"
+                     },
+                     {
+                      "id": 2131099649,
+                      "name": "custom",
+                      "label": "Next point"
+                     },
+                     {
+                      "id": 2131099650,
+                      "name": "custom",
+                      "label": "Previous point"
+                     },
+                     {
+                      "id": 2131099661,
+                      "name": "custom",
+                      "label": "First point"
+                     },
+                     {
+                      "id": 2131099672,
+                      "name": "custom",
+                      "label": "Last point"
+                     }
+                    ],
+                    "frame": [
+                     96,
+                     96,
+                     1088,
+                     584
+                    ],
+                    "virtualId": 14,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       96,
+                       96,
+                       1088,
+                       584
+                      ],
+                      "virtualId": 15
+                     }
+                    ]
+                   },
+                   {
+                    "class": "android.widget.Button",
+                    "contentDescription": "Revenue",
+                    "screenReaderFocusable": true,
+                    "checkable": true,
+                    "checked": true,
+                    "focusable": true,
+                    "clickable": true,
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     },
+                     {
+                      "id": 16,
+                      "name": "click"
+                     },
+                     {
+                      "id": 131072,
+                      "name": "setSelection"
+                     },
+                     {
+                      "id": 256,
+                      "name": "nextGranularity"
+                     },
+                     {
+                      "id": 512,
+                      "name": "previousGranularity"
+                     }
+                    ],
+                    "frame": [
+                     876,
+                     73,
+                     154,
+                     96
+                    ],
+                    "virtualId": 16
+                   },
+                   {
+                    "class": "android.widget.Button",
+                    "contentDescription": "Cost",
+                    "screenReaderFocusable": true,
+                    "checkable": true,
+                    "checked": true,
+                    "focusable": true,
+                    "clickable": true,
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     },
+                     {
+                      "id": 16,
+                      "name": "click"
+                     },
+                     {
+                      "id": 131072,
+                      "name": "setSelection"
+                     },
+                     {
+                      "id": 256,
+                      "name": "nextGranularity"
+                     },
+                     {
+                      "id": 512,
+                      "name": "previousGranularity"
+                     }
+                    ],
+                    "frame": [
+                     1054,
+                     73,
+                     106,
+                     96
+                    ],
+                    "virtualId": 19
+                   },
+                   {
+                    "class": "android.widget.TextView",
+                    "text": "Native Canvas • tap to inspect",
+                    "screenReaderFocusable": true,
+                    "actions": [
+                     {
+                      "id": 131072,
+                      "name": "setSelection"
+                     },
+                     {
+                      "id": 256,
+                      "name": "nextGranularity"
+                     },
+                     {
+                      "id": 512,
+                      "name": "previousGranularity"
+                     }
+                    ],
+                    "frame": [
+                     96,
+                     96,
+                     2,
+                     2
+                    ],
+                    "virtualId": 23
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "childOrder": "semantics (replacedChildren)",
+ "source": "in-process AccessibilityNodeProvider",
+ "density": 2,
+ "image": {
+  "scale": 1,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 0.5,
+  "source": "frame"
+ },
+ "atf": {
+  "elements": 13,
+  "results": []
+ },
+ "focus": [
+  {
+   "class": "android.view.View",
+   "contentDescription": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+   "stateDescription": "",
+   "focusable": true,
+   "focused": true,
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    },
+    {
+     "id": 131072,
+     "name": "setSelection"
+    },
+    {
+     "id": 256,
+     "name": "nextGranularity"
+    },
+    {
+     "id": 512,
+     "name": "previousGranularity"
+    },
+    {
+     "id": 2131099649,
+     "name": "custom",
+     "label": "Next point"
+    },
+    {
+     "id": 2131099650,
+     "name": "custom",
+     "label": "Previous point"
+    },
+    {
+     "id": 2131099661,
+     "name": "custom",
+     "label": "First point"
+    },
+    {
+     "id": 2131099672,
+     "name": "custom",
+     "label": "Last point"
+    }
+   ],
+   "frame": [
+    96,
+    96,
+    1088,
+    584
+   ],
+   "virtualId": 14
+  },
+  {
+   "class": "android.widget.Button",
+   "contentDescription": "Revenue",
+   "screenReaderFocusable": true,
+   "checkable": true,
+   "checked": true,
+   "focusable": true,
+   "focused": true,
+   "clickable": true,
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    },
+    {
+     "id": 16,
+     "name": "click"
+    },
+    {
+     "id": 131072,
+     "name": "setSelection"
+    },
+    {
+     "id": 256,
+     "name": "nextGranularity"
+    },
+    {
+     "id": 512,
+     "name": "previousGranularity"
+    }
+   ],
+   "frame": [
+    876,
+    73,
+    154,
+    96
+   ],
+   "virtualId": 16
+  }
+ ],
+ "events": [
+  {
+   "type": "TYPE_WINDOW_STATE_CHANGED",
+   "via": "system",
+   "text": [],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "android.app.Presentation"
+  },
+  {
+   "type": "TYPE_WINDOW_CONTENT_CHANGED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 1,
+   "class": "android.view.ViewGroup"
+  },
+  {
+   "type": "TYPE_WINDOW_CONTENT_CHANGED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 1,
+   "class": "android.view.ViewGroup"
+  },
+  {
+   "type": "TYPE_VIEW_FOCUSED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "android.view.ViewGroup"
+  }
+ ]
+}

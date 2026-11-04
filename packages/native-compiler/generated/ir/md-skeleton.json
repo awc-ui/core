@@ -17,7 +17,7 @@
       "reflect": true,
       "attribute": "variant",
       "optional": false,
-      "description": "Shape of the skeleton placeholder.\n- `text` — single short rectangle the height of a body line. With\n  `lines > 1` the last line gets a tapered width so it reads as a\n  \"last line of a paragraph\".\n- `rectangular` — fills the inline + block sizes you give it; no\n  border-radius unless you set `--md-skeleton-radius`.\n- `rounded` — same as `rectangular` but with the MD3 medium corner\n  radius (or your override). Good for cards / images.\n- `circular` — perfect circle (1:1 aspect). Use for avatar / icon\n  placeholders; set `--md-skeleton-size` or `width`+`height`."
+      "description": "Shape of the skeleton placeholder.\n- `text` — single short rectangle the height of a body line. With\n  `lines > 1` the last line gets a tapered width so it reads as a\n  \"last line of a paragraph\".\n- `rectangular` — fills the inline + block sizes you give it, with\n  the extra-small corner token or `--md-skeleton-radius`.\n- `rounded` — same as `rectangular` but with the MD3 medium corner\n  radius (or your override). Good for cards / images.\n- `circular` — perfect circle (1:1 aspect). Use for avatar / icon\n  placeholders; set `--md-skeleton-size` or `width`+`height`."
     },
     {
       "name": "animation",
@@ -105,7 +105,7 @@
       "reflect": false,
       "attribute": "aria-label",
       "optional": false,
-      "description": "Accessible label. Defaults to \"Loading…\". Pass a more specific\nlabel when the skeleton represents a recognisable region\n(\"Loading article\") for better screen-reader context."
+      "description": "Accessible label. Defaults to \"Loading\". Pass a more specific\nlabel when the skeleton represents a recognisable region\n(\"Loading article\") for better screen-reader context."
     },
     {
       "name": "announce",
@@ -146,6 +146,14 @@
     {
       "name": "shape",
       "description": "The rectangular / rounded / circular block."
+    },
+    {
+      "name": "line",
+      "description": "Every text line."
+    },
+    {
+      "name": "line-last",
+      "description": "The final tapered line in a multi-line block."
     }
   ],
   "cssProperties": [
@@ -247,7 +255,7 @@
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Window access requires a native adapter.",
-      "line": 95
+      "line": 111
     }
   ],
   "source": {
@@ -255,7 +263,7 @@
     "styleUrl": "md-skeleton.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "5a7c8d5a2593ea9329768ce1509d1ebce663e3546f7c8c7fa2879bc276ad2719"
+    "sha256": "049fde322ab6bde4004ef53c025590cac7b8232852bf9d4399d3bab5469d79da"
   },
   "styles": [
     {
@@ -528,6 +536,11 @@
           "property": "block-size",
           "value": "100%",
           "important": false
+        },
+        {
+          "property": "min-block-size",
+          "value": "var(--_h)",
+          "important": false
         }
       ]
     },
@@ -627,7 +640,7 @@
       ]
     },
     {
-      "selector": ":host([dir=\"rtl\"]) .md-skeleton__line--tapered,\n:host-context([dir=\"rtl\"]) .md-skeleton__line--tapered",
+      "selector": ":host(:dir(rtl)) .md-skeleton__line--tapered",
       "context": null,
       "declarations": [
         {
@@ -771,7 +784,7 @@
       ]
     },
     {
-      "selector": ":host([dir=\"rtl\"].md-skeleton--anim-wave) .md-skeleton__shape::after,\n:host([dir=\"rtl\"].md-skeleton--anim-wave) .md-skeleton__line::after,\n:host-context([dir=\"rtl\"]).md-skeleton--anim-wave .md-skeleton__shape::after,\n:host-context([dir=\"rtl\"]).md-skeleton--anim-wave .md-skeleton__line::after",
+      "selector": ":host(:dir(rtl)) .md-skeleton__shape::after,\n:host(:dir(rtl)) .md-skeleton__line::after",
       "context": null,
       "declarations": [
         {
@@ -917,56 +930,97 @@
       "status": "adapter-implemented",
       "properties": [
         "variant",
+        "animation",
         "lines",
         "width",
         "height",
-        "ariaLabelProp"
+        "fullWidth",
+        "fullHeight",
+        "ariaLabelProp",
+        "announce",
+        "density"
       ],
       "events": [],
       "methods": [],
       "slots": [],
-      "unsupportedProperties": [
-        "animation",
-        "fullWidth",
-        "fullHeight",
-        "announce",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Static native skeleton; CSS percentage dimensions and pulse/wave animation are not implemented."
+        "Dedicated native Skeleton renderer implements all ten source properties, eleven sparse appearance hooks and three measured part identities. Text taper, density, full/relative dimensions, affine CSS-length subset, physical elliptical corners, RGB/RGBA, independent bloom, pulse, clipped RTL shimmer and reduced motion follow captured Web behavior.",
+        "AWCSkeletonSizingContext distinguishes definite and indefinite height and uses real Roboto zero-glyph metrics. AWCSkeletonPartAppearance scopes Shape, Line and LineLast overrides. Native busy responder and polite announcements preserve loading/decorative intent; explicit awcSkeletonForcedColors selects semantic paint without equating native increased contrast to browser forced colors.",
+        "Actual SwiftUI/AppKit oracle passes3714 checks against212 Web theme configurations and135 source-timed configurations, including real geometry, palette/alpha, corner pixels, semantics and retained lifecycle. All three preview products build;20 actual live-host checks cover property/style/length/animation behavior. iOS SDK/device and OS screen-reader delivery remain unavailable. Affine used lengths and row allocations have explicit finite-resource bounds; see audits/md-skeleton.md."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "shape",
+        "line",
+        "line-last"
+      ],
+      "appearance": {
+        "api": "AWCSkeletonAppearance / View.awcSkeletonAppearance",
+        "fields": [
+          "color",
+          "highlight",
+          "radius",
+          "roundedRadius",
+          "width",
+          "height",
+          "size",
+          "lineGap",
+          "pulseDuration",
+          "waveDuration",
+          "bloomDuration"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "animation",
         "announce",
         "ariaLabelProp",
+        "density",
+        "fullHeight",
+        "fullWidth",
         "height",
         "lines",
-        "variant"
+        "variant",
+        "width"
       ],
       "events": [],
       "methods": [],
       "slots": [],
-      "unsupportedProperties": [
-        "animation",
-        "width",
-        "fullWidth",
-        "fullHeight",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Static native skeleton blocks; shimmer/pulse motion remains unsupported."
+        "Dedicated native Skeleton implements all ten source properties and eleven typed appearance hooks. Affine native lengths retain parent-relative and font-relative sizing; AWCSkeletonSizingContext supplies definite containing-block height and actual font context. AWCSkeletonPartAppearanceScope targets actual shape, line and final-line paint. Entrance, pulse and RTL-aware clipped shimmer use the source timing curves. Announced native semantics provide a polite accessible name and explicit busy metadata; decorative output is hidden. Native coordinate limits, unsupported CSS grammar, platform accessibility differences and actual runtime verification remain explicit in the component audit."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "shape",
+        "line",
+        "line-last"
+      ],
+      "appearance": {
+        "api": "AWCSkeletonAppearance / AWCSkeletonAppearanceScope / AWCSkeletonLength / AWCCornerShape",
+        "fields": [
+          "color",
+          "highlight",
+          "radius",
+          "roundedRadius",
+          "width",
+          "height",
+          "size",
+          "lineGap",
+          "pulseDuration",
+          "waveDuration",
+          "bloomDuration"
+        ]
+      }
     }
   }
 }

@@ -1,0 +1,84 @@
+{
+ "tag": "md-snackbar",
+ "case": "assertive",
+ "elements": [
+  {
+   "class": "AWCSnackbarStatusView",
+   "depth": 6,
+   "frame": [
+    0,
+    280,
+    640,
+    240
+   ],
+   "hint": "alert",
+   "label": "Project saved",
+   "traits": [
+    "staticText"
+   ]
+  },
+  {
+   "class": "AccessibilityNode",
+   "depth": 6,
+   "frame": [
+    320,
+    400,
+    0,
+    0
+   ],
+   "interactive": true,
+   "label": "",
+   "traits": []
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    346.66666666666663,
+    452,
+    65.33333333333331,
+    40
+   ],
+   "interactive": true,
+   "label": "Undo",
+   "traits": [
+    "button"
+   ]
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    412,
+    452,
+    40,
+    40
+   ],
+   "interactive": true,
+   "label": "Dismiss",
+   "traits": [
+    "button"
+   ]
+  }
+ ],
+ "focus": [],
+ "id": "md-snackbar/assertive",
+ "image": {
+  "scale": 3,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "ios": "26.3.1",
+ "platform": "ios"
+}

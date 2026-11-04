@@ -35,7 +35,12 @@ import AWCUI
             check(themed.tokens["--md-sys-color-on-secondary-container"] == "#102030", "Tonal button label resolves supplied on-secondary-container")
             check(themed.tokens["--md-sys-motion-duration-short1"] == defaults["--md-sys-motion-duration-short1"], "Color overrides cannot change motion")
             check(themed.tokens["--md-sys-color-error"] == defaults["--md-sys-color-error"], "Invalid color is ignored")
-            check(themed.tokens["--md-sys-color-primary-container"] == defaults["--md-sys-color-primary-container"], "Unsupported alpha format is ignored")
+            check(themed.tokens["--md-sys-color-primary-container"] == "#AABBCCDD", "RGBA theme roles preserve their alpha")
+            let custom=AWCTheme.generated(dark:dark,tokens:["--md-sys-color-Brand":"#12345680","--md-sys-color-brand":"#ABCDEF","--md-sys-color-primary":"#12345680","--md-sys-color-1bad":"#FFFFFF"])
+            check(custom.tokens["--md-sys-color-Brand"] == "#12345680" && custom.tokens["--md-sys-color-brand"] == "#ABCDEF", "Custom role names preserve source case sensitivity")
+            check(custom.tokens["--md-sys-color-1bad"] == nil, "Invalid role identifiers remain rejected")
+            let rgba=NSColor(custom.primary).usingColorSpace(.sRGB)!
+            check(hex(custom.primary)=="#123456" && abs(rgba.alphaComponent-128.0/255)<0.00001,"Native theme Color retains RGB and alpha independently")
             var environment = EnvironmentValues()
             environment.awcThemeTokens = themed.tokens
             check(environment.awcThemeTokens["--md-sys-color-secondary-container"] == "#ABCDEF", "Resolved color roles survive environment propagation")

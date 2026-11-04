@@ -1,0 +1,146 @@
+{
+ "tag": "md-divider",
+ "case": "vertical",
+ "request": {
+  "tag": "md-divider",
+  "properties": {
+   "vertical": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "description": "Separator",
+       "enabled": true,
+       "frame": [
+        319.5,
+        32,
+        1,
+        96
+       ],
+       "identifier": "example-md-divider",
+       "role": "AXUnknown",
+       "valueDescription": "Vertical"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      160
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    160
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-divider",
+  "properties": {
+   "inset": false,
+   "insetEnd": false,
+   "insetStart": false,
+   "vertical": true
+  },
+  "tag": "md-divider"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 96,
+     "width": 1,
+     "x": 319.5,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI Layout",
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "name": "md-divider"
+   },
+   {
+    "bounds": {
+     "height": 96,
+     "width": 1,
+     "x": 319.5,
+     "y": 32
+    },
+    "id": "component.divider",
+    "metrics": {
+     "direction": "ltr",
+     "display": "SwiftUI Rectangle",
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "name": "md-divider ::part(divider)",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

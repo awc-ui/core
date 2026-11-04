@@ -65,3 +65,55 @@ describe('md-breadcrumb-item browser navigation', () => {
     expect(safe.getAttribute('rel')?.split(/\s+/)).toEqual(expect.arrayContaining(['noopener', 'noreferrer']));
   });
 });
+
+describe('md-breadcrumb-item browser link contracts', () => {
+  it('allows SPA cancellation, preserves link security and reacts to icons and static states', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<meta charset="utf-8"><md-breadcrumb-item href="#destination" target="_blank" item-index="1" item-total="3"><span slot="icon">★</span><strong>Projects</strong></md-breadcrumb-item>');
+    const item = await page.find('md-breadcrumb-item');
+    const selected = await item.spyOnEvent('mdSelect');
+    await page.$eval('md-breadcrumb-item', el => el.addEventListener('mdSelect', event => event.preventDefault()));
+    const link = await page.find('md-breadcrumb-item >>> a');
+    expect(link.getAttribute('rel')).toContain('noopener');
+    await link.focus();
+    await page.keyboard.press('Enter');
+    await page.waitForChanges();
+    expect(selected).toHaveReceivedEventTimes(1);
+    expect(selected.events[0].detail).toMatchObject({ href: '#destination', label: '★Projects', itemIndex: 1, itemTotal: 3, current: false });
+    expect((await page.find('md-breadcrumb-item >>> [part="separator"]')).textContent).toBe('/');
+    item.setProperty('rel', 'nofollow');
+    await page.waitForChanges();
+    expect((await page.find('md-breadcrumb-item >>> a')).getAttribute('rel')).toBe('nofollow');
+    await page.$eval('md-breadcrumb-item', el => el.querySelector('[slot="icon"]')!.remove());
+    await page.waitForChanges();
+    expect(await page.find('md-breadcrumb-item >>> [part="icon"]')).toBeNull();
+    item.setProperty('icon', 'folder');
+    item.setProperty('disabled', true);
+    await page.waitForChanges();
+    expect(await page.find('md-breadcrumb-item >>> a')).toBeNull();
+    expect((await page.find('md-breadcrumb-item >>> [part="icon"]')).textContent).toBe('folder');
+    item.setProperty('disabled', false);
+    item.setProperty('current', true);
+    await page.waitForChanges();
+    expect((await page.find('md-breadcrumb-item >>> [part="static"]')).getAttribute('aria-current')).toBe('page');
+    item.setProperty('collapsed', true);
+    await page.waitForChanges();
+    expect(item.getAttribute('aria-hidden')).toBe('true');
+    expect(await page.find('md-breadcrumb-item >>> [part="label"]')).toBeNull();
+  });
+
+  it('supports unadorned static items, ordinary hash navigation and dynamic label slots', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<md-breadcrumb-item>  </md-breadcrumb-item>');
+    const item = await page.find('md-breadcrumb-item');
+    expect(await page.find('md-breadcrumb-item >>> a')).toBeNull();
+    await page.$eval('md-breadcrumb-item', el => el.append(document.createTextNode('Destination')));
+    item.setProperty('href', '#destination');
+    await page.waitForChanges();
+    await (await page.find('md-breadcrumb-item >>> a')).click();
+    await page.waitForFunction(() => location.hash === '#destination');
+    await page.$eval('md-breadcrumb-item', el => el.replaceChildren());
+    await page.waitForChanges();
+    expect(item.textContent).toBe('');
+  });
+});

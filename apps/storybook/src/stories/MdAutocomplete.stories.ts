@@ -1,6 +1,9 @@
+import { exerciseAutocompleteData } from '../../../../packages/core/src/components/md-autocomplete/test-utils/editing.browser';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { expect, waitFor } from 'storybook/test';
 import { html } from 'lit';
+import { exerciseServerValidation } from '../../../../packages/core/src/components/md-checkbox/test-utils/form-validation.browser';
+import { exerciseAutocompleteEditing } from '../../../../packages/core/src/components/md-autocomplete/test-utils/editing.browser';
 import { ref } from 'lit/directives/ref.js';
 import { t } from '../i18n';
 
@@ -874,4 +877,26 @@ export const CustomCSS: Story = {
       <md-autocomplete class="wide" variant="outlined" label="Wide" .options=${countries}></md-autocomplete>
     </div>
   `,
+};
+
+/** Application/server validation must be queryable without stealing focus, and
+ * interactive reports must expose the same error through the field's own UI. */
+export const ServerValidation: Story = {
+  render: () => html`<form><fieldset style="border:0;padding:0">
+    <button type="button">Outside control</button>
+    <md-autocomplete data-form-contract name="entry" label="Form value" aria-label="Form value"></md-autocomplete>
+  </fieldset></form>`,
+  play: async ({ canvasElement }) => {
+    await exerciseServerValidation(canvasElement.querySelector('md-autocomplete') as HTMLElement);
+  },
+};
+
+export const EditingContract: Story = {
+  render: () => html`<md-autocomplete label="Produce"></md-autocomplete>`,
+  play: async ({ canvasElement }) => exerciseAutocompleteEditing(canvasElement.querySelector('md-autocomplete') as HTMLElement),
+};
+
+export const DynamicDataContract: Story = {
+  render: () => html`<md-autocomplete label="Form value"></md-autocomplete>`,
+  play: async ({ canvasElement }) => exerciseAutocompleteData(canvasElement.querySelector('md-autocomplete') as HTMLElement),
 };

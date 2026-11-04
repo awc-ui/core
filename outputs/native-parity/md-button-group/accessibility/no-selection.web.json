@@ -1,0 +1,291 @@
+{
+ "tag": "md-button-group",
+ "case": "no-selection",
+ "html": "<md-button-group data-ax-node=\"n0\" id=\"example-md-button-group\"><md-button data-ax-node=\"n1\" id=\"segment-0\">Day</md-button><md-button data-ax-node=\"n2\" id=\"segment-1\">Week</md-button><md-button data-ax-node=\"n3\" id=\"segment-2\">Month</md-button></md-button-group>",
+ "props": {
+  "n0": {
+   "density": 0,
+   "fullWidth": false,
+   "required": false,
+   "selectionMode": "none",
+   "shape": "round",
+   "size": "sm",
+   "variant": "standard"
+  },
+  "n1": {
+   "label": "Day",
+   "selected": true,
+   "value": "day"
+  },
+  "n2": {
+   "label": "Week",
+   "selected": false,
+   "value": "week"
+  },
+  "n3": {
+   "label": "Month",
+   "selected": false,
+   "value": "month"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "group",
+    "name": "",
+    "ignored": false,
+    "frame": [
+     16,
+     16,
+     221.375,
+     40
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "button",
+        "name": "Day",
+        "ignored": false,
+        "invalid": "false",
+        "focusable": true,
+        "pressed": "true",
+        "frame": [
+         16,
+         16,
+         58,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Day",
+              "ignored": false,
+              "frame": [
+               32.390625,
+               28,
+               26,
+               17
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Day",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "button",
+        "name": "Week",
+        "ignored": false,
+        "invalid": "false",
+        "focusable": true,
+        "pressed": "false",
+        "frame": [
+         86,
+         16,
+         67.953125,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Week",
+              "ignored": false,
+              "frame": [
+               102,
+               28,
+               35.953125,
+               16
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Week",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "button",
+        "name": "Month",
+        "ignored": false,
+        "invalid": "false",
+        "focusable": true,
+        "pressed": "false",
+        "frame": [
+         165.953125,
+         16,
+         71.421875,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Month",
+              "ignored": false,
+              "frame": [
+               181.953125,
+               28,
+               39.421875,
+               16
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Month",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-button",
+   "role": "button",
+   "name": "Day",
+   "frame": [
+    16,
+    16,
+    58,
+    40
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true,
+    "pressed": "true"
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

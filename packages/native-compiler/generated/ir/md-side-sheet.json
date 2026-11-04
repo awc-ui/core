@@ -158,6 +158,11 @@
       "name": "hasActions",
       "type": "inferred",
       "initializer": "false"
+    },
+    {
+      "name": "hasSlottedHeadline",
+      "type": "inferred",
+      "initializer": "false"
     }
   ],
   "events": [
@@ -348,7 +353,7 @@
           },
           {
             "name": "aria-labelledby",
-            "value": "hasHeadline ? this.headlineId : undefined"
+            "value": "hasHeadline && !this.sheetAriaLabel ? this.headlineId : undefined"
           },
           {
             "name": "aria-label",
@@ -378,7 +383,7 @@
           },
           {
             "kind": "expression",
-            "source": "isModal && (\n            <span\n              class=\"md-side-sheet__focus-guard\"\n              tabindex={0}\n              aria-hidden=\"true\"\n              onFocus={this.handleEndGuardFocus}\n            ></span>\n          )"
+            "source": "isModal && (\n            <span\n              class=\"md-side-sheet__focus-guard\"\n              tabindex={0}\n              aria-hidden=\"true\"\n              onFocus={this.handleStartGuardFocus}\n            ></span>\n          )"
           },
           {
             "kind": "text",
@@ -439,6 +444,10 @@
                       {
                         "name": "name",
                         "value": "headline"
+                      },
+                      {
+                        "name": "onSlotchange",
+                        "value": "this.syncSlots"
                       }
                     ],
                     "children": [
@@ -524,7 +533,7 @@
           },
           {
             "kind": "expression",
-            "source": "this.hasActions && (\n            <div class=\"md-side-sheet__actions\" part=\"actions\">\n              <slot name=\"actions\"></slot>\n            </div>\n          )"
+            "source": "this.hasActions && (\n            <div class=\"md-side-sheet__actions\" part=\"actions\">\n              <slot name=\"actions\" onSlotchange={this.syncSlots}></slot>\n            </div>\n          )"
           },
           {
             "kind": "text",
@@ -532,7 +541,7 @@
           },
           {
             "kind": "expression",
-            "source": "isModal && (\n            <span\n              class=\"md-side-sheet__focus-guard\"\n              tabindex={0}\n              aria-hidden=\"true\"\n              onFocus={this.handleStartGuardFocus}\n            ></span>\n          )"
+            "source": "isModal && (\n            <span\n              class=\"md-side-sheet__focus-guard\"\n              tabindex={0}\n              aria-hidden=\"true\"\n              onFocus={this.handleEndGuardFocus}\n            ></span>\n          )"
           },
           {
             "kind": "text",
@@ -551,37 +560,49 @@
       "code": "DOM_OBSERVER",
       "severity": "warning",
       "message": "DOM mutation observation has no direct native counterpart.",
-      "line": 92
+      "line": 97
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Document access requires a native adapter.",
-      "line": 142
+      "line": 183
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 162
+      "line": 187
     },
     {
-      "code": "DOM_QUERY",
+      "code": "SHADOW_DOM",
       "severity": "warning",
-      "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
-      "line": 316
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 261
+    },
+    {
+      "code": "DOM_MUTATION",
+      "severity": "warning",
+      "message": "classList depends on browser semantics and requires a native adapter.",
+      "line": 331
+    },
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 332
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 322
+      "line": 335
     },
     {
       "code": "CANCELABLE_EVENT",
       "severity": "warning",
       "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
-      "line": 24
+      "line": 25
     }
   ],
   "source": {
@@ -589,7 +610,7 @@
     "styleUrl": "md-side-sheet.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "34c5c48a16ac0a6ffe8d03bb1eb426509dc087959f387c995a153ecdcb8c8fe8"
+    "sha256": "b2bbfc2128508123dc3d28e0c0d96dd663f17d1745ec26ffe8418fa066d29aa1"
   },
   "styles": [
     {
@@ -651,6 +672,17 @@
           "value": "relative",
           "important": false
         },
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-side-sheet__container",
+      "context": null,
+      "declarations": [
         {
           "property": "box-sizing",
           "value": "border-box",
@@ -873,7 +905,7 @@
         },
         {
           "property": "background-color",
-          "value": "var(--md-sys-color-surface-container-low, #F7F2FA)",
+          "value": "var(--md-side-sheet-container-color, var(--md-sys-color-surface-container-low, #F7F2FA))",
           "important": false
         },
         {
@@ -1035,6 +1067,16 @@
       "context": null,
       "declarations": [
         {
+          "property": "inline-size",
+          "value": "min(var(--_width), max(0px, calc(100% - 32px)))",
+          "important": false
+        },
+        {
+          "property": "max-inline-size",
+          "value": "min(var(--_max-width), max(0px, calc(100% - 32px)))",
+          "important": false
+        },
+        {
           "property": "inset-block",
           "value": "max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px))",
           "important": false
@@ -1085,6 +1127,11 @@
         {
           "property": "margin",
           "value": "16px",
+          "important": false
+        },
+        {
+          "property": "inline-size",
+          "value": "max(0px, calc(100% - 32px))",
           "important": false
         },
         {
@@ -1229,7 +1276,7 @@
       "declarations": [
         {
           "property": "--md-icon-button-icon-color",
-          "value": "var(--_icon-color)",
+          "value": "var(--md-side-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
           "important": false
         },
         {
@@ -1441,7 +1488,12 @@
       "declarations": [
         {
           "property": "color",
-          "value": "var(--_icon-color)",
+          "value": "var(--md-side-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--md-side-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
           "important": false
         },
         {
@@ -1467,7 +1519,12 @@
       "declarations": [
         {
           "property": "color",
-          "value": "var(--_icon-color)",
+          "value": "var(--md-side-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "important": false
+        },
+        {
+          "property": "--md-icon-button-icon-color",
+          "value": "var(--md-side-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F))",
           "important": false
         },
         {
@@ -1653,12 +1710,17 @@
       "status": "adapter-implemented",
       "properties": [
         "open",
+        "variant",
+        "side",
         "headline",
         "closeable",
         "showBack",
         "scrimDismissible",
         "topDivider",
-        "bottomDivider"
+        "bottomDivider",
+        "detached",
+        "sheetAriaLabel",
+        "density"
       ],
       "events": [
         "mdOpen",
@@ -1666,78 +1728,125 @@
         "mdCancel",
         "mdBack"
       ],
-      "methods": [],
-      "slots": [
-        "",
-        "headline",
-        "actions"
-      ],
-      "unsupportedProperties": [
-        "variant",
-        "side",
-        "detached",
-        "sheetAriaLabel",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "show",
         "whenClosed",
         "close"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "back",
-        "close"
+        "headline",
+        "close",
+        "actions"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "System sheet replaces desktop side edge positioning."
+        "Dedicated native side sheet: standard (in-flow, no scrim) and modal variants on the start or end side, attached or detached; all twelve properties, mdOpen/mdClose/mdCancel/mdBack with null payloads, show/close/whenClosed through AWCSideSheetController, all five slots, nine appearance hooks and nine typed part targets.",
+        "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
+        "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "scrim",
+        "container",
+        "header",
+        "headline",
+        "close",
+        "divider-top",
+        "divider-bottom",
+        "content",
+        "actions"
+      ],
+      "appearance": {
+        "api": ".awcSideSheetAppearance(AWCSideSheetAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "headlineColor",
+          "contentColor",
+          "scrimColor",
+          "dividerColor",
+          "iconColor",
+          "width",
+          "maxWidth"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "closeable",
-        "headline",
         "open",
-        "scrimDismissible",
-        "showBack",
-        "side"
-      ],
-      "events": [
-        "mdBack",
-        "mdCancel",
-        "mdClose",
-        "mdOpen"
-      ],
-      "methods": [],
-      "slots": [
-        "",
-        "actions"
-      ],
-      "unsupportedProperties": [
         "variant",
+        "side",
+        "headline",
+        "closeable",
+        "showBack",
+        "scrimDismissible",
         "topDivider",
         "bottomDivider",
         "detached",
         "sheetAriaLabel",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdOpen",
+        "mdClose",
+        "mdCancel",
+        "mdBack"
+      ],
+      "methods": [
         "show",
         "whenClosed",
         "close"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "back",
         "headline",
-        "close"
+        "close",
+        "actions"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native side sheet: standard (in-flow, no scrim) and modal variants on the start or end side, attached or detached; all twelve properties, mdOpen/mdClose/mdCancel/mdBack with null payloads, show/close/whenClosed through AWCSideSheetController, all five slots, nine appearance hooks and nine typed part targets.",
+        "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
+        "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "scrim",
+        "container",
+        "header",
+        "headline",
+        "close",
+        "divider-top",
+        "divider-bottom",
+        "content",
+        "actions"
+      ],
+      "appearance": {
+        "api": "AWCSideSheetAppearanceScope(AWCSideSheetAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "headlineColor",
+          "contentColor",
+          "scrimColor",
+          "dividerColor",
+          "iconColor",
+          "width",
+          "maxWidth"
+        ]
+      }
     }
   }
 }

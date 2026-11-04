@@ -19,6 +19,8 @@ class AWCFormField internal constructor(var name: String, initialValue: AWCValue
     internal var tag: String? = null
     internal var properties: Props = emptyMap()
     internal var resetVersion by mutableIntStateOf(0)
+    /** A control that owns its constraint validation (md-text-field) answers for the form: null = valid. */
+    internal var validityOverride: (() -> String?)? = null
     internal fun reset() {
         value = if (tag == "md-otp-field") "" else copyFormValue(initial)
         error = null
@@ -67,7 +69,7 @@ class AWCFormState(
                 field.disabled -> null
                 field.tag == "md-radio" && field.name.isNotEmpty() && fields.any { it.tag == "md-radio" && it.name == field.name && it.properties.bool("required") } ->
                     if (fields.any { it.tag == "md-radio" && it.name == field.name && it.value == true }) null else "Choose an option"
-                else -> field.validator(field.value)
+                else -> field.validityOverride.let { if (it != null) it() else field.validator(field.value) }
             }
     internal fun refreshErrors() { fields.filter { it.error != null }.forEach { it.error = validationError(it) } }
     fun validate(): Boolean {

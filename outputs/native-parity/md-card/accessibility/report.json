@@ -1,0 +1,429 @@
+{
+ "tag": "md-card",
+ "at": "2026-10-29T11:11:41.220Z",
+ "rows": [
+  {
+   "case": "static",
+   "web": {
+    "elements": [
+     "button:Explore workspace"
+    ],
+    "texts": [
+     "✧",
+     "Ideas take shape.",
+     "A shared design language, built for every surface."
+    ],
+    "focus": [
+     "button:Explore workspace"
+    ],
+    "contrast": {
+     "measured": 5,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Explore workspace"
+     ],
+     "texts": [
+      "✧",
+      "Ideas take shape.",
+      "A shared design language, built for every surface."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Explore workspace",
+      "button:Explore workspace"
+     ],
+     "findings": [],
+     "contrastMeasured": 5
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Explore workspace"
+     ],
+     "texts": [
+      "✧",
+      "Ideas take shape.",
+      "A shared design language, built for every surface."
+     ],
+     "focus": [
+      "button:Explore workspace",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: button \"Explore workspace\" target 152×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Explore workspace"
+     ],
+     "texts": [
+      "✧",
+      "Ideas take shape.",
+      "A shared design language, built for every surface."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Explore workspace",
+      "button:Explore workspace"
+     ],
+     "findings": [],
+     "contrastMeasured": 4,
+     "atf": {
+      "elements": 14,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "interactive",
+   "web": {
+    "elements": [
+     "button:Explore workspace"
+    ],
+    "texts": [
+     "✧",
+     "Ideas take shape.",
+     "A shared design language, built for every surface."
+    ],
+    "focus": [
+     "button:Explore workspace"
+    ],
+    "contrast": {
+     "measured": 5,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Explore workspace"
+     ],
+     "texts": [
+      "✧",
+      "Ideas take shape.",
+      "A shared design language, built for every surface."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Explore workspace",
+      "button:Explore workspace",
+      "button:Explore workspace"
+     ],
+     "findings": [],
+     "contrastMeasured": 5
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Explore workspace"
+     ],
+     "texts": [
+      "✧",
+      "Ideas take shape.",
+      "A shared design language, built for every surface."
+     ],
+     "focus": [
+      "button:Explore workspace",
+      "∅",
+      "button:Explore workspace"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: button \"Explore workspace\" target 152×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Explore workspace"
+     ],
+     "texts": [
+      "✧",
+      "Ideas take shape.",
+      "A shared design language, built for every surface."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Explore workspace",
+      "button:Explore workspace",
+      "button:Explore workspace"
+     ],
+     "findings": [],
+     "contrastMeasured": 4,
+     "atf": {
+      "elements": 14,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "disabled",
+   "web": {
+    "elements": [
+     "button:Explore workspace"
+    ],
+    "texts": [
+     "✧",
+     "Ideas take shape.",
+     "A shared design language, built for every surface."
+    ],
+    "focus": [
+     "button:Explore workspace"
+    ],
+    "contrast": {
+     "measured": 2,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Explore workspace"
+     ],
+     "texts": [
+      "✧",
+      "Ideas take shape.",
+      "A shared design language, built for every surface."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Explore workspace",
+      "button:Explore workspace",
+      "button:Explore workspace"
+     ],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Explore workspace"
+     ],
+     "texts": [
+      "✧",
+      "Ideas take shape.",
+      "A shared design language, built for every surface."
+     ],
+     "focus": [
+      "button:Explore workspace",
+      "∅",
+      "button:Explore workspace"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: button \"Explore workspace\" target 152×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Explore workspace"
+     ],
+     "texts": [
+      "✧",
+      "Ideas take shape.",
+      "A shared design language, built for every surface."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Explore workspace",
+      "button:Explore workspace",
+      "button:Explore workspace"
+     ],
+     "findings": [],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 14,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

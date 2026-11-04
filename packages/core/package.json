@@ -157,7 +157,7 @@
     "skills/"
   ],
   "scripts": {
-    "build": "node ../../scripts/build-starter-templates.mjs && node ../../scripts/build-package-docs.mjs && rm -rf dist && stencil build && stencil build --config stencil.config.csr.ts && node ../../scripts/fix-module-types.mjs && node ../../scripts/fix-declarations.mjs && node ../../scripts/split-react-components.mjs && node ../../scripts/emit-tokens-css.mjs && node ../../scripts/emit-pre-upgrade-css.mjs && node ../../scripts/compact-sourcemaps.mjs",
+    "build": "node ../../scripts/build-starter-templates.mjs && node ../../scripts/build-package-docs.mjs && rm -rf dist && stencil build && stencil build --config stencil.config.csr.ts && node ../../scripts/fix-module-types.mjs && node ../../scripts/fix-declarations.mjs && node ../../scripts/split-react-components.mjs && node ../../scripts/emit-pre-upgrade-css.mjs && node ../../scripts/compact-sourcemaps.mjs",
     "build:watch": "stencil build --watch",
     "build:dev": "stencil build --config stencil.config.dev.ts",
     "build:watch:dev": "stencil build --config stencil.config.dev.ts --watch",
@@ -173,6 +173,7 @@
     "test:ssr:coverage": "node scripts/ssr-coverage.mjs",
     "test:ssr": "node scripts/ssr-smoke.mjs",
     "test:csr": "node --test scripts/overlay-csr.test.mjs scripts/tables-csr.test.mjs",
+    "test:first-render": "node --test scripts/first-render.e2e.mjs",
     "lint": "tsc --noEmit",
     "dev": "stencil build --dev --watch --serve",
     "size": "size-limit",

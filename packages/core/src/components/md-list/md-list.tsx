@@ -256,6 +256,8 @@ export class MdList {
 
   private isItemFocusable(item: HTMLMdListItemElement): boolean {
     if (item.disabled) return false;
+    /* `[hidden]` rows are display: none and cannot take focus. */
+    if (item.hidden) return false;
     if (this.selectionMode !== 'none') return true;
     if (this.reorderable) return true;
     return item.type !== 'text';
@@ -273,7 +275,10 @@ export class MdList {
 
     if (typeof MutationObserver !== 'undefined') {
       this.childObserver = new MutationObserver(records => {
-        const childListChanged = records.some(r => r.type === 'childList');
+        const childListChanged = records.some(r => r.type === 'childList' && r.target === this.el);
+        const visibilityChanged = records.some(
+          r => r.type === 'attributes' && (r.target as Node).parentNode === this.el,
+        );
         if (childListChanged) {
           this.syncSelectionMode();
           this.syncInteractionMode();
@@ -286,9 +291,12 @@ export class MdList {
             if (!this.originalOrder.includes(item)) this.originalOrder.push(item);
           });
           this.refreshRovingTabindex(this.activeIndex, false);
+        } else if (visibilityChanged) {
+          /* A row was hidden / shown: move the roving tab stop off a hidden row. */
+          this.refreshRovingTabindex(this.activeIndex, false);
         }
       });
-      this.childObserver.observe(this.el, { childList: true });
+      this.childObserver.observe(this.el, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
     }
   }
 
@@ -715,6 +723,13 @@ export class MdList {
     if (focusable.length === 0) return;
 
     const items = this.items;
+    /* Authored controls inside a row (multi-action trailing controls, fields in
+       expanded content) keep their own keys: arrows, Home/End and printable
+       characters must not move roving focus or run typeahead from them. The
+       row's own targets live in its shadow tree and are not light-DOM
+       descendants; expanded-content child ROWS keep list navigation. */
+    if (this.isAuthoredControlKey(event, items)) return;
+
     /* Which row holds focus — on the host itself (option / reorderable rows) or
        on the inner primary element inside its shadow tree (button / link /
        menuitem rows), which is why a plain `:focus` will not do.
@@ -759,6 +774,18 @@ export class MdList {
     }
   }
 
+  private isAuthoredControlKey(event: KeyboardEvent, items: HTMLMdListItemElement[]): boolean {
+    const path = (typeof event.composedPath === 'function' ? event.composedPath() : [event.target]) as EventTarget[];
+    for (const target of path) {
+      const node = target as HTMLElement;
+      if (typeof node?.tagName !== 'string') continue;
+      if ((items as HTMLElement[]).includes(node) || node === this.el) return false;
+      if (node.tagName === 'MD-LIST-ITEM') return false;
+      if (items.some(item => item.contains(node))) return true;
+    }
+    return false;
+  }
+
   private handleTypeahead(char: string) {
     this.typeaheadBuffer += char;
     if (this.typeaheadTimer !== null) {
@@ -795,7 +822,10 @@ export class MdList {
     if (!item) return;
     const idx = this.items.indexOf(item);
     if (idx < 0) return;
-    this.refreshRovingTabindex(idx, true, true);
+    /* mdActivate reports a change of active row; keys that keep the current
+       row (Home on the first, End on the last, wrap in a one-row list) only
+       refresh the roving chrome. */
+    this.refreshRovingTabindex(idx, idx !== this.activeIndex, true);
     /* Let md-list-item re-render tabbable → tabindex before focus so the
        roving target is the page's next tab stop, not a stale tabindex=-1 row. */
     requestAnimationFrame(() => this.focusListItem(item));

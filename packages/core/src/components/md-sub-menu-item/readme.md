@@ -91,7 +91,9 @@ not a selectable option.
 - **Clicking the row does not open the submenu.** A click only emits `mdClick`.
   The submenu opens on `mouseenter`, and on `ArrowRight`, `Enter` or `Space`
   from the keyboard. `ArrowLeft` and `Escape` close it and return focus to the
-  row.
+  row. Under `dir="rtl"` the arrows swap (`ArrowLeft` opens, `ArrowRight`
+  closes), matching the side the flyout opens on. Only keys pressed on the row
+  itself open it: keys pressed inside the open flyout belong to its items.
 - Hover-open does not move focus; keyboard-open does, and hands the visible
   focus ring to the first item of the nested menu.
 - **Hover intent, both ways.** The pointer must rest on the row for
@@ -231,7 +233,7 @@ Sourced from [M3 · Menus · Guidelines](https://m3.material.io/components/menus
 `aria-expanded` tracking the flyout, and `aria-disabled` when disabled. The
 parent `md-menu` supplies the roving-focus model; `ArrowRight`/`Enter`/`Space`
 step into the branch and `ArrowLeft`/`Escape` step back out with focus and the
-focus ring restored to this row — **none of which waits on `open-delay` or
+focus ring restored to this row (the arrows swap under `dir="rtl"`) — **none of which waits on `open-delay` or
 `close-delay`**, which are pointer-only. A keyboard user never sits through a
 hover delay, and `aria-expanded` flips on the keystroke, not after it.
 `headline` is the accessible name — keep it

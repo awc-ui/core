@@ -12,12 +12,12 @@ dark-mode switch.
 
 ## How it's wired
 
-- **Tokens** — `app/layout.tsx` imports `@awc-ui/tokens/tokens.css` so the
-  `--md-sys-*` custom properties are available document-wide.
+- **Core CSS** — `app/layout.tsx` imports `@awc-ui/core/css/tokens.css` for
+  document-wide tokens and the unfinished-component guard before client code.
 - **SSR** — the static components in `app/page.tsx` (a Server Component) come
   from `@awc-ui/react/server`, which server-renders each component's
   Declarative Shadow DOM via `@awc-ui/core/hydrate` and hydrates on the client,
-  so the first paint is styled with no flash.
+  so rendered components are styled and visible before client JavaScript.
 - **Client components** — `app/theme-switch.tsx` and `app/sessions-chart.tsx`
   use the client wrappers from `@awc-ui/react`: the switch needs the
   `onMdChange` event, and the chart's `xAxis` / `series` / `yAxis` are objects

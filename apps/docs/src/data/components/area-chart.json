@@ -527,6 +527,11 @@
   ],
   "dataTypes": [
     {
+      "name": "MdChartTitleAlign",
+      "kind": "type",
+      "body": "'start' | 'center' | 'end'"
+    },
+    {
       "name": "MdChartSeries",
       "kind": "interface",
       "extends": "",
@@ -594,6 +599,60 @@
       "name": "MdChartAxisBreaks",
       "kind": "type",
       "body": "MdChartAxisBreak[] | 'auto' | MdChartAxisBreakOptions"
+    },
+    {
+      "name": "MdChartAxisBreak",
+      "kind": "interface",
+      "extends": "",
+      "body": "  from: MdChartAxisValue;\n  to: MdChartAxisValue;\n  /** Pixels the cut occupies. Default 14. */\n  gap?: number;"
+    },
+    {
+      "name": "MdChartAxisBreakOptions",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Cuts you name yourself. */\n  ranges?: MdChartAxisBreak[];\n  /** Also cut empty stretches the axis finds on its own. */\n  auto?: boolean;\n  /** How many times the median spacing a gap must exceed to be cut. Default 8. */\n  minGap?: number;\n  /** Most automatic cuts to make. Default 2. */\n  maxBreaks?: number;\n  /** Pixels each cut occupies. Default 14. */\n  gap?: number;\n  /**\n   * How the sections left over share the axis.\n   *   • `equal` (default) — each section gets the same share, which is what\n   *     makes a point at 1 and a point at 1e12 both readable.\n   *   • `proportional` — one unit-per-pixel across the whole axis, so widths\n   *     stay comparable across sections. Classic break behaviour; note it\n   *     leaves a tiny section tiny.\n   */\n  sizing?: 'equal' | 'proportional';"
+    },
+    {
+      "name": "MdChartStackMode",
+      "kind": "type",
+      "body": "| 'none' | 'normal' | 'percentage' | 'silhouette' | 'wiggle'"
+    },
+    {
+      "name": "MdChartLegendPosition",
+      "kind": "type",
+      "body": "| 'top' | 'bottom' | 'left' | 'right' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end'"
+    },
+    {
+      "name": "MdChartTooltipTrigger",
+      "kind": "type",
+      "body": "'axis' | 'item' | 'none'"
+    },
+    {
+      "name": "MdChartTooltipRenderer",
+      "kind": "type",
+      "body": "(context: MdChartTooltipContext) => MdChartTooltipContent"
+    },
+    {
+      "name": "MdChartTooltipContext",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Index of the hovered x slot. On a chart whose series carry their own x,\n   *  this indexes the merged axis (see `utils/charts/xy.ts`), which is also\n   *  what `axisValue` is read from. */\n  dataIndex: number;\n  /** Raw x value at that slot — a category string, a number, or a Date. */\n  axisValue: MdChartAxisValue | undefined;\n  /** `axisValue` run through the x-axis `valueFormatter` — the string the\n   *  default tooltip uses as its header. */\n  axisLabel: string;\n  /** Visible series that HAVE a value at this x, in series order. A series with\n   *  no sample here is absent from this list (it is in `missing` instead). */\n  series: MdChartTooltipSeries[];\n  /** Visible series with NO value at this x, in series order. Usually empty;\n   *  populated for partial / irregular data, where it lets you render your own\n   *  \"no reading\" treatment. */\n  missing: MdChartTooltipSeries[];\n  /** Index of the emphasised series, or `-1` when nothing is emphasised (a\n   *  single-series chart never emphasises). */\n  focusedSeriesIndex: number;"
+    },
+    {
+      "name": "MdChartTooltipSeries",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Index into the chart's `series` prop (0-based). Stable across hides:\n   *  hidden series are omitted entirely rather than renumbered. */\n  seriesIndex: number;\n  /** Series label — what the legend and the default tooltip show. */\n  label: string;\n  /** The series' resolved CSS colour (MD3 roles are already mapped to a real\n   *  colour, so this can go straight into a style). */\n  color: string;\n  /**\n   * Raw y value at the hovered x.\n   *   • `number`    — a real reading (entries in `series`)\n   *   • `null`      — the series HAS a datum here and it is null/non-finite:\n   *                   \"measured, no value\"\n   *   • `undefined` — the series has no datum here at all: it starts later,\n   *                   ends earlier, or was never sampled at this x\n   */\n  value: number | null | undefined;\n  /** `value` run through the chart's `valueFormatter` (or the series' own axis\n   *  formatter on a multi-axis chart). `''` for a missing value the formatter\n   *  chose not to name. */\n  formattedValue: string;\n  /** True for the series the pointer is nearest — the one the chart emphasises\n   *  while the others dim. At most one entry is focused. */\n  focused: boolean;\n  /** True for entries in `missing` — i.e. `value` is `null` or `undefined`. */\n  missing: boolean;"
+    },
+    {
+      "name": "MdChartTooltipContent",
+      "kind": "type",
+      "body": "Node | string | { unsafeHtml: string } | null | undefined"
+    },
+    {
+      "name": "MdChartAnimation",
+      "kind": "type",
+      "body": "'expressive' | 'grow' | 'fade' | 'draw' | 'stagger' | 'none'"
     }
   ],
   "callableProps": [

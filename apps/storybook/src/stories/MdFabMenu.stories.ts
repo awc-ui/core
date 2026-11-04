@@ -3,6 +3,30 @@ import { expect, userEvent, waitFor } from 'storybook/test';
 import { html } from 'lit';
 import { t } from '../i18n';
 
+export const ItemKeyboardAndSlots: Story = {
+  render: () => html`<div role="menu" aria-label="Actions"><md-fab-menu-item tabindex="0"><span slot="icon">★</span>Bookmark</md-fab-menu-item></div>`,
+  play: async ({ canvasElement }) => {
+    const item = canvasElement.querySelector('md-fab-menu-item') as HTMLMdFabMenuItemElement;
+    await waitFor(() => expect(item.classList.contains('hydrated')).toBe(true));
+    let count = 0;
+    item.addEventListener('mdClick', () => count++);
+    await waitFor(() => expect(item.classList.contains('md-fab-menu-item--with-icon')).toBe(true));
+    item.focus();
+    key(item, 'Enter'); key(item, ' ');
+    expect(count).toBe(2);
+    item.softDisabled = true;
+    await waitFor(() => expect(item.getAttribute('aria-disabled')).toBe('true'));
+    item.click();
+    key(item, 'Enter'); key(item, ' ');
+    expect(count).toBe(2);
+    item.querySelector('[slot="icon"]')!.remove();
+    await waitFor(() => expect(item.classList.contains('md-fab-menu-item--with-icon')).toBe(false));
+    item.softDisabled = false;
+    item.label = 'Bookmark this page';
+    await waitFor(() => expect(item.shadowRoot!.querySelector('[part="label"]')!.textContent).toBe('Bookmark this page'));
+  },
+};
+
 /** Shadow-piercing + hydration helpers for play(): testing-library queries can't
  *  cross shadow roots, and a Stencil component must be `.hydrated` before it can
  *  be driven (the anchor click-toggle is wired in `componentDidLoad`). */

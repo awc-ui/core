@@ -1,0 +1,139 @@
+{
+ "tag": "md-segmented-button-set",
+ "case": "single",
+ "elements": [
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    146,
+    380,
+    116,
+    40
+   ],
+   "hint": "Radio button",
+   "interactive": true,
+   "label": "Day",
+   "traits": [
+    "button",
+    "selected"
+   ],
+   "value": "Checked"
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    262,
+    380,
+    116,
+    40
+   ],
+   "hint": "Radio button",
+   "interactive": true,
+   "label": "Week",
+   "traits": [
+    "button"
+   ],
+   "value": "Unchecked"
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    377,
+    380,
+    117,
+    40
+   ],
+   "hint": "Radio button",
+   "interactive": true,
+   "label": "Month",
+   "traits": [
+    "button"
+   ],
+   "value": "Unchecked"
+  }
+ ],
+ "focus": [
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     146,
+     380,
+     116,
+     40
+    ],
+    "hint": "Radio button",
+    "interactive": true,
+    "label": "Day",
+    "traits": [
+     "button",
+     "selected"
+    ],
+    "value": "Checked"
+   }
+  },
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     262,
+     380,
+     116,
+     40
+    ],
+    "hint": "Radio button",
+    "interactive": true,
+    "label": "Week",
+    "traits": [
+     "button"
+    ],
+    "value": "Unchecked"
+   }
+  },
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     377,
+     380,
+     117,
+     40
+    ],
+    "hint": "Radio button",
+    "interactive": true,
+    "label": "Month",
+    "traits": [
+     "button"
+    ],
+    "value": "Unchecked"
+   }
+  },
+  {}
+ ],
+ "id": "md-segmented-button-set/single",
+ "image": {
+  "scale": 3,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "ios": "26.3.1",
+ "platform": "ios"
+}

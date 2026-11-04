@@ -21,17 +21,18 @@ const box = (w = 100, h = 40) => () =>
   ({ width: w, height: h, top: 0, left: 0, right: w, bottom: h, x: 0, y: 0, toJSON: () => ({}) }) as DOMRect;
 
 /** A recording stand-in for Element.animate, since mock-doc has none. */
-function installAnimate(opts: { finishGrow?: boolean } = {}) {
+function installAnimate(opts: { finishGrow?: boolean; legacyFade?: boolean; cancelFade?: boolean } = {}) {
   const calls: Array<{ keyframes: unknown; options: unknown }> = [];
   const proto = HTMLElement.prototype as unknown as Record<string, unknown>;
   const prev = Object.getOwnPropertyDescriptor(proto, 'animate');
   proto.animate = function (keyframes: unknown, options: unknown) {
     calls.push({ keyframes, options });
+    const fade = (options as { duration: number }).duration === 150;
     return {
       playState: opts.finishGrow === false ? 'running' : 'finished',
       cancel: () => undefined,
       finish: () => undefined,
-      finished: Promise.resolve(),
+      finished: fade && opts.legacyFade ? undefined : fade && opts.cancelFade ? Promise.reject(new Error('Animation cancelled')) : Promise.resolve(),
       addEventListener: (_t: string, cb: () => void) => cb(),
       removeEventListener: () => undefined,
     };
@@ -81,6 +82,68 @@ function press(page: SpecPage, x = 20, y = 10) {
 }
 
 describe('md-ripple', () => {
+  describe('public motion tokens', () => {
+    it.each([
+      { opacity: '0.3', inline: '20px', block: '10px', duration: '700ms', easing: 'linear', expectedOpacity: 0.3, expectedDuration: 700 },
+      { opacity: 'invalid', inline: '-20px', block: 'calc(1px + 2px)', duration: 'invalid', easing: '', expectedOpacity: 0.12, expectedDuration: 450 },
+    ])('uses valid tokens and safe fallbacks for $opacity/$duration', async (settings) => {
+      const animation = installAnimate();
+      const original = globalThis.getComputedStyle;
+      const values: Record<string, string> = {
+        '--md-ripple-opacity': settings.opacity,
+        '--md-ripple-extend-inline': settings.inline,
+        '--md-ripple-extend-block': settings.block,
+        '--md-ripple-grow-duration': settings.duration,
+        '--md-ripple-grow-easing': settings.easing,
+      };
+      globalThis.getComputedStyle = (() => ({ display: 'block', getPropertyValue: (name: string) => values[name] || '' })) as any;
+      try {
+        const page = await create();
+        await ripple(page).trigger();
+        await page.waitForChanges();
+        expect(animation.calls[0].keyframes).toEqual([
+          { transform: 'scale(0)', opacity: settings.expectedOpacity },
+          { transform: 'scale(1)', opacity: settings.expectedOpacity },
+        ]);
+        expect(animation.calls[0].options).toMatchObject({ duration: settings.expectedDuration, easing: settings.easing || 'cubic-bezier(0.2, 0, 0, 1)' });
+        await ripple(page).whenSettled();
+        expect(page.root!.shadowRoot!.querySelectorAll('.md-ripple__wave')).toHaveLength(0);
+      } finally {
+        globalThis.getComputedStyle = original;
+        animation.restore();
+      }
+    });
+
+    it('skips a display-contents wrapper and unbinds when moved to another surface', async () => {
+      const animation = installAnimate();
+      const original = globalThis.getComputedStyle;
+      globalThis.getComputedStyle = ((el: HTMLElement) => ({ display: el.id === 'boxless' ? 'contents' : 'block', getPropertyValue: () => '' })) as any;
+      try {
+        const page = await newSpecPage({ components: [MdRipple], html: '<button id="old"><span id="boxless"><md-ripple></md-ripple></span></button><button id="new">New</button>' });
+        const old = page.body.querySelector('#old') as HTMLElement;
+        old.getBoundingClientRect = box();
+        const next = page.body.querySelector('#new') as HTMLElement;
+        next.getBoundingClientRect = box();
+        const el = ripple(page);
+        await el.trigger();
+        await page.waitForChanges();
+        expect(animation.calls.length).toBeGreaterThan(0);
+        el.remove();
+        await page.waitForChanges();
+        const before = animation.calls.length;
+        old.dispatchEvent(new CustomEvent('pointerdown'));
+        expect(animation.calls).toHaveLength(before);
+        next.append(el);
+        await page.waitForChanges();
+        await el.trigger();
+        await page.waitForChanges();
+        expect(animation.calls.length).toBeGreaterThan(before);
+      } finally {
+        globalThis.getComputedStyle = original;
+        animation.restore();
+      }
+    });
+  });
   describe('rendering', () => {
     it('renders its container', async () => {
       const page = await create();
@@ -147,6 +210,18 @@ describe('md-ripple', () => {
   });
 
   describe('release', () => {
+    it.each([{ finishGrow: false }, { legacyFade: true }, { cancelFade: true }])('removes waves with a supported animation adapter %j', async options => {
+      const animation = installAnimate(options);
+      try {
+        const page = await create();
+        press(page);
+        window.dispatchEvent(new CustomEvent('pointerup'));
+        await new Promise(resolve => setTimeout(resolve, 170));
+        await page.waitForChanges();
+        expect(page.root!.shadowRoot!.querySelectorAll('.md-ripple__wave')).toHaveLength(0);
+        await expect(ripple(page).whenSettled()).resolves.toBeUndefined();
+      } finally { animation.restore(); }
+    });
     it('fades out on pointerup', async () => {
       const a = installAnimate();
       const page = await create();
@@ -213,6 +288,18 @@ describe('md-ripple', () => {
   });
 
   describe('whenSettled()', () => {
+    it('bounds the wait while a pointer is still held, without suppressing the eventual fade', async () => {
+      const animation = installAnimate();
+      try {
+        const page = await create();
+        press(page);
+        expect(page.root!.shadowRoot!.querySelectorAll('.md-ripple__wave')).toHaveLength(1);
+        await expect(ripple(page).whenSettled()).resolves.toBeUndefined();
+        window.dispatchEvent(new CustomEvent('pointerup'));
+        await page.waitForChanges();
+        expect(page.root!.shadowRoot!.querySelectorAll('.md-ripple__wave')).toHaveLength(0);
+      } finally { animation.restore(); }
+    });
     it('resolves immediately when nothing is in flight', async () => {
       const page = await create();
       await expect(ripple(page).whenSettled()).resolves.toBeUndefined();

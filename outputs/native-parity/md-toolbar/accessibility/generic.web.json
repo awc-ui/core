@@ -1,0 +1,306 @@
+{
+ "tag": "md-toolbar",
+ "case": "generic",
+ "html": "<md-toolbar data-ax-node=\"n0\" id=\"example-md-toolbar\"><md-icon-button data-ax-node=\"n1\" aria-label=\"Undo\"></md-icon-button><md-icon-button data-ax-node=\"n2\" aria-label=\"Redo\"></md-icon-button><md-divider data-ax-node=\"n3\"></md-divider><md-icon-button data-ax-node=\"n4\" aria-label=\"Bold\"></md-icon-button><md-icon-button data-ax-node=\"n5\" aria-label=\"Italic\"></md-icon-button></md-toolbar>",
+ "props": {
+  "n0": {
+   "alignment": "start",
+   "ariaLabelProp": "Formatting",
+   "ariaLabelledby": "",
+   "color": "standard",
+   "containerSemantics": "generic",
+   "density": 0,
+   "layout": "horizontal",
+   "variant": "floating"
+  },
+  "n1": {
+   "icon": "undo"
+  },
+  "n2": {
+   "icon": "redo"
+  },
+  "n3": {
+   "vertical": true
+  },
+  "n4": {
+   "icon": "format_bold",
+   "toggle": true
+  },
+  "n5": {
+   "icon": "format_italic",
+   "toggle": true
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "generic",
+    "name": "Formatting",
+    "ignored": false,
+    "frame": [
+     32,
+     16,
+     193,
+     64
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "button",
+        "name": "Undo",
+        "ignored": false,
+        "focusable": true,
+        "frame": [
+         40,
+         28,
+         40,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         }
+        ]
+       },
+       {
+        "role": "button",
+        "name": "Redo",
+        "ignored": false,
+        "focusable": true,
+        "frame": [
+         84,
+         28,
+         40,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         }
+        ]
+       },
+       {
+        "role": "separator",
+        "name": "",
+        "ignored": false,
+        "settable": true,
+        "orientation": "vertical",
+        "frame": [
+         128,
+         24,
+         1,
+         48
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         }
+        ]
+       },
+       {
+        "role": "button",
+        "name": "Bold",
+        "ignored": false,
+        "focusable": true,
+        "pressed": "false",
+        "frame": [
+         133,
+         28,
+         40,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         }
+        ]
+       },
+       {
+        "role": "button",
+        "name": "Italic",
+        "ignored": false,
+        "focusable": true,
+        "pressed": "false",
+        "frame": [
+         177,
+         28,
+         40,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-icon-button",
+   "role": "button",
+   "name": "Undo",
+   "frame": [
+    40,
+    28,
+    40,
+    40
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "dom": "md-icon-button",
+   "role": "button",
+   "name": "Redo",
+   "frame": [
+    84,
+    28,
+    40,
+    40
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "dom": "md-icon-button",
+   "role": "button",
+   "name": "Bold",
+   "frame": [
+    133,
+    28,
+    40,
+    40
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true,
+    "pressed": "false"
+   }
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

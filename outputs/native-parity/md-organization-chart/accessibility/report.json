@@ -1,0 +1,1031 @@
+{
+ "tag": "md-organization-chart",
+ "at": "2026-10-30T11:08:03.185Z",
+ "rows": [
+  {
+   "case": "single",
+   "web": {
+    "elements": [
+     "tree:Product team",
+     "treeitem:Alex Morgan Product lead",
+     "treeitem:Sam Lee Design",
+     "treeitem:Robin Chen Engineering",
+     "treeitem:Casey Diaz Developer",
+     "treeitem:Finley Ross Operations"
+    ],
+    "texts": [],
+    "focus": [
+     "treeitem:Alex Morgan Product lead"
+    ],
+    "contrast": {
+     "measured": 10,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 6,
+     "webElements": 6,
+     "nativeElements": 6,
+     "elements": [
+      "tree:Product team",
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design {\"selected\":\"true\"}",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "treeitem:Casey Diaz Developer",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "treeitem:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design {\"selected\":\"true\"}",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "treeitem:Casey Diaz Developer",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "option:Alex Morgan Product lead {\"selected\":\"false\",\"expanded\":\"true\"}",
+      "option:Sam Lee Design {\"selected\":\"true\"}",
+      "option:Robin Chen Engineering {\"selected\":\"false\",\"expanded\":\"true\"}",
+      "option:Casey Diaz Developer {\"selected\":\"false\"}",
+      "button:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "option:Alex Morgan Product lead",
+      "option:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 30,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "multiple",
+   "web": {
+    "elements": [
+     "tree:Product team",
+     "treeitem:Alex Morgan Product lead",
+     "treeitem:Sam Lee Design",
+     "treeitem:Robin Chen Engineering",
+     "treeitem:Casey Diaz Developer",
+     "treeitem:Finley Ross Operations"
+    ],
+    "texts": [],
+    "focus": [
+     "treeitem:Alex Morgan Product lead"
+    ],
+    "contrast": {
+     "measured": 10,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 6,
+     "webElements": 6,
+     "nativeElements": 6,
+     "elements": [
+      "tree:Product team",
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design {\"selected\":\"true\"}",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "treeitem:Casey Diaz Developer {\"selected\":\"true\"}",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "treeitem:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design {\"selected\":\"true\"}",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "treeitem:Casey Diaz Developer {\"selected\":\"true\"}",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "option:Alex Morgan Product lead {\"selected\":\"false\",\"expanded\":\"true\"}",
+      "option:Sam Lee Design {\"selected\":\"true\"}",
+      "option:Robin Chen Engineering {\"selected\":\"false\",\"expanded\":\"true\"}",
+      "option:Casey Diaz Developer {\"selected\":\"true\"}",
+      "button:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "option:Alex Morgan Product lead",
+      "option:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 30,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "selection-none",
+   "web": {
+    "elements": [
+     "tree:Product team",
+     "treeitem:Alex Morgan Product lead",
+     "treeitem:Sam Lee Design",
+     "treeitem:Robin Chen Engineering",
+     "treeitem:Casey Diaz Developer",
+     "treeitem:Finley Ross Operations"
+    ],
+    "texts": [],
+    "focus": [
+     "treeitem:Alex Morgan Product lead"
+    ],
+    "contrast": {
+     "measured": 10,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 6,
+     "webElements": 6,
+     "nativeElements": 6,
+     "elements": [
+      "tree:Product team",
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "treeitem:Casey Diaz Developer",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "treeitem:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "treeitem:Casey Diaz Developer",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "button:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "button:Sam Lee Design",
+      "button:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "button:Casey Diaz Developer",
+      "button:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Alex Morgan Product lead",
+      "button:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 10,
+     "atf": {
+      "elements": 30,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "locked-open",
+   "web": {
+    "elements": [
+     "tree:Product team",
+     "treeitem:Alex Morgan Product lead",
+     "treeitem:Sam Lee Design",
+     "treeitem:Robin Chen Engineering",
+     "treeitem:Casey Diaz Developer",
+     "treeitem:Finley Ross Operations"
+    ],
+    "texts": [],
+    "focus": [
+     "treeitem:Alex Morgan Product lead"
+    ],
+    "contrast": {
+     "measured": 10,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 6,
+     "webElements": 6,
+     "nativeElements": 6,
+     "elements": [
+      "tree:Product team",
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design {\"selected\":\"true\"}",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "treeitem:Casey Diaz Developer",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "treeitem:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design {\"selected\":\"true\"}",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "treeitem:Casey Diaz Developer",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "option:Alex Morgan Product lead {\"selected\":\"false\",\"expanded\":\"true\"}",
+      "option:Sam Lee Design {\"selected\":\"true\"}",
+      "option:Robin Chen Engineering {\"selected\":\"false\",\"expanded\":\"true\"}",
+      "option:Casey Diaz Developer {\"selected\":\"false\"}",
+      "button:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "option:Alex Morgan Product lead",
+      "option:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 28,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "folded",
+   "web": {
+    "elements": [
+     "tree:Product team",
+     "treeitem:Alex Morgan Product lead",
+     "treeitem:Sam Lee Design",
+     "treeitem:Robin Chen Engineering",
+     "treeitem:Finley Ross Operations"
+    ],
+    "texts": [],
+    "focus": [
+     "treeitem:Alex Morgan Product lead"
+    ],
+    "contrast": {
+     "measured": 8,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "tree:Product team",
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design {\"selected\":\"true\"}",
+      "treeitem:Robin Chen Engineering",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "treeitem:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design {\"selected\":\"true\"}",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"false\"}",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 4,
+     "nativeElements": 4,
+     "elements": [
+      "option:Alex Morgan Product lead {\"selected\":\"false\",\"expanded\":\"true\"}",
+      "option:Sam Lee Design {\"selected\":\"true\"}",
+      "option:Robin Chen Engineering {\"selected\":\"false\",\"expanded\":\"false\"}",
+      "button:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "option:Alex Morgan Product lead",
+      "option:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 5,
+     "atf": {
+      "elements": 26,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "horizontal",
+   "web": {
+    "elements": [
+     "tree:Product team",
+     "treeitem:Alex Morgan Product lead",
+     "treeitem:Sam Lee Design",
+     "treeitem:Robin Chen Engineering",
+     "treeitem:Casey Diaz Developer",
+     "treeitem:Finley Ross Operations"
+    ],
+    "texts": [],
+    "focus": [
+     "treeitem:Alex Morgan Product lead"
+    ],
+    "contrast": {
+     "measured": 10,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 6,
+     "webElements": 6,
+     "nativeElements": 6,
+     "elements": [
+      "tree:Product team",
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design {\"selected\":\"true\"}",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "treeitem:Casey Diaz Developer",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "treeitem:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design {\"selected\":\"true\"}",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "treeitem:Casey Diaz Developer",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "option:Alex Morgan Product lead {\"selected\":\"false\",\"expanded\":\"true\"}",
+      "option:Sam Lee Design {\"selected\":\"true\"}",
+      "option:Robin Chen Engineering {\"selected\":\"false\",\"expanded\":\"true\"}",
+      "option:Casey Diaz Developer {\"selected\":\"false\"}",
+      "button:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "option:Alex Morgan Product lead",
+      "option:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 30,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "rtl",
+   "web": {
+    "elements": [
+     "tree:Product team",
+     "treeitem:Alex Morgan Product lead",
+     "treeitem:Sam Lee Design",
+     "treeitem:Robin Chen Engineering",
+     "treeitem:Casey Diaz Developer",
+     "treeitem:Finley Ross Operations"
+    ],
+    "texts": [],
+    "focus": [
+     "treeitem:Alex Morgan Product lead"
+    ],
+    "contrast": {
+     "measured": 10,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 6,
+     "webElements": 6,
+     "nativeElements": 6,
+     "elements": [
+      "tree:Product team",
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design {\"selected\":\"true\"}",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "treeitem:Casey Diaz Developer",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "treeitem:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "treeitem:Alex Morgan Product lead {\"expanded\":\"true\"}",
+      "treeitem:Sam Lee Design {\"selected\":\"true\"}",
+      "treeitem:Robin Chen Engineering {\"expanded\":\"true\"}",
+      "treeitem:Casey Diaz Developer",
+      "treeitem:Finley Ross Operations"
+     ],
+     "texts": [],
+     "focus": [
+      "treeitem:Alex Morgan Product lead",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "option:Alex Morgan Product lead {\"selected\":\"false\",\"expanded\":\"true\"}",
+      "option:Sam Lee Design {\"selected\":\"true\"}",
+      "option:Robin Chen Engineering {\"selected\":\"false\",\"expanded\":\"true\"}",
+      "option:Casey Diaz Developer {\"selected\":\"false\"}",
+      "button:Finley Ross Operations"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "option:Alex Morgan Product lead",
+      "option:Alex Morgan Product lead"
+     ],
+     "findings": [],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 30,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "empty",
+   "web": {
+    "elements": [
+     "status:"
+    ],
+    "texts": [
+     "No data"
+    ],
+    "focus": [],
+    "contrast": {
+     "measured": 1,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "No data"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 1
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "No data"
+     ],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [
+      "status:"
+     ],
+     "texts": [
+      "No data"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 1,
+     "atf": {
+      "elements": 9,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

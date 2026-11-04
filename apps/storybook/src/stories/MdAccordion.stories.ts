@@ -101,7 +101,7 @@ const meta: Meta = {
       control: { type: 'inline-radio' },
       options: ['expressive', 'standard', 'fade', 'collapse', 'none'],
       description:
-        'Motion preset. **expressive** (default) — full MD3 expressive choreography (asymmetric easing, spring chevron, container morph). **standard** — symmetric `emphasized` easing, no spring. **fade** — opacity-led cross-fade, no spatial translate. **collapse** — pure height collapse, no fade. **none** — instant snap.',
+        'Motion preset. **expressive** (default) — coordinated emphasized height and corner motion (350ms open / 250ms close), spring chevron, and shorter non-overshooting tone, opacity and elevation effects. Content is revealed in place. **standard** — symmetric `emphasized` easing, no spring. **fade** — opacity-led cross-fade with the height change. **collapse** — height and corners move together without spring overshoot or content fade. **none** — instant snap.',
     },
   },
   args: {
@@ -410,14 +410,13 @@ export const Transitions: Story = {
           'prop on `<md-accordion>`. The prop is reflected as an attribute, so child ' +
           'items pick it up automatically through `:host-context(...)` — no per-item ' +
           'wiring required.\n\n' +
-          '- **expressive** (default) — full MD3 Expressive choreography: asymmetric ' +
-          'easing (`emphasized-decelerate` on open / `emphasized-accelerate` on close), ' +
-          'spring-spatial chevron rotation with overshoot, container shape & elevation ' +
-          'morph, leading-icon FILL-axis swap.\n' +
+          '- **expressive** (default) — coordinated emphasized height and corner ' +
+          'motion (350ms open / 250ms close), spring-spatial chevron rotation, ' +
+          'and shorter non-overshooting effects for surface tone, opacity and elevation. ' +
+          'Content is revealed in place, with a leading-icon FILL-axis swap.\n' +
           '- **standard** — symmetric MD3 `emphasized` easing, no spring overshoot. The ' +
           '"product" preset — same shape morph + tone shift, calmer timing.\n' +
-          '- **fade** — opacity-led cross-fade. The inner translateY is suppressed so ' +
-          'the motion reads as a quiet dissolve.\n' +
+          '- **fade** — opacity-led cross-fade with standard easing for a quiet dissolve.\n' +
           '- **collapse** — pure height collapse with `ease-out` / `ease-in`. No fade, ' +
           'no spring, no spatial sub-motion. Classic browser-disclosure feel.\n' +
           '- **none** — every transition is killed. Instant snap. Ideal for ' +
@@ -434,7 +433,7 @@ export const Transitions: Story = {
         id: 'expressive',
         name: 'expressive',
         blurb:
-          'Default MD3 Expressive: asymmetric emphasized easing, spring chevron, container morph.',
+          'Coordinated height and corners, spring chevron, shorter tone and opacity effects.',
       },
       {
         id: 'standard',
@@ -601,8 +600,8 @@ export const TransitionsCustomDurations: Story = {
       <section>
         <div style="${labelStyle}">Default duration · transition="standard"</div>
         <md-accordion transition="standard" default-expanded="0">
-          <md-accordion-item headline="Default 300ms / 200ms" icon="schedule">Lorem ipsum.</md-accordion-item>
-          <md-accordion-item headline="Default 300ms / 200ms" icon="schedule">Lorem ipsum.</md-accordion-item>
+          <md-accordion-item headline="Default 300ms / 300ms" icon="schedule">Lorem ipsum.</md-accordion-item>
+          <md-accordion-item headline="Default 300ms / 300ms" icon="schedule">Lorem ipsum.</md-accordion-item>
         </md-accordion>
       </section>
       <section>
@@ -4219,5 +4218,72 @@ export const Responsiveness: Story = {
         </section>
       </div>
     `;
+  },
+};
+
+/** Live policy changes exercise the same authored accordion rather than remounting. */
+export const RuntimePoliciesAndStandaloneMethods: Story = {
+  render: () => html`<md-accordion transition="none" default-expanded="0,1" style="width:360px"><md-accordion-item headline="Account">Account settings</md-accordion-item><md-accordion-item headline="Privacy">Privacy settings</md-accordion-item></md-accordion>`,
+  play: async ({ canvasElement }) => {
+    const acc = await getAccordion(canvasElement) as HTMLMdAccordionElement;
+    const items = itemsOf(acc) as HTMLMdAccordionItemElement[];
+    acc.exclusive = true; acc.keepOneExpanded = true; acc.regionThreshold = 1; acc.headingLevel = 2;
+    await waitFor(() => expect(items.filter(item => item.expanded)).toHaveLength(1));
+    await waitFor(() => expect(items[1].regionRole).toBe('group'));
+    if (!items[1].expanded) await items[1].toggle(); await waitFor(() => expect(items[1].expanded).toBe(true));
+    await waitFor(() => expect(items[1].collapsible).toBe(false));
+    headerOf(items[1]).click(); expect(items[1].expanded).toBe(true);
+    acc.keepOneExpanded = false; acc.region = 'always';
+    await waitFor(() => expect(items[1].collapsible).toBe(true));
+    headerOf(items[1]).click(); await waitFor(() => expect(items[1].expanded).toBe(false));
+    await items[1].toggle();
+    items[1].disabled = true; await waitFor(() => expect(headerOf(items[1]).disabled).toBe(true));
+    await items[1].toggle(); expect(items[1].expanded).toBe(true);
+  },
+};
+
+export const RuntimeNamedSlotsAndHandleIsolation: Story = {
+  render: () => html`<md-accordion reorderable transition="none" style="width:360px">
+    <md-accordion-item headline="Fallback headline" icon="folder">
+      <span slot="headline">Authored headline</span><span slot="leading-icon">+</span><span slot="trailing-icon">−</span>Body
+    </md-accordion-item><md-accordion-item headline="Other">Other body</md-accordion-item>
+  </md-accordion>`,
+  play: async ({ canvasElement }) => {
+    const acc = await getAccordion(canvasElement);
+    const item = itemsOf(acc)[0] as HTMLMdAccordionItemElement;
+    const slot = (name: string) => item.shadowRoot!.querySelector(`slot[name="${name}"]`) as HTMLSlotElement;
+    expect(slot('headline').assignedElements()[0].textContent).toBe('Authored headline');
+    for (const child of Array.from(item.querySelectorAll('[slot]'))) child.remove();
+    await waitFor(() => {
+      for (const name of ['headline', 'leading-icon', 'trailing-icon']) expect(slot(name).assignedElements()).toHaveLength(0);
+    });
+    expect(slot('headline').textContent).toBe('Fallback headline');
+    expect(slot('leading-icon').textContent).toBe('folder');
+    expect(slot('trailing-icon').querySelector('svg')).not.toBeNull();
+    item.icon = '';
+    await waitFor(() => expect(item.shadowRoot!.querySelector('[part="leading-icon"]')).toBeNull());
+    const handle = item.shadowRoot!.querySelector('[part="drag-handle"]') as HTMLElement;
+    handle.click(); key(handle, 'Enter');
+    expect(item.expanded).toBe(false);
+    key(headerOf(item), 'Enter');
+    await waitFor(() => expect(headerOf(item).getAttribute('aria-expanded')).toBe('true'));
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    const other = itemsOf(acc)[1];
+    const otherHandle = other.shadowRoot!.querySelector('[part="drag-handle"]') as HTMLElement;
+    const start = otherHandle.getBoundingClientRect(); const target = item.getBoundingClientRect();
+    const clientX = start.x + start.width / 2;
+    const reordered: unknown[] = [];
+    acc.addEventListener('mdReorder', event => reordered.push((event as CustomEvent).detail));
+    // Native DOM events cross the handle's shadow boundary. userEvent.pointer
+    // attempts text selection across the two DOM trees and cannot model this.
+    const drag = (target: Element, type: string, clientY: number) => target.dispatchEvent(new PointerEvent(type, {
+      bubbles: true, composed: true, cancelable: true, pointerId: 7, button: 0, buttons: type === 'pointerup' ? 0 : 1, clientX, clientY,
+    }));
+    drag(otherHandle, 'pointerdown', start.y + start.height / 2);
+    drag(acc, 'pointermove', target.y + target.height / 2 - 10);
+    drag(acc, 'pointerup', target.y + target.height / 2 - 10);
+    await waitFor(() => expect(itemsOf(acc)[0]).toBe(other));
+    expect(reordered).toEqual([{ from: 1, to: 0, order: [1, 0] }]);
+    expect(item.expanded).toBe(true);
   },
 };

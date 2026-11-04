@@ -275,6 +275,13 @@
   background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
 }
 
+/* Checked + focused composes like checked + hover: without this the neutral
+   focus layer above (higher specificity than --checked) replaced the selected
+   tint, so a keyboard user lost the row's selected cue right after Space. */
+.md-transfer-list__item--checked:focus-visible {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent);
+}
+
 .md-transfer-list__item--disabled {
   opacity: var(--md-sys-state-disabled-content-opacity, 0.38);
   pointer-events: none;
@@ -355,15 +362,6 @@
     justify-content: center;
     padding-block: var(--md-sys-spacing-inset-md, 12px);
   }
-
-  /* Stacked layout: source sits ABOVE target, so "move to target" is now
-     downward — rotate the chevrons 90°. This also replaces the RTL scaleX
-     flip (the vertical direction is the same in both directions). */
-  .md-transfer-list__controls md-icon-button,
-  :host-context([dir='rtl']) .md-transfer-list__controls md-icon-button,
-  :host([dir='rtl']) .md-transfer-list__controls md-icon-button {
-    transform: rotate(90deg);
-  }
 }
 
 /* ── Disabled ─────────────────────────────────────────────── */
@@ -381,6 +379,19 @@
 :host-context([dir='rtl']) .md-transfer-list__controls md-icon-button,
 :host([dir='rtl']) .md-transfer-list__controls md-icon-button {
   transform: scaleX(-1);
+}
+
+/* Stacked layout: source sits ABOVE target, so "move to target" is now
+   downward — rotate the chevrons 90°. This also replaces the RTL scaleX
+   flip (the vertical direction is the same in both directions). It must
+   come AFTER the RTL rule: the selectors have equal specificity, so source
+   order decides, and an earlier copy lost to the scaleX(-1) flip in RTL. */
+@media (max-width: 640px) {
+  .md-transfer-list__controls md-icon-button,
+  :host-context([dir='rtl']) .md-transfer-list__controls md-icon-button,
+  :host([dir='rtl']) .md-transfer-list__controls md-icon-button {
+    transform: rotate(90deg);
+  }
 }
 
 /* ── Reduced motion ──────────────────────────────────────── */

@@ -5,6 +5,43 @@ const create = (html: string) =>
   newSpecPage({ components: [MdTablePagination], html });
 
 describe('md-table-pagination', () => {
+  it('drives first, previous, next and last navigation through its rendered controls', async () => {
+    const page = await create('<md-table-pagination count="23" rows-per-page="5" show-first-last></md-table-pagination>');
+    const changed = jest.fn();
+    page.root!.addEventListener('mdPageChange', changed);
+    for (const [part, expected] of [['last', 4], ['prev', 3], ['first', 0], ['next', 1]] as const) {
+      (page.root!.shadowRoot!.querySelector(`[part="${part}-button"]`) as HTMLElement).click();
+      await page.waitForChanges();
+      expect(page.root!.page).toBe(expected);
+      expect(changed.mock.calls.at(-1)![0].detail).toEqual({ page: expected });
+    }
+    expect(page.root!.shadowRoot!.querySelector('[part="display"]')!.textContent).toBe('6–10 of 23');
+  });
+
+  it('accepts valid rows-per-page choices and rejects invalid choices', async () => {
+    const page = await create('<md-table-pagination count="23" page="2" rows-per-page="5" rows-per-page-options="5, ,bad,0,-1,ALL,10"></md-table-pagination>');
+    const select = page.root!.shadowRoot!.querySelector('md-select')!;
+    expect(select.options).toEqual([{ value: '5', label: '5' }, { value: '23', label: 'All' }, { value: '10', label: '10' }]);
+    const sizes = jest.fn();
+    page.root!.addEventListener('mdRowsPerPageChange', sizes);
+    select.dispatchEvent(new CustomEvent('mdChange', { detail: '10', bubbles: true, composed: true }));
+    await page.waitForChanges();
+    expect(page.root!.rowsPerPage).toBe(10);
+    expect(page.root!.page).toBe(0);
+    expect(sizes.mock.calls[0][0].detail).toEqual({ rowsPerPage: 10 });
+    for (const value of ['invalid', '0', '-5', '10']) {
+      select.dispatchEvent(new CustomEvent('mdChange', { detail: value, bubbles: true, composed: true }));
+      await page.waitForChanges();
+    }
+    expect(sizes).toHaveBeenCalledTimes(1);
+    await page.root!.setRowsPerPage(0);
+    expect(page.root!.rowsPerPage).toBe(10);
+    page.root!.count = 0;
+    page.root!.rowsPerPage = 0;
+    await page.waitForChanges();
+    expect(page.root!.shadowRoot!.querySelector('[part="display"]')!.textContent).toBe('0–0 of 0');
+    expect(select.options).not.toContainEqual({ value: '-1', label: 'All' });
+  });
   describe('rendering', () => {
     it('renders with defaults', async () => {
       const page = await create('<md-table-pagination count="100"></md-table-pagination>');

@@ -57,7 +57,10 @@ const SHAPE_CLIP: Record<string, string> = {
  *  Centred on (x, y) via a -50%/-50% translate the pop animation preserves. */
 function buildHoverMarker(symbol: string | undefined, color: string, x: number, y: number): HTMLElement {
   const el = document.createElement('div');
-  const base = `position:absolute;left:${x}px;top:${y}px;transform:translate(-50%,-50%);pointer-events:none`;
+  // forced-color-adjust:none — the canvas keeps the series colours under forced
+  // colors (high contrast), so the marker that points at a series must keep its
+  // colour too instead of being repainted with the system Canvas colour.
+  const base = `position:absolute;left:${x}px;top:${y}px;transform:translate(-50%,-50%);pointer-events:none;forced-color-adjust:none`;
 
   // Emoji / text glyph → scale the glyph up; don't cover it with a circle.
   if (symbol && !SHAPE_KEYS.has(symbol)) {
@@ -337,8 +340,9 @@ export function renderHover(
     const sw = document.createElement('span');
     // Missing rows keep the swatch's BOX (so labels stay in one column) but
     // never its colour — a swatch would imply a data point that isn't there.
+    // A colour key keeps its series colour under forced colors, as the canvas does.
     sw.style.cssText = r.color
-      ? `width:10px;height:10px;border-radius:3px;background:${r.color};flex:none`
+      ? `width:10px;height:10px;border-radius:3px;background:${r.color};flex:none;forced-color-adjust:none`
       : 'width:10px;height:10px;flex:none';
     const lbl = document.createElement('span');
     lbl.textContent = r.label;

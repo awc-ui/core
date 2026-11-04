@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="dev.awc.playground.LivePreviewInspectionTest" tests="6" failures="1" errors="0" skipped="0" time="22.148" timestamp="2026-10-20T19:28:24" hostname="localhost">
+  <properties>
+    <property name="device" value="AwcNative(AVD) - 16" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="captureKeepsStableRootButDropsChangedPartsAndTheirDescendants" classname="dev.awc.playground.LivePreviewInspectionTest" time="0.007" />
+  <testcase name="loadingHooksAndShortComponentsStayCenteredInTheirActualCapturedSurface" classname="dev.awc.playground.LivePreviewHostTest" time="5.081" />
+  <testcase name="segmentedContextUsesRealOrderedSelectionTypedSlotsAndCommittedFrameMeasurements" classname="dev.awc.playground.LivePreviewHostTest" time="4.757" />
+  <testcase name="all84BrowserFixturesMatchActualGeometryClippingThemesAndRgbaPaint" classname="dev.awc.playground.NativeLoadingIndicatorParityTest" time="8.93" />
+  <testcase name="semanticLabelIsIndeterminatePoliteAndFocusIsExplicitWithActualPaint" classname="dev.awc.playground.NativeLoadingIndicatorParityTest" time="0.898">
+    <failure>java.lang.AssertionError: Failed to assert the following: (Focused = 'true')
+Semantics of the node:
+Node #409 at (l=72.0, t=72.0, r=168.0, b=168.0)px
+ContentDescription = '[Loading records]'
+LiveRegion = 'Polite'
+ProgressBarRangeInfo = 'ProgressBarRangeInfo(current=0.0, range=0.0..0.0, steps=0)'
+MergeDescendants = 'true'
+Selector used: (ContentDescription = 'Loading records' (ignoreCase: false))
+
+at androidx.compose.ui.test.AssertionsKt.assert(Assertions.kt:264)
+at androidx.compose.ui.test.AssertionsKt.assert$default(Assertions.kt:254)
+at androidx.compose.ui.test.AssertionsKt.assertIsFocused(Assertions.kt:117)
+at dev.awc.playground.NativeLoadingIndicatorParityTest.semanticLabelIsIndeterminatePoliteAndFocusIsExplicitWithActualPaint(NativeLoadingIndicatorParityTest.kt:141)
+</failure>
+  </testcase>
+  <testcase name="actualMorphMovesWhileReducedMotionKeepsCircleAndPulsesAndForcedPaletteIsExplicit" classname="dev.awc.playground.NativeLoadingIndicatorParityTest" time="2.09" />
+</testsuite>

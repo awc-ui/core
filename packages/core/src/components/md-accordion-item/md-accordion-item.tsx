@@ -124,12 +124,38 @@ export class MdAccordionItem {
   }>;
 
   @State() private hasSlottedHeadline = false;
+  /** The header ripple is created after the first render: a ripple hydrating during it made Chrome drop the panel's slotted
+   *  text from the accessibility tree (intermittently, for good). It is interaction feedback with nothing to draw at rest. */
+  @State() private rippleMounted = false;
   @State() private hasSlottedTrailingIcon = false;
   @State() private hasSlottedLeadingIcon = false;
 
   private readonly contentId = nextUid();
   private readonly headerId = `${this.contentId}-header`;
   private headerEl?: HTMLButtonElement;
+  private slotObserver?: MutationObserver;
+
+  connectedCallback() {
+    this.syncSlots();
+    if (typeof MutationObserver === 'undefined') return;
+    this.slotObserver = new MutationObserver(records => {
+      if (records.some(record => record.target === this.el || (record.type === 'attributes' && record.target.parentNode === this.el))) {
+        this.syncSlots();
+      }
+    });
+    this.slotObserver.observe(this.el, { childList: true, subtree: true, attributes: true, attributeFilter: ['slot'] });
+  }
+
+  disconnectedCallback() {
+    this.slotObserver?.disconnect();
+    this.slotObserver = undefined;
+  }
+
+  private syncSlots = () => {
+    this.hasSlottedHeadline = this.hasDirectSlottedChild('headline');
+    this.hasSlottedLeadingIcon = this.hasDirectSlottedChild('leading-icon');
+    this.hasSlottedTrailingIcon = this.hasDirectSlottedChild('trailing-icon');
+  };
 
   private get index(): number {
     const v = this.el.getAttribute('data-index');
@@ -137,12 +163,11 @@ export class MdAccordionItem {
   }
 
   componentWillLoad() {
-    this.hasSlottedHeadline = this.hasDirectSlottedChild('headline');
-    this.hasSlottedLeadingIcon = this.hasDirectSlottedChild('leading-icon');
-    this.hasSlottedTrailingIcon = this.hasDirectSlottedChild('trailing-icon');
+    this.syncSlots();
   }
 
   componentDidLoad() {
+    this.rippleMounted = true;
     this.bindSlotListener('headline', (v) => (this.hasSlottedHeadline = v));
     this.bindSlotListener('leading-icon', (v) => (this.hasSlottedLeadingIcon = v));
     this.bindSlotListener('trailing-icon', (v) => (this.hasSlottedTrailingIcon = v));
@@ -174,7 +199,7 @@ export class MdAccordionItem {
   /** Programmatically toggle the item. */
   @Method()
   async toggle(): Promise<void> {
-    if (this.disabled) return;
+    if (this.toggleBlocked()) return;
     this.expanded = !this.expanded;
   }
 
@@ -331,7 +356,7 @@ export class MdAccordionItem {
             onKeyDown={this.handleHeaderKeyDown}
             ref={(el) => (this.headerEl = el)}
           >
-            <md-ripple disabled={this.disabled}></md-ripple>
+            {this.rippleMounted && <md-ripple disabled={this.disabled}></md-ripple>}
             <span class="md-accordion-item__state-layer" part="state-layer" aria-hidden="true"></span>
             <span
               class="md-accordion-item__drag-handle"

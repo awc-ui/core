@@ -1,0 +1,328 @@
+{
+ "tag": "md-line-chart",
+ "case": "default",
+ "request": {
+  "tag": "md-line-chart",
+  "properties": {
+   "label": "Monthly revenue",
+   "series": [
+    {
+     "label": "Revenue",
+     "data": [
+      12,
+      18,
+      15,
+      22,
+      28,
+      26
+     ]
+    },
+    {
+     "label": "Cost",
+     "data": [
+      8,
+      11,
+      10,
+      14,
+      16,
+      18
+     ]
+    }
+   ],
+   "xAxis": {
+    "data": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ]
+   },
+   "noAnimation": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXIncrement",
+          "AXDecrement"
+         ],
+         "description": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+         "focused": false,
+         "frame": [
+          48,
+          48,
+          544,
+          292
+         ],
+         "role": "AXGroup",
+         "roleDescription": "group",
+         "value": ""
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Revenue",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          438,
+          50,
+          77,
+          20
+         ],
+         "identifier": "legend-0",
+         "invalid": "false",
+         "required": false,
+         "role": "AXCheckBox",
+         "roleDescription": "toggle button",
+         "selected": true,
+         "subrole": "AXToggle",
+         "value": true
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Cost",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          527,
+          50,
+          53,
+          20
+         ],
+         "identifier": "legend-1",
+         "invalid": "false",
+         "required": false,
+         "role": "AXCheckBox",
+         "roleDescription": "toggle button",
+         "selected": true,
+         "subrole": "AXToggle",
+         "value": true
+        },
+        {
+         "enabled": true,
+         "frame": [
+          48,
+          48,
+          1,
+          1
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Native Canvas • tap to inspect"
+        }
+       ],
+       "description": "Monthly revenue, Line chart, with 2 series, from Jan to Jun.",
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        32,
+        32,
+        576,
+        324
+       ],
+       "identifier": "example-md-line-chart",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      388
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    388
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-line-chart",
+  "properties": {
+   "animation": "expressive",
+   "area": false,
+   "axisTicks": false,
+   "connectNulls": false,
+   "curve": "smooth",
+   "density": 0,
+   "grid": "horizontal",
+   "inverted": false,
+   "label": "Monthly revenue",
+   "labelEmpty": "No data to display",
+   "labelPlot": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+   "labelPoint": "%x%: %values%",
+   "labelZoomEnd": "Zoom range end",
+   "labelZoomStart": "Zoom range start",
+   "legend": "top-end",
+   "loading": false,
+   "loadingLabel": "Loading chart…",
+   "locale": "",
+   "noAnimation": true,
+   "series": [
+    {
+     "data": [
+      12,
+      18,
+      15,
+      22,
+      28,
+      26
+     ],
+     "label": "Revenue"
+    },
+    {
+     "data": [
+      8,
+      11,
+      10,
+      14,
+      16,
+      18
+     ],
+     "label": "Cost"
+    }
+   ],
+   "seriesLabels": false,
+   "showLabels": false,
+   "showLine": true,
+   "showMarks": true,
+   "stack": "none",
+   "subtitle": "Native Canvas • tap to inspect",
+   "summary": "",
+   "titleAlign": "start",
+   "tooltip": "axis",
+   "xAxis": {
+    "data": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ]
+   },
+   "zoom": "none"
+  },
+  "tag": "md-line-chart"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCChartPlotFocusView",
+    "description": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+    "frame": [
+     48,
+     48,
+     544,
+     292
+    ],
+    "role": "AXGroup"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Revenue",
+    "frame": [
+     438,
+     50,
+     77,
+     20
+    ],
+    "identifier": "legend-0",
+    "role": "AXCheckBox",
+    "subrole": "AXToggle"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 324,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "announcement": "",
+     "areas": 0,
+     "background": "#F7F2FA",
+     "bars": 0,
+     "height": 324,
+     "legendHidden": [
+      false,
+      false
+     ],
+     "lines": 2,
+     "padding": 16,
+     "plotHeight": 195,
+     "plotWidth": 502.86,
+     "plotX": 22.759999999999998,
+     "plotY": 72,
+     "shape": 16,
+     "slices": 0,
+     "width": 576,
+     "zoomEnd": 5,
+     "zoomStart": 0
+    },
+    "name": "md-line-chart"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

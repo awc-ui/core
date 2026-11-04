@@ -610,49 +610,75 @@
       "status": "adapter-implemented",
       "properties": [
         "state",
+        "size",
+        "inline",
         "shape",
-        "label"
+        "live",
+        "label",
+        "density"
       ],
       "events": [],
       "methods": [],
       "slots": [],
-      "unsupportedProperties": [
-        "size",
-        "inline",
-        "live",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native semantic color dot; flashing live indicator not implemented."
+        "Dedicated SwiftUI status dot implements all seven source properties and eight typed appearance hooks. awcStatusDotOverlay uses the measured parent for logical RTL-aware rect/circle anchoring; inline uses ordinary flow. Insets combine points with fractions of parent dimensions, colors support RGB/RGBA, and pulse duration uses seconds. Live pulse respects reduced motion. Source and macOS runtime evidence are tracked separately; iOS runtime and final accessibility audit remain pending."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCStatusDotAppearance / awcStatusDotAppearance / AWCStatusDotInset / awcStatusDotOverlay",
+        "fields": [
+          "size",
+          "color",
+          "pulseColor",
+          "outlineColor",
+          "outlineWidth",
+          "insetEnd",
+          "insetBlockEnd",
+          "pulseDuration"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "density",
         "inline",
         "label",
+        "live",
         "shape",
+        "size",
         "state"
       ],
       "events": [],
       "methods": [],
       "slots": [],
-      "unsupportedProperties": [
-        "size",
-        "live",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated Compose status dot implements all seven source properties and eight typed appearance hooks. AWCStatusDotHost uses the measured parent for logical RTL-aware rect/circle anchoring; inline uses ordinary flow. Insets combine dp with fractions of parent dimensions, colors support RGB/RGBA, and pulse duration uses seconds. Native layout rounds outlines to physical pixels. Source and Android runtime evidence are tracked separately; integrated Laboratory and final accessibility review remain pending."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCStatusDotAppearance / AWCStatusDotAppearanceScope / AWCStatusDotInset / AWCStatusDotHost",
+        "fields": [
+          "size",
+          "color",
+          "pulseColor",
+          "outlineColor",
+          "outlineWidth",
+          "insetEnd",
+          "insetBlockEnd",
+          "pulseDuration"
+        ]
+      }
     }
   }
 }

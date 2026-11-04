@@ -7,8 +7,8 @@ export default defineNuxtConfig({
       isCustomElement: (tag: string) => tag.startsWith('md-'),
     },
   },
-  // Global MD3 tokens (--md-sys-*) referenced by the components' shadow styles.
-  css: ['@awc-ui/tokens/tokens.css'],
+  // Core's global tokens and unfinished-component guard load before client code.
+  css: ['@awc-ui/core/css/tokens.css'],
   // The hydrate module is a large Node-only bundle; keep it external to the
   // server build so Nitro requires it at runtime instead of inlining it.
   nitro: {

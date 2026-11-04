@@ -1,6 +1,9 @@
+import { exerciseNumberFormats } from '../../../../packages/core/src/components/md-number-field/test-utils/editing.browser';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { expect, waitFor } from 'storybook/test';
 import { html } from 'lit';
+import { exerciseServerValidation } from '../../../../packages/core/src/components/md-checkbox/test-utils/form-validation.browser';
+import { exerciseNumberEditing } from '../../../../packages/core/src/components/md-number-field/test-utils/editing.browser';
 import { t } from '../i18n';
 
 /** Shadow-piercing helpers for play(): testing-library queries can't cross
@@ -551,4 +554,26 @@ export const FormAssociation: Story = {
       await waitFor(() => expect(new FormData(form).get('qty')).toBeNull());
     });
   },
+};
+
+/** Application/server validation must be queryable without stealing focus, and
+ * interactive reports must expose the same error through the field's own UI. */
+export const ServerValidation: Story = {
+  render: () => html`<form><fieldset style="border:0;padding:0">
+    <button type="button">Outside control</button>
+    <md-number-field data-form-contract name="entry" label="Form value" aria-label="Form value"></md-number-field>
+  </fieldset></form>`,
+  play: async ({ canvasElement }) => {
+    await exerciseServerValidation(canvasElement.querySelector('md-number-field') as HTMLElement);
+  },
+};
+
+export const KeyboardWheelAndLocale: Story = {
+  render: () => html`<md-number-field label="Quantity"></md-number-field>`,
+  play: async ({ canvasElement }) => exerciseNumberEditing(canvasElement.querySelector('md-number-field') as HTMLElement),
+};
+
+export const LocalizedFormatsContract: Story = {
+  render: () => html`<md-number-field label="Form value"></md-number-field>`,
+  play: async ({ canvasElement }) => exerciseNumberFormats(canvasElement.querySelector('md-number-field') as HTMLElement),
 };

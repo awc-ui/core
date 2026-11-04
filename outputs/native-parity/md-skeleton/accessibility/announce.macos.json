@@ -1,0 +1,170 @@
+{
+ "tag": "md-skeleton",
+ "case": "announce",
+ "request": {
+  "tag": "md-skeleton",
+  "properties": {
+   "lines": 3
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "description": "Loading",
+         "focused": false,
+         "frame": [
+          190,
+          32,
+          260,
+          64
+         ],
+         "identifier": "example-md-skeleton",
+         "role": "AXBusyIndicator",
+         "roleDescription": "busy indicator"
+        }
+       ],
+       "enabled": true,
+       "identifier": "example-md-skeleton",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      224
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    224
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-skeleton",
+  "properties": {
+   "animation": "wave",
+   "announce": true,
+   "ariaLabelProp": "Loading",
+   "density": 0,
+   "fullHeight": false,
+   "fullWidth": true,
+   "height": "",
+   "lines": 3,
+   "variant": "text",
+   "width": ""
+  },
+  "tag": "md-skeleton"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 63.46283507,
+     "width": 257.81776747,
+     "x": 191.09111626502573,
+     "y": 32.2685824652371
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI loading placeholder",
+     "gap": {
+      "column": 0,
+      "row": 8
+     },
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "name": "md-skeleton"
+   },
+   {
+    "bounds": {
+     "height": 15.865708767,
+     "width": 257.81776747,
+     "x": 191.09111626502573,
+     "y": 32.2685824652371
+    },
+    "id": "component.line.0",
+    "name": "md-skeleton ::part(line)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 15.865708767,
+     "width": 257.81776747,
+     "x": 191.09111626502573,
+     "y": 56.067145616309276
+    },
+    "id": "component.line.1",
+    "name": "md-skeleton ::part(line)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 15.865708767,
+     "width": 154.690660482,
+     "x": 191.09111626502573,
+     "y": 79.86570876738145
+    },
+    "id": "component.line.2",
+    "name": "md-skeleton ::part(line line-last)",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

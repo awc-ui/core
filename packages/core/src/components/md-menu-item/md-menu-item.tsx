@@ -90,7 +90,15 @@ export class MdMenuItem {
       if (root) {
         const rootMenu = root as MenuElement;
         if (rootMenu.anchor) {
-          document.getElementById(rootMenu.anchor)?.focus();
+          // Resolve the anchor where md-menu itself does (getAnchorEl): in the
+          // root menu's own tree first, so a menu rendered inside a shadow root
+          // returns focus to its sibling trigger instead of dropping it to
+          // <body> when the closed menu turns inert.
+          const scope = root.getRootNode() as Document | ShadowRoot;
+          const anchorEl =
+            (scope.getElementById?.(rootMenu.anchor) as HTMLElement | null) ??
+            document.getElementById(rootMenu.anchor);
+          anchorEl?.focus();
         }
         setTimeout(() => rootMenu.close?.(), 150);
       }
@@ -121,15 +129,29 @@ export class MdMenuItem {
     }
   };
 
+  /**
+   * A radio set is the radios of ONE menu that share the same group — the
+   * nearest md-menu-item-group inside that menu, or none. `querySelectorAll`
+   * alone also reached radios inside nested submenus (their md-menu is a
+   * descendant) and, for an ungrouped radio, every grouped one too.
+   */
+  private static radioScope(item: Element): [Element | null, Element | null] {
+    const menu = item.closest('md-menu');
+    const group = item.closest('md-menu-item-group');
+    return [menu, group && (!menu || menu.contains(group)) ? group : null];
+  }
+
   private deselectSiblingRadios() {
     if (this.type !== 'radio') return;
-    const group = this.el.closest('md-menu-item-group') || this.el.closest('md-menu');
-    if (!group) return;
-    const siblings = Array.from(group.querySelectorAll('md-menu-item')) as unknown as SelectableElement[];
+    const [menu, group] = MdMenuItem.radioScope(this.el);
+    const container = group || menu;
+    if (!container) return;
+    const siblings = Array.from(container.querySelectorAll('md-menu-item')) as unknown as SelectableElement[];
     for (const sibling of siblings) {
-      if (sibling !== this.el && sibling.type === 'radio' && sibling.selected) {
-        sibling.selected = false;
-      }
+      if (sibling === (this.el as unknown as SelectableElement) || sibling.type !== 'radio' || !sibling.selected) continue;
+      const [sMenu, sGroup] = MdMenuItem.radioScope(sibling as unknown as Element);
+      if (sMenu !== menu || sGroup !== group) continue;
+      sibling.selected = false;
     }
   }
 

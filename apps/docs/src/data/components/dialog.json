@@ -23,6 +23,14 @@
       "mutable": false
     },
     {
+      "name": "dialogAriaLabel",
+      "attribute": "aria-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
       "name": "icon",
       "attribute": "icon",
       "type": "string",
@@ -141,16 +149,16 @@
       "description": "Action buttons"
     },
     {
+      "name": "headline",
+      "description": "Custom headline content"
+    },
+    {
       "name": "header-action",
       "description": "Full-screen header action (e.g. Save button)"
     },
     {
       "name": "icon",
       "description": "Custom icon (replaces icon prop)"
-    },
-    {
-      "name": "headline",
-      "description": "Custom headline content"
     }
   ],
   "cssParts": [

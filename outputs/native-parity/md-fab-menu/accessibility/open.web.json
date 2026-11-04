@@ -1,0 +1,381 @@
+{
+ "tag": "md-fab-menu",
+ "case": "open",
+ "html": "<div style=\"position:relative;width:360px;height:480px;display:flex;align-items:center;justify-content:center\"><md-fab id=\"demo-fab-anchor\" icon=\"add\" aria-label=\"Create\"></md-fab><md-fab-menu data-ax-node=\"n0\" id=\"component\"><md-fab-menu-item data-ax-node=\"n1\" id=\"demo-fab-item-0\"></md-fab-menu-item><md-fab-menu-item data-ax-node=\"n2\" id=\"demo-fab-item-1\"></md-fab-menu-item><md-fab-menu-item data-ax-node=\"n3\" id=\"demo-fab-item-2\"></md-fab-menu-item></md-fab-menu></div>",
+ "props": {
+  "n0": {
+   "anchor": "demo-fab-anchor",
+   "density": 0,
+   "menuLabel": "Actions",
+   "open": true,
+   "placement": "down",
+   "quick": false,
+   "variant": "primary"
+  },
+  "n1": {
+   "icon": "edit",
+   "label": "New document"
+  },
+  "n2": {
+   "icon": "folder",
+   "label": "New folder"
+  },
+  "n3": {
+   "icon": "photo",
+   "label": "Upload image"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   512
+  ],
+  "children": [
+   {
+    "role": "generic",
+    "name": "",
+    "ignored": false,
+    "frame": [
+     16,
+     16,
+     360,
+     480
+    ],
+    "children": [
+     {
+      "role": "button",
+      "name": "Create",
+      "ignored": false,
+      "focusable": true,
+      "expanded": true,
+      "frame": [
+       168,
+       228,
+       56,
+       56
+      ],
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         }
+        ]
+       },
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       },
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       }
+      ]
+     },
+     {
+      "role": "menu",
+      "name": "Actions",
+      "ignored": false,
+      "orientation": "vertical",
+      "frame": [
+       0,
+       -18,
+       640,
+       900
+      ],
+      "children": [
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         61.40625,
+         292,
+         162.59375,
+         152
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "menuitem",
+            "name": "New document",
+            "ignored": false,
+            "focusable": true,
+            "frame": [
+             61.40625,
+             292,
+             162.59375,
+             48
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "New document",
+                "ignored": false,
+                "frame": [
+                 105.40625,
+                 308,
+                 94.59375,
+                 16
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "New document",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "menuitem",
+            "name": "New folder",
+            "ignored": false,
+            "focusable": true,
+            "frame": [
+             88.078125,
+             344,
+             135.921875,
+             48
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "New folder",
+                "ignored": false,
+                "frame": [
+                 132.078125,
+                 360,
+                 67.921875,
+                 16
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "New folder",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "menuitem",
+            "name": "Upload image",
+            "ignored": false,
+            "focusable": true,
+            "frame": [
+             68.40625,
+             396,
+             155.59375,
+             48
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Upload image",
+                "ignored": false,
+                "frame": [
+                 112.40625,
+                 412,
+                 88,
+                 17
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Upload image",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-fab",
+   "role": "button",
+   "name": "Create",
+   "frame": [
+    168,
+    228,
+    56,
+    56
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true,
+    "expanded": true
+   }
+  },
+  {
+   "dom": "md-fab-menu-item",
+   "role": "menuitem",
+   "name": "New document",
+   "frame": [
+    61.40625,
+    292,
+    162.59375,
+    48
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "dom": "md-fab-menu-item",
+   "role": "menuitem",
+   "name": "New folder",
+   "frame": [
+    88.078125,
+    344,
+    135.921875,
+    48
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "dom": "md-fab-menu-item",
+   "role": "menuitem",
+   "name": "Upload image",
+   "frame": [
+    68.40625,
+    396,
+    155.59375,
+    48
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true
+   }
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

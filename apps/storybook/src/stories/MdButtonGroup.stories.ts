@@ -3,6 +3,42 @@ import { expect, waitFor } from 'storybook/test';
 import { html } from 'lit';
 import { t } from '../i18n';
 
+export const RequiredSelectionAndDynamicChildren: Story = {
+  render: () => html`<md-button-group required selection-mode="multi-select" aria-label="Text formatting"><md-button value="bold" selected>Bold</md-button><md-icon-button value="italic" icon="format_italic" aria-label="Italic"></md-icon-button></md-button-group>`,
+  play: async ({ canvasElement }) => {
+    const group = (await getGroups(canvasElement))[0] as HTMLMdButtonGroupElement;
+    const bold = btn(group, 'bold');
+    const italic = btn(group, 'italic');
+    const changes: ChangeDetail[] = [];
+    group.addEventListener('mdSelectionChange', event => changes.push((event as CustomEvent).detail));
+    bold.click();
+    await waitFor(() => expect(pressed(bold)).toBe('true'));
+    expect(changes.at(-1)?.values).toEqual(['bold']);
+    italic.click();
+    await waitFor(() => expect(pressed(italic)).toBe('true'));
+    bold.click();
+    await waitFor(() => expect(pressed(bold)).toBe('false'));
+    expect(changes.at(-1)?.values).toEqual(['italic']);
+    italic.focus();
+    italic.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, composed: true }));
+    await waitFor(() => expect(document.activeElement).toBe(bold));
+    bold.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, composed: true }));
+    await waitFor(() => expect(document.activeElement).toBe(italic));
+    italic.remove();
+    await waitFor(() => expect(group.querySelectorAll('md-button,md-icon-button')).toHaveLength(1));
+    group.required = false;
+    group.variant = 'connected';
+    group.size = 'lg';
+    group.shape = 'square';
+    await waitFor(() => expect((bold as HTMLMdButtonElement).size).toBe('lg'));
+    bold.click();
+    await waitFor(() => expect(pressed(bold)).toBe('true'));
+    bold.click();
+    await waitFor(() => expect(pressed(bold)).toBe('false'));
+    expect(changes.at(-1)?.values).toEqual([]);
+  },
+};
+
 /** Shadow-piercing / hydration helpers for play(): testing-library can't cross
  *  shadow roots, and pre-hydration clicks on Stencil hosts are silent no-ops —
  *  so we gate every group and its children on `.hydrated`, then read the

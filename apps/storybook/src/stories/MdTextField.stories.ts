@@ -1,6 +1,9 @@
+import { exerciseTextSpeech } from '../../../../packages/core/src/components/md-text-field/test-utils/editing.browser';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { expect, waitFor } from 'storybook/test';
 import { html } from 'lit';
+import { exerciseServerValidation } from '../../../../packages/core/src/components/md-checkbox/test-utils/form-validation.browser';
+import { exerciseTextEditing } from '../../../../packages/core/src/components/md-text-field/test-utils/editing.browser';
 import { t } from '../i18n';
 
 /** Shadow-piercing helpers for play(): testing-library queries can't cross
@@ -1510,4 +1513,25 @@ export const SearchBehavior: Story = {
       await waitFor(() => expect(hits).toEqual(['x', 'xyz']), { timeout: 2000 }); // trailing flush
     });
   },
+};
+
+/** Server validation is queried silently and presented through this control. */
+export const ServerValidation: Story = {
+  render: () => html`<form><fieldset style="border:0;padding:0">
+    <button type="button">Outside control</button>
+    <md-text-field data-form-contract name="entry" label="Form value" aria-label="Form value"></md-text-field>
+  </fieldset></form>`,
+  play: async ({ canvasElement }) => {
+    await exerciseServerValidation(canvasElement.querySelector('md-text-field') as HTMLElement);
+  },
+};
+
+export const EditingPipelineContract: Story = {
+  render: () => html`<md-text-field label="Reference"></md-text-field>`,
+  play: async ({ canvasElement }) => exerciseTextEditing(canvasElement.querySelector('md-text-field') as HTMLElement),
+};
+
+export const SpeechEditingContract: Story = {
+  render: () => html`<md-text-field label="Form value"></md-text-field>`,
+  play: async ({ canvasElement }) => exerciseTextSpeech(canvasElement.querySelector('md-text-field') as HTMLElement),
 };

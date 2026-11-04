@@ -161,10 +161,11 @@ identifying value. There is no `aria-controls` (the detail zone lives in the
 row's shadow root, which an IDREF cannot cross), so keep the detail in the
 row's `expanded` slot where it follows its row in the reading order.
 
-**RTL** — the glyph is **not** mirrored automatically: `chevron_right` still
-points right under `dir="rtl"`, and the expanded rotation is always the same
-`90deg`. Set `icon="chevron_left"` for RTL layouts if you want the resting
-caret mirrored.
+**RTL** — the caret mirrors automatically under `dir="rtl"` (the host's own
+`dir` or an ancestor's, via `:dir(rtl)`): the collapsed `chevron_right` points
+toward the inline end (left), and the expanded caret still points down (the
+mirror is applied before the `--md-table-expand-toggle-rotation`). Don't swap
+in `icon="chevron_left"` for RTL — it would be mirrored back.
 
 **Density** — none of its own; it renders a fixed `xs` (32px) icon button that
 fits every row density.

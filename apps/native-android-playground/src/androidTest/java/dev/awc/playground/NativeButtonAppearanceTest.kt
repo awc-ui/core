@@ -19,6 +19,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.awc.nativeui.*
 import dev.awc.nativeui.generated.*
 import org.json.JSONObject
@@ -191,11 +192,13 @@ class NativeButtonAppearanceTest {
         assertEquals(.88f, fadedPixel.blue, .02f)
     }
 
-    @Test fun explicitFontSizeAndMinimumLineHeightRespectPlatformFontScale() {
+    @Test fun explicitFontSizeAndLineHeightRespectPlatformFontScale() {
         var fontScale by mutableFloatStateOf(1f)
+        var expectedLineHeightPx=0f
         compose.setContent { AWCTheme {
             val density = LocalDensity.current.density
             CompositionLocalProvider(LocalDensity provides Density(density, fontScale)) {
+                expectedLineHeightPx=with(LocalDensity.current) { 80.sp.toPx() }
                 AWCButtonAppearanceScope(AWCButtonAppearance(fontSize = 20.0, lineHeight = 80.0)) {
                     AWCButton(modifier = Modifier.testTag("button")) { if(it == "") Text("Text", Modifier.testTag("label")) }
                 }
@@ -208,8 +211,8 @@ class NativeButtonAppearanceTest {
         val scaled = compose.onNodeWithTag("button").fetchSemanticsNode().boundsInRoot
         val scaledLabel = compose.onNodeWithTag("label", true).fetchSemanticsNode().boundsInRoot
         // Android uses nonlinear accessibility font scaling for larger sp sizes.
-        assertTrue("Line box grows with accessibility text scale", scaled.height > initial.height * 1.5f)
-        assertTrue("Large sp values respect nonlinear scaling", scaled.height <= initial.height * 2.01f)
+        assertEquals("Line box matches the active native sp conversion",expectedLineHeightPx,scaled.height,1f)
+        assertTrue("Line box grows with accessibility text scale",scaled.height>initial.height)
         assertTrue("Explicit font size scales actual native text", scaledLabel.width > label.width * 1.5f)
     }
 

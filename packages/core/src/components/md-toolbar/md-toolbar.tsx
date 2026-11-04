@@ -84,6 +84,11 @@ export class MdToolbar {
   @Prop({ reflect: true }) density: 0 | -1 | -2 | -3 | -4 = 0;
 
   @State() private hasFab = false;
+  /** Whether the leading / trailing sections hold a visible control. Each non-empty
+   *  section lays out as ONE group (so several leading items stay together at the start
+   *  and vertical strips keep them on axis); an empty one takes no space or gap. */
+  @State() private hasLeading = false;
+  @State() private hasTrailing = false;
 
   /** The control that currently owns the roving group's single Tab stop. */
   private activeItem: HTMLElement | null = null;
@@ -98,17 +103,31 @@ export class MdToolbar {
   private readonly syncFab = () => {
     this.hasFab = (this.fabSlot?.assignedElements().length ?? 0) > 0;
   };
+  private sectionHasContent(name: 'leading' | 'trailing'): boolean {
+    for (const child of Array.from(this.el.children) as HTMLElement[]) {
+      if (child.getAttribute('slot') === name && !child.hidden && this.isVisible(child)) return true;
+    }
+    return false;
+  }
+  private readonly syncSections = () => {
+    const leading = this.sectionHasContent('leading');
+    const trailing = this.sectionHasContent('trailing');
+    if (leading !== this.hasLeading) this.hasLeading = leading;
+    if (trailing !== this.hasTrailing) this.hasTrailing = trailing;
+  };
   /** Coalesce mutation-driven re-syncs into one per frame: slotted controls toggle
    *  host classes (state layers) on hover/press, which would otherwise fire a full
    *  roving recompute per interaction. Direct callers (setup, watches) run synchronously. */
   private readonly syncRoving = () => {
     if (typeof requestAnimationFrame !== 'function') {
+      this.syncSections();
       this.updateRoving();
       return;
     }
     if (this.rovingFrame) return;
     this.rovingFrame = requestAnimationFrame(() => {
       this.rovingFrame = 0;
+      this.syncSections();
       this.updateRoving();
     });
   };
@@ -143,6 +162,11 @@ export class MdToolbar {
     // and is rendered, so a blank value would otherwise linger on the host).
     const raw = this.el.getAttribute('aria-label');
     if (raw !== null && raw.trim() === '') this.el.removeAttribute('aria-label');
+    // Before first render, from the light DOM (hidden attribute only; layout is not ready).
+    const authored = (name: string) =>
+      (Array.from(this.el.children) as HTMLElement[]).some((c) => c.getAttribute('slot') === name && !c.hasAttribute('hidden'));
+    this.hasLeading = authored('leading');
+    this.hasTrailing = authored('trailing');
   }
 
   connectedCallback() {
@@ -182,6 +206,7 @@ export class MdToolbar {
     this.fabSlot = (root?.querySelector('slot[name="fab"]') as HTMLSlotElement | null) ?? undefined;
     this.fabSlot?.addEventListener('slotchange', this.syncFab);
     this.syncFab();
+    this.syncSections();
 
     root?.querySelectorAll('slot').forEach((s) => s.addEventListener('slotchange', this.syncRoving));
     if (typeof MutationObserver !== 'undefined' && !this.slotObserver) {
@@ -543,6 +568,8 @@ export class MdToolbar {
           [`md-toolbar--align-${this.alignment}`]: true,
           'md-toolbar--vertical': isVertical,
           'md-toolbar--generic': !isToolbar,
+          'md-toolbar--has-leading': this.hasLeading,
+          'md-toolbar--has-trailing': this.hasTrailing,
         }}
         role={isToolbar ? 'toolbar' : undefined}
         aria-label={ariaLabel}

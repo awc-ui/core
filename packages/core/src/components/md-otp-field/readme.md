@@ -153,7 +153,9 @@ the code is complete), `clear()`, plus the constraint-validation set:
   submission and constraint validation. An ancestor `<fieldset disabled>` or
   disabled `<form>` disables the field too.
 - **Focus selects the cell's character**, so a keystroke replaces rather than
-  appends; clicking an already-focused cell re-selects it.
+  appends; clicking an already-focused cell re-selects it. A keystroke into a
+  filled cell whose character is not selected (the last cell, which keeps
+  focus after the final character) replaces it too.
 - **`group-size` slotting**: content in the `separator` slot is assigned to the
   **first** gap only (one slot element per name is filled in tree order).
   Later gaps keep the built-in dot. Style `::part(separator)` when every gap
