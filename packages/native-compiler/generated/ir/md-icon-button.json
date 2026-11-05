@@ -452,7 +452,12 @@
           {
             "kind": "element",
             "tag": "slot",
-            "attributes": [],
+            "attributes": [
+              {
+                "name": "onSlotchange",
+                "value": "() => this.syncSlottedIcons()"
+              }
+            ],
             "children": []
           },
           {
@@ -478,8 +483,12 @@
         "value": ""
       },
       {
+        "kind": "text",
+        "value": ""
+      },
+      {
         "kind": "expression",
-        "source": "this.toggle && (this.selectedIcon || this.hasSlottedSelected) && (\n          <span\n            class={{\n              'md-icon-button__icon': true,\n              'md-icon-button__icon--on': showSelected,\n            }}\n            part=\"selected-icon\"\n          >\n            <slot name=\"selected\" />\n            {!this.hasSlottedSelected && this.selectedIcon && (\n              <span class=\"md-icon-button__icon-font material-symbols-outlined\" aria-hidden=\"true\">\n                {this.selectedIcon}\n              </span>\n            )}\n          </span>\n        )"
+        "source": "this.toggle && (\n          <span\n            class={{\n              'md-icon-button__icon': true,\n              'md-icon-button__icon--on': showSelected && (!!this.selectedIcon || this.hasSlottedSelected),\n            }}\n            part=\"selected-icon\"\n          >\n            <slot name=\"selected\" onSlotchange={() => this.syncSlottedIcons()} />\n            {!this.hasSlottedSelected && this.selectedIcon && (\n              <span class=\"md-icon-button__icon-font material-symbols-outlined\" aria-hidden=\"true\">\n                {this.selectedIcon}\n              </span>\n            )}\n          </span>\n        )"
       },
       {
         "kind": "text",
@@ -489,28 +498,28 @@
   },
   "diagnostics": [
     {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedNodes depends on browser semantics and requires a native adapter.",
+      "line": 105
+    },
+    {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 99
+      "line": 121
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 102
-    },
-    {
-      "code": "SLOT_INTROSPECTION",
-      "severity": "warning",
-      "message": "assignedNodes depends on browser semantics and requires a native adapter.",
-      "line": 113
+      "line": 122
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Window access requires a native adapter.",
-      "line": 143
+      "line": 135
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -524,7 +533,7 @@
     "styleUrl": "md-icon-button.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "b0c190f9e48573f6d5f85a0048f1640e1e6d434599ae1933e90510467e5be888"
+    "sha256": "145096b79f83f2749efc827f9a34e981128e3705e47ca719372f2b4f0f671103"
   },
   "styles": [
     {
@@ -2061,50 +2070,82 @@
         "variant",
         "size",
         "shape",
+        "buttonWidth",
+        "disabled",
+        "softDisabled",
         "toggle",
         "selected",
+        "shapeMorph",
+        "ripple",
         "icon",
         "selectedIcon",
         "href",
+        "target",
+        "connectedLeft",
+        "connectedRight",
         "value",
-        "disabled",
-        "softDisabled"
+        "groupTabindex",
+        "density"
       ],
       "events": [
         "mdClick"
       ],
       "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "buttonWidth",
-        "shapeMorph",
-        "ripple",
-        "target",
-        "connectedLeft",
-        "connectedRight",
-        "groupTabindex",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "slots": [
         "",
         "selected"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Icons map Material names to SF Symbols; raw SF Symbol names are accepted. Arbitrary Material glyph coverage is not guaranteed."
+        "Dedicated SwiftUI icon-button implements the source 5 sizes, 3 widths and 5 density rungs, 4 variant palettes including toggle/selected/disabled precedence, bundled Material Symbols, shape morphing and logical connected corners. It shares the tested native focus/responder and pointer-origin ripple infrastructure with md-button.",
+        "Default/selected named children obey meaningful-content fallback: raw whitespace and md-badge do not mask the icon prop; AWCNode.slotText creates an authored element-like wrapper, including an explicit empty wrapper, and AWCNode.symbol uses the real Material font. Selected glyphs swap only in selected toggle mode; selected palette/morph also applies without toggle. Avatar children retain their own size; badge adornments anchor to the physical top-right of the icon wrapper and may overflow the host.",
+        "AWCIconButtonAction preserves source navigation, then toggle commit, then mdClick({selected}) ordering. The event supports native scoped capture/target/bubble and cancellation metadata, but canceling this post-action notification cannot undo navigation or selection. There is no mdChange, source imperative method, or form-submit behavior. Native activation.source identifies pointer, keyboard, accessibility or unknown entry.",
+        "Enter/Space activate on keydown with a 150ms press pulse; pointer press holds until release/cancel. Hard-disabled excludes focus; soft-disabled remains focusable and inert. groupTabindex implements ordinary/null, 0 and -1 native focus semantics. Positive browser tabindex ordering is not emulated. aria-label supplies the authored native accessible name; decorative Material glyph names are not spoken. Source role remains button even when href is present.",
+        "Target is supplied to AWCURLRouter; AWCNavigationCoordinator can provide explicit self/blank/parent/top/named native presentation contexts. It does not create browser windows, opener/referrer behavior or DOM events. Relative routes require a host base URL. The default SwiftUI openURL fallback delegates presentation to the app.",
+        "Nine public visual hooks map to validated AWCIconButtonAppearance values inherited fieldwise through View.awcIconButtonAppearance. All three CSS parts have measured native visual counterparts; arbitrary CSS selectors and CSS execution remain Web APIs. Corner radius overrides resting shape, while selected/pressed morph targets and connected corner precedence follow the source.",
+        "Actual NSHostingView geometry, palette pixels, slot updates, pointer, keyboard, native focus and accessibility are covered by a checked-in test runner. macOS SwiftUI library/live/snapshot products compile and run. This environment has Command Line Tools only; iOS SDK/device/VoiceOver execution is unverified. See audits/md-icon-button.md."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "selected-icon"
+      ],
+      "appearance": {
+        "api": "AWCIconButtonAppearance / View.awcIconButtonAppearance",
+        "fields": [
+          "containerColor",
+          "iconColor",
+          "stateLayerColor",
+          "iconSize",
+          "cornerRadius",
+          "outlineColor",
+          "outlineWidth",
+          "width",
+          "height"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "buttonWidth",
+        "connectedLeft",
+        "connectedRight",
+        "density",
         "disabled",
         "groupTabindex",
         "href",
         "icon",
+        "ripple",
         "selected",
         "selectedIcon",
+        "shape",
+        "shapeMorph",
+        "size",
         "softDisabled",
         "target",
         "toggle",
@@ -2115,27 +2156,81 @@
         "mdClick"
       ],
       "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "size",
-        "shape",
-        "buttonWidth",
-        "shapeMorph",
-        "ripple",
-        "connectedLeft",
-        "connectedRight",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "slots": [
         "",
         "selected"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated Compose renderer implements all 19 source properties, all five size and density rungs, narrow/default/wide widths, four source palettes, selected/pressed/resting morph precedence, connected logical corners, pointer-origin ripple, keyboard focus and native group coordination. Default/selected slots replace glyph fallbacks; direct native badges adorn without suppressing the icon and avatars retain their own dimensions. Navigation and toggle commit before cancelable mdClick notification, exactly as the source does; no mdChange is emitted. The nine public CSS hooks map to AWCIconButtonAppearance. Native layout evidence covers the visual root, state-layer and active icon part. Source DOM objects, CSS selector evaluation, browser windows and forced-colors media queries remain platform-specific."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "selected-icon"
+      ],
+      "appearance": {
+        "api": "AWCIconButtonAppearance / AWCIconButtonAppearanceScope",
+        "fields": [
+          "containerColor",
+          "iconColor",
+          "stateLayerColor",
+          "iconSize",
+          "cornerRadius",
+          "outlineColor",
+          "outlineWidth",
+          "width",
+          "height"
+        ]
+      },
+      "nativeEquivalents": {
+        "SHADOW_DOM": {
+          "status": "implemented",
+          "api": "AWCSlotsScope / AWCSlotRegistry / AWCComponent content",
+          "description": "Default and selected composable slots replace source glyphs. Direct native badges and avatars preserve their source slot sizing roles.",
+          "limitations": [
+            "Native composition replaces shadow DOM; arbitrary DOM inspection is not exposed."
+          ]
+        },
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry / AWCNavigationScope",
+          "description": "Native slot lookup and injected application routing replace the component-specific DOM queries.",
+          "limitations": [
+            "No arbitrary CSS selector engine or browser window is created."
+          ]
+        },
+        "SLOT_INTROSPECTION": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry / native subcomposition",
+          "description": "Subcomposition detects actual child layout and selects the default or selected icon layer; badges do not count as replacement icons. Explicit Text composables, including empty editor text, represent authored replacement elements.",
+          "limitations": [
+            "Compose children replace DOM nodes; omission restores fallback while an authored empty element suppresses it."
+          ]
+        },
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "AWCNavigationCoordinator / AWCNavigationContext / AWCNavigationScope / AWCURLRouter",
+          "description": "Safe relative links resolve against the source native context current URL. Observable native contexts implement self, blank, parent, top and reusable named destinations, independent history, back and subtree close. A host can reject navigation before commit and present accepted destinations after commit. Unsafe raw links never fall through to form actions.",
+          "limitations": [
+            "Contexts are native application state, not browser windows, documents, origins or opener relationships; no page is fetched by the coordinator.",
+            "Named native destinations are deliberately reusable; source window.open with noopener/noreferrer may instead create fresh browser contexts. Browser modifier/middle-click navigation and window APIs are not reproduced.",
+            "URLs must parse as native URIs. Applications supply presentation for coordinator destinations; the legacy default router still opens absolute Android URIs."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionTargetScope / AWCActionEvent",
+          "description": "Scoped native capture/target/bubble delivery exposes cancelable mdClick after safe navigation and selection have already committed, matching the source icon-button ordering.",
+          "limitations": [
+            "Calling preventDefault marks the notification but cannot undo effects that preceded it. OS input and DOM propagation are not fabricated."
+          ]
+        }
+      }
     }
   }
 }

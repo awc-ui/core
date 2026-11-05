@@ -1,0 +1,338 @@
+{
+ "tag": "md-card",
+ "case": "disabled",
+ "request": {
+  "tag": "md-card",
+  "properties": {
+   "aria-label": "Open workspace",
+   "interactive": true,
+   "disabled": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "enabled": false,
+         "frame": [
+          48,
+          48,
+          11.5,
+          16
+         ],
+         "identifier": "D9004762-2CE4-46DB-AF76-C8D6AB4D8785",
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "✧"
+        },
+        {
+         "enabled": false,
+         "frame": [
+          48,
+          72,
+          113.5,
+          16
+         ],
+         "identifier": "71CEE867-7985-4B02-BE85-682C5B660172",
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Ideas take shape."
+        },
+        {
+         "enabled": false,
+         "frame": [
+          48,
+          96,
+          318.5,
+          16
+         ],
+         "identifier": "FE54C5A0-C369-4925-AFB2-CE5D0CE9C95A",
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "A shared design language, built for every surface."
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Explore workspace",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            48,
+            120,
+            152,
+            40
+           ],
+           "identifier": "AEE32EFF-42B3-4C0F-89AD-398B1A113F69",
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          }
+         ],
+         "enabled": false,
+         "focused": false,
+         "frame": [
+          24,
+          96,
+          200,
+          88
+         ],
+         "identifier": "AEE32EFF-42B3-4C0F-89AD-398B1A113F69",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        }
+       ],
+       "enabled": false,
+       "focused": false,
+       "frame": [
+        32,
+        32,
+        576,
+        144
+       ],
+       "identifier": "example-md-card",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      208
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    208
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "D9004762-2CE4-46DB-AF76-C8D6AB4D8785",
+    "properties": {
+     "text": "✧"
+    },
+    "tag": "#text"
+   },
+   {
+    "children": [],
+    "id": "71CEE867-7985-4B02-BE85-682C5B660172",
+    "properties": {
+     "text": "Ideas take shape."
+    },
+    "tag": "#text"
+   },
+   {
+    "children": [],
+    "id": "FE54C5A0-C369-4925-AFB2-CE5D0CE9C95A",
+    "properties": {
+     "text": "A shared design language, built for every surface."
+    },
+    "tag": "#text"
+   },
+   {
+    "children": [
+     {
+      "children": [],
+      "id": "82D78B00-48CB-424F-8316-4C648B78A72C",
+      "properties": {
+       "text": "Explore workspace"
+      },
+      "tag": "#text"
+     }
+    ],
+    "id": "AEE32EFF-42B3-4C0F-89AD-398B1A113F69",
+    "properties": {
+     "variant": "text"
+    },
+    "tag": "md-button"
+   }
+  ],
+  "id": "example-md-card",
+  "properties": {
+   "aria-label": "Open workspace",
+   "density": 0,
+   "disabled": true,
+   "dragEnabled": false,
+   "fullHeight": false,
+   "fullWidth": false,
+   "interactive": true,
+   "ripple": true,
+   "softDisabled": false,
+   "variant": "elevated"
+  },
+  "tag": "md-card"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Explore workspace",
+    "frame": [
+     48,
+     120,
+     152,
+     40
+    ],
+    "identifier": "AEE32EFF-42B3-4C0F-89AD-398B1A113F69",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Explore workspace",
+    "frame": [
+     48,
+     120,
+     152,
+     40
+    ],
+    "identifier": "AEE32EFF-42B3-4C0F-89AD-398B1A113F69",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Explore workspace",
+    "frame": [
+     48,
+     120,
+     152,
+     40
+    ],
+    "identifier": "AEE32EFF-42B3-4C0F-89AD-398B1A113F69",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 144,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "active": false,
+     "background": [
+      0.10980392247438431,
+      0.10588235408067703,
+      0.12156864255666733,
+      0.12156862765550613
+     ],
+     "color": [
+      0.10980392247438431,
+      0.10588235408067703,
+      0.12156864255666733,
+      0.3803921639919281
+     ],
+     "contentGap": 8,
+     "dragging": false,
+     "focusRing": false,
+     "focused": false,
+     "fontSize": 14,
+     "gap": {
+      "column": 0,
+      "row": 8
+     },
+     "hover": false,
+     "layerOpacity": 0,
+     "lineHeight": 20,
+     "offsetX": 0,
+     "offsetY": 0,
+     "outlineColor": [
+      0.10980392247438431,
+      0.10588235408067703,
+      0.12156864255666733,
+      0.12156862765550613
+     ],
+     "outlineWidth": 0,
+     "padding": [
+      16,
+      16,
+      16,
+      16
+     ],
+     "renderTime": 1031487861.5016253,
+     "role": "",
+     "shadow": [],
+     "tabindex": -2,
+     "zIndex": 0
+    },
+    "name": "md-card"
+   },
+   {
+    "bounds": {
+     "height": 144,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component.state-layer",
+    "metrics": {
+     "opacity": 0,
+     "renderTime": 1031487861.5016253
+    },
+    "name": "state-layer",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

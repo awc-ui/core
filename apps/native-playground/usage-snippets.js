@@ -1,7 +1,12 @@
-import { BUTTON_APPEARANCE_FIELDS, normalizeButtonAppearance, buttonAppearanceCSS } from './button-appearance.js';
-import { nativeTextSlotSupported } from './native-api-examples.js';
-import { defaultSlotMaskingProperty } from './content-slots.js';
+import { normalizeSegmentedContext, SEGMENTED_PARENT_PROPERTIES } from './segmented-context.js';
+import { normalizeButtonGroupSelection } from './button-group-state.js';
+import { componentAppearance } from './component-appearance.js';
+import { partRulesCSS } from './appearance-part-rules.js';
+import { normalizeThemeColorTokens } from './theme-color-tokens.js';
+import { nativeTextSlotSupported, nativeStatusDotContext, statusDotContextImports, nativeSnackbarContext, nativeSnackbarLifecycleSupported, nativeTooltipContext, nativeTooltipLifecycleSupported } from './native-api-examples.js';
+import { defaultSlotMaskingProperty, componentContentSlots, componentSlotElement } from './content-slots.js';
 import { recipeFor } from './recipes.js';
+import { hookMapNative } from './picker-appearance.js';
 import { propertyEditor, parsePropertyInput } from './property-controls.js';
 
 export const snippetLanguages = Object.freeze([
@@ -58,16 +63,38 @@ export function recipePropertyValues(component, recipe = recipeFor(component?.ta
   return jsonValue(values);
 }
 
+/** Host accessibility attributes are separate from generated component properties. */
+export function recipeContextAttributes(component, recipe = recipeFor(component?.tag ?? component?.tagName ?? '')) {
+  const tag = component?.tag ?? component?.tagName;
+  if (!['md-icon-button', 'md-fab', 'md-fab-menu-item', 'md-segmented-button', 'md-split-button'].includes(tag)) return {};
+  const attrs = recipeTree(tag, recipe?.html).selected.attrs;
+  return typeof attrs['aria-label'] === 'string' ? { 'aria-label': attrs['aria-label'] } : {};
+}
+
+/** Actual selectable descendants, in the same source order the group uses. */
+export function recipeButtonGroupChildren(component, recipe = recipeFor(component?.tag ?? component?.tagName ?? '')) {
+  if ((component?.tag ?? component?.tagName) !== 'md-button-group') return [];
+  return walk(recipeTree('md-button-group', recipe.html).selected.children)
+    .filter(node => ['md-button', 'md-icon-button'].includes(node.tag)).map((node, index) => ({
+      index, tag: node.tag, value: String(nodeProperties(node).value ?? ''),
+      label: node.attrs['aria-label'] || walk(node.children).filter(child => child.text !== undefined).map(child => child.text).join('').trim() || node.attrs.icon || `Button ${index + 1}`,
+      selected: nodeProperties(node).selected === true,
+    }));
+}
+
 /** Copyable examples for the public framework, SwiftUI and Compose APIs.
  * `html` is trusted local recipe markup. Property values are JSON data, never code.
  */
-export function usageSnippet(component, properties = {}, platform = 'web', { html, sourceHtml, text, slots, buttonAppearance, buttonAppearanceDefaults, focusEvent, focusMethod } = {}) {
+export function usageSnippet(component, properties = {}, platform = 'web', options = {}) {
+  const { html, sourceHtml, text, slots, buttonGroupSelection, focusEvent, focusMethod } = options;
   const tag = component?.tag;
   if (typeof tag !== 'string' || !/^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/.test(tag)) throw new TypeError('A valid component tag is required.');
   platform = ({ web: 'html', ios: 'swift' })[platform] ?? platform;
   if (!snippetLanguages.some(language => language.id === platform)) throw new TypeError(`Unknown snippet platform: ${platform}`);
   const declared = Array.isArray(component.properties) ? new Set(component.properties.map(property => typeof property === 'string' ? property : property.name)) : null;
-  const filtered = Object.fromEntries(Object.entries(properties ?? {}).filter(([key, value]) => value !== undefined && (!declared || declared.has(key))));
+  const filtered = Object.fromEntries(Object.entries(properties ?? {}).filter(([key, value]) => value !== undefined && (!declared || declared.has(key)
+    || tag === 'md-button' && key === 'aria-expanded' && typeof value === 'boolean'
+    || ['md-icon-button', 'md-fab', 'md-fab-menu-item', 'md-segmented-button', 'md-split-button'].includes(tag) && key === 'aria-label' && typeof value === 'string')));
   const values = jsonValue(filtered);
   const events = [...new Set((component.events ?? []).map(event => typeof event === 'string' ? event : event.name).filter(name => typeof name === 'string' && name.length))];
   const native = platform === 'swift' || platform === 'android';
@@ -75,16 +102,71 @@ export function usageSnippet(component, properties = {}, platform = 'web', { htm
   // Native edits start from the authored composition. A Web-only slot edit in
   // `html` must not erase children that the native adapter still needs.
   const tree = recipeTree(tag, native && typeof sourceHtml === 'string' ? sourceHtml : html, nativeSlots ? undefined : text);
+  if (tag === 'md-segmented-button' && options.segmentedContext !== undefined) {
+    const context = normalizeSegmentedContext(options.segmentedContext);
+    if (context.mode === 'standalone') tree.nodes = [tree.selected];
+    else {
+      const set = walk(tree.nodes).find(node => node.tag === 'md-segmented-button-set');
+      const children = set && walk(set.children).filter(node => node.tag === tag);
+      if (!set || children.length !== context.selection.length) throw new TypeError('Segmented context must match the authored set composition.');
+      set.attrs.multiselect = String(context.multiselect); set.attrs.density = String(context.density);
+      children.forEach((child, index) => { child.attrs.selected = String(context.selection[index]); });
+      values.selected = context.selection[0];
+      for (const name of SEGMENTED_PARENT_PROPERTIES) delete values[name];
+    }
+  }
+  // ARIA context belongs to the host attribute on Web. An expando assigned by
+  // Object.assign would not rotate the icon or expose the expanded state.
+  if (tag === 'md-button' && typeof values['aria-expanded'] === 'boolean') {
+    tree.selected.attrs['aria-expanded'] = String(values['aria-expanded']);
+    if (!native) delete values['aria-expanded'];
+  }
+  if (['md-icon-button', 'md-fab', 'md-fab-menu-item', 'md-segmented-button', 'md-split-button'].includes(tag) && typeof values['aria-label'] === 'string') {
+    tree.selected.attrs['aria-label'] = values['aria-label'];
+    if (!native) delete values['aria-label'];
+  }
+  if (tag === 'md-button-group' && buttonGroupSelection !== undefined) {
+    const selections = normalizeButtonGroupSelection(buttonGroupSelection);
+    const children = walk(tree.selected.children).filter(node => ['md-button', 'md-icon-button'].includes(node.tag));
+    if (children.length !== selections.length) throw new TypeError('Group selection must match its authored children.');
+    children.forEach((child, index) => { child.attrs.selected = String(selections[index]); });
+  }
   if (nativeSlots) applyNativeSlotText(tree, component, slots, platform, values);
-  const appearance = { defaults: normalizeButtonAppearance(buttonAppearanceDefaults), local: normalizeButtonAppearance(tag === 'md-button' ? buttonAppearance : undefined) };
+  if (componentContentSlots(tag).length && slots) applyButtonSlotEdits(tree, component, slots, platform, values);
+  const profile = componentAppearance(tag) || componentAppearance('md-button');
+  const appearance = { profile,
+    tooltipLifecycle: native && nativeTooltipLifecycleSupported(component, platform),
+    snackbarLifecycle: native && nativeSnackbarLifecycleSupported(component, platform),
+    defaults: profile.normalize(options[`${profile.key}Defaults`]),
+    local: profile.normalize(componentAppearance(tag) ? options[profile.key] : undefined),
+    themeTokens: options.themeTokens === undefined ? {} : normalizeThemeColorTokens(options.themeTokens),
+  };
+  // Replace the Web recipe's external trigger with working native controller buttons.
+  // Preserve the selected Snackbar and all of its authored slot children.
+  if (appearance.snackbarLifecycle) tree.nodes = [tree.selected];
   if (platform === 'swift') return swiftSnippet(tag, values, tree, appearance);
   if (platform === 'android') return kotlinSnippet(tag, values, tree, appearance);
-  const css = (value, inherited) => Object.entries(buttonAppearanceCSS(value, inherited)).map(([name, value]) => `${name}: ${value}`).join('; ');
-  if (Object.keys(appearance.local).length) tree.selected.attrs.style = [css(appearance.local, appearance.defaults), tree.selected.attrs.style].filter(Boolean).join('; ');
-  if (Object.keys(appearance.defaults).length) tree.nodes = [{tag: 'div', attrs: {style: css(appearance.defaults)}, children: tree.nodes}];
+  const css = (value, inherited) => Object.entries(profile.css(value, inherited)).map(([name, value]) => `${name}: ${value}`).join('; ');
+  if (Object.keys(appearance.themeTokens).length) {
+    const existing = (tree.selected.attrs.style || '').split(';').filter(declaration => !Object.hasOwn(appearance.themeTokens, declaration.split(':')[0].trim()));
+    tree.selected.attrs.style = [...existing, ...Object.entries(appearance.themeTokens).map(([name, value]) => `${name}: ${value}`)].filter(Boolean).join('; ');
+  }
+  if (Object.keys(appearance.local).length) {
+    const style = [css(appearance.local, appearance.defaults), tree.selected.attrs.style].filter(Boolean).join('; ');
+    if (style) tree.selected.attrs.style = style;
+  }
+  // Fields that are ::part() declarations, not custom properties (md-button's fixed state-layer opacity): a stylesheet rule
+  // for the styled element (and, for subtree defaults, every matching component inside the wrapper).
+  const partDefaults = profile.partCSS?.(appearance.defaults) ?? [], partLocal = profile.partCSS?.(appearance.local) ?? [];
+  if (partLocal.length) tree.selected.attrs.class = [tree.selected.attrs.class, 'awc-appearance'].filter(Boolean).join(' ');
+  if (Object.keys(appearance.defaults).length) {
+    const style = css(appearance.defaults);
+    tree.nodes = [{tag: 'div', attrs: {...(partDefaults.length ? {class: 'awc-appearance-defaults'} : {}), ...(style ? {style} : {})}, children: tree.nodes}];
+  }
+  const partStyles = [partRulesCSS(`.awc-appearance-defaults ${tag}`, partDefaults), partRulesCSS(`${tag}.awc-appearance`, partLocal)].filter(Boolean).join('\n');
   const markup = tree.nodes.map(node => renderHTML(node)).join('');
-  if (platform === 'html') return webSnippet(tag, values, events, markup, recipeActions(tree), focusEvent, focusMethod);
-  return frameworkSnippet(tag, values, events, tree, platform, focusEvent, focusMethod);
+  if (platform === 'html') return webSnippet(tag, values, events, partStyles ? `<style>\n${indent(partStyles)}\n</style>\n${markup}` : markup, recipeActions(tree), focusEvent, focusMethod);
+  return frameworkSnippet(tag, values, events, tree, platform, focusEvent, focusMethod, partStyles);
 }
 
 function jsonValue(value, seen = new Set()) {
@@ -119,7 +201,8 @@ const camel = name => name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCas
 const pascal = tag => tag.split('-').map(part => part[0].toUpperCase() + part.slice(1)).join('');
 const custom = node => node.tag?.startsWith('md-');
 const walk = nodes => nodes.flatMap(node => [node, ...walk(node.children ?? [])]);
-const appearanceEntries = value => BUTTON_APPEARANCE_FIELDS.filter(field => Object.hasOwn(value, field.name)).map(field => [field.name, value[field.name]]);
+const appearanceEntries = (value, profile) => profile.fields.filter(field => Object.hasOwn(value, field.name)).map(field => [field.name, value[field.name]]);
+const appearanceValue = (profile, name, value, platform) => profile.nativeValue?.(name, value, platform) ?? (typeof value === 'string' ? nativeString(value, platform) : numberLiteral(value));
 
 function applyNativeSlotText(tree, component, slots, platform, properties) {
   for (const [rawName, value] of Object.entries(slots)) {
@@ -138,6 +221,29 @@ function applyNativeSlotText(tree, component, slots, platform, properties) {
       delete tree.selected.attrs[mask];
       properties[mask] = '';
     }
+  }
+}
+
+function applyButtonSlotEdits(tree, component, slots, platform, properties) {
+  const native = ['swift', 'android'].includes(platform);
+  const policy = component.support?.[platform === 'swift' ? 'ios' : platform];
+  for (const name of componentContentSlots(component.tag)) {
+    if (!Object.hasOwn(slots, name)) continue;
+    const names = (values = []) => values.map(value => typeof value === 'string' ? value : value.name);
+    if (!names(component.slots ?? policy?.slots).includes(name)) continue;
+    if (native && (!policy || policy.status === 'missing-adapter' || !names(policy.slots).includes(name) || names(policy.unsupportedSlots).includes(name))) continue;
+    const descriptor = componentSlotElement(component.tag, name, slots[name], properties);
+    const node = {
+      tag: descriptor.tag,
+      attrs: descriptor.attributes,
+      children: descriptor.text === undefined ? [] : [{ text: descriptor.text, explicitText: true }],
+      ...(slots[name]?.kind === 'symbol' ? { symbol: slots[name].value } : {}),
+    };
+    // These explicit edits replace the chosen slot, including its composition,
+    // while leaving the label and the other named slots intact.
+    tree.selected.children = tree.selected.children.filter(child => (child.attrs?.slot || '') !== name
+      || component.tag === 'md-icon-button' && name === '' && child.tag === 'md-badge');
+    tree.selected.children.push(node);
   }
 }
 
@@ -198,6 +304,7 @@ function renderHTML(node) {
 const numberAttributes = new Set('columns count rows-per-page page active-tab-index lines density elevation initial-x initial-y min max step length tabindex group-tabindex heading-level colspan rowspan width height'.split(' '));
 function attributeValue(name, value) {
   if (value === null) return true;
+  if (['selected', 'multiselect'].includes(name) && ['true', 'false'].includes(value)) return value === 'true';
   if (numberAttributes.has(name) && /^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value)) return Number(value);
   return value;
 }
@@ -265,7 +372,7 @@ function focusedMethodHandler(method) {
   return { name: method.name, body: `${hasResult ? 'const result = ' : ''}await component.${method.name}(${args});${hasResult ? '\nconsole.log(result);' : ''}` };
 }
 
-function frameworkSnippet(tag, values, events, tree, platform, focusEvent, focusMethod) {
+function frameworkSnippet(tag, values, events, tree, platform, focusEvent, focusMethod, partStyles = '') {
   const names = [...new Set(walk(tree.nodes).filter(custom).map(node => pascal(node.tag)))].sort();
   const tags = [...new Set(walk(tree.nodes).filter(custom).map(node => node.tag))].sort();
   const usedStyle = platform === 'react' && walk(tree.nodes).some(node => node.attrs?.style);
@@ -318,7 +425,10 @@ function frameworkSnippet(tag, values, events, tree, platform, focusEvent, focus
   };
   const runBinding = { react: 'onClick={run}', vue: '@click="run"', svelte: 'onclick={run}', angular: '(click)="run()"' }[platform];
   const rendered = tree.nodes.map(render).join('\n') + (method ? `\n<button type="button" ${runBinding}>Run ${method.name}</button>` : '');
-  const markup = actions.length ? `<div data-awc-example="">\n${indent(rendered, 2)}\n</div>` : rendered;
+  const framed = actions.length ? `<div data-awc-example="">\n${indent(rendered, 2)}\n</div>` : rendered;
+  // ::part() rules: React renders a global <style>; Vue, Svelte and Angular use their component styles below.
+  const markup = partStyles && platform === 'react' ? `<style>{${jsLiteral(partStyles)}}</style>\n${framed}` : framed;
+  const componentStyles = partStyles && platform !== 'react' ? partStyles : '';
   const eventMethod = `${handlerName}(event: ${focused?.type || 'CustomEvent'}) {\n${indent(focused?.body || 'console.log(event.type, event.detail);')}\n}`;
   const eventHandler = (events.length ? `\nfunction ${eventMethod}\n` : '') + (actions.length ? `\n${recipeActionHandler()}\n` : '');
   const type = `Partial<Components.${pascal(tag)}>`;
@@ -329,10 +439,10 @@ function frameworkSnippet(tag, values, events, tree, platform, focusEvent, focus
   const methodSetup = !method ? '' : platform === 'react' ? `  const ref = useRef<HTML${name}Element>(null);\n${indent(runMethod)}\n` : platform === 'vue' ? `\nconst view = ref<{ $el: HTML${name}Element } | null>(null);\n${runMethod}\n` : platform === 'svelte' ? `  let view: HTML${name}Element | undefined = $state();\n${indent(runMethod)}\n` : `  @ViewChild('view') view?: ${name};\n${indent(runMethod)}\n`;
   const note = '';
   if (platform === 'react') return `"use client";\n\n${setup}import { useState${method ? ', useRef' : ''}${usedStyle ? ', type CSSProperties' : ''} } from "react";\nimport { ${names.join(', ')} } from "@awc-ui/react";\n${core}\n${eventHandler}\nexport function ComponentExample() {\n  const [properties] = useState<${type}>(${jsLiteral(values, true)});\n${methodSetup}${note ? indent(note.trimEnd(), 2) + '\n' : ''}  return (\n    <>\n${indent(markup, 6)}\n    </>\n  );\n}`;
-  if (platform === 'vue') return `<script setup lang="ts">\n${setup}import { reactive${method ? ', ref' : ''} } from "vue";\nimport { ${names.join(', ')} } from "@awc-ui/vue";\n${core}\n\nconst properties = reactive<${type}>(${jsLiteral(values, true)});\n${eventHandler}${methodSetup}${note}</script>\n\n<template>\n${indent(markup, 2)}\n</template>`;
-  if (platform === 'svelte') return `<script lang="ts">\n${indent(setup + 'import type {} from "@awc-ui/svelte";\n' + core + '\n' + tags.map(name => `import "@awc-ui/core/components/${name}";`).join('\n'), 2)}\n\n  let properties: ${type} = $state(${jsLiteral(values, true)});\n${eventHandler ? indent(eventHandler.trim(), 2) + '\n' : ''}${methodSetup}${note ? indent(note.trim(), 2) + '\n' : ''}</script>\n\n${markup}`;
+  if (platform === 'vue') return `<script setup lang="ts">\n${setup}import { reactive${method ? ', ref' : ''} } from "vue";\nimport { ${names.join(', ')} } from "@awc-ui/vue";\n${core}\n\nconst properties = reactive<${type}>(${jsLiteral(values, true)});\n${eventHandler}${methodSetup}${note}</script>\n\n<template>\n${indent(markup, 2)}\n</template>${componentStyles ? `\n\n<style scoped>\n${componentStyles}\n</style>` : ''}`;
+  if (platform === 'svelte') return `<script lang="ts">\n${indent(setup + 'import type {} from "@awc-ui/svelte";\n' + core + '\n' + tags.map(name => `import "@awc-ui/core/components/${name}";`).join('\n'), 2)}\n\n  let properties: ${type} = $state(${jsLiteral(values, true)});\n${eventHandler ? indent(eventHandler.trim(), 2) + '\n' : ''}${methodSetup}${note ? indent(note.trim(), 2) + '\n' : ''}</script>\n\n${markup}${componentStyles ? `\n\n<style>\n${indent(componentStyles)}\n</style>` : ''}`;
   const template = markup.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
-  return `${setup}import { Component${method ? ', ViewChild' : ''} } from "@angular/core";\nimport { ${names.join(', ')} } from "@awc-ui/angular";\n${core}\n\n@Component({\n  selector: "app-component-example",\n  standalone: true,\n  imports: [${names.join(', ')}],\n  template: \`\n${indent(template, 4)}\n  \`,\n})\nexport class ComponentExample {\n  properties: ${type} = ${jsLiteral(values, true)};\n${methodSetup}${events.length ? '\n' + indent(eventMethod) + '\n' : ''}${actions.length ? '\n' + indent(recipeActionHandler(true, true), 2) + '\n' : ''}}`;
+  return `${setup}import { Component${method ? ', ViewChild' : ''} } from "@angular/core";\nimport { ${names.join(', ')} } from "@awc-ui/angular";\n${core}\n\n@Component({\n  selector: "app-component-example",\n  standalone: true,\n  imports: [${names.join(', ')}],\n  template: \`\n${indent(template, 4)}\n  \`,${componentStyles ? `\n  styles: [${jsLiteral(componentStyles)}],` : ''}\n})\nexport class ComponentExample {\n  properties: ${type} = ${jsLiteral(values, true)};\n${methodSetup}${events.length ? '\n' + indent(eventMethod) + '\n' : ''}${actions.length ? '\n' + indent(recipeActionHandler(true, true), 2) + '\n' : ''}}`;
 }
 
 // Escape HTML parser delimiters even though these are JavaScript string/object
@@ -386,23 +496,42 @@ function swiftValue(value) {
   const entries = Object.entries(value);
   return `.object(${entries.length ? `[${entries.map(([key, item]) => `${nativeString(key, 'swift')}: ${swiftValue(item)}`).join(', ')}]` : '[:]'})`;
 }
-function nativeNodes(nodes, slot = null) {
+function nativeNodes(nodes, slot = null, parentTag = null) {
   return nodes.flatMap(node => {
     const assignedSlot = node.attrs?.slot ?? slot;
+    if (node.symbol !== undefined) return [{ symbol: node.symbol, slot: assignedSlot }];
+    // A direct authored span is meaningful even when its text is blank. Keep
+    // that presence separate from indentation-only raw text nodes.
+    if ((['md-icon-button', 'md-fab'].includes(parentTag) || ['md-segmented-button', 'md-fab-menu-item', 'md-badge'].includes(parentTag) && assignedSlot === 'icon') && node.tag === 'span' && !walk(node.children).some(custom)) {
+      return [{ text: walk(node.children).filter(child => child.text !== undefined).map(child => child.text).join(''), slotText: true, slot: assignedSlot }];
+    }
     if (node.text !== undefined) return node.explicitText || node.text.trim() ? [{ text: node.text, slot: assignedSlot }] : [];
-    if (!custom(node)) return nativeNodes(node.children, assignedSlot);
-    return [{ ...node, slot: assignedSlot, children: nativeNodes(node.children) }];
+    if (!custom(node)) return nativeNodes(node.children, assignedSlot, parentTag);
+    return [{ ...node, slot: assignedSlot, children: nativeNodes(node.children, null, node.tag) }];
   });
 }
 function swiftNode(node, values) {
-  if (node.text !== undefined) return `.text(${nativeString(node.text, 'swift')}${node.slot ? `, slot: ${nativeString(node.slot, 'swift')}` : ''})`;
+  if (node.symbol !== undefined) return `.symbol(${nativeString(node.symbol, 'swift')}${node.slot ? `, slot: ${nativeString(node.slot, 'swift')}` : ''})`;
+  if (node.text !== undefined) return `.${node.slotText ? 'slotText' : 'text'}(${nativeString(node.text, 'swift')}${node.slot ? `, slot: ${nativeString(node.slot, 'swift')}` : ''})`;
   const properties = { ...nodeProperties(node), ...(node.selected ? values : {}) };
   const dictionary = swiftValue(properties).slice(8, -1);
   const children = node.children.map(child => swiftNode(child, values)).join(', ');
   return `AWCNode(${node.attrs.id ? `id: ${nativeString(node.attrs.id, 'swift')}, ` : ''}tag: ${nativeString(node.tag, 'swift')}, properties: ${dictionary}, children: [${children}]${node.slot ? `, slot: ${nativeString(node.slot, 'swift')}` : ''})`;
 }
+/** md-menu recipes: the anchored menu presents in an AWCMenuScope; its trigger toggles it through the scope's handle (open = !open). */
+const MENU_RECIPE_TAGS = new Set(['md-menu', 'md-menu-item', 'md-menu-item-group', 'md-sub-menu-item']);
+function anchoredMenuRecipe(roots) {
+  const menu = roots.find(node => node.tag === 'md-menu' && node.attrs?.anchor);
+  const trigger = menu && roots.find(node => node.attrs?.id === menu.attrs.anchor);
+  return menu && trigger ? { menu, trigger, id: menu.attrs.id || 'demo-menu' } : null;
+}
 function swiftSnippet(tag, values, tree, appearance) {
+  const targetedSegment = (tag === 'md-segmented-button' && walk(tree.nodes).some(node => node.tag === 'md-segmented-button-set') || tag === 'md-fab-menu-item' && walk(tree.nodes).some(node => node.tag === 'md-fab-menu')) && Object.keys(appearance.local).length;
+  if (targetedSegment && !tree.selected.attrs.id) tree.selected.attrs.id = tag === 'md-segmented-button' ? 'segment-day' : 'menu-item-document';
   const roots = nativeNodes(tree.nodes);
+  const menuContext = walk(tree.nodes).some(node => Object.hasOwn(node.attrs || {}, 'data-awc-fab-menu-context'));
+  const badgeContext = tag === 'md-badge' && walk(tree.nodes).some(node => Object.hasOwn(node.attrs || {}, 'data-awc-badge-context'));
+  const statusDotContext = tag === 'md-status-dot' && walk(tree.nodes).some(node => Object.hasOwn(node.attrs || {}, 'data-awc-status-dot-context'));
   const simple = roots.length === 1 && roots[0].selected;
   const selected = simple ? roots[0] : null;
   values = simple ? { ...nodeProperties(selected), ...values } : values;
@@ -411,10 +540,33 @@ function swiftSnippet(tag, values, tree, appearance) {
   const children = selected ? `[${selected.children.map(child => swiftNode(child, values)).join(', ')}]` : '[]';
   const note = '        // Add the AWCUI Swift package to your app.\n        // AWCNode preserves native children and named slots; HTML layout CSS and\n        // recipe setup callbacks require native layout/state in the host app.\n';
   let body = simple ? `AWCNativeView(\n    tag: ${nativeString(tag, 'swift')},\n    properties: ${properties},\n    children: ${children},\n    onEvent: { event in\n        print(event.name, event.detail.json)\n    }\n)` : `VStack(alignment: .leading) {\n${roots.map(node => node.text !== undefined ? `    Text(${nativeString(node.text, 'swift')})` : `    AWCNativeView(node: ${swiftNode(node, values)}, onEvent: { event in\n        print(event.name, event.detail.json)\n    })`).join('\n')}\n}`;
-  for (const [scope, value] of [['This button', appearance.local], ['Theme defaults for this subtree', appearance.defaults]]) {
-    if (Object.keys(value).length) body += `\n// ${scope}\n.awcButtonAppearance(.init(${appearanceEntries(value).map(([key, item]) => `${key}: ${typeof item === 'string' ? nativeString(item, 'swift') : numberLiteral(item)}`).join(', ')}))`;
+  const anchored = MENU_RECIPE_TAGS.has(tag) ? anchoredMenuRecipe(roots) : null;
+  if (anchored) body = `AWCMenuScope(state: menus) {\n    VStack(spacing: 12) {\n        AWCNativeView(node: ${swiftNode(anchored.trigger, values)}) { event in\n            if event.name == "mdClick" {\n                let menu = menus.menu(${nativeString(anchored.id, 'swift')})\n                if menu.isOpen { menu.close() } else { menu.show() }\n            }\n        }\n        AWCNativeView(node: ${swiftNode(anchored.menu, values)}, onEvent: { event in\n            print(event.name, event.detail.json)\n        })\n    }\n    .padding(.top, 12)\n}\n.frame(width: 360, height: 480)`;
+  if (menuContext) body = `AWCFabMenuScope {\n    ZStack {\n${indent(roots.map(node => `AWCNativeView(node: ${swiftNode(node, values)}, onEvent: { event in print(event.name, event.detail.json) })`).join('\n'), 8)}\n    }\n}\n.frame(width: 360, height: 480)`;
+  if (badgeContext) {
+    const badge = roots.find(node => node.selected), parent = roots.find(node => node.tag === 'md-icon-button');
+    body = `AWCNativeView(node: ${swiftNode(parent, values)})\n.awcIconButtonAppearance(.init(width: 48, height: 48))\n.frame(width: 48, height: 48)\n.awcBadgeOverlay {\n    AWCNativeView(node: ${swiftNode(badge, values)})\n}`;
   }
-  return `import SwiftUI\nimport AWCUI\n\nstruct ComponentExample: View {\n    var body: some View {\n${note}${indent(body, 8)}\n    }\n}`;
+  if (statusDotContext) {
+    const dot = roots.find(node => node.selected), parent = roots.find(node => node.tag === 'md-icon-button');
+    body = nativeStatusDotContext(`AWCNativeView(node: ${swiftNode(dot, values)})`, 'swift', { inline: values.inline === true, parent: `AWCNativeView(node: ${swiftNode(parent, values)})` });
+  }
+  if (tag === 'md-divider' && walk(tree.nodes).some(node => Object.hasOwn(node.attrs || {}, 'data-awc-divider-context'))) body += '\n.frame(width: 300, height: 96)';
+  if (['md-meter', 'md-progress-indicator'].includes(tag) && walk(tree.nodes).some(node => Object.hasOwn(node.attrs || {}, tag === 'md-meter' ? 'data-awc-meter-context' : 'data-awc-progress-context'))) body += '\n.frame(width: 300)';
+  if (tag === 'md-skeleton' && walk(tree.nodes).some(node => Object.hasOwn(node.attrs || {}, 'data-awc-skeleton-context'))) body += '\n.frame(width: 260, height: 160, alignment: .topLeading)\n.awcSkeletonSizingContext(.init(parentHeight: 160))';
+  for (const [scope, value] of [['This component', appearance.local], ['Theme defaults for this subtree', appearance.defaults]]) {
+    if (Object.keys(value).length) body += `\n// ${scope}\n.${appearance.profile.swiftModifier}(.init(${appearance.profile.hookPrefix ? hookMapNative(appearance.profile, value, 'swift') : appearanceEntries(value, appearance.profile).map(([key, item]) => `${key}: ${appearanceValue(appearance.profile, key, item, 'swift')}`).join(', ')})${scope === 'This component' && targetedSegment ? `, nodeID: ${nativeString(tree.selected.attrs.id, 'swift')}` : ''})`;
+  }
+  // A floating panel is placed in the nearest viewport (CSS position: fixed): give it a definite area.
+  if (tag === 'md-accordion' && values.floating === true) body += '\n.frame(maxWidth: .infinity, minHeight: 320, alignment: .topLeading)\n.awcAccordionViewport()';
+  if (Object.keys(appearance.themeTokens).length) body += `\n.awcTheme(.generated(tokens: [${Object.entries(appearance.themeTokens).map(([key, value]) => `${nativeString(key, 'swift')}: ${nativeString(value, 'swift')}`).join(', ')}]))`;
+  if (appearance.snackbarLifecycle) body = nativeSnackbarContext(`VStack {\n    Button("Show snackbar") { Task { await snackbarController.show() } }\n    Button("Close snackbar") { Task { await snackbarController.hide() } }\n    Spacer()\n}\n${body}\n.awcSnackbarController(snackbarController)`, 'swift');
+  // Dialogs and sheets present inside an AWCModalScope placed at the content root.
+  if (['md-dialog', 'md-bottom-sheet', 'md-side-sheet'].includes(tag)) body = `AWCModalScope {\n${indent(body, 4)}\n}`;
+  if (appearance.tooltipLifecycle) body = nativeTooltipContext(body, 'swift');
+  const state = appearance.snackbarLifecycle ? '    @State private var snackbarController = AWCSnackbarController()\n\n' : anchored ? '    @State private var menus = AWCMenuScopeState()\n\n' : '';
+  const setupNote = appearance.snackbarLifecycle ? '        // The scope owns the overlay viewport; controller calls target this mounted Snackbar.\n' : note;
+  return `import SwiftUI\nimport AWCUI\n\nstruct ComponentExample: View {\n${state}    var body: some View {\n${setupNote}${indent(body, 8)}\n    }\n}`;
 }
 function kotlinValue(value) {
   if (value === null) return 'null';
@@ -425,9 +577,11 @@ function kotlinValue(value) {
   const entries = Object.entries(value);
   return entries.length ? `mapOf<String, AWCValue>(${entries.map(([key, item]) => `${nativeString(key, 'kotlin')} to ${kotlinValue(item)}`).join(', ')})` : 'emptyMap<String, AWCValue>()';
 }
-function kotlinNode(node, values) {
-  if (node.text !== undefined) return `Text(${nativeString(node.text, 'kotlin')})`;
+function kotlinNode(node, values, targetedAppearance, menuContext = false, parentTag) {
+  if (node.symbol !== undefined) return `AWCMaterialSymbol(${nativeString(node.symbol, 'kotlin')})`;
+  if (node.text !== undefined) return `${parentTag === 'md-tooltip' && ['content', 'subhead'].includes(node.slot) || parentTag === 'md-segmented-button' || parentTag === 'md-fab-menu-item' && !node.slot ? 'AWCSlotText' : 'Text'}(${nativeString(node.text, 'kotlin')})`;
   const properties = { ...nodeProperties(node), ...(node.selected ? values : {}) };
+  if (menuContext && node.attrs?.id) properties.id = node.attrs.id;
   const entries = Object.entries(properties);
   const dictionary = entries.length ? `mapOf<String, AWCValue>(\n${entries.map(([key, value]) => `        ${nativeString(key, 'kotlin')} to ${kotlinValue(value)}`).join(',\n')}\n    )` : 'emptyMap()';
   const groups = new Map();
@@ -436,17 +590,60 @@ function kotlinNode(node, values) {
     if (!groups.has(slot)) groups.set(slot, []);
     groups.get(slot).push(child);
   }
-  const content = node.children.length ? ` { slot ->\n${[...groups].map(([slot, nodes]) => nodes.length === 1 && nodes[0].text !== undefined ? `    if (slot == ${nativeString(slot, 'kotlin')}) ${kotlinNode(nodes[0], values)}` : `    if (slot == ${nativeString(slot, 'kotlin')}) {\n${indent(nodes.map(child => kotlinNode(child, values)).join('\n'), 8)}\n    }`).join('\n')}\n}` : '';
-  return `AWCComponent(\n    tag = ${nativeString(node.tag, 'kotlin')},\n    properties = ${dictionary},\n    onEvent = { name, detail -> println(name + ": " + detail) },\n)${content}`;
+  const content = node.children.length ? ` { slot ->\n${[...groups].map(([slot, nodes]) => nodes.length === 1 && nodes[0].text !== undefined ? `    if (slot == ${nativeString(slot, 'kotlin')}) ${kotlinNode(nodes[0], values, targetedAppearance, menuContext, node.tag)}` : `    if (slot == ${nativeString(slot, 'kotlin')}) {\n${indent(nodes.map(child => kotlinNode(child, values, targetedAppearance, menuContext, node.tag)).join('\n'), 8)}\n    }`).join('\n')}\n}` : '';
+  const body = `AWCComponent(\n    tag = ${nativeString(node.tag, 'kotlin')},\n    properties = ${dictionary},\n    onEvent = { name, detail -> println(name + ": " + detail) },\n)${content}`;
+  if (node.selected && targetedAppearance) {
+    const profile = targetedAppearance.profile;
+    const argumentsText = appearanceEntries(targetedAppearance.local, profile).map(([key, item]) => `${key} = ${appearanceValue(profile, key, item, 'kotlin')}`).join(', ');
+    return `${profile.nativeType}Scope(appearance = ${profile.nativeType}(${argumentsText})) {\n${indent(body, 4)}\n}`;
+  }
+  return body;
 }
 function kotlinSnippet(tag, values, tree, appearance) {
   const roots = nativeNodes(tree.nodes);
   const hasText = walk(roots).some(node => node.text !== undefined);
-  let body = roots.map(node => kotlinNode(node, values)).join('\n');
-  if (roots.length > 1) body = `Column {\n${indent(body, 4)}\n}`;
-  const styled = Object.keys(appearance.local).length || Object.keys(appearance.defaults).length;
-  for (const [scope, value] of [['This button', appearance.local], ['Theme defaults for this subtree', appearance.defaults]]) {
-    if (Object.keys(value).length) body = `// ${scope}\nAWCButtonAppearanceScope(appearance = AWCButtonAppearance(${Object.entries(value).map(([key, item]) => `${key} = ${typeof item === 'string' ? nativeString(item, 'kotlin') : Number.isInteger(item) ? `${item}.0` : numberLiteral(item)}`).join(', ')})) {\n${indent(body, 4)}\n}`;
+  const hasSymbol = walk(roots).some(node => node.symbol !== undefined);
+  const targetedSegment = (tag === 'md-segmented-button' && walk(tree.nodes).some(node => node.tag === 'md-segmented-button-set') || tag === 'md-fab-menu-item' && walk(tree.nodes).some(node => node.tag === 'md-fab-menu')) && Object.keys(appearance.local).length;
+  const menuContext = walk(tree.nodes).some(node => Object.hasOwn(node.attrs || {}, 'data-awc-fab-menu-context'));
+  const badgeContext = tag === 'md-badge' && walk(tree.nodes).some(node => Object.hasOwn(node.attrs || {}, 'data-awc-badge-context'));
+  const statusDotContext = tag === 'md-status-dot' && walk(tree.nodes).some(node => Object.hasOwn(node.attrs || {}, 'data-awc-status-dot-context'));
+  let body = roots.map(node => kotlinNode(node, values, targetedSegment ? appearance : null, menuContext)).join('\n');
+  if (menuContext) body = `AWCFabMenuScope(modifier = Modifier.requiredSize(360.dp, 480.dp)) {\n    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {\n${indent(body, 8)}\n    }\n}`;
+  else if (roots.length > 1) body = `Column {\n${indent(body, 4)}\n}`;
+  const anchored = MENU_RECIPE_TAGS.has(tag) ? anchoredMenuRecipe(roots) : null;
+  if (anchored) {
+    const toggle = `    onEvent = { name, _ ->\n        if (name == "mdClick") {\n            val menu = menus.menu(${nativeString(anchored.id, 'kotlin')})\n            if (menu.isOpen) menu.close() else menu.show()\n        }\n    },`;
+    const trigger = kotlinNode(anchored.trigger, values, null, true).replace('    onEvent = { name, detail -> println(name + ": " + detail) },', toggle);
+    body = `val menus = rememberAWCMenuScopeState()\nAWCMenuScope(menus, Modifier.requiredSize(360.dp, 480.dp)) {\n    Column(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {\n${indent(trigger + '\n' + kotlinNode(anchored.menu, values, null, true), 8)}\n    }\n}`;
   }
-  return `import androidx.compose.runtime.Composable\n${hasText ? 'import androidx.compose.material3.Text\n' : ''}${roots.length > 1 ? 'import androidx.compose.foundation.layout.Column\n' : ''}import dev.awc.nativeui.AWCComponent\nimport dev.awc.nativeui.AWCTheme\nimport dev.awc.nativeui.AWCValue\n${styled ? 'import dev.awc.nativeui.AWCButtonAppearance\nimport dev.awc.nativeui.AWCButtonAppearanceScope\n' : ''}\n// Add the :native-ui Gradle module to your app.\n// Children are composed in matching native content slots. HTML layout CSS and\n// recipe setup callbacks require native layout/state in the host app.\n@Composable\nfun ComponentExample() {\n    AWCTheme {\n${indent(body, 8)}\n    }\n}`;
+  if (badgeContext) {
+    const badge = roots.find(node => node.selected), parent = roots.find(node => node.tag === 'md-icon-button');
+    body = `AWCBadgeHost(modifier = Modifier.requiredSize(48.dp, 48.dp), badge = {\n${indent(kotlinNode(badge, values), 4)}\n}) {\n    AWCIconButtonAppearanceScope(AWCIconButtonAppearance(width = 48.0, height = 48.0)) {\n${indent(kotlinNode(parent, values), 8)}\n    }\n}`;
+  }
+  if (statusDotContext) {
+    const dot = roots.find(node => node.selected), parent = roots.find(node => node.tag === 'md-icon-button');
+    body = nativeStatusDotContext(kotlinNode(dot, values), 'android', { inline: values.inline === true, parent: kotlinNode(parent, values) });
+  }
+  const dividerContext = tag === 'md-divider' && walk(tree.nodes).some(node => Object.hasOwn(node.attrs || {}, 'data-awc-divider-context'));
+  if (dividerContext) body = `Box(modifier = Modifier.requiredSize(300.dp, 96.dp), contentAlignment = Alignment.Center) {\n${indent(body, 4)}\n}`;
+  const meterContext = ['md-meter', 'md-progress-indicator'].includes(tag) && walk(tree.nodes).some(node => Object.hasOwn(node.attrs || {}, tag === 'md-meter' ? 'data-awc-meter-context' : 'data-awc-progress-context'));
+  if (meterContext) body = `Box(modifier = Modifier.requiredWidth(300.dp), contentAlignment = Alignment.Center) {\n${indent(body, 4)}\n}`;
+  const skeletonContext = tag === 'md-skeleton' && walk(tree.nodes).some(node => Object.hasOwn(node.attrs || {}, 'data-awc-skeleton-context'));
+  if (skeletonContext) body = `AWCSkeletonSizingContextScope(AWCSkeletonSizingContext(parentHeight = 160.0)) {\n    Box(modifier = Modifier.requiredSize(260.dp, 160.dp), contentAlignment = Alignment.TopStart) {\n${indent(body, 8)}\n    }\n}`;
+  const styled = Object.keys(appearance.local).length || Object.keys(appearance.defaults).length;
+  const appearanceType = appearance.profile.nativeType;
+  for (const [scope, value] of [['This component', appearance.local], ['Theme defaults for this subtree', appearance.defaults]]) {
+    if (Object.keys(value).length && !(targetedSegment && scope === 'This component')) body = `// ${scope}\n${appearanceType}Scope(appearance = ${appearanceType}(${appearance.profile.hookPrefix ? hookMapNative(appearance.profile, value, 'kotlin') : appearanceEntries(value, appearance.profile).map(([key, item]) => `${key} = ${appearanceValue(appearance.profile, key, item, 'kotlin')}`).join(', ')})) {\n${indent(body, 4)}\n}`;
+  }
+  const accordionViewport = tag === 'md-accordion' && values.floating === true;
+  if (accordionViewport) body = `AWCAccordionViewport(modifier = Modifier.fillMaxWidth().heightIn(min = 320.dp)) {\n${indent(body, 4)}\n}`;
+  if (appearance.snackbarLifecycle) body = nativeSnackbarContext(`Column {\n    Button(onClick = { snackbarController.show() }) { Text("Show snackbar") }\n    Button(onClick = { snackbarController.hide() }) { Text("Close snackbar") }\n}\nAWCSnackbarControllerScope(snackbarController) {\n${indent(body, 4)}\n}`, 'android');
+  const modalScope = ['md-dialog', 'md-bottom-sheet', 'md-side-sheet'].includes(tag);
+  if (modalScope) body = `AWCModalScope(Modifier.fillMaxSize()) {\n${indent(body, 4)}\n}`;
+  if (appearance.tooltipLifecycle) body = nativeTooltipContext(body, 'android');
+  const tooltipImports = appearance.tooltipLifecycle ? 'import dev.awc.nativeui.AWCTooltipScope\nimport androidx.compose.foundation.layout.fillMaxSize\n' : '';
+  const snackbarImports = appearance.snackbarLifecycle ? ['dev.awc.nativeui.AWCSnackbarScope', 'dev.awc.nativeui.AWCSnackbarControllerScope', 'dev.awc.nativeui.rememberAWCSnackbarController', 'androidx.compose.material3.Button', 'androidx.compose.material3.Text', 'androidx.compose.foundation.layout.Column'].map(name => `import ${name}\n`).join('') : '';
+  const themeArguments = Object.keys(appearance.themeTokens).length ? `(tokenOverrides = mapOf(${Object.entries(appearance.themeTokens).map(([key, value]) => `${nativeString(key, 'kotlin')} to ${nativeString(value, 'kotlin')}`).join(', ')}))` : '';
+  const menuImports = anchored ? ['dev.awc.nativeui.AWCMenuScope', 'dev.awc.nativeui.rememberAWCMenuScopeState', 'androidx.compose.foundation.layout.Arrangement', 'androidx.compose.foundation.layout.fillMaxWidth', 'androidx.compose.foundation.layout.padding', 'androidx.compose.foundation.layout.requiredSize', 'androidx.compose.ui.Alignment', 'androidx.compose.ui.Modifier', 'androidx.compose.ui.unit.dp'].map(name => `import ${name}\n`).join('') : '';
+  return `import androidx.compose.runtime.Composable\n${menuImports}${modalScope ? 'import androidx.compose.ui.Modifier\nimport androidx.compose.foundation.layout.fillMaxSize\n' : ''}${snackbarImports}${tooltipImports}${statusDotContext ? statusDotContextImports.map(name => `import ${name}\n`).join('') : ''}${badgeContext ? 'import dev.awc.nativeui.AWCBadgeHost\nimport dev.awc.nativeui.AWCIconButtonAppearance\nimport dev.awc.nativeui.AWCIconButtonAppearanceScope\n' : ''}${menuContext ? 'import dev.awc.nativeui.AWCFabMenuScope\nimport androidx.compose.foundation.layout.fillMaxSize\n' : ''}${['md-tooltip', 'md-fab-menu-item', 'md-segmented-button', 'md-segmented-button-set'].includes(tag) && hasText ? 'import dev.awc.nativeui.AWCSlotText\n' : ''}${meterContext ? 'import androidx.compose.foundation.layout.requiredWidth\n' : ''}${accordionViewport ? 'import dev.awc.nativeui.AWCAccordionViewport\nimport androidx.compose.ui.Modifier\nimport androidx.compose.foundation.layout.fillMaxWidth\nimport androidx.compose.foundation.layout.heightIn\nimport androidx.compose.ui.unit.dp\n' : ''}${skeletonContext ? 'import dev.awc.nativeui.AWCSkeletonSizingContext\nimport dev.awc.nativeui.AWCSkeletonSizingContextScope\n' : ''}${dividerContext || menuContext || badgeContext || meterContext || skeletonContext || appearance.snackbarLifecycle || appearance.tooltipLifecycle ? 'import androidx.compose.foundation.layout.Box\nimport androidx.compose.foundation.layout.requiredSize\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.Alignment\nimport androidx.compose.ui.unit.dp\n' : ''}${hasText ? 'import androidx.compose.material3.Text\n' : ''}${hasSymbol ? 'import dev.awc.nativeui.AWCMaterialSymbol\n' : ''}${roots.length > 1 ? 'import androidx.compose.foundation.layout.Column\n' : ''}import dev.awc.nativeui.AWCComponent\nimport dev.awc.nativeui.AWCTheme\nimport dev.awc.nativeui.AWCValue\n${styled ? `import dev.awc.nativeui.${appearanceType}\nimport dev.awc.nativeui.${appearanceType}Scope\n${(appearance.profile.nativeImports || []).map(name => `import dev.awc.nativeui.${name}\n`).join('')}` : ''}\n// Add the :native-ui Gradle module to your app.\n// Children are composed in matching native content slots. HTML layout CSS and\n// recipe setup callbacks require native layout/state in the host app.\n@Composable\nfun ComponentExample() {\n${appearance.snackbarLifecycle ? '    val snackbarController = rememberAWCSnackbarController()\n' : ''}    AWCTheme${themeArguments} {\n${indent(body, 8)}\n    }\n}`;
 }

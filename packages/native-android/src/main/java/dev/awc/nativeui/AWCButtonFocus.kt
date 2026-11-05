@@ -63,6 +63,10 @@ internal class ButtonFocusGroup(single: Boolean) {
             if (entry.disabled && wasFocused) entries.firstOrNull { it.id == active && !it.disabled }?.state?.requestFocus()
         }
     }
+    fun reorder(ids: List<Any>) {
+        val ordered=ids.mapNotNull { id->entries.find { it.id==id } }+entries.filter { it.id !in ids }
+        if(entries.toList()!=ordered) { entries.clear();entries.addAll(ordered) }
+    }
     fun remove(id: Any) { entries.removeAll { it.id == id } }
     fun focused(id: Any) { recent = id }
     fun tabIndex(id: Any): Int = if (active == id) 0 else -1
@@ -82,6 +86,12 @@ internal class ButtonFocusGroup(single: Boolean) {
         }
         return eligible[next].id.takeUnless { it == id }
     }
+    fun prepareMove(id: Any, key: String, rtl: Boolean): AWCButtonFocusState? {
+        val target = destination(id,key,rtl) ?: return null
+        val item=entries.first { it.id==target }
+        recent=target
+        return item.state
+    }
     fun move(id: Any, key: String, rtl: Boolean): Boolean {
         val target = destination(id, key, rtl) ?: return false
         val item = entries.first { it.id == target }
@@ -100,21 +110,26 @@ internal fun nativeButtonTabIndex(p: Props, group: ButtonFocusGroup?, id: Any): 
 }
 internal fun nativeButtonRole(p: Props): String = if (p.str("roleOverride").lowercase() == "gridcell") "gridcell" else "button"
 
-internal data class NativeButtonFocus(val modifier: Modifier, val isFocusVisible: Boolean)
+internal data class NativeButtonFocus(val modifier: Modifier, val isFocusVisible: Boolean, val state: AWCButtonFocusState)
 
 @Composable
-internal fun nativeButtonFocusModifier(p: Props, id: Any, group: ButtonFocusGroup?, selected: Boolean): NativeButtonFocus {
+internal fun nativeButtonFocusModifier(p: Props, id: Any, group: ButtonFocusGroup?, selected: Boolean, ancestorGroups: List<ButtonFocusGroup> = listOfNotNull(group), allowDisabledFocus: Boolean=false, tabIndexOverride: Int?=null): NativeButtonFocus {
     val binding = LocalButtonFocusBinding.current
     val ownState = remember { AWCButtonFocusState() }
     val state = binding?.state ?: ownState
     val requester = remember { FocusRequester() }
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-    val hardEnabled = !p.bool("disabled")
-    val tabIndex = nativeButtonTabIndex(p, group, id)
-    SideEffect { state.enabled = hardEnabled; group?.update(ButtonFocusEntry(id, state, !hardEnabled, selected)) }
-    DisposableEffect(state, group, id) {
+    val hardEnabled = !p.bool("disabled") || allowDisabledFocus
+    val anchor = LocalNativeAnchor.current
+    val tabIndex = tabIndexOverride ?: nativeButtonTabIndex(p, ancestorGroups.firstOrNull(), id)
+    SideEffect { state.enabled = hardEnabled; ancestorGroups.forEach { it.update(ButtonFocusEntry(id, state, !hardEnabled, selected)) } }
+    DisposableEffect(state, ancestorGroups, id) {
         state.attached = true
-        onDispose { state.attached = false; state.isFocused = false; state.pending = false; group?.remove(id) }
+        onDispose { state.attached = false; state.isFocused = false; state.pending = false; ancestorGroups.forEach { it.remove(id) } }
+    }
+    DisposableEffect(anchor,state) {
+        anchor?.focus=state
+        onDispose { anchor?.let { if(it.focus===state) it.focus=null } }
     }
     LaunchedEffect(state.revision) {
         if (state.pending && state.enabled) {
@@ -131,25 +146,33 @@ internal fun nativeButtonFocusModifier(p: Props, id: Any, group: ButtonFocusGrou
                 // Native traversal brings its own focus request. A pending pointer
                 // request keeps focus useful without showing keyboard-only visuals.
                 if (it.isFocused && !state.pending) state.showFocus = true
-                if (it.isFocused) group?.focused(id)
+                if (it.isFocused) ancestorGroups.forEach { group -> group.focused(id) }
                 binding?.changed?.invoke(it.isFocused)
             }
         }
         .onPreviewKeyEvent { event ->
             if (event.type == KeyEventType.KeyDown) state.showFocus = true
-            if (event.type != KeyEventType.KeyDown || group == null) false
-            else group.move(id, when (event.key) {
-                Key.DirectionLeft -> "ArrowLeft"; Key.DirectionRight -> "ArrowRight"; Key.MoveHome -> "Home"; Key.MoveEnd -> "End"; else -> ""
-            }, rtl)
+            if(event.type==KeyEventType.KeyDown && anchor?.menuKey?.invoke(event.fabMenuKey(),event.isShiftPressed)==true) true
+            else if (event.type != KeyEventType.KeyDown || ancestorGroups.isEmpty()) false
+            else {
+                val key=when(event.key) {
+                    Key.DirectionLeft -> "ArrowLeft"; Key.DirectionRight -> "ArrowRight"; Key.MoveHome -> "Home"; Key.MoveEnd -> "End"; else -> ""
+                }
+                // Web keydown bubbles inner→outer; each group uses the original
+                // event target, and the final ancestor request owns focus.
+                var destination: AWCButtonFocusState?=null
+                ancestorGroups.asReversed().forEach { current -> current.prepareMove(id,key,rtl)?.let { destination=it } }
+                destination?.requestFocus() ?: false
+            }
         }
         .pointerInput(state, hardEnabled) {
             awaitEachGesture {
                 awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                if (hardEnabled) state.requestPointerFocus()
+                if (!p.bool("disabled")) state.requestPointerFocus()
                 waitForUpOrCancellation()
             }
         }
-    return NativeButtonFocus(modifier, state.isFocusVisible)
+    return NativeButtonFocus(modifier, state.isFocusVisible, state)
 }
 
 data class AWCGridCell(val row: Int, val column: Int, val rowSpan: Int = 1, val columnSpan: Int = 1) {

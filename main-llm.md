@@ -177,8 +177,8 @@ defines every component, one loads the tokens. Both come from `@awc-ui/core`
 itself, so this path needs no second package:
 
 ```ts
-import { defineCustomElements } from '@awc-ui/core/loader';
 import '@awc-ui/core/css/tokens.css';
+import { defineCustomElements } from '@awc-ui/core/loader';
 
 defineCustomElements(window);
 ```
@@ -186,6 +186,21 @@ defineCustomElements(window);
 `@awc-ui/core/css/tokens.css` is the complete, self-contained token sheet —
 light and dark colour roles, shape, elevation, motion, typescale, spacing and
 z-index. It is the same set documented in §4.1.
+
+Load this stylesheet in the root layout or global entry before component
+JavaScript. It also hides unfinished `md-*` hosts until their first render adds
+`.hydrated`; `:defined` is too early because registration can precede lazy
+rendering. Fully rendered SSR output already has the hydration marker and
+remains visible before client JavaScript; preserve these markers during
+framework hydration.
+
+For CDN use, load `@awc-ui/core@<version>/dist/md3/md3.css` in `<head>` before
+`@awc-ui/core@<version>/dist/md3/md3.esm.js`, with the same package version.
+The raw `@awc-ui/tokens` stylesheet does not include this component guard.
+The guard prevents unfinished content flashing, but does not reserve final
+dimensions in client-only apps. The optional
+`@awc-ui/core/css/pre-upgrade.css` provides size floors for supported navigation
+and layout components; SSR provides the rendered component structure.
 
 **One-line alternative.** `@awc-ui/core/define` does both steps in a single
 import. It loads the package's own token sheet, so it needs nothing else

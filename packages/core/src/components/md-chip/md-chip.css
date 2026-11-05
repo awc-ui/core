@@ -218,7 +218,7 @@
   --_container-color: var(--_container-color-selected);
   color: var(--_label-color-selected);
   --_icon-color: var(--md-chip-icon-color, var(--md-sys-color-on-secondary-container));
-  --_state-layer-color: var(--md-sys-color-on-secondary-container);
+  --_state-layer-color: var(--md-chip-state-layer-color, var(--md-sys-color-on-secondary-container));
 }
 
 :host(.md-chip--selected) .md-chip__outline {
@@ -258,7 +258,7 @@
 /* `outlined` is the default and is deliberately a no-op when no `color` is set,
    so untouched chips render exactly as before. With a colour, the role tints
    the outline, label and icon while the container stays transparent. */
-:host(.md-chip--appearance-outlined[color]) {
+:host(.md-chip--appearance-outlined.md-chip--colored) {
   --_outline-color: var(--md-chip-outline-color, var(--_c-main));
   --_label-color: var(--md-chip-label-color, var(--_c-main));
   --_icon-color: var(--md-chip-icon-color, var(--_c-main));
@@ -276,12 +276,21 @@
   --_icon-color: var(--md-chip-icon-color, var(--md-sys-color-on-surface-variant));
 }
 
-:host(.md-chip--appearance-filled[color]),
-:host(.md-chip--appearance-elevated[color]) {
+:host(.md-chip--appearance-filled.md-chip--colored),
+:host(.md-chip--appearance-elevated.md-chip--colored) {
   --_container-color: var(--md-chip-container-color, var(--_c-container));
   --_label-color: var(--md-chip-label-color, var(--_c-on-container));
   --_icon-color: var(--md-chip-icon-color, var(--_c-on-container));
   --_state-layer-color: var(--md-chip-state-layer-color, var(--_c-on-container));
+}
+
+/* Selection still reads as selection on a filled / elevated chip: the neutral tonal
+   surface above (same specificity, later in the file) must not replace the selected
+   container and icon colour. Colour roles below still tint the selected state. */
+:host(.md-chip--selected.md-chip--appearance-filled),
+:host(.md-chip--selected.md-chip--appearance-elevated) {
+  --_container-color: var(--_container-color-selected);
+  --_icon-color: var(--md-chip-icon-color, var(--md-sys-color-on-secondary-container));
 }
 
 /* Both drop the outline: the container itself is now the shape. */
@@ -292,12 +301,12 @@
 
 /* Selection tints with the chosen role instead of the fixed secondary
    container, for every appearance. Section 3 still supplies the neutral case. */
-:host(.md-chip--selected[color]) {
-  --_container-color: var(--_c-container);
-  color: var(--_c-on-container);
-  --_label-color-selected: var(--_c-on-container);
+:host(.md-chip--selected.md-chip--colored) {
+  --_container-color: var(--md-chip-container-color-selected, var(--_c-container));
+  color: var(--md-chip-label-color-selected, var(--_c-on-container));
+  --_label-color-selected: var(--md-chip-label-color-selected, var(--_c-on-container));
   --_icon-color: var(--md-chip-icon-color, var(--_c-on-container));
-  --_state-layer-color: var(--_c-on-container);
+  --_state-layer-color: var(--md-chip-state-layer-color, var(--_c-on-container));
 }
 
 /* ==========================================================
@@ -503,12 +512,13 @@ slot[name="trailing-icon"] {
 :host(.md-chip--disabled) {
   cursor: default;
   pointer-events: none;
-  color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
-  --_icon-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  /* !important like the elevation: colour-role and selected rules are more specific. */
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent) !important;
+  --_icon-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent) !important;
   --_elevation: var(--md-sys-elevation-0, none) !important;
 }
 
-:host(.md-chip--disabled:not(.md-chip--selected):not(.md-chip--elevated)) .md-chip__outline {
+:host(.md-chip--disabled:not(.md-chip--selected):not(.md-chip--elevated):not(.md-chip--appearance-filled)) .md-chip__outline {
   border-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
 }
 
@@ -516,7 +526,8 @@ slot[name="trailing-icon"] {
   --_container-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
 }
 
-:host(.md-chip--disabled.md-chip--elevated:not(.md-chip--selected)) {
+:host(.md-chip--disabled.md-chip--elevated:not(.md-chip--selected)),
+:host(.md-chip--disabled.md-chip--appearance-filled:not(.md-chip--selected)) {
   --_container-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
 }
 

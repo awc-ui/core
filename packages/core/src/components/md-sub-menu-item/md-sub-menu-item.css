@@ -20,13 +20,15 @@
   /* Global density: mirrors md-menu-item — each `data-density` rung (0…-4)
      trims 4px off the row. density-scale is 0 by default, so the 48px default is
      unchanged; padding/gap fall back to the same literals via the spacing tokens.
-     See packages/tokens/src/tokens.css §10-12. */
+     See packages/tokens/src/tokens.css §10-12.
+     The gap is md-menu-item's token (gap-md, 12px) — the row shares its
+     siblings' column, and gap-sm (8px) put its headline 4px off it. */
   min-height: calc(48px + var(--md-sys-density-scale, 0) * 4px);
   /* Icon lever, mirroring md-menu-item so a submenu row and its siblings taper
      in lockstep — 1px per rung off 24px, floored at 18px. */
   --_icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
   padding: 0 var(--md-sys-spacing-inset-md, 12px);
-  gap: var(--md-sys-spacing-gap-sm, 8px);
+  gap: var(--md-sys-spacing-gap-md, 12px);
   color: var(--md-sys-color-on-surface, #1C1B1F);
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -310,6 +312,10 @@
   --_rest-ee: var(--md-sys-shape-corner-small, 8px);
   color: var(--md-sys-color-on-surface, #1C1B1F);
   border-radius: var(--md-sys-shape-corner-small, 8px);
+  /* Same tightening as md-menu-item's vertical variants: 8px gap, 20px icons on
+     the density curve (16px floor), so the row stays on its siblings' column. */
+  gap: 8px;
+  --_icon-size: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
 }
 
 :host([data-variant="standard"]:first-child) {
@@ -387,6 +393,10 @@
   --_rest-ee: var(--md-sys-shape-corner-small, 8px);
   color: var(--md-sys-color-on-tertiary-container, #31111D);
   border-radius: var(--md-sys-shape-corner-small, 8px);
+  /* Same tightening as md-menu-item's vertical variants: 8px gap, 20px icons on
+     the density curve (16px floor), so the row stays on its siblings' column. */
+  gap: 8px;
+  --_icon-size: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
 }
 
 :host([data-variant="vibrant"]:first-child) {

@@ -1,0 +1,158 @@
+{
+ "tag": "md-side-sheet",
+ "at": "2026-10-29T11:11:41.722Z",
+ "rows": [
+  {
+   "case": "open",
+   "web": {
+    "elements": [
+     "button:Open side sheet",
+     "region:Project details",
+     "button:Close side sheet"
+    ],
+    "texts": [
+     "Every great project starts with a shared workspace."
+    ],
+    "focus": [
+     "button:Open side sheet",
+     "button:Close side sheet"
+    ],
+    "contrast": {
+     "measured": 6,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "button:Open side sheet",
+      "group:Project details",
+      "button:Close side sheet"
+     ],
+     "texts": [
+      "Every great project starts with a shared workspace."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Open side sheet",
+      "button:Close side sheet",
+      "button:Open side sheet",
+      "button:Close side sheet"
+     ],
+     "findings": [],
+     "contrastMeasured": 6
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "button:Open side sheet",
+      "button:Close side sheet"
+     ],
+     "texts": [
+      "Project details",
+      "Every great project starts with a shared workspace."
+     ],
+     "focus": [
+      "button:Open side sheet",
+      "button:Close side sheet",
+      "∅",
+      "button:Open side sheet"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: button \"Open side sheet\" target 134×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Close side sheet\" target 40×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "button:Open side sheet",
+      "button:Close side sheet"
+     ],
+     "texts": [
+      "Project details",
+      "Project details",
+      "Every great project starts with a shared workspace."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Open side sheet",
+      "button:Close side sheet",
+      "button:Open side sheet",
+      "button:Close side sheet"
+     ],
+     "findings": [],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 18,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -125,7 +125,7 @@
     },
     {
       "name": "icon",
-      "description": "Custom icon (replaces icon prop)"
+      "description": "Additional icon content alongside the built-in icon or checkmark"
     }
   ],
   "cssParts": [
@@ -136,6 +136,14 @@
     {
       "name": "label",
       "description": "Label text"
+    },
+    {
+      "name": "checkmark",
+      "description": "Checkmark icon (selected)"
+    },
+    {
+      "name": "icon",
+      "description": "Icon element"
     }
   ],
   "cssCustomProps": [

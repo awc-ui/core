@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="dev.awc.playground.LivePreviewHostTest" tests="8" failures="1" errors="0" skipped="0" time="41.527" timestamp="2026-10-20T20:15:52" hostname="localhost">
+  <properties>
+    <property name="device" value="AwcNative(AVD) - 16" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="progressHostRetainsMountedUpdatesAndAcknowledgesActualAppliedFrames" classname="dev.awc.playground.LivePreviewHostTest" time="3.191" />
+  <testcase name="determinateUpdatesAnimateAndReducedMotionDoesNotFreezeIndeterminatePaint" classname="dev.awc.playground.NativeProgressParityTest" time="2.231" />
+  <testcase name="mountedCompletionRetainsIdentityAndEmitsExactlyOneVoidEvent" classname="dev.awc.playground.NativeProgressParityTest" time="4.714" />
+  <testcase name="nonzeroPhaseRtlMirrorsActualWavesAndPhysicalCornersOnce" classname="dev.awc.playground.NativeProgressParityTest" time="1.863">
+    <failure>java.lang.AssertionError: Actual true RTL image is one complete physical reflection at 272ms expected:&lt;0&gt; but was:&lt;127&gt;
+at org.junit.Assert.fail(Assert.java:89)
+at org.junit.Assert.failNotEquals(Assert.java:835)
+at org.junit.Assert.assertEquals(Assert.java:120)
+at dev.awc.playground.NativeProgressParityTest.nonzeroPhaseRtlMirrorsActualWavesAndPhysicalCornersOnce(NativeProgressParityTest.kt:192)
+</failure>
+  </testcase>
+  <testcase name="actual184ThemeFixturesAnd52EdgeConfigurationsMatchMeasuredRootAndParts" classname="dev.awc.playground.NativeProgressParityTest" time="26.233" />
+  <testcase name="rgbaAndForcedColorsUseActualNativePaintWithoutInventingActions" classname="dev.awc.playground.NativeProgressParityTest" time="1.937" />
+  <testcase name="nativeCurvesMatchEveryPausedWebWavePath" classname="dev.awc.playground.NativeProgressPathOracleTest" time="0.839" />
+  <testcase name="flatCircularSweepRotationAndFourColorsMatchPausedCssFrames" classname="dev.awc.playground.NativeProgressPathOracleTest" time="0.117" />
+</testsuite>

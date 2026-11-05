@@ -9,7 +9,7 @@
  * ===========================================================
  */
 
-import { computePieLayout, type PieChartSpec } from './pie-layout';
+import { computePieLayout, type PieChartSpec, type PieDatum } from './pie-layout';
 import type { EngineTheme } from './layout';
 import { drawSceneCanvas } from './renderer-canvas';
 import { syncOverlay } from './overlay';
@@ -69,6 +69,13 @@ export class PieChartEngine {
   private cb: EngineCallbacks = {};
   private hoverRaf = 0;
   private hoverIndex = -1;
+  /**
+   * The slice the hover treatment was last applied to. Kept after the pointer
+   * (or the keyboard cursor) leaves, so the treatment can ease OUT on the slice
+   * it was on — clearing `hoverIndex` alone dropped it in a single frame, the
+   * snap `tweenHover` exists to avoid. Forgotten when the data changes.
+   */
+  private litIndex = -1;
   private hasRendered = false;
   private introRaf = 0;
   /**
@@ -171,6 +178,7 @@ export class PieChartEngine {
     this.theme = theme;
     this.cb = cb;
 
+    if (changed) this.litIndex = -1;
     if (changed && this.hoverIndex !== -1) {
       this.hoverIndex = -1;
       this.spec.highlightIndex = -1;
@@ -231,7 +239,7 @@ export class PieChartEngine {
     this.dpr = dpr;
     this.canvas.width = w * dpr;
     this.canvas.height = h * dpr;
-    this.spec.highlightIndex = this.hoverIndex;
+    this.spec.highlightIndex = this.hoverIndex >= 0 ? this.hoverIndex : this.hoverT > 0 ? this.litIndex : -1;
     this.spec.highlightT = this.hoverT;
 
     // Settle the layout + overlay first (the legend-reflow pass measures the DOM
@@ -535,7 +543,17 @@ export class PieChartEngine {
       return;
     }
     const slice = this.scene.slices.find((s) => s.dataIndex === index);
-    if (!slice) return;
+    if (!slice) {
+      // Nothing drawn to point at (a zero slice has no arc). Leaving the last
+      // slice lit, with its card up, would describe the wrong slice to anyone
+      // following the keyboard cursor — clear both instead.
+      this.hoverLayer.textContent = '';
+      if (this.hoverIndex !== -1) {
+        this.hoverIndex = -1;
+        this.tweenHover();
+      }
+      return;
+    }
     if (this.hoverIndex !== index) {
       this.hoverIndex = index;
       this.tweenHover();
@@ -556,6 +574,7 @@ export class PieChartEngine {
    */
   private tweenHover(): void {
     const target = this.hoverIndex >= 0 ? 1 : 0;
+    if (this.hoverIndex >= 0) this.litIndex = this.hoverIndex;
     if (prefersReducedMotion()) {
       this.hoverT = target;
       this.render();
@@ -760,7 +779,18 @@ export class PieChartEngine {
       'z-index:2',
     ].join(';');
     if (this.tooltipRender) {
-      const total2 = total;
+      // Each entry's share of ITS OWN ring, like the hovered one's: measured
+      // against the hovered slice's ring instead, a nested chart's children
+      // came out as shares of their parents' level.
+      const ringTotal = (d: PieDatum) =>
+        this.spec!.data.reduce(
+          (sum, o) => (o.hidden || o.level !== d.level || o.parent !== d.parent ? sum : sum + o.value),
+          0,
+        );
+      const share = (d: PieDatum) => {
+        const t = d === datum ? total : ringTotal(d);
+        return t > 0 ? (d.value / t) * 100 : 0;
+      };
       const content = this.tooltipRender({
         dataIndex: idx,
         axisValue: datum.label,
@@ -774,7 +804,7 @@ export class PieChartEngine {
           value: d.value,
           formattedValue: this.spec!.valueFormatter(d.value),
           // A pie's "share" is the reading most tooltips actually want.
-          percent: total2 > 0 ? (d.value / total2) * 100 : 0,
+          percent: share(d),
           focused: i === idx,
           missing: false,
         })) as MdChartTooltipContext['series'],
@@ -795,7 +825,8 @@ export class PieChartEngine {
     lbl.textContent = datum.label;
     lbl.style.cssText = 'flex:1';
     const val = document.createElement('strong');
-    val.textContent = `${this.spec.valueFormatter(datum.value)} (${percent.toFixed(1)}%)`;
+    const pct = this.spec.percentFormatter ? this.spec.percentFormatter(percent) : `${percent.toFixed(1)}%`;
+    val.textContent = `${this.spec.valueFormatter(datum.value)} (${pct})`;
     row.append(sw, lbl, val);
     tip.appendChild(row);
 

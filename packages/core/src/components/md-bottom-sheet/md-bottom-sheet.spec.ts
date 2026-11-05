@@ -2,11 +2,20 @@ import { newSpecPage } from '@stencil/core/testing';
 import { MdBottomSheet } from './md-bottom-sheet';
 
 describe('md-bottom-sheet', () => {
+  const mountedSheets: MdBottomSheet[] = [];
+  afterEach(() => {
+    // newSpecPage replaces its mock document without invoking disconnect on
+    // the previous page. Release document-owned modal sessions explicitly.
+    mountedSheets.splice(0).forEach(sheet => sheet.disconnectedCallback());
+    document.querySelectorAll('md-bottom-sheet').forEach(sheet => sheet.remove());
+  });
   async function create(html: string) {
-    return newSpecPage({
+    const page = await newSpecPage({
       components: [MdBottomSheet],
       html,
     });
+    mountedSheets.push(page.rootInstance);
+    return page;
   }
 
   // ── Rendering ────────────────────────────────────────────
@@ -445,18 +454,15 @@ describe('md-bottom-sheet', () => {
       const trigger = page.doc.getElementById('trigger') as HTMLButtonElement;
       const focusSpy = jest.spyOn(trigger, 'focus');
       const sheet = page.doc.querySelector('md-bottom-sheet') as HTMLElement;
+      const activeElement = Object.getOwnPropertyDescriptor(page.doc, 'activeElement');
+      Object.defineProperty(page.doc, 'activeElement', { configurable: true, get: () => trigger });
       sheet.setAttribute('open', '');
       await page.waitForChanges();
-      // After opening, inject the trigger as the captured previousFocus —
-      // mirrors what onOpenChange captured from document.activeElement
-      // before the open path overwrote it. The Stencil mock document
-      // doesn't track activeElement reliably, so we set this directly.
-      (
-        page.rootInstance as unknown as { previousFocus: HTMLElement | null }
-      ).previousFocus = trigger;
       sheet.removeAttribute('open');
       await page.waitForChanges();
       expect(focusSpy).toHaveBeenCalled();
+      if (activeElement) Object.defineProperty(page.doc, 'activeElement', activeElement);
+      else delete (page.doc as any).activeElement;
     });
 
     it('focusFirst falls back to focusing the container when no focusables exist', async () => {
@@ -540,15 +546,14 @@ describe('md-bottom-sheet', () => {
       });
     });
 
-    it('start guard focuses the first focusable when triggered', async () => {
+    it('start guard wraps to the last focusable when triggered', async () => {
       const page = await create(
         '<md-bottom-sheet open headline="x"><button id="first">A</button><button id="second">B</button></md-bottom-sheet>',
       );
       const guards = page.root?.shadowRoot?.querySelectorAll(
         '.md-bottom-sheet__focus-guard',
       );
-      // First guard sits before content and re-routes via handleEndGuardFocus
-      // (which selects focusable[0]).
+      // The guard before content wraps reverse navigation to the last control.
       const startGuard = guards?.[0] as HTMLElement;
       startGuard.dispatchEvent(new FocusEvent('focus'));
       await page.waitForChanges();
@@ -558,7 +563,7 @@ describe('md-bottom-sheet', () => {
       expect(startGuard).toBeTruthy();
     });
 
-    it('end guard focuses the last focusable when triggered', async () => {
+    it('end guard wraps to the first focusable when triggered', async () => {
       const page = await create(
         '<md-bottom-sheet open headline="x"><button id="first">A</button><button id="second">B</button></md-bottom-sheet>',
       );

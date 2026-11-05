@@ -87,3 +87,24 @@ describe('md-list-item e2e', () => {
     expect(result.hitIsHandle).toBe(true);
   });
 });
+
+describe('md-list-item expandable and secondary actions', () => {
+  it('keeps secondary actions separate and controls nested disclosure through public methods', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<md-list interaction-mode="multi-action"><md-list-item type="button" headline="Folder" expandable><button slot="trailing" id="secondary">More</button><md-list-item slot="expanded-content" type="button" headline="Child"></md-list-item></md-list-item></md-list>');
+    const parent = await page.find('md-list > md-list-item'); const clicked = await parent.spyOnEvent('mdItemClick');
+    await page.click('#secondary'); await page.waitForChanges(); expect(clicked).not.toHaveReceivedEvent();
+    await parent.callMethod('expand'); await page.waitForChanges(); expect(await parent.getProperty('expanded')).toBe(true);
+    await parent.callMethod('collapse'); await page.waitForChanges(); expect(await parent.getProperty('expanded')).toBe(false);
+    await parent.callMethod('toggle'); await page.waitForChanges(); expect(await parent.getProperty('expanded')).toBe(true);
+    parent.setProperty('disabled', true); await page.waitForChanges(); await parent.callMethod('toggle'); await page.waitForChanges(); expect(await parent.getProperty('expanded')).toBe(true);
+  });
+
+  it('soft-disabled rows stay focusable but do not activate, and link rows expose href and target', async () => {
+    const page = await newE2EPage(); await page.setContent('<md-list-item type="link" href="#details" target="_blank" headline="Details" soft-disabled leading-avatar-name="Ada Lovelace" supporting-text="Profile"></md-list-item>');
+    const row = await page.find('md-list-item'); const clicked = await row.spyOnEvent('mdItemClick');
+    await row.callMethod('setFocus'); await page.keyboard.press('Enter'); await page.waitForChanges(); expect(clicked).not.toHaveReceivedEvent();
+    expect(await page.evaluate(() => document.activeElement?.tagName)).toBe('MD-LIST-ITEM');
+    const link = await page.find('md-list-item >>> a'); expect(link.getAttribute('href')).toBe('#details'); expect(link.getAttribute('target')).toBe('_blank');
+  });
+});

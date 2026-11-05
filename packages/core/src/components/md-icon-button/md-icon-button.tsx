@@ -96,15 +96,7 @@ export class MdIconButton {
   }
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
-
-    const iconSlot = shadow.querySelector('slot:not([name])') as HTMLSlotElement | null;
-    const selectedSlot = shadow.querySelector('slot[name="selected"]') as HTMLSlotElement | null;
-
     this.syncSlottedIcons();
-    iconSlot?.addEventListener('slotchange', () => this.syncSlottedIcons());
-    selectedSlot?.addEventListener('slotchange', () => this.syncSlottedIcons());
   }
 
   /** Ignore whitespace-only text nodes (e.g. Lit template indentation) when detecting slots. */
@@ -216,7 +208,7 @@ export class MdIconButton {
           }}
           part="icon"
         >
-          <slot />
+          <slot onSlotchange={() => this.syncSlottedIcons()} />
           {showDefaultIconLayer && hasIcon && !this.hasSlottedIcon && (
             <span class="md-icon-button__icon-font material-symbols-outlined" aria-hidden="true">
               {showSelected && this.selectedIcon ? this.selectedIcon : this.icon}
@@ -225,15 +217,17 @@ export class MdIconButton {
         </span>
 
         {/* Selected icon (toggle mode only) */}
-        {this.toggle && (this.selectedIcon || this.hasSlottedSelected) && (
+        {/* Keep the slot mounted in toggle mode so newly assigned selected
+            content can announce itself through slotchange. */}
+        {this.toggle && (
           <span
             class={{
               'md-icon-button__icon': true,
-              'md-icon-button__icon--on': showSelected,
+              'md-icon-button__icon--on': showSelected && (!!this.selectedIcon || this.hasSlottedSelected),
             }}
             part="selected-icon"
           >
-            <slot name="selected" />
+            <slot name="selected" onSlotchange={() => this.syncSlottedIcons()} />
             {!this.hasSlottedSelected && this.selectedIcon && (
               <span class="md-icon-button__icon-font material-symbols-outlined" aria-hidden="true">
                 {this.selectedIcon}

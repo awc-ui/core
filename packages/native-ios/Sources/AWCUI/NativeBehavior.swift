@@ -51,14 +51,14 @@ public enum AWCButtonAction {
         let toggles = flag("toggle"), next = toggles ? !flag("selected") : flag("selected")
         let href = properties["href"]?.string ?? "", target = properties["target"]?.string ?? "_self"
         var click = AWCEvent(name: "mdClick", tag: node.tag, nodeID: node.id,
-                             detail: ["value": properties["value"] ?? .null, "toggle": .bool(toggles), "selected": .bool(next), "href": .string(href), "target": .string(target)])
+                             detail: ["value": properties["value"] ?? .string(""), "toggle": .bool(toggles), "selected": .bool(next), "href": .string(href), "target": .string(target)])
         click.activation = activation
         let context = AWCEventDispatcher.dispatch(click, through: dispatcher, cancelable: true, targetListeners: targetListeners)
         observe(context.observedEvent)
         guard !context.defaultPrevented else { return .canceled }
         if toggles {
             commitSelected(next)
-            var change = AWCEvent(name: "mdChange", tag: node.tag, nodeID: node.id, detail: ["selected": .bool(next), "value": properties["value"] ?? .null])
+            var change = AWCEvent(name: "mdChange", tag: node.tag, nodeID: node.id, detail: ["selected": .bool(next), "value": properties["value"] ?? .string("")])
             change.activation = activation
             observe(AWCEventDispatcher.dispatch(change, through: dispatcher, targetListeners: targetListeners).observedEvent)
         }
@@ -70,6 +70,26 @@ public enum AWCButtonAction {
         case "reset": guard let form else { return .noForm }; return form.reset(dispatcher: dispatcher, observe: observe) ? .reset : .canceled
         default: return .activated
         }
+    }
+}
+
+/// Icon-button's source emits its notification after navigation and selection.
+/// Cancellation is observable but cannot undo effects that have already happened.
+public enum AWCIconButtonAction {
+    @discardableResult public static func perform(node: AWCNode, dispatcher: AWCEventDispatcher? = nil, router: AWCURLRouter,
+        targetListeners: [AWCEventListener] = [], activation: AWCActivationMetadata = .init(kind: .programmatic),
+        observe: (AWCEvent) -> Void = { _ in }, commitSelected: (Bool) -> Void) -> AWCButtonActionResult {
+        let p = node.properties
+        guard p["disabled"]?.bool != true, p["softDisabled"]?.bool != true else { return .blocked }
+        let href = p["href"]?.string ?? ""
+        let result: AWCButtonActionResult = href.isEmpty ? .activated : router.route(href: href, target: p["target"]?.string ?? "_self", nodeID: node.id) ? .navigated : .navigationRejected
+        let selected = p["selected"]?.bool == true
+        let next = p["toggle"]?.bool == true ? !selected : selected
+        if p["toggle"]?.bool == true { commitSelected(next) }
+        var event = AWCEvent(name: "mdClick", tag: node.tag, nodeID: node.id, detail: ["selected": .bool(next)])
+        event.activation = activation
+        observe(AWCEventDispatcher.dispatch(event, through: dispatcher, cancelable: true, targetListeners: targetListeners).observedEvent)
+        return result
     }
 }
 

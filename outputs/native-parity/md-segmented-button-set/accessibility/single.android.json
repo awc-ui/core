@@ -1,0 +1,661 @@
+{
+ "tag": "md-segmented-button-set",
+ "case": "single",
+ "id": "md-segmented-button-set/single",
+ "platform": "android",
+ "sdk": 36,
+ "windows": [
+  {
+   "type": 1,
+   "display": 1470,
+   "title": "",
+   "root": {
+    "class": "android.widget.FrameLayout",
+    "actions": [
+     {
+      "id": 16908342,
+      "name": "showOnScreen"
+     }
+    ],
+    "frame": [
+     0,
+     0,
+     1280,
+     208
+    ],
+    "children": [
+     {
+      "class": "android.widget.LinearLayout",
+      "important": false,
+      "actions": [
+       {
+        "id": 16908342,
+        "name": "showOnScreen"
+       }
+      ],
+      "frame": [
+       0,
+       0,
+       1280,
+       208
+      ],
+      "children": [
+       {
+        "class": "android.widget.FrameLayout",
+        "important": false,
+        "actions": [
+         {
+          "id": 16908342,
+          "name": "showOnScreen"
+         }
+        ],
+        "frame": [
+         0,
+         0,
+         1280,
+         208
+        ],
+        "children": [
+         {
+          "class": "android.widget.FrameLayout",
+          "important": false,
+          "actions": [
+           {
+            "id": 16908342,
+            "name": "showOnScreen"
+           }
+          ],
+          "frame": [
+           0,
+           0,
+           1280,
+           208
+          ],
+          "children": [
+           {
+            "class": "androidx.compose.ui.platform.ComposeView",
+            "actions": [
+             {
+              "id": 16908342,
+              "name": "showOnScreen"
+             }
+            ],
+            "frame": [
+             0,
+             0,
+             1280,
+             208
+            ],
+            "children": [
+             {
+              "class": "android.view.View",
+              "important": false,
+              "frame": [
+               0,
+               0,
+               1280,
+               208
+              ],
+              "children": [
+               {
+                "class": "android.view.View",
+                "important": false,
+                "frame": [
+                 0,
+                 0,
+                 1280,
+                 208
+                ],
+                "virtualId": 726,
+                "children": [
+                 {
+                  "class": "android.view.View",
+                  "collection": {
+                   "rows": 1,
+                   "columns": 3,
+                   "selectionMode": 0
+                  },
+                  "frame": [
+                   291,
+                   64,
+                   699,
+                   80
+                  ],
+                  "virtualId": 732,
+                  "children": [
+                   {
+                    "class": "android.view.View",
+                    "stateDescription": "Selected",
+                    "screenReaderFocusable": true,
+                    "checkable": true,
+                    "checked": true,
+                    "focusable": true,
+                    "collectionItem": {
+                     "row": 0,
+                     "column": 0,
+                     "selected": true,
+                     "heading": false
+                    },
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     },
+                     {
+                      "id": 131072,
+                      "name": "setSelection"
+                     },
+                     {
+                      "id": 256,
+                      "name": "nextGranularity"
+                     },
+                     {
+                      "id": 512,
+                      "name": "previousGranularity"
+                     }
+                    ],
+                    "frame": [
+                     291,
+                     56,
+                     233,
+                     96
+                    ],
+                    "virtualId": 734,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "contentDescription": "Day",
+                      "actions": [
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       291,
+                       64,
+                       233,
+                       80
+                      ],
+                      "virtualId": 2000000734,
+                      "fake": true
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "visible": false,
+                      "frame": [
+                       331,
+                       86,
+                       36,
+                       36
+                      ],
+                      "virtualId": 745
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       383,
+                       84,
+                       49,
+                       40
+                      ],
+                      "virtualId": 742
+                     },
+                     {
+                      "class": "android.widget.RadioButton",
+                      "frame": [
+                       291,
+                       64,
+                       233,
+                       80
+                      ],
+                      "virtualId": 1000000734,
+                      "fake": true
+                     }
+                    ]
+                   },
+                   {
+                    "class": "android.view.View",
+                    "stateDescription": "Not selected",
+                    "screenReaderFocusable": true,
+                    "checkable": true,
+                    "focusable": true,
+                    "clickable": true,
+                    "collectionItem": {
+                     "row": 0,
+                     "column": 0,
+                     "selected": false,
+                     "heading": false
+                    },
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     },
+                     {
+                      "id": 16,
+                      "name": "click"
+                     },
+                     {
+                      "id": 131072,
+                      "name": "setSelection"
+                     },
+                     {
+                      "id": 256,
+                      "name": "nextGranularity"
+                     },
+                     {
+                      "id": 512,
+                      "name": "previousGranularity"
+                     }
+                    ],
+                    "frame": [
+                     524,
+                     56,
+                     231,
+                     96
+                    ],
+                    "virtualId": 736,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "contentDescription": "Week",
+                      "actions": [
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       524,
+                       64,
+                       233,
+                       80
+                      ],
+                      "virtualId": 2000000736,
+                      "fake": true
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       605,
+                       84,
+                       71,
+                       40
+                      ],
+                      "virtualId": 755
+                     },
+                     {
+                      "class": "android.widget.RadioButton",
+                      "frame": [
+                       524,
+                       64,
+                       233,
+                       80
+                      ],
+                      "virtualId": 1000000736,
+                      "fake": true
+                     }
+                    ]
+                   },
+                   {
+                    "class": "android.view.View",
+                    "stateDescription": "Not selected",
+                    "screenReaderFocusable": true,
+                    "checkable": true,
+                    "focusable": true,
+                    "clickable": true,
+                    "collectionItem": {
+                     "row": 0,
+                     "column": 0,
+                     "selected": false,
+                     "heading": false
+                    },
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     },
+                     {
+                      "id": 16,
+                      "name": "click"
+                     },
+                     {
+                      "id": 131072,
+                      "name": "setSelection"
+                     },
+                     {
+                      "id": 256,
+                      "name": "nextGranularity"
+                     },
+                     {
+                      "id": 512,
+                      "name": "previousGranularity"
+                     }
+                    ],
+                    "frame": [
+                     755,
+                     56,
+                     235,
+                     96
+                    ],
+                    "virtualId": 738,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "contentDescription": "Month",
+                      "actions": [
+                       {
+                        "id": 131072,
+                        "name": "setSelection"
+                       },
+                       {
+                        "id": 256,
+                        "name": "nextGranularity"
+                       },
+                       {
+                        "id": 512,
+                        "name": "previousGranularity"
+                       }
+                      ],
+                      "frame": [
+                       755,
+                       64,
+                       235,
+                       80
+                      ],
+                      "virtualId": 2000000738,
+                      "fake": true
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       831,
+                       84,
+                       83,
+                       40
+                      ],
+                      "virtualId": 766
+                     },
+                     {
+                      "class": "android.widget.RadioButton",
+                      "frame": [
+                       755,
+                       64,
+                       235,
+                       80
+                      ],
+                      "virtualId": 1000000738,
+                      "fake": true
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "childOrder": "semantics (replacedChildren)",
+ "source": "in-process AccessibilityNodeProvider",
+ "density": 2,
+ "image": {
+  "scale": 1,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 0.5,
+  "source": "frame"
+ },
+ "atf": {
+  "elements": 21,
+  "results": []
+ },
+ "focus": [
+  {
+   "class": "android.view.View",
+   "stateDescription": "Selected",
+   "screenReaderFocusable": true,
+   "checkable": true,
+   "checked": true,
+   "focusable": true,
+   "focused": true,
+   "collectionItem": {
+    "row": 0,
+    "column": 0,
+    "selected": true,
+    "heading": false
+   },
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    },
+    {
+     "id": 131072,
+     "name": "setSelection"
+    },
+    {
+     "id": 256,
+     "name": "nextGranularity"
+    },
+    {
+     "id": 512,
+     "name": "previousGranularity"
+    }
+   ],
+   "frame": [
+    291,
+    56,
+    233,
+    96
+   ],
+   "virtualId": 734
+  },
+  {
+   "class": "android.view.View",
+   "stateDescription": "Not selected",
+   "screenReaderFocusable": true,
+   "checkable": true,
+   "focusable": true,
+   "focused": true,
+   "clickable": true,
+   "collectionItem": {
+    "row": 0,
+    "column": 0,
+    "selected": false,
+    "heading": false
+   },
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    },
+    {
+     "id": 16,
+     "name": "click"
+    },
+    {
+     "id": 131072,
+     "name": "setSelection"
+    },
+    {
+     "id": 256,
+     "name": "nextGranularity"
+    },
+    {
+     "id": 512,
+     "name": "previousGranularity"
+    }
+   ],
+   "frame": [
+    524,
+    56,
+    231,
+    96
+   ],
+   "virtualId": 736
+  },
+  {
+   "class": "android.view.View",
+   "stateDescription": "Not selected",
+   "screenReaderFocusable": true,
+   "checkable": true,
+   "focusable": true,
+   "focused": true,
+   "clickable": true,
+   "collectionItem": {
+    "row": 0,
+    "column": 0,
+    "selected": false,
+    "heading": false
+   },
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    },
+    {
+     "id": 16,
+     "name": "click"
+    },
+    {
+     "id": 131072,
+     "name": "setSelection"
+    },
+    {
+     "id": 256,
+     "name": "nextGranularity"
+    },
+    {
+     "id": 512,
+     "name": "previousGranularity"
+    }
+   ],
+   "frame": [
+    755,
+    56,
+    235,
+    96
+   ],
+   "virtualId": 738
+  },
+  {
+   "class": "android.view.View",
+   "stateDescription": "Selected",
+   "screenReaderFocusable": true,
+   "checkable": true,
+   "checked": true,
+   "focusable": true,
+   "focused": true,
+   "collectionItem": {
+    "row": 0,
+    "column": 0,
+    "selected": true,
+    "heading": false
+   },
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    },
+    {
+     "id": 131072,
+     "name": "setSelection"
+    },
+    {
+     "id": 256,
+     "name": "nextGranularity"
+    },
+    {
+     "id": 512,
+     "name": "previousGranularity"
+    }
+   ],
+   "frame": [
+    291,
+    56,
+    233,
+    96
+   ],
+   "virtualId": 734
+  }
+ ],
+ "events": [
+  {
+   "type": "TYPE_WINDOW_STATE_CHANGED",
+   "via": "system",
+   "text": [],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "android.app.Presentation"
+  },
+  {
+   "type": "TYPE_WINDOW_CONTENT_CHANGED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 1,
+   "class": "android.view.ViewGroup"
+  },
+  {
+   "type": "TYPE_WINDOW_STATE_CHANGED",
+   "via": "system",
+   "text": [
+    "AWC Native"
+   ],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "dev.awc.playground.LivePreviewActivity"
+  },
+  {
+   "type": "TYPE_VIEW_FOCUSED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "android.view.ViewGroup"
+  },
+  {
+   "type": "TYPE_WINDOW_CONTENT_CHANGED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 1,
+   "class": "android.view.ViewGroup"
+  }
+ ]
+}

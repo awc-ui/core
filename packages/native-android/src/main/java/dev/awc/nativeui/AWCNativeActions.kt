@@ -20,6 +20,8 @@ class AWCActionEvent(
     val crossesBoundaries: Boolean = true,
     val targetID: String = UUID.randomUUID().toString(),
     val activation: AWCActivationMetadata = AWCActivationMetadata(),
+    /** Exact source payload shape; detail remains the existing map compatibility view. */
+    val rawDetail: AWCValue = detail,
 ) {
     var phase: AWCEventPhase = AWCEventPhase.NONE
         internal set

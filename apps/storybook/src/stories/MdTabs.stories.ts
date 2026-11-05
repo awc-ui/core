@@ -1622,3 +1622,22 @@ export const AllDisabled: Story = {
     });
   },
 };
+
+export const RebindingPanelRegion: Story = {
+  render: () => html`<div><md-tabs id="runtime-first" aria-label="Primary"><md-tab label="One"></md-tab><md-tab label="Two"></md-tab></md-tabs><md-tabs id="runtime-second" aria-label="Secondary" active-tab-index="1"><md-tab label="Three"></md-tab><md-tab label="Four"></md-tab></md-tabs><md-tab-panels for="runtime-first" sizing="active"><md-tab-panel>First panel</md-tab-panel><md-tab-panel>Second panel</md-tab-panel></md-tab-panels></div>`,
+  play: async ({ canvasElement }) => {
+    const region = canvasElement.querySelector('md-tab-panels') as HTMLMdTabPanelsElement;
+    await waitFor(() => expect(region.classList.contains('hydrated')).toBe(true));
+    const panels = Array.from(region.children);
+    region.for = 'runtime-second';
+    await waitFor(() => expect(panels[1].hasAttribute('active')).toBe(true));
+    const second = canvasElement.querySelector('#runtime-second') as HTMLMdTabsElement;
+    await second.selectTab(0); await waitFor(() => expect(panels[0].hasAttribute('active')).toBe(true));
+    const first = canvasElement.querySelector('#runtime-first') as HTMLMdTabsElement;
+    await first.selectTab(1); expect(panels[0].hasAttribute('active')).toBe(true);
+    region.remove(); canvasElement.append(region); await new Promise(resolve => requestAnimationFrame(resolve));
+    await second.selectTab(1); await waitFor(() => expect(panels[1].hasAttribute('active')).toBe(true));
+    region.for = 'unmatched'; await waitFor(() => expect(panels[0].hasAttribute('active')).toBe(true));
+    expect(panels[1].hasAttribute('inert')).toBe(true);
+  },
+};

@@ -123,6 +123,20 @@ node only while it is selected), `state-layer`, `avatar`, `avatar-image`
   selects. Watch `mdSelectionChange` rather than diffing the array.
 - In `selection-mode="single"`, clicking the only selected node **deselects**
   it. In `multiple`, each click toggles that node.
+- **`selectedIds` only marks nodes that can be selected.** Ids that
+  `selection-mode="none"` or a node's `selectable: false` exempt are neither
+  outlined nor traced: `branch-on-path` and the coloured connector trail follow
+  the *shown* selection only. The trail runs along the connectors themselves in
+  both orientations and reading directions.
+- **`collapsible="false"` locks every branch open** — including nodes the data
+  seeds with `expanded: false` — and neither the arrow keys nor Enter/Space fold
+  a branch; Arrow backward then only moves up to the parent. Re-enabling
+  `collapsible` restores the seeded folds.
+- **The tab stop never disappears under a fold.** When a branch holding the
+  roving tab stop is folded (a pointer press on an ancestor's toggler, or new
+  `nodes` data with `expanded: false`), the folded node takes the tab stop. A
+  pointer press on a toggler also moves focus to that node's tree item, so focus
+  never rests on the `aria-hidden` toggler.
 - **Enter / Space selects** when the node is selectable, and otherwise
   **toggles** the branch. The chart uses a **roving tabindex** — exactly one
   node is in the tab order — with Arrow Down/Up moving through the visible
@@ -304,7 +318,8 @@ widen nodes — `--md-org-chart-node-max-width` caps them.
 | `--md-org-chart-duration` | Motion duration | `--md-sys-motion-duration-medium2` (300ms) |
 
 A single node's tint is its `accent` field, not a custom property — it colours
-that node's avatar ring and selected state only.
+that node's avatar ring and selected state (ring, tint and ripple) only. A node
+without an `accent` has no avatar ring and uses `--md-org-chart-selected-color`.
 
 **CSS parts** — `viewport`, `tree`, `group`, `branch`, `branch-on-path`, `node`, `node-selected`,
 `state-layer`, `avatar`, `avatar-image`, `name`, `title`, `toggle`, `empty`.

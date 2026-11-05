@@ -1076,3 +1076,52 @@ export const EdgeAutoFlip: Story = {
     await new Promise((r) => setTimeout(r, 200));
   },
 };
+
+export const ReplacementTriggerAndDisabledRecovery: Story = {
+  render: () => html`<md-tooltip text="Contextual help" show-delay="0" hide-delay="0"><button>Help</button></md-tooltip>`,
+  play: async ({ canvasElement }) => {
+    const tooltip = canvasElement.querySelector('md-tooltip') as HTMLMdTooltipElement;
+    await waitFor(() => expect(tooltip.classList.contains('hydrated')).toBe(true));
+    const original = tooltip.querySelector('button')!;
+    const replacement = document.createElement('button'); replacement.textContent = 'New help'; original.replaceWith(replacement);
+    await waitFor(() => expect(replacement.getAttribute('aria-description')).toBe('Contextual help'));
+    expect(original.hasAttribute('aria-description')).toBe(false);
+    replacement.focus(); await waitFor(() => expect(tooltip.open).toBe(true));
+    tooltip.disabled = true; await waitFor(() => expect(tooltip.open).toBe(false));
+    expect(replacement.hasAttribute('aria-description')).toBe(false);
+    tooltip.disabled = false; await waitFor(() => expect(replacement.getAttribute('aria-description')).toBe('Contextual help'));
+    tooltip.text = 'Updated help'; await waitFor(() => expect(replacement.getAttribute('aria-description')).toBe('Updated help'));
+    tooltip.open = true; await waitFor(() => expect(tooltip.shadowRoot!.querySelector('[role="tooltip"]')!.getAttribute('aria-hidden')).toBe('false'));
+    tooltip.open = false;
+  },
+};
+
+export const LogicalStartAndEndPlacements: Story = {
+  render: () => html`<div style="padding:180px">
+    <md-tooltip text="Placement help" auto-position="false" offset="8"><button style="width:120px;height:60px">Trigger</button></md-tooltip>
+  </div>`,
+  play: async ({ canvasElement }) => {
+    const tooltip = await getTooltip(canvasElement) as HTMLMdTooltipElement;
+    const popup = popupOf(tooltip);
+    const positions = ['top-start', 'top-end', 'bottom-start', 'bottom-end', 'left-start', 'left-end', 'right-start', 'right-end'] as const;
+    const rtl = ['top-end', 'top-start', 'bottom-end', 'bottom-start', 'right-start', 'right-end', 'left-start', 'left-end'];
+    for (const direction of ['ltr', 'rtl']) {
+      tooltip.dir = direction;
+      for (const [index, position] of positions.entries()) {
+        await tooltip.hide(); tooltip.position = position; await tooltip.show();
+        const physical = direction === 'rtl' ? rtl[index] : position;
+        await waitFor(() => {
+          expect(popup.classList.contains(`md-tooltip__popup--${physical}`)).toBe(true);
+          const a = tooltip.querySelector('button')!.getBoundingClientRect(); const p = popup.getBoundingClientRect();
+          const [side, align] = physical.split('-');
+          const gap = side === 'top' ? a.top - p.bottom : side === 'bottom' ? p.top - a.bottom : side === 'left' ? a.left - p.right : p.left - a.right;
+          const aligned = side === 'top' || side === 'bottom'
+            ? align === 'start' ? p.left - a.left : p.right - a.right
+            : align === 'start' ? p.top - a.top : p.bottom - a.bottom;
+          expect(gap).toBeCloseTo(8, 0); expect(aligned).toBeCloseTo(0, 0);
+        });
+      }
+    }
+    await tooltip.hide();
+  },
+};

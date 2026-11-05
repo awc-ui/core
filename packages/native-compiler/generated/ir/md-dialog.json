@@ -27,6 +27,18 @@
       "description": "Headline text (or use the headline slot)"
     },
     {
+      "name": "dialogAriaLabel",
+      "type": "string",
+      "default": "''",
+      "defaultValue": "",
+      "options": [],
+      "mutable": false,
+      "reflect": false,
+      "attribute": "aria-label",
+      "optional": false,
+      "description": "Explicit accessible name. Takes precedence over the visible headline."
+    },
+    {
       "name": "icon",
       "type": "string",
       "default": "''",
@@ -218,16 +230,16 @@
       "description": "Action buttons"
     },
     {
+      "name": "headline",
+      "description": "Custom headline content"
+    },
+    {
       "name": "header-action",
       "description": "Full-screen header action (e.g. Save button)"
     },
     {
       "name": "icon",
       "description": "Custom icon (replaces icon prop)"
-    },
-    {
-      "name": "headline",
-      "description": "Custom headline content"
     }
   ],
   "cssParts": [
@@ -323,6 +335,10 @@
     "tag": "Host",
     "attributes": [
       {
+        "name": "onKeyDown",
+        "value": "this.handleDocumentKeyDown"
+      },
+      {
         "name": "class",
         "value": "{\n          'md-dialog': true,\n          'md-dialog--open': this.open,\n          'md-dialog--fullscreen': this.fullscreen,\n          'md-dialog--animating': this.animating,\n          'md-dialog--has-icon': hasIcon,\n        }"
       }
@@ -369,8 +385,20 @@
             "value": "true"
           },
           {
+            "name": "aria-hidden",
+            "value": "this.open ? undefined : 'true'"
+          },
+          {
+            "name": "inert",
+            "value": "!this.open"
+          },
+          {
+            "name": "aria-label",
+            "value": "this.dialogAriaLabel || undefined"
+          },
+          {
             "name": "aria-labelledby",
-            "value": "hasHeadline ? this.headlineId : undefined"
+            "value": "hasHeadline && !this.dialogAriaLabel ? this.headlineId : undefined"
           },
           {
             "name": "aria-describedby",
@@ -396,7 +424,7 @@
           },
           {
             "kind": "expression",
-            "source": "this.fullscreen && (\n            <div class=\"md-dialog__header\" part=\"header\">\n              <button\n                class=\"md-dialog__close-btn\"\n                part=\"close-button\"\n                aria-label={this.resolvedLabel(this.closeLabel, 'close')}\n                onClick={this.handleCloseClick}\n              >\n                <svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"currentColor\" aria-hidden=\"true\">\n                  <path d=\"M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z\"/>\n                </svg>\n              </button>\n              {hasHeadline && (\n                <span id={this.headlineId} class=\"md-dialog__header-headline\" part=\"headline\">\n                  {this.headline}\n                </span>\n              )}\n              <slot name=\"header-action\"></slot>\n            </div>\n          )"
+            "source": "this.fullscreen && (\n            <div class=\"md-dialog__header\" part=\"header\">\n              <button\n                class=\"md-dialog__close-btn\"\n                part=\"close-button\"\n                aria-label={this.resolvedLabel(this.closeLabel, 'close')}\n                onClick={this.handleCloseClick}\n              >\n                <svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"currentColor\" aria-hidden=\"true\">\n                  <path d=\"M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z\"/>\n                </svg>\n              </button>\n              {hasHeadline && (\n                <span id={this.headlineId} class=\"md-dialog__header-headline\" part=\"headline\">\n                  <slot name=\"headline\">{this.headline}</slot>\n                </span>\n              )}\n              <slot name=\"header-action\"></slot>\n            </div>\n          )"
           },
           {
             "kind": "text",
@@ -498,40 +526,28 @@
   },
   "diagnostics": [
     {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 91
+    },
+    {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Document access requires a native adapter.",
-      "line": 94
+      "line": 182
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 97
-    },
-    {
-      "code": "DOM_QUERY",
-      "severity": "warning",
-      "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 166
-    },
-    {
-      "code": "SHADOW_DOM",
-      "severity": "warning",
-      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 166
-    },
-    {
-      "code": "SLOT_INTROSPECTION",
-      "severity": "warning",
-      "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 171
+      "line": 187
     },
     {
       "code": "CANCELABLE_EVENT",
       "severity": "warning",
       "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
-      "line": 6
+      "line": 7
     }
   ],
   "source": {
@@ -539,7 +555,7 @@
     "styleUrl": "md-dialog.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "08af431c351bd02ed158faac4630fca1d89ba1ed7afda4746a8226f30be4ec75"
+    "sha256": "ffe718549218c4185770b1d902fd81563e6ddfcfb0db82704d9d23f296dbe8d9"
   },
   "styles": [
     {
@@ -1163,6 +1179,11 @@
           "important": false
         },
         {
+          "property": "min-inline-size",
+          "value": "0",
+          "important": false
+        },
+        {
           "property": "block-size",
           "value": "100%",
           "important": false
@@ -1634,87 +1655,148 @@
       "properties": [
         "open",
         "headline",
+        "dialogAriaLabel",
         "icon",
+        "fullscreen",
+        "scrimDismissible",
+        "locale",
         "closeLabel",
         "cancelLabel",
         "okLabel",
         "divider",
         "headerDivider",
-        "scrimDismissible"
+        "density"
       ],
       "events": [
         "mdOpen",
         "mdClose",
         "mdCancel"
       ],
-      "methods": [],
-      "slots": [
-        "",
-        "actions",
-        "header-action",
-        "icon",
-        "headline"
-      ],
-      "unsupportedProperties": [
-        "fullscreen",
-        "locale",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "show",
         "whenClosed",
         "close"
       ],
+      "slots": [
+        "",
+        "actions",
+        "headline",
+        "header-action",
+        "icon"
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "System sheet replaces browser modal. Built-in trigger supports playground/native standalone usage; open can also be supplied externally."
+        "Dedicated native dialog hosted by AWCModalScope in the app's own viewport (not a platform window): basic (centred alert dialog over a scrim) and fullscreen; all thirteen properties, mdOpen/mdClose/mdCancel in the source order with null payloads, show/close/whenClosed through AWCDialogController, all five slots, ten appearance hooks and eleven typed part targets.",
+        "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
+        "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "scrim",
+        "container",
+        "header",
+        "icon",
+        "headline",
+        "content",
+        "divider",
+        "actions",
+        "cancel-button",
+        "ok-button",
+        "close-button"
+      ],
+      "appearance": {
+        "api": ".awcDialogAppearance(AWCDialogAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "headlineColor",
+          "contentColor",
+          "iconColor",
+          "iconSize",
+          "scrimColor",
+          "dividerColor",
+          "zIndex",
+          "scrimZIndex"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "cancelLabel",
-        "fullscreen",
-        "headline",
-        "icon",
-        "okLabel",
         "open",
-        "scrimDismissible"
-      ],
-      "events": [
-        "mdCancel",
-        "mdClose",
-        "mdOpen"
-      ],
-      "methods": [],
-      "slots": [
-        "",
-        "actions"
-      ],
-      "unsupportedProperties": [
+        "headline",
+        "dialogAriaLabel",
+        "icon",
+        "fullscreen",
+        "scrimDismissible",
         "locale",
         "closeLabel",
+        "cancelLabel",
+        "okLabel",
         "divider",
         "headerDivider",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdOpen",
+        "mdClose",
+        "mdCancel"
+      ],
+      "methods": [
         "show",
         "whenClosed",
         "close"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
+        "actions",
+        "headline",
         "header-action",
-        "icon",
-        "headline"
+        "icon"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native dialog hosted by AWCModalScope in the app's own viewport (not a platform window): basic (centred alert dialog over a scrim) and fullscreen; all thirteen properties, mdOpen/mdClose/mdCancel in the source order with null payloads, show/close/whenClosed through AWCDialogController, all five slots, ten appearance hooks and eleven typed part targets.",
+        "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
+        "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "scrim",
+        "container",
+        "header",
+        "icon",
+        "headline",
+        "content",
+        "divider",
+        "actions",
+        "cancel-button",
+        "ok-button",
+        "close-button"
+      ],
+      "appearance": {
+        "api": "AWCDialogAppearanceScope(AWCDialogAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "headlineColor",
+          "contentColor",
+          "iconColor",
+          "iconSize",
+          "scrimColor",
+          "dividerColor",
+          "zIndex",
+          "scrimZIndex"
+        ]
+      }
     }
   }
 }

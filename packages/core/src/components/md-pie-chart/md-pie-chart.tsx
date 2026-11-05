@@ -44,16 +44,15 @@ import type { MdPieDatum } from './md-pie-chart.types';
  *   • centred label slot (donut centre)
  *   • role="figure" + screen-reader-only data table
  */
-/** The list `d` belongs to, anywhere in the tree — its level, in other words. */
-function findSiblings(items: MdPieDatum[], d: MdPieDatum): MdPieDatum[] | null {
-  if (items.includes(d)) return items;
-  for (const item of items) {
-    if (item.children?.length) {
-      const found = findSiblings(item.children, d);
-      if (found) return found;
-    }
-  }
-  return null;
+/** One flattened slice, in the engine's depth-first order. */
+interface PieSliceEntry {
+  d: MdPieDatum;
+  /** Flat index of its parent; `undefined` on the innermost ring. */
+  parent?: number;
+  /** Hidden by `d.hidden` or by the reader's legend toggle. */
+  hidden: boolean;
+  /** Drawn at all: neither it nor any slice it sits under is hidden. */
+  drawn: boolean;
 }
 
 @Component({
@@ -257,7 +256,8 @@ export class MdPieChart {
   @Watch('cornerRadius') @Watch('showLabels') @Watch('labelMode') @Watch('monochrome') @Watch('gradient') @Watch('highlight')
   @Watch('legend') @Watch('tooltip') @Watch('label') @Watch('titleAlign')
   @Watch('animation') @Watch('animationDuration')
-  @Watch('ringWidths') @Watch('locale') @Watch('subtitle') @Watch('loading') @Watch('valueFormatter')
+  @Watch('ringWidths') @Watch('locale') @Watch('subtitle') @Watch('loading') @Watch('valueFormatter') @Watch('tableLabels')
+  @Watch('tooltipRenderer')
   onAnyPropChange() { this.applyEngine(); this.rebuildA11yTable(); }
 
   /**
@@ -473,6 +473,11 @@ export class MdPieChart {
       legend: (rtl ? mirrorLegend(this.legend) : this.legend) as typeof this.legend,
       ringWidths: this.ringWidths,
       valueFormatter: (v: number) => this.formatValue(v),
+      // The hover card's share in the same number format as its value — and as
+      // the keyboard announcement, which already followed `locale`. One decimal,
+      // as the card has always printed it.
+      percentFormatter: (p: number) =>
+        `${p.toLocaleString(this.locale || undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`,
       animation: this.noAnimation ? 'none' : this.animation,
       animationDuration: this.animationDuration,
     };
@@ -485,12 +490,56 @@ export class MdPieChart {
       onLegendClick: (item) => {
         const key = this.datumKeys()[item.seriesIndex];
         if (key != null) this.legendHidden.set(key, !!item.hidden);
+        this.syncKeyboardCursor();
         this.mdLegendClick.emit({ dataIndex: item.seriesIndex, selected: !item.hidden });
       },
       onPointClick: (_si, di, e) => this.emitSliceClick(di, e),
     });
     this.engine.setTooltip({ render: this.tooltipRenderer });
     this.updateCenterVars();
+    this.syncKeyboardCursor();
+  }
+
+  /**
+   * Every slice with what the keyboard and the announcement need to know about
+   * it, in the engine's order. One walk, so "hidden" means the same thing to
+   * the cursor as it does to the ring.
+   */
+  private sliceEntries(): PieSliceEntry[] {
+    const keys = this.datumKeys();
+    const out: PieSliceEntry[] = [];
+    const walk = (items: MdPieDatum[], parent: number | undefined, underHidden: boolean) => {
+      for (const d of items) {
+        const at = out.length;
+        const hidden = d.hidden ?? this.legendHidden.get(keys[at]) ?? false;
+        out.push({ d, parent, hidden, drawn: !hidden && !underHidden });
+        if (d.children?.length) walk(d.children, at, underHidden || hidden);
+      }
+    };
+    walk(this.data ?? [], undefined, false);
+    return out;
+  }
+
+  /** The indexes the keyboard can land on: the slices the ring draws. A hidden
+   *  slice — and the ring of children it takes with it — has nothing on screen
+   *  to point at. A zero slice stays reachable: it is real data, and its legend
+   *  chip is still there saying so. */
+  private navigableIndexes(): number[] {
+    return this.sliceEntries().flatMap((e, i) => (e.drawn ? [i] : []));
+  }
+
+  /**
+   * After the slices change under a resting cursor — the data shrank, the
+   * reader hid that slice from the legend — move it to the nearest slice that
+   * is still drawn (the next one, else the one before) and say where it went,
+   * rather than leaving it on an index that names nothing.
+   */
+  private syncKeyboardCursor() {
+    if (this.kbIndex < 0) return;
+    const nav = this.navigableIndexes();
+    if (nav.includes(this.kbIndex)) return;
+    const next = nav.find((i) => i > this.kbIndex) ?? nav[nav.length - 1] ?? -1;
+    this.moveKeyboardCursor(next);
   }
 
   /**
@@ -522,24 +571,39 @@ export class MdPieChart {
    *  behaviour can't drift from theirs the way the hand-rolled one did. */
   private rebuildA11yTable() {
     if (!this.a11yTableHost) return;
-    const total = this.data.reduce((acc, d) => acc + d.value, 0);
     const lb = this.tableLabels ?? {};
+    // Every ring, depth-first — the order the chart indexes slices in — with a
+    // child named by its path, so "Phones" reads as a part of "Hardware".
+    // Each share is against its OWN siblings, like the hover card's. The table
+    // is the data, not the reader's current legend view, so a hidden slice is
+    // still listed and still counted.
+    const entries = this.sliceEntries();
+    const names: string[] = [];
+    const shares = entries.map((e, i) => {
+      names[i] = e.parent != null ? `${names[e.parent]} / ${e.d.label}` : e.d.label;
+      const total = entries.reduce((acc, o) => (o.parent === e.parent ? acc + o.d.value : acc), 0);
+      return total > 0 ? (e.d.value / total) * 100 : 0;
+    });
     this.a11yTableHost.innerHTML = buildDataTableHtml({
       title: this.label,
       xAxisLabel: lb.category ?? 'Category',
-      xAxisData: this.data.map(d => d.label),
+      xAxisData: names,
       locale: this.locale,
       // A pie's rows are its slices, so each "series" here is one column of the
-      // table: the value, and the share it represents.
+      // table: the value, and the share it represents. The share is a
+      // percentage, not a value — through the value formatter it printed as
+      // "75" with no unit, or as money under a currency formatter.
       series: [
-        { label: lb.value ?? 'Value', data: this.data.map(d => d.value) },
-        {
-          label: lb.share ?? 'Share',
-          data: this.data.map(d => (total > 0 ? (d.value / total) * 100 : 0)),
-        },
+        { label: lb.value ?? 'Value', data: entries.map(e => e.d.value) },
+        { label: lb.share ?? 'Share', data: shares, format: v => (v == null ? '—' : this.formatPercent(v)) },
       ],
       valueFormatter: v => (v == null ? '—' : this.formatValue(v)),
     });
+  }
+
+  /** A share, as the keyboard announcement prints it: up to one decimal. */
+  private formatPercent(p: number): string {
+    return `${p.toLocaleString(this.locale || undefined, { maximumFractionDigits: 1 })}%`;
   }
 
   /** A datum's value, through the consumer's formatter or the locale default. */
@@ -550,8 +614,13 @@ export class MdPieChart {
   /** Walk the slices with the keyboard. Without this the values are reachable
    *  only by hovering, which no keyboard or screen-reader user can do. */
   private onPlotKeyDown = (e: KeyboardEvent) => {
-    const last = this.flatDatums().length - 1;
-    if (last < 0) return;
+    // Only the slices the ring draws. Stepping onto a hidden one left the last
+    // highlight up, announced a slice nobody could see, and let Enter report a
+    // click on it.
+    const nav = this.navigableIndexes();
+    if (nav.length === 0) return;
+    const first = nav[0];
+    const last = nav[nav.length - 1];
     const rtl = typeof getComputedStyle === 'function' && getComputedStyle(this.el).direction === 'rtl';
     // Slices run clockwise from `startAngle`, so "next" is the same key in both
     // directions on screen — but the READING direction still decides which
@@ -562,14 +631,14 @@ export class MdPieChart {
     switch (e.key) {
       case forward:
       case 'ArrowDown':
-        next = this.kbIndex < 0 ? 0 : Math.min(last, this.kbIndex + 1);
+        next = this.kbIndex < 0 ? first : (nav.find((i) => i > this.kbIndex) ?? last);
         break;
       case back:
       case 'ArrowUp':
-        next = this.kbIndex < 0 ? last : Math.max(0, this.kbIndex - 1);
+        next = this.kbIndex < 0 ? last : ([...nav].reverse().find((i) => i < this.kbIndex) ?? first);
         break;
       case 'Home':
-        next = 0;
+        next = first;
         break;
       case 'End':
         next = last;
@@ -583,7 +652,7 @@ export class MdPieChart {
         // Same outcome as clicking the slice: it reports, and it picks itself
         // out of the ring. Without this the keyboard could reach every slice
         // and do nothing with any of them.
-        if (this.kbIndex < 0) return;
+        if (this.kbIndex < 0 || !nav.includes(this.kbIndex)) return;
         e.preventDefault();
         this.emitSliceClick(this.kbIndex, e);
         this.engine?.activate(this.kbIndex);
@@ -621,21 +690,21 @@ export class MdPieChart {
       this.announcement = '';
       return;
     }
-    const flat = this.flatDatums();
-    const d = flat[next];
-    if (!d) return;
+    const entries = this.sliceEntries();
+    const entry = entries[next];
+    if (!entry) return;
+    const d = entry.d;
     // Against its OWN level, not the whole tree: a version is a share of its
     // browser, and reading it as a share of every slice on the chart — parents
-    // and children together — would be a percentage of nothing.
-    const siblings = this.data?.some((x) => x.children?.length)
-      ? (findSiblings(this.data ?? [], d) ?? flat)
-      : flat;
-    const total = siblings.reduce((acc, x) => acc + x.value, 0);
+    // and children together — would be a percentage of nothing. And of the
+    // slices DRAWN on that level, as the hover card counts it: with one hidden
+    // the ring re-divides, and the two must not state different shares.
+    const total = entries.reduce((acc, o) => (o.parent === entry.parent && !o.hidden ? acc + o.d.value : acc), 0);
     const pct = total > 0 ? (d.value / total) * 100 : 0;
     this.announcement = this.labelPoint
       .replace('%label%', d.label)
       .replace('%value%', this.formatValue(d.value))
-      .replace('%percent%', `${pct.toLocaleString(this.locale || undefined, { maximumFractionDigits: 1 })}%`);
+      .replace('%percent%', this.formatPercent(pct));
   }
 
   render() {

@@ -68,6 +68,7 @@ intent through events — it never slices your data.
     label-next-page="Next page"          <!-- default: same -->
     label-last-page="Last page"          <!-- default: same -->
     label-all="All"                      <!-- default: "All" -->
+    label="Pagination"                   <!-- default: "Pagination" (landmark name) -->
     density="-1|-2|-3|-4"                <!-- default: 0 = no local rung -->
   ></md-table-pagination>
 </md-table-container>
@@ -226,8 +227,8 @@ House rules — M3 has no data-table guidelines page.
 
 ## Accessibility, RTL, density, i18n
 
-**Accessibility** — the host is a `role="navigation"` landmark whose
-`aria-label` is the fixed string `Pagination`. The four navigation buttons are
+**Accessibility** — the host is a `role="navigation"` landmark named by the
+`label` prop (default `Pagination`). The four navigation buttons are
 icon-only, so `label-first-page`, `label-previous-page`, `label-next-page` and
 `label-last-page` are their **only** accessible names — untranslated, they are
 English buttons in a translated app. The range readout sits in an
@@ -244,13 +245,11 @@ gaps, type and the nav buttons all derive from that one signal. `compact` is a
 separate switch that forces a 12px gap and 4px block padding. The rows-per-page
 `md-select` is always rendered at rung -2 or tighter, whatever the bar's rung.
 
-**i18n** — translate all seven label props; keep `%from%`, `%to%` and
-`%count%` in `label-displayed-rows`. The `Pagination` landmark name **cannot be
-overridden**: `render()` writes `aria-label="Pagination"` onto the host on every
-render, so an author-set `aria-label` survives the first paint and is then
-rewritten back to English the first time the user changes page or rows-per-page.
-Put your translation effort into the label props — they name the controls a
-screen-reader user actually operates.
+**i18n** — translate all seven `label-*` props and `label` (the landmark
+name); keep `%from%`, `%to%` and `%count%` in `label-displayed-rows`. Don't set
+`aria-label` on the host: `render()` writes `aria-label` from `label` on every
+render, so an author-set `aria-label` is rewritten the first time the user
+changes page or rows-per-page.
 
 ## Related components
 
@@ -300,6 +299,7 @@ Emits:
 | `count`              | `count`                 | Total number of rows in the dataset.                                                                                                                                                                  | `number`                    | `0`                        |
 | `density`            | `density`               | Local density rung. Drives the same `--md-sys-density-scale` signal that a global `data-density` ancestor sets, so a local value simply overrides the inherited one. 0 = default, -4 = ultra-compact. | `-1 \| -2 \| -3 \| -4 \| 0` | `0`                        |
 | `disabled`           | `disabled`              | Disabled state.                                                                                                                                                                                       | `boolean`                   | `false`                    |
+| `label`              | `label`                 | Accessible name of the navigation landmark (localise with the other `label-*` props).                                                                                                                 | `string`                    | `'Pagination'`             |
 | `labelAll`           | `label-all`             | Label of the "All" rows-per-page option.                                                                                                                                                              | `string`                    | `'All'`                    |
 | `labelDisplayedRows` | `label-displayed-rows`  | Custom label used to display the current row range (e.g. `"Showing %from%–%to% of %count%"`). Tokens: `%from%`, `%to%`, `%count%`.                                                                    | `string`                    | `'%from%–%to% of %count%'` |
 | `labelFirstPage`     | `label-first-page`      | Accessible label for the first-page button.                                                                                                                                                           | `string`                    | `'First page'`             |

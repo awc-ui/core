@@ -384,8 +384,9 @@ export function readMdChartTheme(host: HTMLElement): MdChartTheme {
     tooltipRadius: readNumberVar(cs, '--md-sys-shape-corner-small', 8),
     palette,
     fontFamily: fontFamilyOf(readVar(cs, '--md-sys-typescale-label-medium-font', '"Roboto", system-ui, sans-serif')),
-    labelSize: Math.max(9, readNumberVar(cs, '--md-sys-typescale-label-small-size', 11) + readNumberVar(cs, '--md-sys-density-scale', 0) * 0.5),
-    titleSize: Math.max(11, readNumberVar(cs, '--md-sys-typescale-title-small-size', 14) + readNumberVar(cs, '--md-sys-density-scale', 0) * 0.5),
+    // MD3 typescale tokens (`*-font-size`); the older chart-only `*-size` names still win when set.
+    labelSize: Math.max(9, readNumberVar(cs, '--md-sys-typescale-label-small-size', readNumberVar(cs, '--md-sys-typescale-label-small-font-size', 11)) + readNumberVar(cs, '--md-sys-density-scale', 0) * 0.5),
+    titleSize: Math.max(11, readNumberVar(cs, '--md-sys-typescale-title-small-size', readNumberVar(cs, '--md-sys-typescale-title-small-font-size', 14)) + readNumberVar(cs, '--md-sys-density-scale', 0) * 0.5),
     motionDuration: reducedMotion ? 0 : motionDuration,
     motionEasing: pickEasing(easingRaw),
     reducedMotion,

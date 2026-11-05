@@ -1,39 +1,6 @@
 import SwiftUI
 
 extension AWCNativeView {
-    @ViewBuilder var accordion: some View {
-        if node.tag == "md-accordion-item" {
-            VStack(alignment: .leading, spacing: 0) {
-                Button {
-                    guard b("collapsible", true) || !b("expanded") else { return }
-                    set("expanded", .bool(!b("expanded"))); emit("mdItemToggle", ["expanded": .bool(b("expanded")), "index": .number(n("_index"))])
-                } label: {
-                    HStack { content("leading-icon"); symbol(s("icon")); VStack(alignment: .leading) { content("headline"); Text(label).fontWeight(.semibold); support }; Spacer(); content("trailing-icon"); Image(systemName: b("expanded") ? "chevron.up" : "chevron.down") }.padding(16).contentShape(Rectangle())
-                }.buttonStyle(.plain).accessibilityValue(b("expanded") ? "Expanded" : "Collapsed")
-                if b("expanded") { content().padding(16).transition(.opacity.combined(with: .move(edge: .top))) }
-            }.background(surface, in: RoundedRectangle(cornerRadius: 12)).animation(.easeInOut(duration: 0.2), value: b("expanded"))
-        } else {
-            VStack(spacing: 4) {
-                ForEach(Array(node.children.enumerated()), id: \.element.id) { index, item in
-                    child(item, properties: ["expanded": .bool(accordionExpanded.contains(index)), "_index": .number(Double(index))]) { event in
-                        onEvent(event)
-                        if event.name == "mdItemToggle" {
-                            var indices = accordionExpanded; let expanded = event.detail["expanded"].bool ?? false
-                            if expanded { if b("exclusive") { indices.removeAll() }; indices.insert(index) }
-                            else if !b("keepOneExpanded") || indices.count > 1 { indices.remove(index) }
-                            set("_expanded", .array(indices.sorted().map { .number(Double($0)) }))
-                            emit("mdToggle", ["index": .number(Double(index)), "expanded": .bool(indices.contains(index)), "expandedIndices": .array(indices.sorted().map { .number(Double($0)) })])
-                        }
-                    }
-                }
-            }
-        }
-    }
-    var accordionExpanded: Set<Int> {
-        if local["_expanded"] != nil { return Set(a("_expanded").compactMap { $0.number.map(Int.init) }) }
-        let defaults = Set(s("defaultExpanded").split(separator: ",").compactMap { Int($0.trimmingCharacters(in: .whitespaces)) })
-        return defaults.union(node.children.enumerated().filter { $0.element.properties["expanded"]?.bool == true }.map(\.offset))
-    }
     @ViewBuilder var list: some View {
         if node.tag == "md-list" {
             VStack(spacing: 0) {

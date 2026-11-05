@@ -1,0 +1,302 @@
+{
+ "tag": "md-tooltip",
+ "case": "rich",
+ "request": {
+  "tag": "md-tooltip",
+  "properties": {
+   "variant": "rich",
+   "subhead": "Design systems"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Hover or focus me",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          245.5,
+          100,
+          149,
+          40
+         ],
+         "help": "Design systems. One source. Every surface.",
+         "identifier": "demo-tooltip-anchor",
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "button",
+         "selected": false
+        }
+       ],
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        221.5,
+        76,
+        197,
+        88
+       ],
+       "identifier": "example-md-tooltip",
+       "role": "AXGroup",
+       "roleDescription": "design systems. one source. every surface."
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      240
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    240
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [
+     {
+      "children": [],
+      "id": "4856C703-A3E5-4297-99B7-E5CAC0A18AA6",
+      "properties": {
+       "text": "Hover or focus me"
+      },
+      "tag": "#text"
+     }
+    ],
+    "id": "demo-tooltip-anchor",
+    "properties": {
+     "variant": "tonal"
+    },
+    "tag": "md-button"
+   }
+  ],
+  "id": "example-md-tooltip",
+  "properties": {
+   "autoPosition": true,
+   "crossOffset": 0,
+   "density": 0,
+   "disabled": false,
+   "hideDelay": 200,
+   "offset": 8,
+   "open": false,
+   "position": "top",
+   "showDelay": 500,
+   "subhead": "Design systems",
+   "text": "One source. Every surface.",
+   "variant": "rich"
+  },
+  "tag": "md-tooltip"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Hover or focus me",
+    "frame": [
+     245.5,
+     100,
+     149,
+     40
+    ],
+    "identifier": "demo-tooltip-anchor",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Hover or focus me",
+    "frame": [
+     245.5,
+     100,
+     149,
+     40
+    ],
+    "identifier": "demo-tooltip-anchor",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 40,
+     "width": 149,
+     "x": 245.5,
+     "y": 100
+    },
+    "id": "component",
+    "metrics": {
+     "description": "Design systems. One source. Every surface.",
+     "display": "SwiftUI inline anchor"
+    },
+    "name": "md-tooltip"
+   },
+   {
+    "bounds": {
+     "height": 57.6,
+     "width": 183.413671875,
+     "x": 228.18964843749998,
+     "y": 34.400000000000006
+    },
+    "id": "component.popup",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI block",
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      12,
+      16,
+      8,
+      16
+     ]
+    },
+    "name": "md-tooltip",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 18,
+     "width": 154.613671875,
+     "x": 242.58964843749996,
+     "y": 45.2
+    },
+    "id": "component.subhead",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "margin": [
+      0,
+      0,
+      4,
+      0
+     ],
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 20,
+      "size": 14,
+      "spacing": 0.1,
+      "unit": "pt",
+      "weight": 500
+     }
+    },
+    "name": "md-tooltip",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 18,
+     "width": 154.613671875,
+     "x": 242.58964843749996,
+     "y": 66.80000000000001
+    },
+    "id": "component.supporting-text",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 20,
+      "size": 14,
+      "spacing": 0.25,
+      "unit": "pt",
+      "weight": 400
+     }
+    },
+    "name": "md-tooltip",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

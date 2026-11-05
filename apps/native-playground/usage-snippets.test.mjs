@@ -60,6 +60,18 @@ test('web structured data preserves a nested __proto__ own property', async () =
   assert.equal(component.payload.constructor, 'data');
 });
 
+test('button expanded context is a Web attribute and a native Boolean', () => {
+  for (const value of [false, true]) {
+    for (const platform of ['web', 'react', 'angular', 'vue', 'svelte']) {
+      const code = usageSnippet(button, { 'aria-expanded': value }, platform);
+      assert.ok(code.includes(platform === 'react' ? `aria-expanded={"${value}"}` : `aria-expanded="${value}"`), `${platform} exposes the actual host attribute`);
+      assert.doesNotMatch(code, /"aria-expanded":/);
+    }
+    assert.match(usageSnippet(button, { 'aria-expanded': value }, 'swift'), new RegExp(`"aria-expanded": \\.bool\\(${value}\\)`));
+    assert.match(usageSnippet(button, { 'aria-expanded': value }, 'android'), new RegExp(`"aria-expanded" to ${value}`));
+  }
+});
+
 test('Swift uses the actual public generic view/node API and explicit JSON values', () => {
   const snippet = usageSnippet(button, { variant: 'tonal', selected: true, value: 42, groupTabindex: null, payload: { list: [1, 'two', false, null], empty: {} } }, 'ios', { html: '<md-button>Continue &amp; save</md-button>' });
   assert.match(snippet, /import SwiftUI\nimport AWCUI/);
@@ -493,10 +505,32 @@ test('native text-slot edits preserve unsupported slots, structural children and
   for (const platform of ['swift', 'android']) assert.doesNotMatch(usageSnippet(unavailable, {}, platform, { sourceHtml: '<md-button>Keep original</md-button>', slots: { '': 'Reject edit' } }), /Reject edit/);
 });
 
+test('button typed slots copy the same composed symbols and progress indicator on every platform', () => {
+  const slots = { 'leading-icon': { kind: 'symbol', value: 'favorite' }, 'trailing-icon': 'Next', loader: { kind: 'progress' } };
+  const declarations = ['', 'leading-icon', 'trailing-icon', 'loader'];
+  const component = { ...button, slots: declarations.map(name => ({ name })), support: {
+    ios: { slots: declarations }, android: { slots: declarations },
+  } };
+  const html = '<md-button>Keep label<span slot="leading-icon">Old icon</span><span slot="trailing-icon">Old trailing</span></md-button>';
+  for (const platform of ['html', 'react', 'angular', 'vue', 'svelte', 'swift', 'android']) {
+    const code = usageSnippet(component, {}, platform, { html, slots });
+    assert.doesNotMatch(code, /Old icon|Old trailing|\[object Object\]/, platform);
+    assert.match(code, /Keep label/);
+    assert.match(code, /Next/);
+    assert.match(code, /md-progress-indicator|MdProgressIndicator/);
+    assert.match(code, /circular/);
+    if (platform === 'swift') assert.match(code, /\.symbol\("favorite", slot: "leading-icon"\)/);
+    else if (platform === 'android') {
+      assert.match(code, /import dev.awc.nativeui.AWCMaterialSymbol/);
+      assert.match(code, /AWCMaterialSymbol\("favorite"\)/);
+    } else assert.match(code, /material-symbols-outlined/);
+  }
+});
+
 test('accepted native default-slot edits clear only the selected component property that masks its text', () => {
   const masks = {
     'md-segmented-button': 'label', 'md-fab-menu-item': 'label', 'md-select-option': 'label',
-    'md-split-button': 'label', 'md-chip': 'label', 'md-list-item': 'headline', 'md-snackbar': 'message',
+    'md-chip': 'label', 'md-list-item': 'headline', 'md-snackbar': 'message',
   };
   for (const [tag, mask] of Object.entries(masks)) for (const platform of ['swift', 'android']) for (const value of ['Updated content', '']) {
     const component = { tag, support: { ios: { slots: [''] }, android: { slots: [''] } } };
@@ -532,5 +566,41 @@ test('native slot edits preserve region titles and preserve property precedence 
     assert.match(code, /Keep headline/);
     assert.doesNotMatch(code, /Rejected edit/);
     assert.match(code, /Original content|Structural child/);
+  }
+});
+
+test('icon text-slot examples preserve meaningful blank wrappers separately from raw whitespace', () => {
+  const component = { tag: 'md-icon-button', slots: ['', 'selected'].map(name => ({ name })), support: {
+    ios: { slots: ['', 'selected'] }, android: { slots: ['', 'selected'] },
+  } };
+  for (const text of ['', '   ', 'Icon text']) for (const name of ['', 'selected']) {
+    const html = '<md-icon-button icon="favorite"><md-badge value="3"></md-badge></md-icon-button>';
+    const swift = usageSnippet(component, {}, 'swift', { html, slots: { [name]: text } });
+    assert.ok(swift.includes(`.slotText(${JSON.stringify(text)}${name ? `, slot: "${name}"` : ''})`));
+    assert.match(swift, /md-badge/);
+    const android = usageSnippet(component, {}, 'android', { html, slots: { [name]: text } });
+    assert.ok(android.includes(`Text(${JSON.stringify(text)})`));
+    assert.match(android, /md-badge/);
+    const web = usageSnippet(component, {}, 'html', { html, slots: { [name]: text } });
+    assert.ok(web.includes(`<span slot="${name}">${text}</span>`));
+  }
+  const source = '<md-icon-button> \n<span></span><span slot="selected"> </span></md-icon-button>';
+  const swift = usageSnippet(component, {}, 'swift', { html: source });
+  assert.match(swift, /\.slotText\(""\)/);
+  assert.match(swift, /\.slotText\(" ", slot: "selected"\)/);
+  assert.doesNotMatch(swift, /\.text\(" \\n"\)/);
+});
+
+test('FAB named icon examples retain explicit blank element presence and accessibility on every platform', () => {
+  const fab={tag:'md-fab',properties:[{name:'icon'},{name:'label'},{name:'size'}],slots:[{name:'icon'}],support:{ios:{slots:['icon']},android:{slots:['icon']}}};
+  for(const value of ['', ' \n']) {
+    const swift=usageSnippet(fab,{icon:'add','aria-label':'Create'},'swift',{html:'<md-fab></md-fab>',slots:{icon:value}});
+    assert.match(swift,/\.slotText\(/);assert.match(swift,/slot: "icon"/);assert.match(swift,/"aria-label": \.string\("Create"\)/);
+    const kotlin=usageSnippet(fab,{icon:'add'},'android',{html:'<md-fab></md-fab>',slots:{icon:value}});
+    assert.match(kotlin,/if \(slot == "icon"\) Text\(/);
+  }
+  for(const platform of ['html','react','angular','vue','svelte']) {
+    const code=usageSnippet(fab,{size:'large',label:'Create','aria-label':'Create document'},platform,{html:'<md-fab></md-fab>',slots:{icon:{kind:'symbol',value:'edit'}}});
+    assert.match(code,/aria-label/);assert.match(code,/Create document/);assert.match(code,/--md-fab-icon-size/);assert.match(code,/calc\(24px/);
   }
 });

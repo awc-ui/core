@@ -26,6 +26,7 @@ import {
   type MdChartDataPoint,
   watchMdChartTheme,
 } from '../../utils/charts';
+import { parseColor } from '../../utils/charts/engine/color';
 
 export interface MdSparklineReferenceArea {
   /** Range start (index into the data array). */
@@ -235,7 +236,7 @@ export class MdSparkline {
     const refBands: RefBand[] | undefined = this.referenceAreas?.map((r) => ({
       from: r.from,
       to: r.to,
-      color: toRgba(r.color ?? color, r.color ? 0.18 : 0.12),
+      color: r.color != null ? bandFill(r.color, 0.18, true) : bandFill(color, 0.12, false),
     }));
     return {
       series: [{
@@ -346,15 +347,21 @@ export class MdSparkline {
   }
 }
 
-function toRgba(color: string, alpha: number): string {
-  if (color.startsWith('#')) {
-    let hex = color.slice(1);
-    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-    const r = parseInt(hex.slice(0, 2), 16);
-    const g = parseInt(hex.slice(2, 4), 16);
-    const b = parseInt(hex.slice(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  }
-  if (color.startsWith('rgb(')) return color.replace(/^rgb\(/, 'rgba(').replace(/\)$/, `, ${alpha})`);
-  return color;
+/**
+ * A reference band's fill: `color` at `alpha`, whatever syntax it came in.
+ *
+ * Only `#rrggbb` and comma `rgb()` used to be tinted. A named, `hsl()` or
+ * space-separated `rgb(r g b)` line colour came through as-is — an opaque
+ * block where the docs promise "a tint of the line colour" — and the space
+ * form was turned into an invalid string the canvas ignored, painting black.
+ *
+ * A colour the author already made translucent keeps its own alpha when it is
+ * the band's (`explicit`); a translucent LINE colour has the band's tint
+ * applied on top of it, so the band stays fainter than the line it shades.
+ */
+function bandFill(color: string, alpha: number, explicit: boolean): string {
+  const [r, g, b, a] = parseColor(color);
+  const ch = (v: number) => Math.round(v * 255);
+  const out = explicit ? (a < 1 ? a : alpha) : a * alpha;
+  return `rgba(${ch(r)}, ${ch(g)}, ${ch(b)}, ${Math.round(out * 1000) / 1000})`;
 }

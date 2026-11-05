@@ -1249,6 +1249,7 @@ public struct AWCDatePicker: View {
 public struct AWCDialogProperties {
     public var `open`: Bool
     public var `headline`: String
+    public var `dialogAriaLabel`: String
     public var `icon`: String
     public var `fullscreen`: Bool
     public var `scrimDismissible`: Bool
@@ -1259,9 +1260,10 @@ public struct AWCDialogProperties {
     public var `divider`: Bool
     public var `headerDivider`: Bool
     public var `density`: Double
-    public init(`open`: Bool = false, `headline`: String = "", `icon`: String = "", `fullscreen`: Bool = false, `scrimDismissible`: Bool = true, `locale`: String = "en-US", `closeLabel`: String = "", `cancelLabel`: String = "", `okLabel`: String = "", `divider`: Bool = false, `headerDivider`: Bool = false, `density`: Double = 0.0) {
+    public init(`open`: Bool = false, `headline`: String = "", `dialogAriaLabel`: String = "", `icon`: String = "", `fullscreen`: Bool = false, `scrimDismissible`: Bool = true, `locale`: String = "en-US", `closeLabel`: String = "", `cancelLabel`: String = "", `okLabel`: String = "", `divider`: Bool = false, `headerDivider`: Bool = false, `density`: Double = 0.0) {
         self.`open` = `open`
         self.`headline` = `headline`
+        self.`dialogAriaLabel` = `dialogAriaLabel`
         self.`icon` = `icon`
         self.`fullscreen` = `fullscreen`
         self.`scrimDismissible` = `scrimDismissible`
@@ -1274,7 +1276,7 @@ public struct AWCDialogProperties {
         self.`density` = `density`
     }
     public var values: [String: AWCValue] {
-        let entries: [String: AWCValue?] = ["open": .bool(self.`open`), "headline": .string(self.`headline`), "icon": .string(self.`icon`), "fullscreen": .bool(self.`fullscreen`), "scrimDismissible": .bool(self.`scrimDismissible`), "locale": .string(self.`locale`), "closeLabel": .string(self.`closeLabel`), "cancelLabel": .string(self.`cancelLabel`), "okLabel": .string(self.`okLabel`), "divider": .bool(self.`divider`), "headerDivider": .bool(self.`headerDivider`), "density": .number(self.`density`)]
+        let entries: [String: AWCValue?] = ["open": .bool(self.`open`), "headline": .string(self.`headline`), "dialogAriaLabel": .string(self.`dialogAriaLabel`), "icon": .string(self.`icon`), "fullscreen": .bool(self.`fullscreen`), "scrimDismissible": .bool(self.`scrimDismissible`), "locale": .string(self.`locale`), "closeLabel": .string(self.`closeLabel`), "cancelLabel": .string(self.`cancelLabel`), "okLabel": .string(self.`okLabel`), "divider": .bool(self.`divider`), "headerDivider": .bool(self.`headerDivider`), "density": .number(self.`density`)]
         return entries.compactMapValues { $0 }
     }
 }
@@ -4299,10 +4301,11 @@ public struct AWCTablePaginationProperties {
     public var `labelNextPage`: String
     public var `labelLastPage`: String
     public var `labelAll`: String
+    public var `label`: String
     public var `compact`: Bool
     public var `disabled`: Bool
     public var `density`: Double
-    public init(`count`: Double = 0.0, `page`: Double = 0.0, `rowsPerPage`: Double = 10.0, `rowsPerPageOptions`: String = "5,10,25,50", `showFirstLast`: Bool = false, `labelDisplayedRows`: String = "%from%–%to% of %count%", `labelRowsPerPage`: String = "Rows per page:", `labelFirstPage`: String = "First page", `labelPreviousPage`: String = "Previous page", `labelNextPage`: String = "Next page", `labelLastPage`: String = "Last page", `labelAll`: String = "All", `compact`: Bool = false, `disabled`: Bool = false, `density`: Double = 0.0) {
+    public init(`count`: Double = 0.0, `page`: Double = 0.0, `rowsPerPage`: Double = 10.0, `rowsPerPageOptions`: String = "5,10,25,50", `showFirstLast`: Bool = false, `labelDisplayedRows`: String = "%from%–%to% of %count%", `labelRowsPerPage`: String = "Rows per page:", `labelFirstPage`: String = "First page", `labelPreviousPage`: String = "Previous page", `labelNextPage`: String = "Next page", `labelLastPage`: String = "Last page", `labelAll`: String = "All", `label`: String = "Pagination", `compact`: Bool = false, `disabled`: Bool = false, `density`: Double = 0.0) {
         self.`count` = `count`
         self.`page` = `page`
         self.`rowsPerPage` = `rowsPerPage`
@@ -4315,12 +4318,13 @@ public struct AWCTablePaginationProperties {
         self.`labelNextPage` = `labelNextPage`
         self.`labelLastPage` = `labelLastPage`
         self.`labelAll` = `labelAll`
+        self.`label` = `label`
         self.`compact` = `compact`
         self.`disabled` = `disabled`
         self.`density` = `density`
     }
     public var values: [String: AWCValue] {
-        let entries: [String: AWCValue?] = ["count": .number(self.`count`), "page": .number(self.`page`), "rowsPerPage": .number(self.`rowsPerPage`), "rowsPerPageOptions": .string(self.`rowsPerPageOptions`), "showFirstLast": .bool(self.`showFirstLast`), "labelDisplayedRows": .string(self.`labelDisplayedRows`), "labelRowsPerPage": .string(self.`labelRowsPerPage`), "labelFirstPage": .string(self.`labelFirstPage`), "labelPreviousPage": .string(self.`labelPreviousPage`), "labelNextPage": .string(self.`labelNextPage`), "labelLastPage": .string(self.`labelLastPage`), "labelAll": .string(self.`labelAll`), "compact": .bool(self.`compact`), "disabled": .bool(self.`disabled`), "density": .number(self.`density`)]
+        let entries: [String: AWCValue?] = ["count": .number(self.`count`), "page": .number(self.`page`), "rowsPerPage": .number(self.`rowsPerPage`), "rowsPerPageOptions": .string(self.`rowsPerPageOptions`), "showFirstLast": .bool(self.`showFirstLast`), "labelDisplayedRows": .string(self.`labelDisplayedRows`), "labelRowsPerPage": .string(self.`labelRowsPerPage`), "labelFirstPage": .string(self.`labelFirstPage`), "labelPreviousPage": .string(self.`labelPreviousPage`), "labelNextPage": .string(self.`labelNextPage`), "labelLastPage": .string(self.`labelLastPage`), "labelAll": .string(self.`labelAll`), "label": .string(self.`label`), "compact": .bool(self.`compact`), "disabled": .bool(self.`disabled`), "density": .number(self.`density`)]
         return entries.compactMapValues { $0 }
     }
 }
@@ -4893,7 +4897,8 @@ public struct AWCTransferListProperties {
     public var `moveLeftLabel`: String
     public var `moveAllRightLabel`: String
     public var `moveAllLeftLabel`: String
-    public init(`items`: AWCValue = .array([]), `value`: AWCValue = .array([]), `sourceTitle`: String = "Choices", `targetTitle`: String = "Chosen", `searchable`: Bool = true, `sourceSearchPlaceholder`: String = "Search choices", `targetSearchPlaceholder`: String = "Search chosen", `showSelectAll`: Bool = true, `searchIcon`: String = "search", `moveRightIcon`: String = "chevron_right", `moveLeftIcon`: String = "chevron_left", `moveAllRightIcon`: String = "keyboard_double_arrow_right", `moveAllLeftIcon`: String = "keyboard_double_arrow_left", `emptyIcon`: String = "", `emptyText`: String = "No items", `countTemplate`: String = "{checked}/{total} selected", `density`: Double = 0.0, `disabled`: Bool = false, `singleStepOnly`: Bool = false, `moveRightLabel`: String = "Move selected to target", `moveLeftLabel`: String = "Move selected to source", `moveAllRightLabel`: String = "Move all to target", `moveAllLeftLabel`: String = "Move all to source") {
+    public var `selectAllLabel`: String
+    public init(`items`: AWCValue = .array([]), `value`: AWCValue = .array([]), `sourceTitle`: String = "Choices", `targetTitle`: String = "Chosen", `searchable`: Bool = true, `sourceSearchPlaceholder`: String = "Search choices", `targetSearchPlaceholder`: String = "Search chosen", `showSelectAll`: Bool = true, `searchIcon`: String = "search", `moveRightIcon`: String = "chevron_right", `moveLeftIcon`: String = "chevron_left", `moveAllRightIcon`: String = "keyboard_double_arrow_right", `moveAllLeftIcon`: String = "keyboard_double_arrow_left", `emptyIcon`: String = "", `emptyText`: String = "No items", `countTemplate`: String = "{checked}/{total} selected", `density`: Double = 0.0, `disabled`: Bool = false, `singleStepOnly`: Bool = false, `moveRightLabel`: String = "Move selected to target", `moveLeftLabel`: String = "Move selected to source", `moveAllRightLabel`: String = "Move all to target", `moveAllLeftLabel`: String = "Move all to source", `selectAllLabel`: String = "Select all {title}") {
         self.`items` = `items`
         self.`value` = `value`
         self.`sourceTitle` = `sourceTitle`
@@ -4917,9 +4922,10 @@ public struct AWCTransferListProperties {
         self.`moveLeftLabel` = `moveLeftLabel`
         self.`moveAllRightLabel` = `moveAllRightLabel`
         self.`moveAllLeftLabel` = `moveAllLeftLabel`
+        self.`selectAllLabel` = `selectAllLabel`
     }
     public var values: [String: AWCValue] {
-        let entries: [String: AWCValue?] = ["items": self.`items`, "value": self.`value`, "sourceTitle": .string(self.`sourceTitle`), "targetTitle": .string(self.`targetTitle`), "searchable": .bool(self.`searchable`), "sourceSearchPlaceholder": .string(self.`sourceSearchPlaceholder`), "targetSearchPlaceholder": .string(self.`targetSearchPlaceholder`), "showSelectAll": .bool(self.`showSelectAll`), "searchIcon": .string(self.`searchIcon`), "moveRightIcon": .string(self.`moveRightIcon`), "moveLeftIcon": .string(self.`moveLeftIcon`), "moveAllRightIcon": .string(self.`moveAllRightIcon`), "moveAllLeftIcon": .string(self.`moveAllLeftIcon`), "emptyIcon": .string(self.`emptyIcon`), "emptyText": .string(self.`emptyText`), "countTemplate": .string(self.`countTemplate`), "density": .number(self.`density`), "disabled": .bool(self.`disabled`), "singleStepOnly": .bool(self.`singleStepOnly`), "moveRightLabel": .string(self.`moveRightLabel`), "moveLeftLabel": .string(self.`moveLeftLabel`), "moveAllRightLabel": .string(self.`moveAllRightLabel`), "moveAllLeftLabel": .string(self.`moveAllLeftLabel`)]
+        let entries: [String: AWCValue?] = ["items": self.`items`, "value": self.`value`, "sourceTitle": .string(self.`sourceTitle`), "targetTitle": .string(self.`targetTitle`), "searchable": .bool(self.`searchable`), "sourceSearchPlaceholder": .string(self.`sourceSearchPlaceholder`), "targetSearchPlaceholder": .string(self.`targetSearchPlaceholder`), "showSelectAll": .bool(self.`showSelectAll`), "searchIcon": .string(self.`searchIcon`), "moveRightIcon": .string(self.`moveRightIcon`), "moveLeftIcon": .string(self.`moveLeftIcon`), "moveAllRightIcon": .string(self.`moveAllRightIcon`), "moveAllLeftIcon": .string(self.`moveAllLeftIcon`), "emptyIcon": .string(self.`emptyIcon`), "emptyText": .string(self.`emptyText`), "countTemplate": .string(self.`countTemplate`), "density": .number(self.`density`), "disabled": .bool(self.`disabled`), "singleStepOnly": .bool(self.`singleStepOnly`), "moveRightLabel": .string(self.`moveRightLabel`), "moveLeftLabel": .string(self.`moveLeftLabel`), "moveAllRightLabel": .string(self.`moveAllRightLabel`), "moveAllLeftLabel": .string(self.`moveAllLeftLabel`), "selectAllLabel": .string(self.`selectAllLabel`)]
         return entries.compactMapValues { $0 }
     }
 }

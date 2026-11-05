@@ -1,0 +1,361 @@
+{
+ "tag": "md-dialog",
+ "case": "open",
+ "html": "<md-dialog data-ax-node=\"n0\" id=\"component\">Every great project starts with a shared workspace.</md-dialog>",
+ "props": {
+  "n0": {
+   "cancelLabel": "",
+   "closeLabel": "",
+   "closeable": true,
+   "density": 0,
+   "dialogAriaLabel": "",
+   "divider": false,
+   "fullscreen": false,
+   "headerDivider": false,
+   "headline": "Project details",
+   "icon": "",
+   "locale": "en-US",
+   "okLabel": "",
+   "open": true,
+   "scrimDismissible": true
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "RootWebArea",
+  "name": "ax",
+  "ignored": false,
+  "focusable": true,
+  "focused": true,
+  "frame": [
+   0,
+   -18,
+   640,
+   900
+  ],
+  "children": [
+   {
+    "role": "none",
+    "name": "",
+    "ignored": true,
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "alertdialog",
+      "name": "Project details",
+      "ignored": false,
+      "description": "Every great project starts with a shared workspace.",
+      "focusable": true,
+      "modal": true,
+      "frame": [
+       40,
+       346,
+       560,
+       172
+      ],
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           64,
+           370,
+           150.75,
+           32
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Project details",
+              "ignored": false,
+              "frame": [
+               64,
+               372,
+               150.75,
+               28
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Project details",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         40,
+         402,
+         560,
+         52
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Every great project starts with a shared workspace.",
+            "ignored": false,
+            "frame": [
+             64,
+             420,
+             331,
+             17
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Every great project starts with a shared workspace.",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "button",
+          "name": "Cancel",
+          "ignored": false,
+          "invalid": "false",
+          "focusable": true,
+          "focused": true,
+          "frame": [
+           433.8125,
+           454,
+           76.1875,
+           40
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Cancel",
+                "ignored": false,
+                "frame": [
+                 449.8125,
+                 466,
+                 44.1875,
+                 16
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Cancel",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "button",
+          "name": "OK",
+          "ignored": false,
+          "invalid": "false",
+          "focusable": true,
+          "frame": [
+           518,
+           454,
+           58,
+           40
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "OK",
+                "ignored": false,
+                "frame": [
+                 536.78125,
+                 466,
+                 20.4375,
+                 16
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "OK",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-button",
+   "role": "button",
+   "name": "OK",
+   "frame": [
+    518,
+    454,
+    58,
+    40
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "dom": "md-button",
+   "role": "button",
+   "name": "Cancel",
+   "frame": [
+    433.8125,
+    454,
+    76.1875,
+    40
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "dom": "md-button",
+   "role": "button",
+   "name": "OK",
+   "frame": [
+    518,
+    454,
+    58,
+    40
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "dom": "md-button",
+   "role": "button",
+   "name": "Cancel",
+   "frame": [
+    433.8125,
+    454,
+    76.1875,
+    40
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true
+   }
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

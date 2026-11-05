@@ -1,0 +1,339 @@
+{
+ "tag": "md-accordion",
+ "case": "exclusive",
+ "request": {
+  "tag": "md-accordion",
+  "properties": {
+   "keepOneExpanded": false,
+   "exclusive": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "A shared design language Built for every surface",
+         "enabled": true,
+         "expanded": true,
+         "focused": false,
+         "frame": [
+          32,
+          32,
+          576,
+          74
+         ],
+         "identifier": "example-md-accordion",
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "Disclosure button",
+         "selected": false,
+         "value": "Expanded"
+        }
+       ],
+       "description": "A shared design language Built for every surface",
+       "focused": false,
+       "frame": [
+        32,
+        32,
+        576,
+        74
+       ],
+       "headingLevel": 3,
+       "identifier": "example-md-accordion",
+       "role": "AXHeading",
+       "roleDescription": "heading"
+      },
+      {
+       "actions": [
+        "AXScrollLeftByPage",
+        "AXScrollRightByPage",
+        "AXScrollUpByPage",
+        "AXScrollDownByPage"
+       ],
+       "children": [
+        {
+         "enabled": true,
+         "frame": [
+          56,
+          126,
+          528,
+          40
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Colors, spacing, shapes, and component contracts come from the same AWC source."
+        }
+       ],
+       "description": "A shared design language Built for every surface",
+       "focused": false,
+       "frame": [
+        32,
+        106,
+        576,
+        80
+       ],
+       "identifier": "example-md-accordion",
+       "role": "AXScrollArea",
+       "roleDescription": "scroll area"
+      },
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Native by design Platform-specific implementations",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          32,
+          194,
+          576,
+          74
+         ],
+         "identifier": "example-md-accordion",
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "Disclosure button",
+         "selected": false,
+         "value": "Collapsed"
+        }
+       ],
+       "description": "Native by design Platform-specific implementations",
+       "focused": false,
+       "frame": [
+        32,
+        194,
+        576,
+        74
+       ],
+       "headingLevel": 3,
+       "identifier": "example-md-accordion",
+       "role": "AXHeading",
+       "roleDescription": "heading"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      300
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    300
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [
+     {
+      "children": [],
+      "id": "FA4B4A0D-2EA1-428F-949B-533C832BB3BA",
+      "properties": {
+       "text": "Colors, spacing, shapes, and component contracts come from the same AWC source."
+      },
+      "tag": "#text"
+     }
+    ],
+    "id": "accordion-item-0",
+    "properties": {
+     "expanded": true,
+     "headline": "A shared design language",
+     "supportingText": "Built for every surface"
+    },
+    "tag": "md-accordion-item"
+   },
+   {
+    "children": [
+     {
+      "children": [],
+      "id": "A5281DFC-BFD1-46E0-A58A-4C163B39F178",
+      "properties": {
+       "text": "Native views retain each platform's own controls and behavior."
+      },
+      "tag": "#text"
+     }
+    ],
+    "id": "accordion-item-1",
+    "properties": {
+     "expanded": false,
+     "headline": "Native by design",
+     "supportingText": "Platform-specific implementations"
+    },
+    "tag": "md-accordion-item"
+   }
+  ],
+  "id": "example-md-accordion",
+  "properties": {
+   "bringToFront": true,
+   "defaultExpanded": "",
+   "density": 0,
+   "elevation": 0,
+   "exclusive": true,
+   "floating": false,
+   "headingLevel": 3,
+   "initialX": 24,
+   "initialY": 24,
+   "keepOneExpanded": false,
+   "region": "auto",
+   "regionThreshold": 6,
+   "reorderable": false,
+   "transition": "expressive",
+   "variant": "filled"
+  },
+  "tag": "md-accordion"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "A shared design language Built for every surface",
+    "frame": [
+     32,
+     32,
+     576,
+     74
+    ],
+    "identifier": "accordion-item-0.header",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Native by design Platform-specific implementations",
+    "frame": [
+     32,
+     194,
+     576,
+     74
+    ],
+    "identifier": "accordion-item-1.header",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "A shared design language Built for every surface",
+    "frame": [
+     32,
+     32,
+     576,
+     74
+    ],
+    "identifier": "accordion-item-0.header",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Native by design Platform-specific implementations",
+    "frame": [
+     32,
+     194,
+     576,
+     74
+    ],
+    "identifier": "accordion-item-1.header",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "A shared design language Built for every surface",
+    "frame": [
+     32,
+     32,
+     576,
+     74
+    ],
+    "identifier": "accordion-item-0.header",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 236,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "chassisDragging": false,
+     "expandedIndices": [
+      0
+     ],
+     "order": [
+      0,
+      1
+     ],
+     "x": 0,
+     "y": 0,
+     "zIndex": -1
+    },
+    "name": "md-accordion"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

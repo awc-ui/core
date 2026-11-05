@@ -1,0 +1,394 @@
+{
+ "tag": "md-bottom-sheet",
+ "case": "open",
+ "request": {
+  "tag": "md-bottom-sheet",
+  "properties": {
+   "open": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "enabled": true,
+         "frame": [
+          80,
+          158,
+          153,
+          28
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Project details"
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Close bottom sheet",
+           "enabled": true,
+           "expanded": false,
+           "focused": true,
+           "frame": [
+            532,
+            152,
+            40,
+            40
+           ],
+           "identifier": "component.close-button",
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          }
+         ],
+         "enabled": true,
+         "focused": true,
+         "frame": [
+          532,
+          152,
+          40,
+          40
+         ],
+         "identifier": "component.close-button",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        },
+        {
+         "actions": [
+          "AXScrollLeftByPage",
+          "AXScrollRightByPage",
+          "AXScrollUpByPage",
+          "AXScrollDownByPage"
+         ],
+         "children": [
+          {
+           "enabled": true,
+           "frame": [
+            80,
+            207.7820132704419,
+            330,
+            16
+           ],
+           "identifier": "ECFE2DFC-DDD5-493D-909C-558B91C02B61",
+           "role": "AXStaticText",
+           "roleDescription": "text",
+           "value": "Every great project starts with a shared workspace."
+          }
+         ],
+         "focused": false,
+         "frame": [
+          56,
+          200,
+          528,
+          40
+         ],
+         "role": "AXScrollArea",
+         "roleDescription": "scroll area"
+        }
+       ],
+       "description": "Project details",
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        56,
+        104,
+        528,
+        136
+       ],
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      240
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    240
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": {
+  "class": "AWCNativeButtonFocusView",
+  "description": "Close bottom sheet",
+  "frame": [
+   532,
+   152,
+   40,
+   40
+  ],
+  "identifier": "component.close-button",
+  "role": "AXButton"
+ },
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "ECFE2DFC-DDD5-493D-909C-558B91C02B61",
+    "properties": {
+     "text": "Every great project starts with a shared workspace."
+    },
+    "tag": "#text"
+   }
+  ],
+  "id": "component",
+  "properties": {
+   "bottomDivider": false,
+   "closeable": true,
+   "contentAlign": "start",
+   "density": 0,
+   "headline": "Project details",
+   "headlineAlign": "start",
+   "open": true,
+   "scrimDismissible": true,
+   "scrollShadow": true,
+   "sheetAriaLabel": "",
+   "showDragHandle": true,
+   "topDivider": false,
+   "variant": "standard"
+  },
+  "tag": "md-bottom-sheet"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Close bottom sheet",
+    "frame": [
+     532,
+     152,
+     40,
+     40
+    ],
+    "identifier": "component.close-button",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Close bottom sheet",
+    "frame": [
+     532,
+     152,
+     40,
+     40
+    ],
+    "identifier": "component.close-button",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Close bottom sheet",
+    "frame": [
+     532,
+     152,
+     40,
+     40
+    ],
+    "identifier": "component.close-button",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Close bottom sheet",
+    "frame": [
+     532,
+     152,
+     40,
+     40
+    ],
+    "identifier": "component.close-button",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 240,
+     "width": 640,
+     "x": 0,
+     "y": 0
+    },
+    "id": "component",
+    "name": "md-bottom-sheet"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 40,
+     "x": 532,
+     "y": 152
+    },
+    "id": "component.close",
+    "name": "close",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 136,
+     "width": 528,
+     "x": 56,
+     "y": 104
+    },
+    "id": "component.container",
+    "metrics": {
+     "label": "Project details",
+     "radius": 28,
+     "role": "dialog"
+    },
+    "name": "container",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 136,
+     "width": 528,
+     "x": 56,
+     "y": 104
+    },
+    "id": "component.container-motion",
+    "metrics": {
+     "height": 136,
+     "indicator": 0.4,
+     "opacity": 1,
+     "renderTime": 1031498761.3277086,
+     "translateY": 0
+    },
+    "name": "container-motion",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 528,
+     "x": 56,
+     "y": 200
+    },
+    "id": "component.content",
+    "metrics": {
+     "fontSize": 14,
+     "lineHeight": 20
+    },
+    "name": "content",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 48,
+     "width": 528,
+     "x": 56,
+     "y": 104
+    },
+    "id": "component.drag-handle",
+    "name": "drag-handle",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 4,
+     "width": 32,
+     "x": 304,
+     "y": 126
+    },
+    "id": "component.drag-handle-indicator",
+    "name": "drag-handle-indicator",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 48,
+     "width": 528,
+     "x": 56,
+     "y": 152
+    },
+    "id": "component.header",
+    "name": "header",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 32,
+     "width": 440,
+     "x": 80,
+     "y": 156
+    },
+    "id": "component.headline",
+    "name": "headline",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 240,
+     "width": 640,
+     "x": 0,
+     "y": 0
+    },
+    "id": "component.scrim",
+    "metrics": {
+     "opacity": 1,
+     "renderTime": 1031498761.0960835
+    },
+    "name": "scrim",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

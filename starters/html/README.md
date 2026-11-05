@@ -16,17 +16,18 @@ small table, and a dark-mode switch.
   `https://cdn.jsdelivr.net/npm/@awc-ui/core@1.0.0-beta.9/dist/md3/md3.esm.js`.
   Its module script registers every `md-*` element and lazy-loads sibling
   chunks from the same package directory. No import rewriting is required.
-- **Tokens CSS** — `@awc-ui/tokens` is loaded from **jsDelivr** by its real
-  file path inside the package:
-  `https://cdn.jsdelivr.net/npm/@awc-ui/tokens@1.0.0-beta.9/src/tokens.css`.
+- **Core CSS** — the document head loads tokens and the unfinished-component
+  guard before the module script, using the same Core version:
+  `https://cdn.jsdelivr.net/npm/@awc-ui/core@1.0.0-beta.9/dist/md3/md3.css`.
 - **Chart data** — objects and arrays have no attribute form; the second
   module script sets the line chart's `xAxis` / `series` / `yAxis` as JS
   properties.
 - **Dark mode** — the app-bar switch sets `data-theme="dark"` on `<html>`,
   which swaps the token palette.
-- Because everything comes from the CDN there is **no SSR / Declarative Shadow
-  DOM** here — components render after the loader registers them. Use one of
-  the framework starters if you need a styled first paint.
+- There is **no SSR / Declarative Shadow DOM** here. Components stay hidden
+  until their first render adds `.hydrated`; registration alone is not enough.
+  This prevents raw content flashing but does not reserve final dimensions.
+  Use one of the framework starters for rendered structure on first paint.
 
 The `package.json` lists `@awc-ui/core` and `@awc-ui/tokens` only for
 reference/version pinning — the page itself never reads `node_modules`.

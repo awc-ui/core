@@ -273,25 +273,25 @@
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Window access requires a native adapter.",
-      "line": 300
+      "line": 308
     },
     {
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 536
+      "line": 544
     },
     {
       "code": "DOM_MUTATION",
       "severity": "warning",
       "message": "classList depends on browser semantics and requires a native adapter.",
-      "line": 564
+      "line": 572
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 675
+      "line": 683
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -305,7 +305,7 @@
     "styleUrl": "md-list.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "4061c53fac249b4465948e261f09c5334136945f7f8573f8d0992ab457e8dc1a"
+    "sha256": "2c5f370d12c2a21f83ca6e9c55064a52a4c0029bb56ade36ef0cbf582e225a06"
   },
   "styles": [
     {
@@ -801,75 +801,112 @@
       "properties": [
         "listStyle",
         "selectionMode",
-        "label"
-      ],
-      "events": [
-        "mdSelect",
-        "mdActivate"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
         "interactionMode",
         "reorderable",
+        "label",
         "labelledby",
         "roleOverride",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdSelect",
+        "mdActivate",
         "mdReorder"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "activateNext",
         "activatePrevious",
         "selectItem",
         "getSelectedIndices"
       ],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Coordinates native child selection. DOM references in events become native node IDs."
+        "Dedicated native list: all eight properties (list, listbox with single/multi selection, menu and other role overrides, density 0…−4), mdSelect, mdActivate and mdReorder with the source payloads (item references become stable native node IDs), the four methods through AWCListController, ten appearance hooks and the drop-placeholder part.",
+        "Roving focus with wrap, Home/End and 500 ms typeahead; pointer reorder from the drag handle (lift, sibling shift, dashed placeholder glide, drop) and Alt+Arrow keyboard reorder, measured against Chrome frame by frame.",
+        "A reorder keeps the authored composition and translates rows to their displayed slots; on Compose the accessibility order follows the authored order until the host applies mdReorder.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "drop-placeholder"
+      ],
+      "appearance": {
+        "api": ".awcListAppearance(AWCListAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "paddingBlock",
+          "paddingInline",
+          "segmentedGap",
+          "dropPlaceholderColor",
+          "dropPlaceholderOutlineColor",
+          "dropPlaceholderOutlineWidth",
+          "dropPlaceholderShape",
+          "dropPlaceholderOpacity"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "label",
         "listStyle",
-        "selectionMode"
-      ],
-      "events": [
-        "mdSelect"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
+        "selectionMode",
         "interactionMode",
         "reorderable",
+        "label",
         "labelledby",
         "roleOverride",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdSelect",
         "mdActivate",
         "mdReorder"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "activateNext",
         "activatePrevious",
         "selectItem",
         "getSelectedIndices"
       ],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native single/multi selection; native events omit DOM item references. Reordering remains unsupported."
+        "Dedicated native list: all eight properties (list, listbox with single/multi selection, menu and other role overrides, density 0…−4), mdSelect, mdActivate and mdReorder with the source payloads (item references become stable native node IDs), the four methods through AWCListController, ten appearance hooks and the drop-placeholder part.",
+        "Roving focus with wrap, Home/End and 500 ms typeahead; pointer reorder from the drag handle (lift, sibling shift, dashed placeholder glide, drop) and Alt+Arrow keyboard reorder, measured against Chrome frame by frame.",
+        "A reorder keeps the authored composition and translates rows to their displayed slots; on Compose the accessibility order follows the authored order until the host applies mdReorder.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "drop-placeholder"
+      ],
+      "appearance": {
+        "api": "AWCListAppearanceScope(AWCListAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "paddingBlock",
+          "paddingInline",
+          "segmentedGap",
+          "dropPlaceholderColor",
+          "dropPlaceholderOutlineColor",
+          "dropPlaceholderOutlineWidth",
+          "dropPlaceholderShape",
+          "dropPlaceholderOpacity"
+        ]
+      }
     }
   }
 }

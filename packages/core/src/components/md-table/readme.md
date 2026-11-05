@@ -179,7 +179,11 @@ the older alias for it). The `head` slot is **assigned by the table itself** in
   Size the frozen body with
   `md-table-container[max-height]` (it forwards the value) or the
   `--md-table-body-max-h` property. `mdScroll` and the `scrollbar` prop only
-  apply in frozen mode.
+  apply in frozen mode. With sort labels in the head (or after `pinColumn`), a
+  frozen table floors each `column-template` track to its header content and
+  rewrites the attribute: a plain track becomes `minmax(<need>px, <track>)`, a
+  `minmax(a, b)` track becomes `minmax(max(<need>px, a), b)` (a keyword minimum
+  is replaced by the floor), and a `fit-content()` track is left as is.
 - **`keep-height` is ON by default**: after the first render the table never
   shrinks below its initial height, so paging or filtering to fewer rows cannot
   make the page jump. Set `keep-height="false"` for a table that should resize.
@@ -209,7 +213,9 @@ the older alias for it). The `head` slot is **assigned by the table itself** in
   `data-adjacent-foot`, `aria-rowindex`, `aria-selected` and `aria-sort` onto
   your rows and cells on load and on every slot change. Don't write them
   yourself.
-- `empty` swaps in the empty state and announces "No data" politely; `loading`
+- `empty` swaps in the empty state and announces its text politely — the
+  slotted `empty` content's readable text (`aria-hidden` parts skipped,
+  `aria-label` used where present), or "No data" when nothing is slotted; `loading`
   sets `aria-busy`. `loading-mode="overlay"` dims the body under a progress
   line, `"skeleton"` replaces the body with `loading-rows` shimmer rows.
 

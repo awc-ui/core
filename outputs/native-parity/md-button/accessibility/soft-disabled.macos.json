@@ -1,0 +1,306 @@
+{
+ "tag": "md-button",
+ "case": "soft-disabled",
+ "request": {
+  "tag": "md-button",
+  "properties": {
+   "softDisabled": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Continue",
+         "enabled": false,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          263.5,
+          32,
+          113.5,
+          56
+         ],
+         "identifier": "example-md-button",
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "button",
+         "selected": false
+        }
+       ],
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        239.5,
+        8,
+        161.5,
+        104
+       ],
+       "identifier": "example-md-button",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      120
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    120
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "E7E1DCA6-4870-4705-B4CA-DC42A1350D7A",
+    "properties": {
+     "text": "Continue"
+    },
+    "tag": "#text"
+   }
+  ],
+  "id": "example-md-button",
+  "properties": {
+   "connectedLeft": false,
+   "connectedRight": false,
+   "density": 0,
+   "disabled": false,
+   "fullWidth": false,
+   "groupTabindex": null,
+   "href": "",
+   "icon": "",
+   "loading": false,
+   "mirrorIcon": false,
+   "ripple": true,
+   "roleOverride": "",
+   "selected": false,
+   "shape": "round",
+   "shapeMorph": true,
+   "size": "md",
+   "softDisabled": true,
+   "suppressExpandIconFlip": false,
+   "target": "_self",
+   "toggle": false,
+   "trailingIcon": "",
+   "type": "button",
+   "value": "",
+   "variant": "filled"
+  },
+  "tag": "md-button"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Continue",
+    "frame": [
+     263.5,
+     32,
+     113.5,
+     56
+    ],
+    "identifier": "example-md-button",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Continue",
+    "frame": [
+     263.5,
+     32,
+     113.5,
+     56
+    ],
+    "identifier": "example-md-button",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 56,
+     "width": 113.5,
+     "x": 263.25,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI Button",
+     "gap": {
+      "column": 8,
+      "row": 0
+     },
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      24,
+      0,
+      24
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 24,
+      "size": 16,
+      "spacing": 0.15,
+      "unit": "pt",
+      "weight": 500
+     }
+    },
+    "name": "md-button"
+   },
+   {
+    "bounds": {
+     "height": 24,
+     "width": 65.5,
+     "x": 287.25,
+     "y": 48
+    },
+    "id": "component.content",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI HStack",
+     "gap": {
+      "column": 8,
+      "row": 0
+     },
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 24,
+      "size": 16,
+      "spacing": 0.15,
+      "unit": "pt",
+      "weight": 500
+     }
+    },
+    "name": "md-button ::part(content)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 24,
+     "width": 65.5,
+     "x": 287.25,
+     "y": 48
+    },
+    "id": "component.label",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI Text",
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 24,
+      "size": 16,
+      "spacing": 0.15,
+      "unit": "pt",
+      "weight": 500
+     }
+    },
+    "name": "md-button ::part(label)",
+    "parentId": "component.content"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

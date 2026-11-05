@@ -24,7 +24,7 @@ const navMarkup = `<md-navigation-bar><md-navigation-tab icon="home" label="Home
 const segmentMarkup = `<md-segmented-button-set><md-segmented-button label="Day" value="day" selected></md-segmented-button><md-segmented-button label="Week" value="week"></md-segmented-button><md-segmented-button label="Month" value="month"></md-segmented-button></md-segmented-button-set>`;
 const menuMarkup = `<md-menu id="demo-menu" anchor="demo-menu-trigger"><md-menu-item-group label="Workspace"><md-menu-item headline="New project" supporting-text="Start something new"></md-menu-item><md-menu-item headline="Duplicate" trailing-text="⌘D"></md-menu-item><md-sub-menu-item headline="Export"><md-menu slot="submenu"><md-menu-item headline="SwiftUI"></md-menu-item><md-menu-item headline="Compose"></md-menu-item></md-menu></md-sub-menu-item></md-menu-item-group></md-menu>`;
 
-export function recipeFor(tag) {
+export function recipeFor(tag, segmentedContext) {
   let html = '', props = {}, mode = '', note = 'Interactive reference', setup = null, text;
   const bare = tag.slice(3);
   if (tag.startsWith('md-table')) {
@@ -44,13 +44,16 @@ export function recipeFor(tag) {
   else if (['md-list', 'md-list-item'].includes(tag)) { html = listMarkup; mode = 'wide'; }
   else if (tag.startsWith('md-navigation-rail')) { html = railMarkup; }
   else if (['md-navigation-bar', 'md-navigation-tab'].includes(tag)) { html = navMarkup; mode = 'wide'; }
-  else if (tag.startsWith('md-segmented-button')) { html = segmentMarkup; }
-  else if (tag.startsWith('md-breadcrumb')) { html = '<md-breadcrumbs><md-breadcrumb-item>Workspace</md-breadcrumb-item><md-breadcrumb-item>Components</md-breadcrumb-item><md-breadcrumb-item current>Button</md-breadcrumb-item></md-breadcrumbs>'; }
+  else if (tag.startsWith('md-segmented-button')) {
+    html = tag === 'md-segmented-button' && segmentedContext?.mode === 'standalone'
+      ? '<md-segmented-button label="Day" value="day" selected></md-segmented-button>' : segmentMarkup;
+  }
+  else if (tag.startsWith('md-breadcrumb')) { html = '<md-breadcrumbs><md-breadcrumb-item href="#home" icon="home">Home</md-breadcrumb-item><md-breadcrumb-item href="#projects">Projects</md-breadcrumb-item><md-breadcrumb-item>AWC Native</md-breadcrumb-item></md-breadcrumbs>'; }
   else if (['md-menu', 'md-menu-item', 'md-menu-item-group', 'md-sub-menu-item'].includes(tag)) {
     html = `<div class="overlay-launch" style="min-height:270px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;padding-top:12px"><md-button id="demo-menu-trigger" variant="tonal" data-awc-action="toggle" data-awc-target="demo-menu">Open menu</md-button><p class="reference-note">This component is presented in its menu context.</p>${menuMarkup}</div>`;
     note = 'Open to inspect the menu';
   } else if (tag.startsWith('md-fab-menu')) {
-    html = '<div class="overlay-launch" style="min-height:270px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;padding-top:12px"><md-fab id="demo-fab-anchor" icon="add" label="Create"></md-fab><md-fab-menu id="demo-fab-menu" anchor="demo-fab-anchor" placement="down"><md-fab-menu-item icon="edit" label="New document"></md-fab-menu-item icon="folder" label="New folder"></md-fab-menu-item icon="photo" label="Upload image"></md-fab-menu-item></md-fab-menu></div>';
+    html = '<div data-awc-fab-menu-context style="width:360px;height:480px;flex:none;position:relative;display:flex;align-items:center;justify-content:center"><md-fab id="demo-fab-anchor" icon="add" label="Create"></md-fab><md-fab-menu id="demo-fab-menu" anchor="demo-fab-anchor" placement="down"><md-fab-menu-item icon="edit" label="New document"></md-fab-menu-item><md-fab-menu-item icon="folder" label="New folder"></md-fab-menu-item><md-fab-menu-item icon="photo" label="Upload image"></md-fab-menu-item></md-fab-menu></div>';
     note = 'Open to inspect actions';
   } else {
     switch (tag) {
@@ -62,8 +65,8 @@ export function recipeFor(tag) {
       case 'md-chip': html = '<md-chip></md-chip>'; props = { label: 'Design systems', variant: 'filter', icon: 'palette' }; break;
       case 'md-card': html = '<md-card><div class="card-content" style="padding:24px;display:grid;gap:12px"><div class="card-symbol">✧</div><h3>Ideas take shape.</h3><p>A shared design language, built for every surface.</p><md-button variant="text">Explore workspace</md-button></div></md-card>'; break;
       case 'md-avatar': html = '<md-avatar></md-avatar>'; props = { name: 'Alex Morgan', size: 'large' }; break;
-      case 'md-badge': html = '<div style="position:relative"><md-icon-button icon="notifications" size="lg" aria-label="Notifications"></md-icon-button><md-badge style="position:absolute;top:-4px;right:-5px"></md-badge></div>'; props = { value: '8' }; break;
-      case 'md-status-dot': html = '<md-status-dot></md-status-dot>'; props = { state: 'online', label: 'All systems operational', inline: true }; break;
+      case 'md-badge': html = '<div data-awc-badge-context style="position:relative;width:48px;height:48px;flex:none"><md-icon-button icon="notifications" size="md" aria-label="Notifications" style="--md-icon-button-container-width:48px;--md-icon-button-container-height:48px"></md-icon-button><md-badge></md-badge></div>'; props = { value: '8' }; break;
+      case 'md-status-dot': html = '<div data-awc-status-dot-context style="position:relative;display:inline-flex;align-items:center;gap:12px;flex:none"><md-icon-button icon="notifications" size="md" aria-label="Notifications" style="flex:none;--md-icon-button-container-width:48px;--md-icon-button-container-height:48px"></md-icon-button><md-status-dot></md-status-dot></div>'; props = { state: 'online', label: 'All systems operational' }; break;
       case 'md-checkbox': html = '<label style="display:flex;align-items:center;gap:12px"><md-checkbox></md-checkbox><span>Keep me updated</span></label>'; props = { checked: true }; break;
       case 'md-switch': html = '<div style="display:flex;align-items:center;gap:18px"><span class="demo-label">Enable notifications</span><md-switch aria-label="Enable notifications"></md-switch></div>'; props = { selected: true, icons: true }; break;
       case 'md-radio': html = '<fieldset style="border:0;display:grid;gap:12px"><legend>Workspace access</legend><label style="display:flex;align-items:center;gap:12px"><md-radio name="demo-choice" value="shared"></md-radio><span>Shared workspace</span></label><label style="display:flex;align-items:center;gap:12px"><md-radio name="demo-choice" value="private"></md-radio><span>Private workspace</span></label></fieldset>'; props = { checked: true }; break;
@@ -77,12 +80,12 @@ export function recipeFor(tag) {
       case 'md-date-picker': html = '<md-date-picker></md-date-picker>'; props = { value: '2026-10-07', label: 'Start date', variant: 'docked' }; break;
       case 'md-time-picker': html = '<md-time-picker></md-time-picker>'; props = { value: '09:30', label: 'Meeting time', variant: 'input' }; break;
       case 'md-color-picker': html = '<md-color-picker></md-color-picker>'; props = { value: '#08796C', presets: ['#08796C', '#6750A4', '#B45F40', '#466785'] }; break;
-      case 'md-divider': html = '<div style="width:100%;max-width:300px"><p class="support-copy">A little space to think.</p><md-divider></md-divider><p class="support-copy">A clear separation of ideas.</p></div>'; break;
-      case 'md-progress-indicator': html = '<md-progress-indicator></md-progress-indicator>'; props = { value: 64, wave: true, label: 'Building native components' }; break;
+      case 'md-divider': html = '<div data-awc-divider-context style="width:300px;height:96px;flex:none;display:flex;align-items:center;justify-content:center"><md-divider></md-divider></div>'; break;
+      case 'md-progress-indicator': html = '<div data-awc-progress-context style="width:300px;flex:none;display:flex;justify-content:center"><md-progress-indicator></md-progress-indicator></div>'; props = { value: 64, wave: true, label: 'Building native components' }; break;
       case 'md-loading-indicator': html = '<md-loading-indicator></md-loading-indicator>'; props = { variant: 'contained' }; break;
-      case 'md-meter': html = '<md-meter></md-meter>'; props = { value: 72, showLabel: true, showValue: true, label: 'Storage used' }; break;
-      case 'md-skeleton': html = '<div style="width:260px"><md-skeleton></md-skeleton></div>'; props = { lines: 3, animation: 'wave', fullWidth: true }; break;
-      case 'md-ripple': html = '<button type="button" class="inline-ripple" style="position:relative;overflow:hidden;padding:16px 24px;border-radius:16px">Tap to see the ripple<md-ripple></md-ripple></button>'; note = 'Interaction primitive inside a button'; break;
+      case 'md-meter': html = '<div data-awc-meter-context style="width:300px;flex:none;display:flex;justify-content:center"><md-meter></md-meter></div>'; props = { value: 72, showLabel: true, showValue: true, label: 'Storage used' }; break;
+      case 'md-skeleton': html = '<div data-awc-skeleton-context style="width:260px;height:160px;flex:none;font-size:16px"><md-skeleton></md-skeleton></div>'; props = { lines: 3, animation: 'wave', fullWidth: true }; break;
+      case 'md-ripple': html = '<button type="button" class="inline-ripple" style="position:relative;overflow:hidden;padding:16px 24px;border:0;border-radius:16px;background:var(--md-sys-color-surface-container-highest);color:var(--md-sys-color-on-surface);font:500 14px/20px Roboto,sans-serif;letter-spacing:.1px;cursor:pointer">Tap to see the ripple<md-ripple></md-ripple></button>'; note = 'Interaction primitive inside a button'; break;
       case 'md-tooltip': html = '<md-tooltip><md-button variant="tonal">Hover or focus me</md-button></md-tooltip>'; props = { text: 'One source. Every surface.' }; break;
       case 'md-app-bar': html = '<md-app-bar><md-icon-button slot="trailing" icon="search" aria-label="Search"></md-icon-button></md-app-bar>'; props = { headline: 'Your workspace', leadingIcon: 'menu', leadingIconLabel: 'Open navigation' }; mode = 'wide'; break;
       case 'md-toolbar': html = '<md-toolbar><md-icon-button icon="undo" aria-label="Undo"></md-icon-button><md-icon-button icon="redo" aria-label="Redo"></md-icon-button><md-divider vertical></md-divider><md-icon-button icon="format_bold" aria-label="Bold" toggle></md-icon-button><md-icon-button icon="format_italic" aria-label="Italic" toggle></md-icon-button></md-toolbar>'; props = { variant: 'floating', ariaLabelProp: 'Formatting' }; break;
@@ -103,7 +106,8 @@ export function recipeFor(tag) {
   }
   const editableContent = {
     'md-button': ['Continue', 'Button label'],
-    'md-breadcrumb-item': ['Workspace', 'Breadcrumb label'],
+    'md-split-button': ['', 'Default slot', 'Additional text after the label. The label property stays unchanged.'],
+    'md-breadcrumb-item': ['Home', 'Breadcrumb label'],
     'md-accordion-item': ['Colors, spacing, shapes, and component contracts come from the same AWC source.', 'Panel content'],
     'md-tab-panel': ['Your workspace, across every platform.', 'Panel content'],
     'md-step': ['Create a shared design system.', 'Step content'],
@@ -113,7 +117,7 @@ export function recipeFor(tag) {
   if (content) text = content[0];
   if (html.includes('data-awc-action=')) setup = setupRecipeActions;
   if (tag === 'md-table-pagination') note = 'Two sample rows. Page events let your application load another page.';
-  return { html, props, mode, note, setup, text, textLabel: content?.[1], textDescription: content ? 'Plain text in the selected component’s default slot. Updates the preview and usage examples.' : undefined };
+  return { html, props, mode, note, setup, text, textLabel: content?.[1], textDescription: content ? content[2] || 'Plain text in the selected component’s default slot. Updates the preview and usage examples.' : undefined };
 }
 
 /** The same declarative actions are emitted by the framework snippet builder. */

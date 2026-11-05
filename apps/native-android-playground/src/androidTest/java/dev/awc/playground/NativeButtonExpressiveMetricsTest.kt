@@ -35,14 +35,16 @@ class NativeButtonExpressiveMetricsTest {
         } }
         val sizes = listOf("xs", "sm", "md", "lg", "xl")
         val base = listOf(12f, 16f, 24f, 48f, 64f)
-        for (rung in listOf(0f, -4f)) for ((index, nextSize) in sizes.withIndex()) for (nextVariant in listOf("filled", "outlined")) {
+        for (rung in listOf(0f, -1f, -2f, -3f, -4f)) for ((index, nextSize) in sizes.withIndex()) for (nextVariant in listOf("filled", "outlined", "text", "tonal", "elevated")) {
             compose.runOnIdle { size = nextSize; density = rung; variant = nextVariant }
             compose.mainClock.advanceTimeBy(1000); compose.waitForIdle()
             val button = compose.onNodeWithTag("button", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
             val content = compose.onNodeWithTag("content", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-            val expected = base[index] * (if(rung == 0f) 1f else .75f) * compose.density.density
+            val expected = base[index] * (1f + rung / 16f) * compose.density.density
             assertEquals("$nextSize/$rung/$nextVariant leading inset", expected, content.left - button.left, 1f)
             assertEquals("$nextSize/$rung/$nextVariant trailing inset", expected, button.right - content.right, 1f)
+            assertEquals("$nextSize/$rung/$nextVariant source minimum height",
+                maxOf(24f, listOf(32f, 40f, 56f, 96f, 136f)[index] + rung * 4f) * compose.density.density, button.height, 1f)
         }
     }
 

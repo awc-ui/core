@@ -1,0 +1,22 @@
+{
+  "device": {
+    "name": "dev.awc.playground.LivePreviewHostTest",
+    "tests": "6",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "12.678",
+    "timestamp": "2026-10-20T18:45:52",
+    "hostname": "localhost"
+  },
+  "unitTotals": {
+    "tests": 86,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "inputFiles": 99,
+  "changedInputs": [],
+  "command": "JAVA_HOME=/Users/ionut-valentinmitrache/Library/Java/JavaVirtualMachines/openjdk-23.0.1/Contents/Home ANDROID_HOME=/Users/ionut-valentinmitrache/Documents/Codex/2026-10-07/p/work/android-sdk ANDROID_SERIAL=emulator-5554 ./gradlew :native-ui:testDebugUnitTest :app:connectedDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=dev.awc.playground.NativeSegmentedParityTest,dev.awc.playground.LivePreviewHostTest#segmentedContextUsesRealOrderedSelectionTypedSlotsAndCommittedFrameMeasurements' --console=plain",
+  "workdir": "/Users/ionut-valentinmitrache/Documents/Codex/2026-10-07/p/work/awc-native/apps/native-android-playground"
+}

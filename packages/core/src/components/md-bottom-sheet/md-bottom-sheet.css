@@ -57,9 +57,6 @@
      divider-top                 Divider between header and content
      divider-bottom              Divider between content and actions
      content                     Content area wrapper (inline padding)
-     content-viewport            Inner scroll viewport (block padding)
-     content-shadow-block-start  Top scroll shadow gradient
-     content-shadow-block-end    Bottom scroll shadow gradient
      actions                     Bottom action bar
 
    ATTRIBUTES (drive layout / variants):
@@ -102,10 +99,7 @@
 
   --_detached-margin: var(--md-bottom-sheet-detached-margin, 16px);
 
-  /* Inline padding for the scroll area. Lives on the host so it
-     resolves once and is referenced from both the scroll-shadow ON
-     path (applied to the inner viewport) and the scroll-shadow OFF
-     fallback (applied to .content directly). */
+  /* Inline gutter inside the content scroll surface. */
   --_content-padding-inline: var(--md-bottom-sheet-content-padding-inline, max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)));
 
   display: contents;
@@ -364,27 +358,12 @@
    ========================================================== */
 
 .md-bottom-sheet__content {
-  /* Make this a flex column container so its single child (either the
-     <md-scroll-shadow> or the bare <slot> in the opt-out mode) gets a
-     definite, flex-resolved block-size to scroll inside. We use
-     `flex: 1 1 auto` (basis = max-content) rather than `flex: 1`
-     (basis = 0) so the projected content's intrinsic block-size
-     propagates up to the container's `block-size: auto` calculation —
-     otherwise the container collapses to its chrome-only intrinsic
-     size and the sheet renders far shorter than `max-block-size: 80vh`
-     when the content would actually fill that space. `min-block-size:
-     0` then lets the content shrink below its intrinsic size so the
-     inner viewport (also flexing) can be the real scroll surface. */
+  /* Intrinsic content contributes to the auto-height sheet. A zero minimum
+     lets this region shrink and scroll within the sheet's height cap. */
   flex: 1 1 auto;
   min-block-size: 0;
   display: flex;
   flex-direction: column;
-  /* No inline padding here. The gutter lives inside the scroll
-     viewport (or, when scroll-shadow is opted out, on .content
-     directly via the rule below) so the scrollbar sits flush with
-     the container's inline edge instead of inset by the gutter.
-     Override the gutter via `--md-bottom-sheet-content-padding-inline`
-     (set to `0` for edge-to-edge content). */
   /* Inherit body-medium typescale from :host so any shadow-DOM-only text
      here renders consistently. Slotted content already inherits these
      via the host element. */

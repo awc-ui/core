@@ -843,6 +843,13 @@ export class BarChartEngine {
     const rect = this.canvas.getBoundingClientRect();
     const px = e.clientX - rect.left;
     const py = e.clientY - rect.top;
+    // A polar chart's bars are ring segments (`scene.bars` is empty there): hit-test
+    // them exactly as the hover does, so the hand cursor a segment shows is honoured.
+    if (this.spec?.polar) {
+      const seg = sliceAt(this.scene.slices, px, py);
+      if (seg) this.cb.onPointClick(seg.seriesIndex ?? 0, seg.dataIndex, e as PointerEvent);
+      return;
+    }
     // Only fire when the click actually lands inside a bar — a click on empty
     // plot whitespace should not emit a bar click.
     for (const b of this.scene.bars) {

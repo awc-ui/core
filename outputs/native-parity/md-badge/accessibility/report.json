@@ -1,0 +1,321 @@
+{
+ "tag": "md-badge",
+ "at": "2026-10-29T11:11:39.787Z",
+ "rows": [
+  {
+   "case": "count",
+   "web": {
+    "elements": [
+     "button:Notifications",
+     "status:12"
+    ],
+    "texts": [],
+    "focus": [
+     "button:Notifications"
+    ],
+    "contrast": {
+     "measured": 3,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Notifications"
+     ],
+     "texts": [
+      "12"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Notifications",
+      "button:Notifications"
+     ],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Notifications"
+     ],
+     "texts": [
+      "12"
+     ],
+     "focus": [
+      "button:Notifications",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "button:Notifications",
+      "status:12"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Notifications",
+      "button:Notifications"
+     ],
+     "findings": [],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 12,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "small",
+   "web": {
+    "elements": [
+     "button:Notifications",
+     "status:notification"
+    ],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 2,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Notifications"
+     ],
+     "texts": [
+      "notification"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Notifications"
+     ],
+     "texts": [
+      "notification"
+     ],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "button:Notifications",
+      "status:notification"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 12,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "overflow",
+   "web": {
+    "elements": [
+     "button:Notifications",
+     "status:999+"
+    ],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 3,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Notifications"
+     ],
+     "texts": [
+      "999+"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Notifications"
+     ],
+     "texts": [
+      "999+"
+     ],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "button:Notifications",
+      "status:999+"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 12,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

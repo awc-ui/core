@@ -32,6 +32,13 @@ export class MdTabPanels {
 
   private tabsEl: (HTMLElement & { activeTabIndex?: number }) | null = null;
   private hasLoaded = false;
+  /**
+   * md-tabs emits mdTabChange only for user activation and selectTab(); a write to
+   * `activeTabIndex` (the framework-wrapper path) changes the active tab silently. Every
+   * path ends with md-tabs stamping `active` on the selected md-tab, so the region follows
+   * that attribute rather than the event alone.
+   */
+  private activeObserver?: MutationObserver;
   private uid = createId('md-tab-panels');
 
   private onTabChange = (e: Event) => {
@@ -78,12 +85,27 @@ export class MdTabPanels {
     if (this.tabsEl && this.tabsEl !== tabs) this.unwire();
     this.tabsEl = tabs;
     tabs?.addEventListener('mdTabChange', this.onTabChange);
+    if (tabs && typeof MutationObserver !== 'undefined') {
+      this.activeObserver?.disconnect();
+      this.activeObserver = new MutationObserver(() => this.followActiveTab());
+      this.activeObserver.observe(tabs, { subtree: true, attributes: true, attributeFilter: ['active'] });
+    }
     this.sync();
   }
 
   private unwire() {
     this.tabsEl?.removeEventListener('mdTabChange', this.onTabChange);
+    this.activeObserver?.disconnect();
+    this.activeObserver = undefined;
     this.tabsEl = null;
+  }
+
+  /** Show the panel of the md-tab that currently carries `active` (none → -1). */
+  private followActiveTab() {
+    const tabs = this.tabsEl;
+    if (!tabs) return;
+    const index = (Array.from(tabs.querySelectorAll('md-tab')) as HTMLElement[]).findIndex((t) => t.hasAttribute('active'));
+    this.show(index);
   }
 
   private panels(): HTMLElement[] {

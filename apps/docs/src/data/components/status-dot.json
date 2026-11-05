@@ -104,7 +104,18 @@
   "dependencies": [
     "md-avatar"
   ],
-  "dataTypes": [],
+  "dataTypes": [
+    {
+      "name": "MdStatusDotState",
+      "kind": "type",
+      "body": "| 'online' | 'away' | 'busy' | 'offline' | 'invisible' | 'neutral'"
+    },
+    {
+      "name": "MdStatusDotSize",
+      "kind": "type",
+      "body": "'small' | 'medium' | 'large'"
+    }
+  ],
   "callableProps": [],
   "eventTypes": [],
   "eventPayloads": []

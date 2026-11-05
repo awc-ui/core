@@ -1,0 +1,303 @@
+{
+ "tag": "md-snackbar",
+ "case": "assertive",
+ "request": {
+  "tag": "md-snackbar",
+  "properties": {
+   "message": "Project saved",
+   "politeness": "assertive"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "description": "Project saved",
+       "focused": false,
+       "frame": [
+        0,
+        0,
+        640,
+        240
+       ],
+       "identifier": "example-md-snackbar",
+       "role": "AXGroup",
+       "roleDescription": "alert"
+      },
+      {
+       "enabled": true,
+       "frame": [
+        320,
+        120,
+        0,
+        0
+       ],
+       "identifier": "example-md-snackbar",
+       "role": "AXUnknown"
+      },
+      {
+       "children": [
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Undo",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            347,
+            172,
+            65,
+            40
+           ],
+           "identifier": "example-md-snackbar-action",
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          323,
+          148,
+          113,
+          88
+         ],
+         "identifier": "example-md-snackbar-action",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Dismiss",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            412,
+            172,
+            40,
+            40
+           ],
+           "identifier": "example-md-snackbar-close",
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          412,
+          172,
+          40,
+          40
+         ],
+         "identifier": "example-md-snackbar-close",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        }
+       ],
+       "enabled": true,
+       "frame": [
+        152,
+        144,
+        336,
+        96
+       ],
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      240
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    240
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-snackbar",
+  "properties": {
+   "action": "Undo",
+   "autoHide": false,
+   "autoHideDuration": 4000,
+   "closeable": true,
+   "density": 0,
+   "dismissLabel": "Dismiss",
+   "message": "Project saved",
+   "open": true,
+   "politeness": "assertive",
+   "position": "bottom",
+   "stacked": false
+  },
+  "tag": "md-snackbar"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 240,
+     "width": 640,
+     "x": 0,
+     "y": 0
+    },
+    "id": "component",
+    "metrics": {
+     "direction": "ltr",
+     "display": "SwiftUI fixed overlay",
+     "padding": [
+      24,
+      24,
+      24,
+      24
+     ]
+    },
+    "name": "md-snackbar"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 65.1875,
+     "x": 346.8125,
+     "y": 172
+    },
+    "id": "component.actions",
+    "name": "md-snackbar ::part(actions)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 40,
+     "x": 412,
+     "y": 172
+    },
+    "id": "component.close",
+    "name": "md-snackbar ::part(close)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 24,
+     "width": 24,
+     "x": 420,
+     "y": 180
+    },
+    "id": "component.close-icon",
+    "name": "md-snackbar ::part(close-icon)",
+    "parentId": "component.close"
+   },
+   {
+    "bounds": {
+     "height": 48,
+     "width": 154.8125,
+     "x": 192,
+     "y": 168
+    },
+    "id": "component.message",
+    "metrics": {
+     "direction": "ltr",
+     "padding": [
+      14,
+      0,
+      14,
+      0
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 20,
+      "size": 14,
+      "spacing": 0.25,
+      "unit": "pt",
+      "weight": 400
+     }
+    },
+    "name": "md-snackbar ::part(message)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 48,
+     "width": 288,
+     "x": 176,
+     "y": 168
+    },
+    "id": "component.surface",
+    "metrics": {
+     "direction": "ltr",
+     "display": "SwiftUI flex layout",
+     "gap": {
+      "column": 0,
+      "row": 0
+     },
+     "padding": [
+      0,
+      12,
+      0,
+      16
+     ]
+    },
+    "name": "md-snackbar ::part(surface)",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

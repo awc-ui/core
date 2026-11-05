@@ -1,4 +1,4 @@
-import { Component, Element, h, Host, Method, Prop } from '@stencil/core';
+import { Component, Element, h, Host, Method, Prop, Watch } from '@stencil/core';
 
 const PRESS_GROW_MS = 450;
 const RELEASE_FADE_MS = 150;
@@ -7,6 +7,19 @@ const EASING_STANDARD = 'cubic-bezier(0.2, 0, 0, 1)';
 
 const GROW_DURATION_PROP = '--md-ripple-grow-duration';
 const GROW_EASING_PROP = '--md-ripple-grow-easing';
+
+interface RippleCycle {
+  wave: HTMLElement;
+  grow?: Animation;
+  fade?: Animation;
+  opacity: number;
+  released: boolean;
+  done: boolean;
+  settled: Promise<void>;
+  resolve: () => void;
+  fadeTimer?: ReturnType<typeof setTimeout>;
+  finishLegacyFade?: () => void;
+}
 
 @Component({ tag: 'md-ripple', styleUrl: 'md-ripple.css', shadow: true })
 export class MdRipple {
@@ -42,21 +55,19 @@ export class MdRipple {
   }
 
   private hostEl: HTMLElement | null = null;
-  private activeWave: HTMLElement | null = null;
-  private growAnimation: Animation | null = null;
-  private activeOpacity: number = DEFAULT_PRESS_OPACITY;
+  private cycle: RippleCycle | null = null;
   private bound = false;
-  private settlePromise: Promise<void> | null = null;
-  private settleResolve: (() => void) | null = null;
+  private connected = false;
+  private releaseWindow: Window | null = null;
+  private pointerId?: number;
 
   private resolveOpacity(): number {
-    if (!this.hostEl) return DEFAULT_PRESS_OPACITY;
-    const raw = getComputedStyle(this.hostEl)
+    const raw = getComputedStyle(this.el)
       .getPropertyValue('--md-ripple-opacity')
       .trim();
     if (!raw) return DEFAULT_PRESS_OPACITY;
-    const parsed = parseFloat(raw);
-    return Number.isFinite(parsed) ? parsed : DEFAULT_PRESS_OPACITY;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(1, parsed)) : DEFAULT_PRESS_OPACITY;
   }
 
   /**
@@ -83,7 +94,7 @@ export class MdRipple {
   private resolveExtent(prop: string): number {
     const raw = getComputedStyle(this.el).getPropertyValue(prop).trim();
     if (!raw) return 0;
-    const parsed = parseFloat(raw);
+    const parsed = /^(?:\d+\.?\d*|\.\d+)(?:px)?$/i.test(raw) ? parseFloat(raw) : NaN;
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
   }
 
@@ -100,8 +111,9 @@ export class MdRipple {
   private resolveGrowDuration(): number {
     const raw = getComputedStyle(this.el).getPropertyValue(GROW_DURATION_PROP).trim();
     if (!raw) return PRESS_GROW_MS;
-    const parsed = parseFloat(raw);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : PRESS_GROW_MS;
+    const match = raw.match(/^((?:\d+\.?\d*|\.\d+))(ms|s)?$/i);
+    const parsed = match ? Number(match[1]) * (match[2]?.toLowerCase() === 's' ? 1000 : 1) : NaN;
+    return Number.isFinite(parsed) ? parsed : PRESS_GROW_MS;
   }
 
   /**
@@ -115,28 +127,17 @@ export class MdRipple {
     return raw || EASING_STANDARD;
   }
 
-  private beginSettle() {
-    this.finishSettle();
-    this.settlePromise = new Promise<void>((resolve) => {
-      this.settleResolve = resolve;
-    });
-  }
-
-  private finishSettle() {
-    this.settleResolve?.();
-    this.settleResolve = null;
-    this.settlePromise = null;
-  }
-
-  /** Resolves when the active press ripple has fully faded out. */
+  /** Waits for the current wave to settle, with a 200ms bound for held presses. */
   @Method()
   async whenSettled(): Promise<void> {
-    if (!this.settlePromise) return;
+    const cycle = this.cycle;
+    if (!cycle) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const maxWait = new Promise<void>((resolve) => {
-      setTimeout(resolve, RELEASE_FADE_MS + 50);
+      timer = setTimeout(resolve, RELEASE_FADE_MS + 50);
     });
-    await Promise.race([this.settlePromise, maxWait]);
-    this.finishSettle();
+    await Promise.race([cycle.settled, maxWait]);
+    clearTimeout(timer);
   }
 
   /**
@@ -183,12 +184,11 @@ export class MdRipple {
     const root = this.el.getRootNode();
     let node: HTMLElement | null = this.el.parentElement;
     while (node && this.generatesNoBox(node)) node = node.parentElement;
-    return node ??
-      (root instanceof ShadowRoot ? (root.host as HTMLElement) : null);
+    return node ?? (root.nodeType === 11 ? ((root as ShadowRoot).host as HTMLElement) ?? null : null);
   }
 
   private bind() {
-    if (this.bound) return;
+    if (!this.connected || this.bound) return;
     this.hostEl = this.resolveHost();
     if (!this.hostEl) return;
     this.bound = true;
@@ -196,6 +196,7 @@ export class MdRipple {
   }
 
   connectedCallback() {
+    this.connected = true;
     this.bind();
     if (!this.bound) {
       queueMicrotask(() => this.bind());
@@ -203,18 +204,29 @@ export class MdRipple {
   }
 
   disconnectedCallback() {
+    this.connected = false;
+    this.clearReleaseListeners();
+    this.finishCycle(this.cycle);
     this.hostEl?.removeEventListener('pointerdown', this.onPointerDown);
     this.hostEl = null;
     this.bound = false;
   }
 
+  @Watch('disabled')
+  disabledChanged(disabled: boolean) {
+    if (!disabled) return;
+    this.clearReleaseListeners();
+    this.finishCycle(this.cycle);
+  }
+
   private onPointerDown = (e: PointerEvent) => {
-    if (this.disabled || this.rippleSuppressed()) return;
+    if (this.disabled || this.rippleSuppressed() || e.isPrimary === false || (e.button !== undefined && e.button !== 0)) return;
 
     const container = this.el.shadowRoot?.querySelector('.md-ripple') as HTMLElement;
     if (!container || !this.hostEl) return;
 
-    this.endWave();
+    this.clearReleaseListeners();
+    this.finishCycle(this.cycle);
 
     const rect = this.hostEl.getBoundingClientRect();
     // Treat the surface as if it spans an extended rect when the host has
@@ -236,75 +248,106 @@ export class MdRipple {
     const x = e.clientX - rect.left - radius;
     const y = e.clientY - rect.top - radius;
 
-    const wave = document.createElement('span');
+    const cycle = this.startWave(container, size, x, y);
+    if (cycle.done) return;
+    this.pointerId = e.pointerId;
+    this.releaseWindow = this.el.ownerDocument.defaultView;
+    this.releaseWindow?.addEventListener('pointerup', this.onRelease);
+    this.releaseWindow?.addEventListener('pointercancel', this.onRelease);
+    this.releaseWindow?.addEventListener('blur', this.onBlur);
+  };
+
+  private onRelease = (event: PointerEvent) => {
+    if (event.pointerId !== undefined && this.pointerId !== undefined && event.pointerId !== this.pointerId) return;
+    this.clearReleaseListeners();
+    void this.endWave(this.cycle);
+  };
+
+  private onBlur = () => {
+    this.clearReleaseListeners();
+    this.finishCycle(this.cycle);
+  };
+
+  private clearReleaseListeners() {
+    this.releaseWindow?.removeEventListener('pointerup', this.onRelease);
+    this.releaseWindow?.removeEventListener('pointercancel', this.onRelease);
+    this.releaseWindow?.removeEventListener('blur', this.onBlur);
+    this.releaseWindow = null;
+    this.pointerId = undefined;
+  }
+
+  private startWave(container: HTMLElement, size: number, x: number, y: number): RippleCycle {
+    const wave = this.el.ownerDocument.createElement('span');
     wave.classList.add('md-ripple__wave');
     wave.style.width = wave.style.height = `${size}px`;
     wave.style.left = `${x}px`;
     wave.style.top = `${y}px`;
+    let resolve!: () => void;
+    const settled = new Promise<void>(done => { resolve = done; });
+    const cycle: RippleCycle = { wave, opacity: this.resolveOpacity(), released: false, done: false, settled, resolve };
+    this.cycle = cycle;
     container.appendChild(wave);
-    this.activeWave = wave;
-    this.activeOpacity = this.resolveOpacity();
-    this.beginSettle();
-
-    this.growAnimation = wave.animate(
-      [
-        { transform: 'scale(0)', opacity: this.activeOpacity },
-        { transform: 'scale(1)', opacity: this.activeOpacity },
-      ],
-      {
-        duration: this.resolveGrowDuration(),
-        easing: this.resolveGrowEasing(),
-        fill: 'forwards',
-      },
-    );
-
-    window.addEventListener('pointerup', this.onRelease, { once: true });
-    window.addEventListener('pointercancel', this.onRelease, { once: true });
-  };
-
-  private onRelease = () => {
-    this.endWave();
-  };
-
-  private async endWave() {
-    const wave = this.activeWave;
-    const grow = this.growAnimation;
-    if (!wave || !grow) return;
-
-    this.activeWave = null;
-    this.growAnimation = null;
-
-    if (grow.playState !== 'finished') {
-      await grow.finished;
-    }
-
-    const fade = wave.animate(
-      [{ opacity: this.activeOpacity }, { opacity: 0 }],
-      { duration: RELEASE_FADE_MS, easing: EASING_STANDARD, fill: 'forwards' },
-    );
     try {
-      if (typeof fade.finished?.then === 'function') {
-        await fade.finished;
-      } else {
-        await new Promise<void>((resolve) => setTimeout(resolve, RELEASE_FADE_MS));
-      }
+      const frames = [{ transform: 'scale(0)', opacity: cycle.opacity }, { transform: 'scale(1)', opacity: cycle.opacity }];
+      const timing: KeyframeAnimationOptions = { duration: this.resolveGrowDuration(), easing: this.resolveGrowEasing(), fill: 'forwards' };
+      try { cycle.grow = wave.animate(frames, timing); }
+      catch { cycle.grow = wave.animate(frames, { ...timing, easing: EASING_STANDARD }); }
+      // A held wave can be cancelled before release attaches its await handler.
+      cycle.grow.finished?.catch(() => this.finishCycle(cycle));
     } catch {
-      /* animation cancelled */
+      this.finishCycle(cycle);
     }
-    wave.remove();
-    this.finishSettle();
+    return cycle;
+  }
+
+  private finishCycle(cycle: RippleCycle | null) {
+    if (!cycle || cycle.done) return;
+    cycle.done = true;
+    clearTimeout(cycle.fadeTimer);
+    cycle.finishLegacyFade?.();
+    cycle.grow?.cancel();
+    cycle.fade?.cancel();
+    cycle.wave.remove();
+    cycle.resolve();
+    if (this.cycle === cycle) {
+      this.clearReleaseListeners();
+      this.cycle = null;
+    }
+  }
+
+  private async endWave(cycle: RippleCycle | null) {
+    if (!cycle || cycle.done || cycle.released || !cycle.grow) return;
+    cycle.released = true;
+    try {
+      if (cycle.grow.playState !== 'finished') await cycle.grow.finished;
+      if (cycle.done) return;
+      cycle.fade = cycle.wave.animate(
+        [{ opacity: cycle.opacity }, { opacity: 0 }],
+        { duration: RELEASE_FADE_MS, easing: EASING_STANDARD, fill: 'forwards' },
+      );
+      if (typeof cycle.fade.finished?.then === 'function') await cycle.fade.finished;
+      else await new Promise<void>(resolve => {
+        cycle.finishLegacyFade = resolve;
+        cycle.fadeTimer = setTimeout(resolve, RELEASE_FADE_MS);
+      });
+    } catch {
+      // Cancellation is a completed visual cycle, not an unhandled rejection.
+    } finally {
+      this.finishCycle(cycle);
+    }
   }
 
   /** Programmatically trigger a centered ripple (for keyboard activations). */
   @Method()
   async trigger() {
-    if (this.disabled || this.rippleSuppressed()) return;
+    if (!this.connected || this.disabled || this.rippleSuppressed()) return;
 
     if (!this.hostEl) this.hostEl = this.resolveHost();
     const container = this.el.shadowRoot?.querySelector('.md-ripple') as HTMLElement;
     if (!container || !this.hostEl) return;
 
-    this.endWave();
+    this.clearReleaseListeners();
+    this.finishCycle(this.cycle);
 
     const rect = this.hostEl.getBoundingClientRect();
     const extendInline = this.resolveExtent('--md-ripple-extend-inline');
@@ -319,29 +362,8 @@ export class MdRipple {
     const radius = Math.sqrt(halfX * halfX + halfY * halfY);
     const size = radius * 2;
 
-    const wave = document.createElement('span');
-    wave.classList.add('md-ripple__wave');
-    wave.style.width = wave.style.height = `${size}px`;
-    wave.style.left = `${cx - radius}px`;
-    wave.style.top = `${cy - radius}px`;
-    container.appendChild(wave);
-    this.activeWave = wave;
-    this.activeOpacity = this.resolveOpacity();
-    this.beginSettle();
-
-    this.growAnimation = wave.animate(
-      [
-        { transform: 'scale(0)', opacity: this.activeOpacity },
-        { transform: 'scale(1)', opacity: this.activeOpacity },
-      ],
-      {
-        duration: this.resolveGrowDuration(),
-        easing: this.resolveGrowEasing(),
-        fill: 'forwards',
-      },
-    );
-
-    this.growAnimation.addEventListener('finish', () => this.endWave(), { once: true });
+    const cycle = this.startWave(container, size, cx - radius, cy - radius);
+    cycle.grow?.addEventListener('finish', () => { void this.endWave(cycle); }, { once: true });
   }
 
   render() {

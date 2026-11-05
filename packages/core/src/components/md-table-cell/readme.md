@@ -243,7 +243,7 @@ native `title` ("Pinned left" / "Pinned right") is fixed English, but it is
 | `--md-table-cell-padding-block` | Vertical padding | Cast by `md-table`, else `8px` |
 | `--md-table-cell-min-height` | Minimum cell height | Cast by the row/table, else `52px` |
 | `--md-table-cell-sticky-bg` | Pinned-cell background | Cast by `md-table-row` (stripe-aware), else `--md-sys-color-surface` |
-| `--md-table-cell-sticky-transition` | Pinned-cell background transition | `150ms` effects spring |
+| `--md-table-cell-sticky-transition` | Pinned-cell background transition (dropped under `prefers-reduced-motion: reduce`, like the row's) | `150ms` effects spring |
 | `--md-table-cell-pin-display` | Pin badge `display` | `inline-flex` |
 | `--md-table-cell-pin-color` | Pin badge colour | `--md-sys-color-primary` |
 | `--md-table-cell-pin-size` | Pin badge box | `16px` (SVG) / `14px` (ligature) |

@@ -1,0 +1,197 @@
+{
+ "tag": "md-icon-button",
+ "case": "disabled",
+ "request": {
+  "tag": "md-icon-button",
+  "properties": {
+   "aria-label": "Favorite",
+   "disabled": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Favorite",
+         "enabled": false,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          300,
+          32,
+          40,
+          40
+         ],
+         "identifier": "example-md-icon-button",
+         "invalid": "false",
+         "required": false,
+         "role": "AXCheckBox",
+         "roleDescription": "toggle button",
+         "selected": false,
+         "subrole": "AXToggle",
+         "value": false
+        }
+       ],
+       "enabled": false,
+       "frame": [
+        300,
+        32,
+        40,
+        40
+       ],
+       "identifier": "example-md-icon-button",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      104
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    104
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-icon-button",
+  "properties": {
+   "aria-label": "Favorite",
+   "buttonWidth": "default",
+   "connectedLeft": false,
+   "connectedRight": false,
+   "density": 0,
+   "disabled": true,
+   "groupTabindex": null,
+   "href": "",
+   "icon": "favorite",
+   "ripple": true,
+   "selected": false,
+   "selectedIcon": "favorite",
+   "shape": "round",
+   "shapeMorph": true,
+   "size": "sm",
+   "softDisabled": false,
+   "target": "_self",
+   "toggle": true,
+   "value": "",
+   "variant": "standard"
+  },
+  "tag": "md-icon-button"
+ },
+ "focus": [
+  {
+   "keyboardFocus": null,
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": null,
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 40,
+     "width": 40,
+     "x": 300,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI Button",
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "name": "md-icon-button"
+   },
+   {
+    "bounds": {
+     "height": 24,
+     "width": 24,
+     "x": 308,
+     "y": 40
+    },
+    "id": "component.icon",
+    "name": "md-icon-button ::part(icon)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 40,
+     "x": 300,
+     "y": 32
+    },
+    "id": "component.state-layer",
+    "name": "md-icon-button ::part(state-layer)",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

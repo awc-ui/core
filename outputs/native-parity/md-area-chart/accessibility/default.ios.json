@@ -1,0 +1,128 @@
+{
+ "tag": "md-area-chart",
+ "case": "default",
+ "elements": [
+  {
+   "class": "AccessibilityNode",
+   "containers": [
+    "semanticGroup:Monthly revenue, Area chart, with 2 series, from Jan to Jun."
+   ],
+   "depth": 7,
+   "frame": [
+    48,
+    254,
+    1,
+    1
+   ],
+   "label": "Native Canvas • tap to inspect",
+   "traits": [
+    "staticText"
+   ]
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Monthly revenue, Area chart, with 2 series, from Jan to Jun."
+   ],
+   "depth": 7,
+   "frame": [
+    438,
+    256,
+    77,
+    20.666666666666686
+   ],
+   "interactive": true,
+   "label": "Revenue",
+   "traits": [
+    "button",
+    "toggleButton"
+   ],
+   "value": "1"
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Monthly revenue, Area chart, with 2 series, from Jan to Jun."
+   ],
+   "depth": 7,
+   "frame": [
+    527,
+    256,
+    53,
+    20.666666666666686
+   ],
+   "interactive": true,
+   "label": "Cost",
+   "traits": [
+    "button",
+    "toggleButton"
+   ],
+   "value": "1"
+  },
+  {
+   "class": "AWCChartPlotFocusView",
+   "containers": [
+    "semanticGroup:Monthly revenue, Area chart, with 2 series, from Jan to Jun."
+   ],
+   "depth": 7,
+   "frame": [
+    48,
+    254,
+    544,
+    292
+   ],
+   "interactive": true,
+   "label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+   "traits": [
+    "adjustable"
+   ]
+  }
+ ],
+ "focus": [
+  {
+   "firstResponder": {
+    "class": "AWCChartPlotFocusView",
+    "frame": [
+     48,
+     254,
+     544,
+     292
+    ],
+    "interactive": true,
+    "label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+    "traits": [
+     "adjustable"
+    ]
+   }
+  },
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     438,
+     256,
+     77,
+     20.666666666666686
+    ],
+    "interactive": true,
+    "label": "Revenue",
+    "traits": [
+     "button",
+     "toggleButton"
+    ],
+    "value": "1"
+   }
+  }
+ ],
+ "id": "md-area-chart/default",
+ "image": {
+  "scale": 3,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "ios": "26.3.1",
+ "platform": "ios"
+}

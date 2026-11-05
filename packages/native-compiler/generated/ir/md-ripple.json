@@ -93,37 +93,31 @@
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 34
+      "line": 47
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 214
+      "line": 225
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 214
+      "line": 225
     },
     {
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 219
-    },
-    {
-      "code": "DOM_GLOBAL",
-      "severity": "warning",
-      "message": "Document access requires a native adapter.",
-      "line": 239
+      "line": 231
     },
     {
       "code": "DOM_MUTATION",
       "severity": "warning",
       "message": "classList depends on browser semantics and requires a native adapter.",
-      "line": 240
+      "line": 281
     }
   ],
   "source": {
@@ -131,7 +125,7 @@
     "styleUrl": "md-ripple.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "1640358ee5059a3240927395658064a226a9bf3ddcb29e7099361f2a961544d4"
+    "sha256": "8238372b61a01de9d0c5be51438ea6081b9916ba75431bb41e6fa0d07093a4df"
   },
   "styles": [
     {
@@ -278,19 +272,34 @@
         "disabled"
       ],
       "events": [],
-      "methods": [],
+      "methods": [
+        "trigger",
+        "whenSettled"
+      ],
       "slots": [],
       "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "whenSettled",
-        "trigger"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native pressed state feedback, not CSS radial ripple geometry."
+        "Dedicated native primitive: the surface decorator .awcRipple(…) / Modifier.awcRipple(…) (the composition md-ripple forms with its positioned parent) and the md-ripple node, with disabled, the six hooks (colour, opacity, both extents, grow duration and CSS easing text with the source's fallbacks) and the global --md-sys-ripple-enabled token.",
+        "Methods through AWCRippleController: trigger() starts a centred, self-releasing wave; whenSettled() keeps the source's 200 ms bound and never settles a later wave.",
+        "Only a primary press inside the rounded host shape starts a wave; the host's own gestures keep working. The origin is physical in RTL; a new press replaces the wave; disabling, losing the window/scene and leaving the hierarchy remove it.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Chrome oracles (paint, motion and behaviour); the ripple is hidden from assistive technologies."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcRippleAppearance(AWCRippleAppearance)",
+        "fields": [
+          "color",
+          "opacity",
+          "extendInline",
+          "extendBlock",
+          "growDuration",
+          "growEasing"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
@@ -298,20 +307,34 @@
         "disabled"
       ],
       "events": [],
-      "methods": [],
+      "methods": [
+        "trigger",
+        "whenSettled"
+      ],
       "slots": [],
       "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "whenSettled",
-        "trigger"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Uses the Compose ripple on a tappable native surface; standalone DOM ripple attachment has no native counterpart."
+        "Dedicated native primitive: the surface decorator .awcRipple(…) / Modifier.awcRipple(…) (the composition md-ripple forms with its positioned parent) and the md-ripple node, with disabled, the six hooks (colour, opacity, both extents, grow duration and CSS easing text with the source's fallbacks) and the global --md-sys-ripple-enabled token.",
+        "Methods through AWCRippleController: trigger() starts a centred, self-releasing wave; whenSettled() keeps the source's 200 ms bound and never settles a later wave.",
+        "Only a primary press inside the rounded host shape starts a wave; the host's own gestures keep working. The origin is physical in RTL; a new press replaces the wave; disabling, losing the window/scene and leaving the hierarchy remove it.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Chrome oracles (paint, motion and behaviour); the ripple is hidden from assistive technologies."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCRippleAppearanceScope(AWCRippleAppearance)",
+        "fields": [
+          "color",
+          "opacity",
+          "extendInline",
+          "extendBlock",
+          "growDuration",
+          "growEasing"
+        ]
+      }
     }
   }
 }

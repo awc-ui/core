@@ -28,6 +28,15 @@ export interface MdAccordionDragDetail {
 
 let _floatingZ = 1000;
 
+interface AccordionItemOwnership {
+  owner: MdAccordion;
+  authored?: Pick<HTMLMdAccordionItemElement, 'headingLevel' | 'regionRole' | 'collapsible'>;
+}
+
+// Preserve the original item contract across parent changes. A stale owner's
+// slotchange must not clear presentation or restore state over its successor.
+const itemOwnership = new WeakMap<HTMLMdAccordionItemElement, AccordionItemOwnership>();
+
 @Component({
   tag: 'md-accordion',
   styleUrl: 'md-accordion.css',
@@ -44,8 +53,8 @@ export class MdAccordion {
   @Prop({ reflect: true }) variant: 'filled' | 'outlined' = 'filled';
 
   /**
-   * Density scale: `0` (default, 56 dp headers), `-1` (48 dp),
-   * `-2` (40 dp).
+   * Density scale from `0` (default, 64 px minimum header) through `-4`
+   * (48 px). Each rung reduces the minimum by 4 px; content may be taller.
    */
   @Prop({ reflect: true }) density: 0 | -1 | -2 | -3 | -4 = 0;
 
@@ -139,13 +148,13 @@ export class MdAccordion {
   /**
    * Motion preset applied when items expand and collapse. The prop
    * is reflected so the item CSS can pick it up via
-   * `:host-context(md-accordion[transition="…"])`.
+   * direct-owner presentation attributes on each item.
    *
-   * - `expressive` (default) — full MD3 Expressive choreography:
-   *    asymmetric easing (decelerate-on-open, accelerate-on-close),
-   *    spring-spatial chevron rotation, container shape & elevation
-   *    morph, leading-icon FILL-axis swap. Use for hero surfaces,
-   *    settings shells, anything that wants to feel premium.
+   * - `expressive` (default) — coordinated emphasized height and corner
+   *    motion (350ms open / 250ms close), with spring-spatial chevron
+   *    rotation and a leading-icon FILL-axis swap. Surface tone,
+   *    opacity and elevation use shorter, non-overshooting effects.
+   *    Content is revealed in place.
    * - `standard` — MD3 standard easing (symmetric `emphasized`) with
    *    no spring overshoot. Container morph still happens. The
    *    "neutral" preset — good default for dense product UI.
@@ -153,9 +162,9 @@ export class MdAccordion {
    *    using shorter `standard` easing. Chevron rotates without a
    *    spring. Best for content-heavy panels (forms, long copy)
    *    where the motion should be unobtrusive.
-   * - `collapse` — pure height collapse with simple `ease-in-out`
-   *    timing — no spring, no morph, no fade. The classic
-   *    "browser disclosure" look.
+   * - `collapse` — height-led disclosure with `ease-out` on open and
+   *    `ease-in` on close. Corners follow the same timing; no spring
+   *    overshoot or content fade.
    * - `none` — disables every transition (instant snap). Useful for
    *    automated tests, screenshot harnesses, or environments where
    *    motion is undesirable.
@@ -214,6 +223,7 @@ export class MdAccordion {
 
   private items: HTMLMdAccordionItemElement[] = [];
   private originalOrder: HTMLMdAccordionItemElement[] = [];
+  private loaded = false;
   private dragState: {
     item: HTMLMdAccordionItemElement;
     pointerId: number;
@@ -234,7 +244,8 @@ export class MdAccordion {
   } | null = null;
 
   connectedCallback() {
-    this.collectItems();
+    if (this.loaded) this.syncItems();
+    else this.collectItems();
     this.el.addEventListener('pointerdown', this.onPointerDown);
     this.el.addEventListener(
       'mdItemRequestReorder',
@@ -249,10 +260,21 @@ export class MdAccordion {
       this.onKeyboardReorder as EventListener,
     );
     this.cancelDrag();
+    this.cancelChassisDrag();
+    for (const item of this.items) this.releaseItem(item);
+  }
+
+  componentWillLoad() {
+    this.collectItems();
+    // Establish the owning variant/preset before child styles are first
+    // resolved. Applying these only after hydration animates outlined tiles
+    // from the standalone filled shape on their initial paint.
+    this.syncOwnerPresentation();
   }
 
   componentDidLoad() {
     this.collectItems();
+    this.items.forEach(item => this.claimItem(item, true));
     this.originalOrder = [...this.items];
     // IMPORTANT: assign indexes BEFORE applying initial state. The
     // child `@Watch('expanded')` fires synchronously and emits
@@ -263,6 +285,7 @@ export class MdAccordion {
     this.assignIndexes();
     this.applyInitialState();
     this.syncChildren();
+    this.loaded = true;
     // Seed floating-mode position from the initial-x / initial-y props.
     if (this.floating) {
       this.chassisX = this.initialX;
@@ -275,6 +298,7 @@ export class MdAccordion {
 
   @Watch('floating')
   onFloatingChange(value: boolean) {
+    this.cancelChassisDrag();
     if (value) {
       this.chassisX = this.initialX;
       this.chassisY = this.initialY;
@@ -295,6 +319,7 @@ export class MdAccordion {
     // rest so the resulting state is internally consistent.
     let kept = false;
     this.items.forEach((it) => {
+      if (it.parentElement !== this.el) return;
       if (it.expanded) {
         if (kept) it.expanded = false;
         else kept = true;
@@ -304,10 +329,15 @@ export class MdAccordion {
 
   @Listen('mdItemToggle')
   onChildToggle(e: CustomEvent<{ expanded: boolean; index: number }>) {
-    const { expanded, index } = e.detail;
+    if (!this.ownsItemEvent(e)) return;
+    // The toggled item is identified by element: its `index` is -1 until this accordion assigns indexes (an item expanded
+    // through its property right after creation), and comparing indexes would collapse that item along with the others.
+    const source = e.target as HTMLMdAccordionItemElement;
+    const { expanded } = e.detail;
+    const index = e.detail.index >= 0 ? e.detail.index : this.items.indexOf(source);
     if (this.exclusive && expanded) {
-      this.items.forEach((it, i) => {
-        if (i !== index) it.expanded = false;
+      this.items.forEach((it) => {
+        if (it.parentElement === this.el && it !== source) it.expanded = false;
       });
     }
     // Recompute which item is locked-open after every state change, so
@@ -323,16 +353,21 @@ export class MdAccordion {
   onChildRequestFocus(
     e: CustomEvent<{ direction: 'next' | 'prev' | 'first' | 'last'; from: number }>,
   ) {
+    if (!this.ownsItemEvent(e)) return;
     const { direction, from } = e.detail;
-    if (this.items.length === 0) return;
+    const enabled = this.items.map((item, index) => item.disabled ? -1 : index).filter(index => index >= 0);
+    if (enabled.length === 0) return;
+    const first = enabled[0], last = enabled[enabled.length - 1];
     let target: number;
-    if (direction === 'first') target = 0;
-    else if (direction === 'last') target = this.items.length - 1;
-    else if (direction === 'next') target = (from + 1) % this.items.length;
-    else
-      target =
-        (from - 1 + this.items.length) % this.items.length;
-    this.items[target]?.focusHeader();
+    if (direction === 'first') target = first;
+    else if (direction === 'last') target = last;
+    else {
+      if (!Number.isInteger(from) || !this.items[from]) return;
+      target = direction === 'next'
+        ? enabled.find(index => index > from) ?? first
+        : [...enabled].reverse().find(index => index < from) ?? last;
+    }
+    this.items[target].focusHeader();
   }
 
   private collectItems() {
@@ -350,6 +385,81 @@ export class MdAccordion {
       }
     }
     this.items = out;
+  }
+
+  /** Inner accordions keep their own selection, focus and reorder state. */
+  private ownsItemEvent(event: Event): boolean {
+    const item = event.target as HTMLMdAccordionItemElement;
+    return event.target === this.el || (item.parentElement === this.el && this.items.includes(item));
+  }
+
+  private claimItem(item: HTMLMdAccordionItemElement, captureAuthored = false) {
+    const ownership = itemOwnership.get(item) ?? { owner: this };
+    ownership.owner = this;
+    if (captureAuthored && !ownership.authored) {
+      ownership.authored = { headingLevel: item.headingLevel, regionRole: item.regionRole, collapsible: item.collapsible };
+    }
+    itemOwnership.set(item, ownership);
+  }
+
+  private releaseItem(item: HTMLMdAccordionItemElement) {
+    const ownership = itemOwnership.get(item);
+    if (ownership?.owner !== this) return;
+    itemOwnership.delete(item);
+    if (ownership.authored) Object.assign(item, ownership.authored);
+    item.removeAttribute('data-index');
+    item.removeAttribute('data-chassis-handle');
+    for (const name of ['variant', 'elevation', 'transition', 'reorderable', 'dragging']) {
+      item.removeAttribute(`data-accordion-${name}`);
+    }
+    item.style.transform = '';
+    item.classList.remove('md-accordion-item--shifting', 'md-accordion-item--dragging');
+  }
+
+  private syncItems = () => {
+    if (!this.loaded) return;
+    const previous = this.items;
+    this.collectItems();
+    if (previous.length !== this.items.length || previous.some((item, index) => item !== this.items[index])) {
+      this.cancelDrag();
+    }
+    for (const item of previous) {
+      if (!this.items.includes(item)) this.releaseItem(item);
+    }
+    for (const item of this.items) {
+      this.claimItem(item, true);
+      if (!this.originalOrder.includes(item)) this.originalOrder.push(item);
+    }
+    this.assignIndexes();
+    this.onExclusiveChange(this.exclusive);
+    this.onKeepOneExpandedChange(this.keepOneExpanded);
+    this.syncChildren();
+  };
+
+  @Watch('reorderable')
+  onReorderableChange(value: boolean) {
+    if (!value) this.cancelDrag();
+    this.syncOwnerPresentation();
+  }
+
+  @Watch('variant')
+  @Watch('elevation')
+  @Watch('transition')
+  @Watch('chassisDragging')
+  syncOwnerPresentation() {
+    // Select the direct owner instead of any matching ancestor. This also
+    // works in engines without :host-context and keeps nested presets local.
+    for (const item of this.items) {
+      if (item.parentElement !== this.el) continue;
+      this.claimItem(item);
+      item.setAttribute('data-accordion-variant', this.variant);
+      item.setAttribute('data-accordion-elevation', String(this.elevation));
+      item.setAttribute('data-accordion-transition', this.transition);
+      if (this.reorderable) item.setAttribute('data-accordion-reorderable', '');
+      else item.removeAttribute('data-accordion-reorderable');
+      if (this.chassisDragging) item.setAttribute('data-accordion-dragging', '');
+      else item.removeAttribute('data-accordion-dragging');
+    }
   }
 
   private assignIndexes() {
@@ -370,6 +480,7 @@ export class MdAccordion {
    */
   private applyChassisHandleMarker() {
     this.items.forEach((it, i) => {
+      if (it.parentElement !== this.el) return;
       if (this.floating && i === 0) {
         it.setAttribute('data-chassis-handle', '');
       } else {
@@ -390,9 +501,11 @@ export class MdAccordion {
      ────────────────────────────────────────────────────────── */
 
   private onPointerDown = (e: PointerEvent) => {
-    if (e.button !== 0) return;
+    if (e.button !== 0 || this.dragState || this.chassisDragState) return;
 
     const path = e.composedPath() as Array<EventTarget & { dataset?: DOMStringMap }>;
+    const owner = path.find(node => (node as HTMLElement)?.tagName === 'MD-ACCORDION');
+    if (owner && owner !== this.el) return;
 
     // Item-reorder takes precedence — the per-item drag handle lives
     // INSIDE an item's shadow root and is matched by a data attribute.
@@ -477,7 +590,7 @@ export class MdAccordion {
     }
     this.el.addEventListener('pointermove', this.onPointerMove);
     this.el.addEventListener('pointerup', this.onPointerUp);
-    this.el.addEventListener('pointercancel', this.onPointerUp);
+    this.el.addEventListener('pointercancel', this.onItemPointerCancel);
 
     item.classList.add('md-accordion-item--dragging');
     this.items.forEach((it) => {
@@ -523,7 +636,7 @@ export class MdAccordion {
 
   private onChassisPointerMove = (e: PointerEvent) => {
     const s = this.chassisDragState;
-    if (!s) return;
+    if (!s || e.pointerId !== s.pointerId) return;
     const dx = e.clientX - s.startClientX;
     const dy = e.clientY - s.startClientY;
 
@@ -542,7 +655,7 @@ export class MdAccordion {
 
   private onChassisPointerUp = (e: PointerEvent) => {
     const s = this.chassisDragState;
-    if (!s) return;
+    if (!s || e.pointerId !== s.pointerId) return;
 
     this.el.removeEventListener('pointermove', this.onChassisPointerMove);
     this.el.removeEventListener('pointerup', this.onChassisPointerUp);
@@ -571,7 +684,7 @@ export class MdAccordion {
 
   private onPointerMove = (e: PointerEvent) => {
     const s = this.dragState;
-    if (!s) return;
+    if (!s || e.pointerId !== s.pointerId) return;
 
     const dy = e.clientY - s.startY;
     s.item.style.transform = `translateY(${dy}px)`;
@@ -627,11 +740,11 @@ export class MdAccordion {
 
   private onPointerUp = (e: PointerEvent) => {
     const s = this.dragState;
-    if (!s) return;
+    if (!s || e.pointerId !== s.pointerId) return;
 
     this.el.removeEventListener('pointermove', this.onPointerMove);
     this.el.removeEventListener('pointerup', this.onPointerUp);
-    this.el.removeEventListener('pointercancel', this.onPointerUp);
+    this.el.removeEventListener('pointercancel', this.onItemPointerCancel);
     try {
       this.el.releasePointerCapture(e.pointerId);
     } catch {
@@ -662,7 +775,7 @@ export class MdAccordion {
     if (!s) return;
     this.el.removeEventListener('pointermove', this.onPointerMove);
     this.el.removeEventListener('pointerup', this.onPointerUp);
-    this.el.removeEventListener('pointercancel', this.onPointerUp);
+    this.el.removeEventListener('pointercancel', this.onItemPointerCancel);
     this.items.forEach((it) => {
       it.style.transform = '';
       it.classList.remove('md-accordion-item--shifting');
@@ -672,6 +785,23 @@ export class MdAccordion {
     // and no flash between the drop and the re-layout.
     this.dropPlaceholder = null;
     this.dragState = null;
+    try { this.el.releasePointerCapture(s.pointerId); } catch { /* best-effort */ }
+  }
+
+  private onItemPointerCancel = (event: PointerEvent) => {
+    if (event.pointerId === this.dragState?.pointerId) this.cancelDrag();
+  };
+
+  private cancelChassisDrag() {
+    const state = this.chassisDragState;
+    this.el.removeEventListener('pointermove', this.onChassisPointerMove);
+    this.el.removeEventListener('pointerup', this.onChassisPointerUp);
+    this.el.removeEventListener('pointercancel', this.onChassisPointerUp);
+    this.chassisDragState = null;
+    this.chassisDragging = false;
+    if (state) {
+      try { this.el.releasePointerCapture(state.pointerId); } catch { /* best-effort */ }
+    }
   }
 
   private moveItem(from: number, to: number) {
@@ -696,8 +826,9 @@ export class MdAccordion {
   private onKeyboardReorder = (
     e: CustomEvent<{ direction: 'up' | 'down'; from: number }>,
   ) => {
-    if (!this.reorderable) return;
+    if (!this.reorderable || !this.ownsItemEvent(e)) return;
     const { direction, from } = e.detail;
+    if (!Number.isInteger(from) || !this.items[from] || this.items[from].disabled) return;
     const to = direction === 'up' ? from - 1 : from + 1;
     if (to < 0 || to >= this.items.length) return;
     this.moveItem(from, to);
@@ -767,8 +898,10 @@ export class MdAccordion {
 
   /** Push heading level and region role onto every child item. */
   private syncChildren() {
+    this.syncOwnerPresentation();
     const role = this.computeRegionRole();
     this.items.forEach((it) => {
+      if (it.parentElement !== this.el) return;
       it.headingLevel = this.headingLevel;
       it.regionRole = role;
     });
@@ -781,16 +914,17 @@ export class MdAccordion {
    * advertised as not-collapsible (aria-disabled + click guard).
    */
   private syncCollapsible() {
+    const items = this.items.filter(item => item.parentElement === this.el);
     if (!this.keepOneExpanded) {
-      this.items.forEach((it) => (it.collapsible = true));
+      items.forEach((it) => (it.collapsible = true));
       return;
     }
-    const openItems = this.items.filter((it) => it.expanded);
+    const openItems = items.filter((it) => it.expanded);
     if (openItems.length === 1) {
-      this.items.forEach((it) => (it.collapsible = it !== openItems[0]));
+      items.forEach((it) => (it.collapsible = it !== openItems[0]));
     } else {
       // Either zero (transient) or several — none locked open.
-      this.items.forEach((it) => (it.collapsible = true));
+      items.forEach((it) => (it.collapsible = true));
     }
   }
 
@@ -811,8 +945,9 @@ export class MdAccordion {
 
   @Watch('keepOneExpanded')
   onKeepOneExpandedChange(value: boolean) {
-    if (value && !this.items.some((it) => it.expanded)) {
-      const first = this.items.find((it) => !it.disabled);
+    const items = this.items.filter(item => item.parentElement === this.el);
+    if (value && !items.some((it) => it.expanded)) {
+      const first = items.find((it) => !it.disabled);
       if (first) first.expanded = true;
     }
     this.syncCollapsible();
@@ -849,7 +984,7 @@ export class MdAccordion {
             }}
           ></div>
         )}
-        <slot></slot>
+        <slot onSlotchange={this.syncItems}></slot>
       </Host>
     );
   }

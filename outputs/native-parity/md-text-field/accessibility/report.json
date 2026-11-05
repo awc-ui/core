@@ -1,0 +1,356 @@
+{
+ "tag": "md-text-field",
+ "at": "2026-10-29T11:11:43.095Z",
+ "rows": [
+  {
+   "case": "default",
+   "web": {
+    "elements": [
+     "textbox:Project name"
+    ],
+    "texts": [
+     "A name your team will recognize"
+    ],
+    "focus": [
+     "textbox:Project name"
+    ],
+    "contrast": {
+     "measured": 3,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "textbox:Project name"
+     ],
+     "texts": [
+      "A name your team will recognize"
+     ],
+     "announcements": [],
+     "focus": [
+      "textbox:Project name",
+      "textbox:Project name"
+     ],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "findings",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "textbox:Project name"
+     ],
+     "texts": [
+      "A name your team will recognize"
+     ],
+     "focus": [
+      "∅",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "focus",
+       "detail": "Tab order web [textbox:Project name] → ios [∅ | ∅]",
+       "status": "open"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "not-run"
+    }
+   }
+  },
+  {
+   "case": "filled",
+   "web": {
+    "elements": [
+     "textbox:Project name",
+     "button:Clear"
+    ],
+    "texts": [
+     "Visible to your team"
+    ],
+    "focus": [],
+    "contrast": {
+     "measured": 6,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "textbox:Project name",
+      "button:Clear"
+     ],
+     "texts": [
+      "Visible to your team"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 4
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "textbox:Project name",
+      "button:Clear"
+     ],
+     "texts": [
+      "Visible to your team"
+     ],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: textbox \"Project name\" target 502×26 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Clear\" target 40×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "not-run"
+    }
+   }
+  },
+  {
+   "case": "error",
+   "web": {
+    "elements": [
+     "textbox:Email",
+     "button:Clear",
+     "alert:"
+    ],
+    "texts": [
+     "Enter a valid email address"
+    ],
+    "focus": [],
+    "contrast": {
+     "measured": 6,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "findings",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "textbox:Email",
+      "button:Clear"
+     ],
+     "texts": [
+      "Enter a valid email address"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "state",
+       "web": {
+        "role": "textbox",
+        "name": "Email",
+        "states": {
+         "invalid": "true"
+        },
+        "value": "alex@"
+       },
+       "native": {
+        "role": "textbox",
+        "name": "Email",
+        "value": "alex@"
+       },
+       "detail": "textbox \"Email\" invalid: true → ∅",
+       "status": "open"
+      }
+     ],
+     "contrastMeasured": 4
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "textbox:Email",
+      "button:Clear"
+     ],
+     "texts": [
+      "Enter a valid email address"
+     ],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: textbox \"Email\" target 462×26 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Clear\" target 40×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "not-run"
+    }
+   }
+  },
+  {
+   "case": "required",
+   "web": {
+    "elements": [
+     "textbox:Project name"
+    ],
+    "texts": [
+     "A name your team will recognize"
+    ],
+    "focus": [],
+    "contrast": {
+     "measured": 3,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "textbox:Project name {\"required\":\"true\"}"
+     ],
+     "texts": [
+      "A name your team will recognize"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "textbox:Project name"
+     ],
+     "texts": [
+      "A name your team will recognize"
+     ],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "not-run"
+    }
+   }
+  },
+  {
+   "case": "disabled",
+   "web": {
+    "elements": [
+     "textbox:Project name",
+     "button:Clear"
+    ],
+    "texts": [
+     "A name your team will recognize"
+    ],
+    "focus": [],
+    "contrast": {
+     "measured": 0,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "findings",
+     "matched": 1,
+     "webElements": 2,
+     "nativeElements": 1,
+     "elements": [
+      "button:Clear {\"disabled\":\"true\"}"
+     ],
+     "texts": [
+      "AWC Native",
+      "A name your team will recognize"
+     ],
+     "announcements": [],
+     "focus": [
+      "∅",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "textbox",
+        "name": "Project name",
+        "states": {
+         "disabled": "true"
+        },
+        "value": "AWC Native"
+       },
+       "detail": "textbox \"Project name\" has no macos counterpart",
+       "status": "open"
+      },
+      {
+       "kind": "text-extra",
+       "detail": "macos exposes text Web does not: \"AWC Native\"",
+       "status": "open"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "textbox:Project name {\"disabled\":\"true\"}",
+      "button:Clear {\"disabled\":\"true\"}"
+     ],
+     "texts": [
+      "A name your team will recognize"
+     ],
+     "focus": [
+      "∅",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "not-run"
+    }
+   }
+  }
+ ]
+}

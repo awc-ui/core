@@ -2,9 +2,9 @@
    md-accordion-item — single expansible row inside <md-accordion>
    Built around the MD3 Expressive motion vocabulary: the panel
    uses the modern `grid-template-rows: 0fr ↔ 1fr` height trick
-   driven by asymmetric emphasized easing (decelerate-on-enter,
-   accelerate-on-exit), the chevron rotates on a spring, and the
-   leading icon swaps to Material Symbols' FILL axis when active.
+   with coordinated height and corner motion. Tone and opacity
+   use non-overshooting effects timing; the chevron retains a
+   small spatial spring.
 
    PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
      --md-accordion-item-container-color           Item background
@@ -119,29 +119,33 @@
   /* Follow a global `data-density` ancestor. The header height is content-
      floored by its block padding, so BOTH the min-height and the block padding
      ride density-scale (2px/rung on each padding edge); unchanged at density 0.
-     The parent md-accordion `density` prop (0|-1|-2) overrides via the
-     :host-context blocks below. */
+     The parent md-accordion density prop overrides the inherited scale;
+     an explicit item density takes precedence. */
   --_header-padding: var(--md-accordion-item-header-padding, max(4px, calc(16px + var(--md-sys-density-scale, 0) * 2px)) max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)));
   --_content-padding: var(--md-accordion-item-content-padding, max(8px, calc(20px + var(--md-sys-density-scale, 0) * 2px)) max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)));
   --_header-min-height: var(--md-accordion-item-header-min-height, max(40px, calc(64px + var(--md-sys-density-scale, 0) * 4px)));
 
-  /* MD3 asymmetric motion — open with emphasized-decelerate (the
-     content "settles into place"), close with emphasized-accelerate
-     (the content gets out of the way). This is a direct mapping of
-     the Material 3 Expressive Motion guidance. */
+  /* This surface stays on screen in both states. Use emphasized
+     easing for its resize in both directions, rather than an exit
+     curve that accelerates into a sudden stop. Corners and height
+     share one state-dependent timing; colors never use a spatial
+     spring (which can overshoot). Public duration overrides still
+     control the complete disclosure, including its effects. */
   --_expand-duration: var(--md-accordion-item-expand-duration, var(--md-sys-motion-duration-medium3, 350ms));
-  --_collapse-duration: var(--md-accordion-item-collapse-duration, var(--md-sys-motion-duration-short4, 200ms));
-  --_expand-easing: var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
-  --_collapse-easing: var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15));
+  --_collapse-duration: var(--md-accordion-item-collapse-duration, var(--md-sys-motion-duration-medium1, 250ms));
+  --_expand-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+  --_collapse-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+  --_motion-duration: var(--_collapse-duration);
+  --_motion-easing: var(--_collapse-easing);
+  --_effects-duration: min(var(--_motion-duration), var(--md-sys-motion-spring-effects-default-duration, 200ms));
+  --_effects-easing: var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.8, 0.34, 1));
+  --_current-shape: var(--_container-shape);
   --_state-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
   --_spring-easing: var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00));
   --_spring-duration: var(--md-sys-motion-spring-spatial-default-duration, 500ms);
 
-  /* Elevation — default to flat. The parent accordion's elevation
-     classes (.md-accordion--elevation-N) override these via
-     :host-context further down, so an `md-accordion[elevation="3"]`
-     wrapper propagates the shadow to every filled tile without any
-     extra wiring at the call-site. */
+  /* Elevation defaults to flat. Direct-owner attributes propagate the
+     parent elevation to its filled tiles without affecting nested groups. */
   --_elevation: var(--md-accordion-item-elevation, var(--md-sys-elevation-0, none));
   --_elevation-expanded: var(--md-accordion-item-elevation-expanded, var(--_elevation));
 
@@ -150,7 +154,7 @@
      handle that floats over the top-leading corner of the first item. */
   position: relative;
   background-color: var(--_container-color);
-  border-radius: var(--_container-shape);
+  border-radius: var(--_current-shape);
   box-sizing: border-box;
   font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
   box-shadow: var(--_elevation);
@@ -158,51 +162,53 @@
   /* The container itself morphs on expand: subtle radius lift +
      elevation change → "lifting off the page" affordance. */
   transition:
-    border-radius var(--_expand-duration) var(--_expand-easing),
-    background-color var(--_expand-duration) var(--_expand-easing),
-    box-shadow var(--_expand-duration) var(--_expand-easing);
-  will-change: border-radius;
+    border-radius var(--_motion-duration) var(--_motion-easing),
+    border-color var(--_effects-duration) var(--_effects-easing),
+    background-color var(--_effects-duration) var(--_effects-easing),
+    box-shadow var(--_effects-duration) var(--_effects-easing);
 }
 
 /* ── Inherit elevation from a filled parent accordion. Outlined parents
    draw the shadow on their own chassis instead. The expanded shadow is
    the next M3 elevation level for the classic "tile lifts when active"
    affordance. */
-:host-context(md-accordion.md-accordion--filled.md-accordion--elevation-1) {
+:host([data-accordion-variant="filled"][data-accordion-elevation="1"]) {
   --_elevation: var(--md-accordion-item-elevation, var(--md-sys-elevation-1));
   --_elevation-expanded: var(--md-accordion-item-elevation-expanded, var(--md-sys-elevation-2));
 }
-:host-context(md-accordion.md-accordion--filled.md-accordion--elevation-2) {
+:host([data-accordion-variant="filled"][data-accordion-elevation="2"]) {
   --_elevation: var(--md-accordion-item-elevation, var(--md-sys-elevation-2));
   --_elevation-expanded: var(--md-accordion-item-elevation-expanded, var(--md-sys-elevation-3));
 }
-:host-context(md-accordion.md-accordion--filled.md-accordion--elevation-3) {
+:host([data-accordion-variant="filled"][data-accordion-elevation="3"]) {
   --_elevation: var(--md-accordion-item-elevation, var(--md-sys-elevation-3));
   --_elevation-expanded: var(--md-accordion-item-elevation-expanded, var(--md-sys-elevation-4));
 }
-:host-context(md-accordion.md-accordion--filled.md-accordion--elevation-4) {
+:host([data-accordion-variant="filled"][data-accordion-elevation="4"]) {
   --_elevation: var(--md-accordion-item-elevation, var(--md-sys-elevation-4));
   --_elevation-expanded: var(--md-accordion-item-elevation-expanded, var(--md-sys-elevation-5));
 }
-:host-context(md-accordion.md-accordion--filled.md-accordion--elevation-5) {
+:host([data-accordion-variant="filled"][data-accordion-elevation="5"]) {
   --_elevation: var(--md-accordion-item-elevation, var(--md-sys-elevation-5));
   --_elevation-expanded: var(--md-accordion-item-elevation-expanded, var(--md-sys-elevation-5));
 }
 
 /* Inside an outlined chassis, items are flush — strip any item-level shadow
    so we don't double up with the chassis shadow. */
-:host-context(md-accordion.md-accordion--outlined) {
+:host([data-accordion-variant="outlined"]) {
   --_elevation: none;
   --_elevation-expanded: none;
 }
 
 :host(.md-accordion-item--expanded) {
+  --_motion-duration: var(--_expand-duration);
+  --_motion-easing: var(--_expand-easing);
   /* Blend the expanded radius back toward the resting one so
      `data-shape-morph="off"` / `shape-morph="off"` (§13 tokens.css) holds the
      tile at its resting corner instead of morphing on expand. Written at the
      USE site, not on --_container-shape-expanded itself, because the outlined
      variant legitimately sets both shapes to 0 and must stay square. */
-  border-radius: calc(var(--_container-shape) + var(--md-sys-shape-morph-enabled, 1) * (var(--_container-shape-expanded) - var(--_container-shape)));
+  --_current-shape: calc(var(--_container-shape) + var(--md-sys-shape-morph-enabled, 1) * (var(--_container-shape-expanded) - var(--_container-shape)));
   background-color: var(--md-accordion-item-container-color-expanded,
     var(--md-sys-color-surface-container, #F3EDF7));
   box-shadow: var(--_elevation-expanded);
@@ -212,9 +218,9 @@
    so the chassis can read as a single rounded rectangle. We override the
    internal radius custom props too so the header (and its state-layer) go
    square along with the host. */
-:host-context(md-accordion.md-accordion--outlined) {
-  --_container-shape: 0;
-  --_container-shape-expanded: 0;
+:host([data-accordion-variant="outlined"]) {
+  --_container-shape: 0px;
+  --_container-shape-expanded: 0px;
 
   border-radius: 0;
   background-color: var(--md-accordion-item-container-color, transparent);
@@ -267,12 +273,12 @@
      `inherit` resolves to the cascade parent's computed value (the h3 has
      no border-radius set, so it resolves to 0). Use the custom-prop chain
      directly instead. */
-  border-radius: var(--_container-shape);
+  border-radius: var(--_current-shape);
 
   transition:
-    background-color var(--_expand-duration) var(--_expand-easing),
-    color var(--_spring-duration) var(--_spring-easing),
-    border-radius var(--_expand-duration) var(--_expand-easing);
+    background-color var(--_effects-duration) var(--_effects-easing),
+    color var(--_effects-duration) var(--_effects-easing),
+    border-radius var(--_motion-duration) var(--_motion-easing);
 }
 
 /* State layer — separate element so we can animate opacity
@@ -283,7 +289,9 @@
   background-color: var(--_state-layer-color);
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--md-sys-motion-spring-effects-default-duration, 200ms) var(--_state-easing);
+  transition:
+    opacity var(--_effects-duration) var(--_effects-easing),
+    background-color var(--_effects-duration) var(--_effects-easing);
 }
 
 .md-accordion-item__header:hover .md-accordion-item__state-layer {
@@ -306,8 +314,8 @@
   /* When expanded, only round the TOP corners — the bottom edge meets the
      panel inside the host, so curved bottom corners would leave visible
      notches showing the host's container colour. */
-  border-start-start-radius: var(--_container-shape-expanded);
-  border-start-end-radius: var(--_container-shape-expanded);
+  border-start-start-radius: var(--_current-shape);
+  border-start-end-radius: var(--_current-shape);
   border-end-start-radius: 0;
   border-end-end-radius: 0;
 }
@@ -369,9 +377,9 @@
   touch-action: none;
   opacity: 0.55;
   transition:
-    opacity var(--_spring-duration) var(--_spring-easing),
+    opacity var(--_effects-duration) var(--_effects-easing),
     transform var(--_spring-duration) var(--_spring-easing),
-    color var(--_spring-duration) var(--_spring-easing);
+    color var(--_effects-duration) var(--_effects-easing);
 }
 .md-accordion-item__drag-handle:hover {
   opacity: 1;
@@ -391,18 +399,12 @@
   pointer-events: none;
 }
 
-/* Reveal only when the parent accordion has `reorderable`. The
-   prop is reflected so the attribute is reliably present. */
-:host-context(md-accordion[reorderable]) .md-accordion-item__drag-handle {
+/* Reveal only when the direct owner enables reordering. */
+:host([data-accordion-reorderable]) .md-accordion-item__drag-handle {
   display: inline-flex;
 }
 
-/* Disabled items can't be moved, so hide the handle.
-   `!important` is used to override the `:host-context(...)` rule
-   above — its `[reorderable]` attribute selector raises its
-   specificity above plain `:host(.class)` in some engines, so
-   without `!important` the handle would still appear on disabled
-   items inside reorderable accordions. */
+/* A disabled item never exposes a reorder handle. */
 :host(.md-accordion-item--disabled) .md-accordion-item__drag-handle {
   display: none !important;
 }
@@ -457,7 +459,7 @@
   touch-action: none;
   user-select: none;
   transition:
-    background-color var(--_spring-duration) var(--_spring-easing);
+    background-color var(--_effects-duration) var(--_effects-easing);
 }
 
 :host([data-chassis-handle]) .md-accordion-item__chassis-handle {
@@ -495,8 +497,8 @@
   pointer-events: none;
   transition:
     inline-size var(--_spring-duration) var(--_spring-easing),
-    opacity var(--_spring-duration) var(--_spring-easing),
-    background-color var(--_expand-duration) var(--_expand-easing);
+    opacity var(--_effects-duration) var(--_effects-easing),
+    background-color var(--_effects-duration) var(--_effects-easing);
 }
 
 /* Hover widens & brightens the pill for a tactile "you can grab
@@ -513,9 +515,8 @@
 
 /* While the panel is actually being dragged, lock the bar to its
    fullest state so the user sees the affordance they grabbed.
-   Chassis-drag state lives on the parent <md-accordion>, hence
-   `:host-context`. */
-:host-context(md-accordion.md-accordion--floating-dragging)
+   The direct owner mirrors its chassis-drag state onto this item. */
+:host([data-accordion-dragging])
   .md-accordion-item__chassis-handle-bar {
   opacity: 1;
   inline-size: 40px;
@@ -627,8 +628,8 @@
   flex-shrink: 0;
   color: var(--_icon-color);
   transition:
-    color var(--_spring-duration) var(--_spring-easing),
-    transform var(--_spring-duration) var(--_spring-easing);
+    color var(--_effects-duration) var(--_effects-easing),
+    transform var(--_motion-duration) var(--_spring-easing);
 }
 
 :host(.md-accordion-item--expanded) .md-accordion-item__leading {
@@ -644,7 +645,7 @@
      Material Symbols FILL axis from 0 to 1 — the icon literally
      "comes alive". */
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  transition: font-variation-settings var(--_spring-duration) var(--_spring-easing);
+  transition: font-variation-settings var(--_effects-duration) var(--_effects-easing);
 }
 
 :host(.md-accordion-item--expanded) .md-accordion-item__icon {
@@ -691,24 +692,13 @@
   /* Spring-spatial easing gives the chevron a touch of "overshoot"
      when it rotates — true MD3 Expressive motion. */
   transition:
-    transform var(--_spring-duration) var(--_spring-easing),
-    color var(--_spring-duration) var(--_spring-easing);
+    transform var(--_motion-duration) var(--_spring-easing),
+    color var(--_effects-duration) var(--_effects-easing);
 }
 
 :host(.md-accordion-item--expanded) .md-accordion-item__trailing {
   transform: rotate(180deg);
   color: var(--_icon-color-expanded);
-}
-
-/* RTL: chevron mirror so the rotated chevron still points "down"
-   when collapsed and "up" when expanded. */
-:host([dir="rtl"]) .md-accordion-item__trailing,
-:host-context([dir="rtl"]) .md-accordion-item__trailing {
-  transform: none;
-}
-:host([dir="rtl"].md-accordion-item--expanded) .md-accordion-item__trailing,
-:host-context([dir="rtl"]).md-accordion-item--expanded .md-accordion-item__trailing {
-  transform: rotate(180deg);
 }
 
 /* ==========================================================
@@ -724,17 +714,14 @@
   display: grid;
   grid-template-rows: 0fr;
   transition:
-    grid-template-rows var(--_collapse-duration) var(--_collapse-easing),
-    opacity var(--_collapse-duration) var(--_collapse-easing);
+    grid-template-rows var(--_motion-duration) var(--_motion-easing),
+    opacity var(--_effects-duration) var(--_effects-easing);
   opacity: 0;
 }
 
 :host(.md-accordion-item--expanded) .md-accordion-item__panel {
   grid-template-rows: 1fr;
   opacity: 1;
-  transition:
-    grid-template-rows var(--_expand-duration) var(--_expand-easing),
-    opacity var(--_expand-duration) var(--_expand-easing);
 }
 
 .md-accordion-item__content {
@@ -754,15 +741,9 @@
   font-weight: var(--md-sys-typescale-body-medium-font-weight, 400);
   line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
 
-  /* The inner content also slides down a few pixels — child motion
-     coordinated with parent motion ("staggered choreography" per
-     M3 Motion guidance). */
-  transform: translateY(-4px);
-  transition: transform var(--_expand-duration) var(--_expand-easing);
-}
-
-:host(.md-accordion-item--expanded) .md-accordion-item__content-inner {
-  transform: translateY(0);
+  /* The panel reveals the content in place. An extra translation
+     competes with the height motion and creates a containing block
+     for fixed overlays inside slotted controls. */
 }
 
 /* Capped, keyboard-accessible scroll region. When the `content-max-height`
@@ -802,13 +783,12 @@
    already consumes `--_expand-*`, `--_collapse-*`, and
    `--_spring-*`, so the presets propagate everywhere without
    touching individual rules. A small handful of structural
-   tweaks (suppress the inner translateY for `fade`, lock panel
-   opacity at 1 for `collapse`, hard-disable transitions for
+   tweaks (lock panel opacity at 1 for `collapse`, hard-disable transitions for
    `none`) finish the picture.
    ========================================================== */
 
 /* ── Standard — MD3 symmetric `emphasized`, no spring overshoot ── */
-:host-context(md-accordion[transition='standard']) {
+:host([data-accordion-transition="standard"]) {
   --_expand-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
   --_collapse-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
   --_spring-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
@@ -818,10 +798,9 @@
   --_collapse-duration: var(--md-accordion-item-collapse-duration, var(--md-sys-motion-duration-medium2, 300ms));
 }
 
-/* ── Fade — opacity-led, suppress the inner translateY so the
-       motion reads as a clean cross-fade. Shorter, "standard"
+/* ── Fade — opacity-led. Shorter, "standard"
        easing keeps the height movement quiet. ── */
-:host-context(md-accordion[transition='fade']) {
+:host([data-accordion-transition="fade"]) {
   --_expand-easing: var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
   --_collapse-easing: var(--md-sys-motion-easing-standard, cubic-bezier(0.4, 0, 1, 1));
   --_spring-easing: var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
@@ -830,16 +809,12 @@
   --_expand-duration: var(--md-accordion-item-expand-duration, var(--md-sys-motion-duration-medium2, 300ms));
   --_collapse-duration: var(--md-accordion-item-collapse-duration, var(--md-sys-motion-duration-short4, 200ms));
 }
-:host-context(md-accordion[transition='fade']) .md-accordion-item__content-inner {
-  /* Drop the staggered translate so only opacity reads */
-  transform: none;
-}
 
 /* ── Collapse — pure height collapse with neutral easing. Lock the
        panel opacity at 1 so there is no fade, only height. The
        chevron and leading icon still rotate, but with the same
        neutral easing — no spring overshoot. ── */
-:host-context(md-accordion[transition='collapse']) {
+:host([data-accordion-transition="collapse"]) {
   --_expand-easing: cubic-bezier(0, 0, 0.2, 1); /* ease-out */
   --_collapse-easing: cubic-bezier(0.4, 0, 1, 1); /* ease-in */
   --_spring-easing: cubic-bezier(0, 0, 0.2, 1);
@@ -848,23 +823,20 @@
   --_expand-duration: var(--md-accordion-item-expand-duration, var(--md-sys-motion-duration-medium2, 300ms));
   --_collapse-duration: var(--md-accordion-item-collapse-duration, var(--md-sys-motion-duration-medium2, 300ms));
 }
-:host-context(md-accordion[transition='collapse']) .md-accordion-item__panel,
-:host-context(md-accordion[transition='collapse'].md-accordion-item--expanded)
+:host([data-accordion-transition="collapse"]) .md-accordion-item__panel,
+:host([data-accordion-transition="collapse"].md-accordion-item--expanded)
   .md-accordion-item__panel {
   opacity: 1;
-}
-:host-context(md-accordion[transition='collapse']) .md-accordion-item__content-inner {
-  transform: none;
 }
 
 /* ── None — instant. Hard-disable transitions and animations on
        both the host and every internal element. The panel still
        expands/collapses (the `grid-template-rows` value flips),
        but it flips without animation. ── */
-:host-context(md-accordion[transition='none']),
-:host-context(md-accordion[transition='none']) *,
-:host-context(md-accordion[transition='none']) *::before,
-:host-context(md-accordion[transition='none']) *::after {
+:host([data-accordion-transition="none"]),
+:host([data-accordion-transition="none"]) *,
+:host([data-accordion-transition="none"]) *::before,
+:host([data-accordion-transition="none"]) *::after {
   transition: none !important;
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;
@@ -875,14 +847,10 @@
    ========================================================== */
 @media (prefers-reduced-motion: reduce) {
   :host,
-  .md-accordion-item__header,
-  .md-accordion-item__state-layer,
-  .md-accordion-item__leading,
-  .md-accordion-item__icon,
-  .md-accordion-item__trailing,
-  .md-accordion-item__panel,
-  .md-accordion-item__content {
-    transition-duration: 0.01ms !important;
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
     animation: none !important;
   }
   :host(.md-accordion-item--expanded) .md-accordion-item__leading {

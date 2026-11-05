@@ -9,6 +9,7 @@ import {
   Event,
   EventEmitter,
   Method,
+  forceUpdate,
 } from '@stencil/core';
 
 /**
@@ -23,6 +24,9 @@ export interface MdBreadcrumbsExpandDetail {
   itemCount: number;
 }
 
+/**
+ * @csspart separator - Separator glyph drawn before the overflow toggle (each crumb draws its own `separator` part)
+ */
 @Component({
   tag: 'md-breadcrumbs',
   styleUrl: 'md-breadcrumbs.css',
@@ -90,6 +94,15 @@ export class MdBreadcrumbs {
   @State() private expanded: boolean = false;
   @State() private itemCount = 0;
 
+  /** The crumb this component promoted to `current` (not one the author marked). */
+  private autoCurrent: HTMLMdBreadcrumbItemElement | null = null;
+  /** Crumbs this component moved into the tail slot (after the overflow toggle). */
+  private tailStamped = new WeakSet<HTMLElement>();
+  /** Internal slot that places the crumbs after the collapsed section AFTER the toggle in
+   *  DOM (and so in Tab and reading) order, not only visually. */
+  private static readonly TAIL_SLOT = 'collapse-tail';
+  private currentObserver?: MutationObserver;
+
   componentWillLoad() {
     // Seed itemCount + collapsed/index/total props on items BEFORE the
     // first render so we don't trigger Stencil's "state changed during
@@ -99,10 +112,35 @@ export class MdBreadcrumbs {
   }
 
   componentDidLoad() {
-    const main = this.el.shadowRoot?.querySelector(
-      'slot:not([name])',
-    ) as HTMLSlotElement | null;
-    main?.addEventListener('slotchange', () => this.refreshItems());
+    // Both slots: a crumb removed (or re-slotted) from the tail only changes the tail slot.
+    this.el.shadowRoot?.querySelectorAll('slot').forEach((slot) =>
+      slot.addEventListener('slotchange', () => this.refreshItems()));
+    this.observeCurrent();
+  }
+
+  connectedCallback() {
+    // Re-attach after a reparent (componentDidLoad does not run again).
+    if (this.el.shadowRoot?.querySelector('ol')) this.observeCurrent();
+  }
+
+  disconnectedCallback() {
+    this.currentObserver?.disconnect();
+    this.currentObserver = undefined;
+  }
+
+  /** An author marking (or unmarking) a crumb `current` at runtime changes which crumb
+   *  is the current page without a slotchange; re-run the promotion when it happens.
+   *  The component's own writes converge after one extra pass (nothing changes). */
+  private observeCurrent() {
+    if (this.currentObserver || typeof MutationObserver === 'undefined') return;
+    this.currentObserver = new MutationObserver(() => this.refreshItems());
+    this.currentObserver.observe(this.el, { subtree: true, attributes: true, attributeFilter: ['current'] });
+  }
+
+  @Watch('separator')
+  onSeparatorChange() {
+    // Each crumb draws its own leading separator from this prop at render time.
+    this.collectItems().forEach((item) => forceUpdate(item));
   }
 
   @Watch('maxItems')
@@ -122,12 +160,22 @@ export class MdBreadcrumbs {
     // Auto-promote the last item to current unless a non-last item
     // has been explicitly marked current by the consumer.
     const manualOverride = items.some(
-      (it, i) => it.current && i !== items.length - 1,
+      (it, i) => it.current && i !== items.length - 1 && it !== this.autoCurrent,
     );
     if (!manualOverride && items.length > 0) {
       items.forEach((it, i) => {
         it.current = i === items.length - 1;
       });
+      this.autoCurrent = items[items.length - 1];
+    } else if (manualOverride) {
+      // The author's choice wins: withdraw the promotion this component made earlier,
+      // so the trail never exposes two `aria-current="page"` crumbs.
+      if (this.autoCurrent && this.autoCurrent.current && items.includes(this.autoCurrent)) {
+        this.autoCurrent.current = false;
+      }
+      this.autoCurrent = null;
+    } else {
+      this.autoCurrent = null;
     }
     this.applyVisibility(items);
   }
@@ -159,6 +207,7 @@ export class MdBreadcrumbs {
       items.forEach((it) => {
         it.collapsed = false;
         it.style.removeProperty('order');
+        this.setTail(it, false);
       });
       return;
     }
@@ -177,12 +226,56 @@ export class MdBreadcrumbs {
       } else {
         it.style.removeProperty('order');
       }
+      this.setTail(it, fromEnd);
     });
   }
 
+  /** Move a crumb into (or back out of) the tail slot rendered after the overflow toggle.
+   *  CSS `order` alone only moved the crumbs visually: Tab and screen readers still met
+   *  the toggle after the last crumb ("Home, Roadmap, Q3 plan, Show full trail"). */
+  private setTail(it: HTMLElement, tail: boolean) {
+    if (tail) {
+      if (it.getAttribute('slot') !== MdBreadcrumbs.TAIL_SLOT) it.setAttribute('slot', MdBreadcrumbs.TAIL_SLOT);
+      this.tailStamped.add(it);
+    } else if (this.tailStamped.has(it)) {
+      this.tailStamped.delete(it);
+      if (it.getAttribute('slot') === MdBreadcrumbs.TAIL_SLOT) it.removeAttribute('slot');
+    }
+  }
+
   private toggleExpanded = () => {
+    const firstRevealed = this.collectItems().findIndex((it) => it.collapsed);
     this.setExpanded(!this.expanded);
+    // The toggle removes itself from the DOM once the trail is expanded. Move focus to
+    // the first revealed crumb that can take it (or the next one after it) instead of
+    // dropping it on <body>.
+    if (this.expanded && firstRevealed >= 0) this.focusFrom(firstRevealed, 3);
   };
+
+  private focusFrom(start: number, frames: number) {
+    const attempt = () => {
+      const items = this.collectItems();
+      // Crumbs re-render asynchronously after `collapsed` flips: wait (a few frames at
+      // most) until the first revealed crumb shows its content again.
+      const ready = items[start]?.shadowRoot?.querySelector('a, [part~="static"]');
+      if (!ready) {
+        if (frames > 0 && typeof requestAnimationFrame === 'function') {
+          frames -= 1;
+          requestAnimationFrame(attempt);
+        }
+        return;
+      }
+      for (let i = start; i < items.length; i += 1) {
+        const link = items[i].shadowRoot?.querySelector('a') as HTMLElement | null;
+        if (link) {
+          link.focus();
+          return;
+        }
+      }
+    };
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(attempt);
+    else attempt();
+  }
 
   private setExpanded(next: boolean) {
     if (this.expanded === next) return;
@@ -192,9 +285,9 @@ export class MdBreadcrumbs {
   }
 
   /**
-   * Programmatically reveal the full breadcrumb trail. Has no effect when
-   * `maxItems` is `0` (collapsing disabled) or when the trail is already
-   * expanded. Emits `mdExpand` when the state changes.
+   * Programmatically reveal the full breadcrumb trail. No-op when the trail
+   * is already expanded. When `maxItems` is `0` (collapsing disabled) nothing
+   * visible changes, but the state still flips and `mdExpand` still fires.
    */
   @Method()
   async expand(): Promise<void> {
@@ -203,9 +296,9 @@ export class MdBreadcrumbs {
 
   /**
    * Programmatically re-collapse the trail to the configured
-   * before/after window. Has no effect when collapsing is disabled or
-   * when the trail is already collapsed. Emits `mdExpand` when the state
-   * changes.
+   * before/after window. No-op when the trail is already collapsed. When
+   * `maxItems` is `0` (collapsing disabled) nothing visible changes, but the
+   * state still flips and `mdExpand` still fires.
    */
   @Method()
   async collapse(): Promise<void> {
@@ -273,6 +366,7 @@ export class MdBreadcrumbs {
               </button>
             </li>
           )}
+          <slot name={MdBreadcrumbs.TAIL_SLOT}></slot>
         </ol>
       </Host>
     );

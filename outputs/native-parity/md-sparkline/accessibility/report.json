@@ -1,0 +1,120 @@
+{
+ "tag": "md-sparkline",
+ "at": "2026-10-30T02:47:33.325Z",
+ "rows": [
+  {
+   "case": "default",
+   "web": {
+    "elements": [
+     "img:Sparkline, latest 8, range 3 to 9.",
+     "Canvas:"
+    ],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 0,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 2,
+     "nativeElements": 1,
+     "elements": [
+      "img:Sparkline, latest 8, range 3 to 9."
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "Canvas",
+        "name": ""
+       },
+       "detail": "Canvas \"\" has no macos counterpart",
+       "status": "expected",
+       "reason": "Web exposes the unnamed <canvas> the plot is drawn on. Native charts draw the plot without an element of their own; its accessible content is the plot element (name, cursor value) and the chart data."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 2,
+     "nativeElements": 1,
+     "elements": [
+      "img:Sparkline, latest 8, range 3 to 9."
+     ],
+     "texts": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "Canvas",
+        "name": ""
+       },
+       "detail": "Canvas \"\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Web exposes the unnamed <canvas> the plot is drawn on. Native charts draw the plot without an element of their own; its accessible content is the plot element (name, cursor value) and the chart data."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 2,
+     "nativeElements": 1,
+     "elements": [
+      "img:Sparkline, latest 8, range 3 to 9."
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "Canvas",
+        "name": ""
+       },
+       "detail": "Canvas \"\" has no android counterpart",
+       "status": "expected",
+       "reason": "Web exposes the unnamed <canvas> the plot is drawn on. Native charts draw the plot without an element of their own; its accessible content is the plot element (name, cursor value) and the chart data."
+      }
+     ],
+     "contrastMeasured": 0,
+     "atf": {
+      "elements": 8,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

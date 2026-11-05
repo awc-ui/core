@@ -101,6 +101,7 @@ interface MdTransferListItem {
   move-left-label="Move selected to source"
   move-all-right-label="Move all to target"
   move-all-left-label="Move all to source"
+  select-all-label="Select all {title}"   <!-- {title} = that column's title -->
 ></md-transfer-list>
 ```
 
@@ -166,6 +167,16 @@ element), `header`, `header-title`, `count`, `search`, `list`, `item`, `empty`,
   non-disabled item on that side.
 - **Neither kind of move ever touches a `disabled` item.**
 - Check state is tracked **per side** and is cleared for that side after a move.
+  A check also ends when its item leaves the side any other way — a controlled
+  `value` that moves it across, or an `items` update that drops it — so it never
+  reappears checked when the item comes back.
+- **Only `mdChange` and `mdMove` leave the host.** The nested search fields,
+  select-all checkboxes and mover buttons are internals; their own `mdInput`,
+  `mdSearch`, `mdChange`, `mdClear` and `mdClick` events are contained, so a
+  host `mdChange` listener always receives the `string[]` target set. Native
+  composed events are not custom API and still bubble out retargeted to the
+  host, as from every field-bearing component: `click`, and an `input` per
+  keystroke in a search field. Do not bind `input` as a value event.
 - **A move replaces `value` with a brand-new array** — it is never mutated in
   place — and then emits `mdChange` followed by `mdMove`, both carrying that
   new array. Because the reference changes, React/Vue consumers can store
@@ -357,8 +368,10 @@ padding, the title/description type and the empty-state glyph, shrinks the mover
 buttons from 40px to 24px, and is forwarded to the two search `md-text-field`s.
 
 **i18n** — every string is a prop: `source-title`, `target-title`, both search
-placeholders, `empty-text`, `count-template`, and the four `move-*-label`s.
-`count-template` interpolates `{checked}` and `{total}` — keep both tokens when
+placeholders, `empty-text`, `count-template`, the four `move-*-label`s and
+`select-all-label` (the select-all checkboxes' accessible name, default
+`"Select all {title}"`). `count-template` interpolates `{checked}` and `{total}`,
+and `select-all-label` interpolates `{title}` — keep the tokens when
 translating. Per the house i18n approach, resolve these from your dictionary in
 the consumer layer rather than inside the component.
 
@@ -441,6 +454,7 @@ is populated, and movements run on the `motion-emphasized` curve.
 | `moveRightLabel`          | `move-right-label`          | Accessible label for the > button (localisable). NB: deliberately NOT an `aria-*`-prefixed attribute — a custom attribute in the aria namespace is invalid ARIA (axe aria-valid-attr). | `string`                    | `'Move selected to target'`     |
 | `searchIcon`              | `search-icon`               | Material Symbols glyph for the search fields' leading icon ('' = none).                                                                                                                | `string`                    | `'search'`                      |
 | `searchable`              | `searchable`                | Render search inputs above each list.                                                                                                                                                  | `boolean`                   | `true`                          |
+| `selectAllLabel`          | `select-all-label`          | Accessible label for each header's select-all checkbox (localisable). `{title}` is replaced with that column's title.                                                                  | `string`                    | `'Select all {title}'`          |
 | `showSelectAll`           | `show-select-all`           | Show the "select all" select-all checkbox in each header.                                                                                                                                  | `boolean`                   | `true`                          |
 | `singleStepOnly`          | `single-step-only`          | Show only the >/< buttons (drop >>/<< "move all").                                                                                                                                     | `boolean`                   | `false`                         |
 | `sourceSearchPlaceholder` | `source-search-placeholder` | Source-side search placeholder.                                                                                                                                                        | `string`                    | `'Search choices'`              |

@@ -1,0 +1,194 @@
+{
+ "tag": "md-checkbox",
+ "case": "checked",
+ "request": {
+  "tag": "md-checkbox",
+  "properties": {
+   "aria-label": "Receive updates",
+   "checked": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "actions": [
+        "AXPress"
+       ],
+       "description": "Receive updates",
+       "enabled": true,
+       "expanded": false,
+       "focused": false,
+       "frame": [
+        296,
+        32,
+        48,
+        48
+       ],
+       "identifier": "example-md-checkbox",
+       "invalid": "false",
+       "required": false,
+       "role": "AXCheckBox",
+       "roleDescription": "checkbox",
+       "selected": true,
+       "value": true
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      112
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    112
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "F76A7A76-AD18-44D4-8144-06D7EEEB9C6C",
+    "properties": {
+     "text": "Receive project updates"
+    },
+    "tag": "#text"
+   }
+  ],
+  "id": "example-md-checkbox",
+  "properties": {
+   "aria-label": "Receive updates",
+   "checked": true,
+   "density": 0,
+   "disabled": false,
+   "error": false,
+   "errorText": "",
+   "indeterminate": false,
+   "name": "",
+   "required": false,
+   "softDisabled": false,
+   "supportingText": "",
+   "value": "updates",
+   "valueMissingLabel": "Please check this box if you want to proceed."
+  },
+  "tag": "md-checkbox"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 48,
+     "width": 48,
+     "x": 296,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "active": false,
+     "checked": true,
+     "containerColor": [
+      0.40392154455184937,
+      0.3137255012989044,
+      0.6431372761726379,
+      1
+     ],
+     "containerSize": 18,
+     "containerX": 15,
+     "focusRing": false,
+     "focusVisible": false,
+     "focused": false,
+     "glyph": "check",
+     "glyphOpacity": 1,
+     "glyphScale": 1,
+     "hostHeight": 48,
+     "hover": false,
+     "iconColor": [
+      1,
+      1,
+      1,
+      1
+     ],
+     "iconOpacity": 1,
+     "iconSize": 18,
+     "indeterminate": false,
+     "layerColor": [
+      0.40392154455184937,
+      0.3137255012989044,
+      0.6431372761726379,
+      1
+     ],
+     "layerOpacity": 0,
+     "outlineColor": [
+      0.40392154455184937,
+      0.3137255012989044,
+      0.6431372761726379,
+      1
+     ],
+     "outlineWidth": 2,
+     "pressed": false,
+     "renderTime": 1031515152.2940836,
+     "ringOffset": -4,
+     "scale": 1,
+     "stateLayerSize": 40,
+     "support": "",
+     "supportColor": [
+      0.2862744927406311,
+      0.2705882489681244,
+      0.30980393290519714,
+      1
+     ],
+     "supportWidth": 0,
+     "supportX": 0,
+     "supportY": 0,
+     "tabindex": 0,
+     "targetColor": null,
+     "touch": 48,
+     "waveOpacity": 0,
+     "waveScale": null
+    },
+    "name": "md-checkbox"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

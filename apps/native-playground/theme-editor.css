@@ -12,9 +12,12 @@
   --md-card-outline-color: var(--border);
   --md-card-container-shape: 12px;
   display: block;
+  isolation: isolate;
   margin-top: 26px;
   min-width: 0;
 }
+/* Keep the card's outline above the tabs' positioned backgrounds and indicator. */
+#theme-sheet .theme-export-card::part(outline) { z-index: 2; }
 #theme-sheet .theme-export { display: block; min-width: 0; }
 #theme-sheet .theme-export-heading { padding: 16px 16px 12px; }
 #theme-sheet .theme-export-heading h3,

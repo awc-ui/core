@@ -1,4 +1,10 @@
-import { recipePropertyValues } from './usage-snippets.js';
+import { nativeCanvasHeight, nativeLayoutNeedsRender, supportsNativeViewportTag } from './native-viewport.js';
+import { updateSplitButtonChecked } from './split-button-state.js';
+import { defaultSegmentedContext, segmentedParentProperties, SEGMENTED_PARENT_PROPERTIES, updateSegmentedSelection } from './segmented-context.js';
+import { setFabMenuOpen, updateFabMenuState } from './fab-menu-state.js';
+import { handleNativePreviewKeyDown, nativePreviewKeyboardPolicy } from './native-preview-keys.js';
+import { updateButtonGroupSelection } from './button-group-state.js';
+import { recipeButtonGroupChildren, recipeContextAttributes, recipePropertyValues } from './usage-snippets.js';
 import { encodeLiteralChoice, literalChoiceLabel, portabilityFindings, createLatestRequest, nativeRenderRequest, nativeViewportWidth, nativePreviewTarget, nativeLiveEndpoint, createNativeSessionCoordinator, createNativeLiveClient, createNativePointerInput, nativeImagePoint, nativeTextChunks } from './contracts.js';
 import { recipeFor, categoryFor, displayName } from './recipes.js';
 import { mergeComponentDocumentation, memberDocumentation } from './documentation.js';
@@ -7,11 +13,16 @@ import { propertyEditor, parsePropertyInput } from './property-controls.js';
 import { createStudioUI, createCoverageUI } from './studio-ui.js';
 import { createAIInstructionsUI } from './ai-instructions-ui.js';
 import { createComponentNavigation, filterDocumentationNavigation } from './component-navigation-ui.js';
+import { initializePreviewFrame } from './preview-frame.js';
+import { nativeButtonSelection, setButtonSelection } from './button-configuration.js';
+import { meterThemeOptions } from './meter-configuration.js';
+import { dispatchRetainedPropertyEdit, supportsRetainedPropertyUpdates } from './native-property-updates.js';
+import { COMPONENT_APPEARANCES, componentAppearance, componentAppearanceOptions } from './component-appearance.js';
 
 const $ = selector => document.querySelector(selector);
 const state = { components: [], selected: null, platform: 'web', docSection: 'usage', propertiesSection: 'properties', propertiesScroll: {}, snippetLanguage: 'html', props: {}, events: [], catalog: null, ready: false, target: null };
-const documentationUI = createDocumentationUI({ getState: () => state, notify: toast, afterInteraction: syncReferenceState, onAppearanceChange: () => scheduleNativeRender(400), onContentChange: () => scheduleNativeRender(), watchEvents: () => { selectStudioSection('events'); $('.inspector-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
-const studioUI = createStudioUI({ getState: () => state, notify: toast, onLayoutChange: patch => { if ('direction' in patch || 'width' in patch) scheduleNativeRender(); }, onThemeChange: () => scheduleNativeRender(400) });
+const documentationUI = createDocumentationUI({ getState: () => state, notify: toast, afterInteraction: syncReferenceState, onAppearanceChange: () => scheduleNativeRender(400), invokeNativeMethod: (method, args) => nativeLive.invoke(method, args), onContentChange: () => scheduleNativeRender(), onPreviewContextChange: () => { renderPreview(); renderProperties(); }, watchEvents: () => { selectStudioSection('events'); $('.inspector-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
+const studioUI = createStudioUI({ getState: () => state, notify: toast, onLayoutChange: updateNativeLayout, onThemeChange: () => scheduleNativeRender(400) });
 const coverageUI = createCoverageUI({ getState: () => state, notify: toast });
 const aiInstructionsUI = createAIInstructionsUI({ getState: () => state, notify: toast });
 const componentNavigation = createComponentNavigation({ container: $('#component-list'), onSelect: tag => { selectNativeScenario(''); location.hash = tag; } });
@@ -34,7 +45,6 @@ function nativeClientFor(platform) {
 }
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const text = (selector, value) => { if ($(selector)) $(selector).textContent = String(value ?? ''); };
-const libraryStatus = (label, status, live = false) => { $('#compiler-status').innerHTML = `<md-status-dot inline size="small" state="${status}"${live ? ' live' : ''}></md-status-dot><span>${escape(label)}</span>`; };
 
 function parseDefault(value) {
   if (value === undefined || value === 'undefined') return undefined;
@@ -90,7 +100,6 @@ async function init() {
     });
     state.ready = runtimeResult.status === 'fulfilled';
     text('#component-count', state.navigation.total);
-    libraryStatus(state.ready ? state.catalog ? 'Library connected' : 'Source manifest only' : 'Web runtime unavailable', state.ready ? state.catalog ? 'online' : 'away' : 'offline', state.ready && !!state.catalog);
     text('#pipeline-state', state.catalog ? `${generated.size} contracts · ${state.components.reduce((count, component) => count + portabilityFindings(component).total, 0)} findings` : 'Run native:build to inspect output');
     const hashTag = location.hash.slice(1);
     const requestedExample = new URLSearchParams(location.search).get('example');
@@ -103,7 +112,6 @@ async function init() {
   } catch (error) {
     $('#component-list').innerHTML = `<p class="load-error">${escape(error.message)}</p>`;
     $('#preview-content').innerHTML = `<p class="load-error">${escape(error.message)}</p>`;
-    libraryStatus('Source unavailable', 'offline');
   }
 }
 
@@ -113,7 +121,8 @@ function bindEvents() {
   window.addEventListener('pagehide', () => { disposeNativePointer(); nativeRequests.cancel(); clearTimeout(state.nativeRenderTimer); nativeLive.stop(); });
   window.addEventListener('pageshow', event => { if (event.persisted && isNativePlatform(state.platform)) renderPreview(); });
   document.addEventListener('visibilitychange', () => nativeLive.setVisible(!document.hidden));
-  $('#reset').addEventListener('click', () => { selectComponent(state.selected.tag); toast('Component properties reset'); });
+  $('#reset').addEventListener('click', () => { selectComponent(state.selected.tag); toast('Component reset'); });
+  $('#native-render-button').addEventListener('mdClick', () => scheduleNativeRender(0));
   $('#preview-platform-buttons').addEventListener('mdSelectionChange', event => { if (event.target === $('#preview-platform-buttons')) selectPlatform(event.detail.values[0]); });
   $('#studio-doc-tabs').addEventListener('mdTabChange', event => { if (event.target === $('#studio-doc-tabs')) selectStudioSection(['usage', 'coverage', 'events', 'ai'][event.detail.index]); });
   $('#properties-tabs').addEventListener('mdTabChange', event => { if (event.target === $('#properties-tabs')) selectPropertiesSection(['properties', 'css'][event.detail.index]); });
@@ -122,6 +131,7 @@ function bindEvents() {
 function selectPlatform(platform) {
   if (!['web', 'ios', 'android'].includes(platform)) return;
   if (state.platform === platform) return;
+  if (state.platform === 'web' && ['md-button-group', 'md-segmented-button', 'md-fab-menu', 'md-split-button'].includes(state.selected?.tag)) syncReferenceState();
   state.platform = platform;
   const url = new URL(location.href);
   if (platform === 'web') url.searchParams.delete('platform'); else url.searchParams.set('platform', platform);
@@ -149,9 +159,15 @@ function renderNavigation() {
 function selectComponent(tag) {
   const component = state.components.find(item => item.tag === tag); if (!component) return;
   state.selected = component; state.events = []; state.props = {}; state.editedTag = tag; state.editedProps = {};
+  state.buttonGroupChildren = recipeButtonGroupChildren(component); state.buttonGroupSelection = state.buttonGroupChildren.map(child => child.selected);
+  state.segmentedContext = tag === 'md-segmented-button' ? defaultSegmentedContext() : undefined;
+  state.segmentedStandaloneProperties = undefined; state.segmentedSetSelection = undefined;
+  state.meterThemeTokens = {};
   state.docSlotValues = {}; state.docCssValues = {}; state.buttonAppearance = {}; state.propertiesScroll = {}; $('#props-search').value = ''; $('#properties-panel').scrollTop = 0;
+  for (const profile of Object.values(COMPONENT_APPEARANCES)) state[profile.key] = {};
   for (const prop of component.properties || []) { if (prop.defaultValue !== undefined) state.props[prop.name] = structuredClone(prop.defaultValue); }
-  Object.assign(state.props, recipePropertyValues(component));
+  Object.assign(state.props, recipePropertyValues(component), recipeContextAttributes(component));
+  if (state.segmentedContext) Object.assign(state.props, segmentedParentProperties(state.segmentedContext));
   text('#category-label', component.category); text('#tag-label', tag); text('#component-title', component.navigationTitle || displayName(tag)); text('#component-description', component.description);
   text('#props-count', component.properties.length); text('#findings-count', portabilityFindings(component).total); text('#event-count', '0');
   renderNavigation(); renderPreview(); renderProperties(); renderEvents(); if (state.docSection === 'coverage') void coverageUI.load();
@@ -162,10 +178,6 @@ function setPreviewRuntime(value) {
   const update = (selector, label) => { const node = $(selector); if (node && node.textContent !== label) node.textContent = label; };
   update('#preview-runtime', value);
   update('#preview-runtime-announcement', value);
-  const nativeLabel = value === 'CONNECTING' ? 'Connecting' : value.includes('OFFLINE') ? 'Offline'
-    : value === 'DISCONNECTED' ? 'Disconnected' : value.startsWith('LIVE ') ? 'Live' : 'Connecting';
-  update('.native-live-badge', nativeLabel);
-  update('#native-live-announcement', `Native preview: ${nativeLabel}`);
 }
 function renderPreview() {
   disposeNativePointer(); clearTimeout(state.nativeRenderTimer); nativeRequests.cancel(); nativeLive.stop();
@@ -175,20 +187,27 @@ function renderPreview() {
   const root = $('#preview-content'); root.replaceChildren(); state.target = null;
   const isWeb = state.platform === 'web'; $('#preview-stage').classList.toggle('native-mode', !isWeb);
   $('#preview-stage').classList.toggle('snapshot-mode', !isWeb);
+  $('#native-render-button').hidden = isWeb;
+  $('#recipe-status').hidden = !isWeb;
   setPreviewRuntime(isWeb ? 'LIVE WEB' : 'NATIVE PREVIEW');
-  text('.props-hint', isWeb ? 'Explore every property. Changes update the component and usage code.' : 'Initial properties · editing restarts the native session.');
+  text('.props-hint', isWeb ? 'Explore every property. Changes update the component and usage code.'
+    : supportsRetainedPropertyUpdates(state.selected, state.platform)
+      ? 'Properties update the connected native component. Reset starts a new component.'
+      : 'Initial properties · editing restarts the native session.');
   if (!isWeb) { nativeLive = nativeClientFor(state.platform); renderNativePreview(); studioUI.applyCanvas(); return; }
   if (!state.ready) { root.innerHTML = '<div class="load-error">Web runtime unavailable. Build <code>@awc-ui/core</code> and reload.</div>'; return; }
-  const recipe = recipeFor(state.selected.tag), tag = state.selected.tag;
+  const recipe = recipeFor(state.selected.tag, state.segmentedContext), tag = state.selected.tag;
   const frame = document.createElement('iframe'); frame.id = 'component-frame'; frame.title = `${displayName(tag)} interactive component preview`;
   frame.src = '/preview-frame.html';
-  frame.addEventListener('load', async () => {
-    try {
-      await frame.contentWindow.customElements.whenDefined(tag);
-      if (generation !== state.previewGeneration || state.platform !== 'web') return;
-      const doc = frame.contentDocument, canvas = doc.querySelector('#preview-content');
+  initializePreviewFrame(frame, {
+    tag,
+    isCurrent: () => generation === state.previewGeneration && state.platform === 'web',
+    onDocument: doc => {
       state.previewDocument = doc;
       studioUI.applyTheme(); studioUI.applyCanvas();
+    },
+    onReady: doc => {
+      const canvas = doc.querySelector('#preview-content');
       canvas.innerHTML = `<div class="demo ${recipe.mode}">${recipe.html}</div>`;
       state.target = canvas.querySelector(tag);
       if (state.target) {
@@ -196,7 +215,7 @@ function renderPreview() {
         for (const [name, value] of Object.entries(state.editedProps || {})) { state.target[name] = value; if (value === undefined) delete state.props[name]; else state.props[name] = value; }
       }
       recipe.setup?.(canvas); documentationUI.applyOverrides();
-      for (const name of new Set(['click', ...(state.selected.events || []).map(event => event.name)])) canvas.addEventListener(name, recordEvent);
+      for (const name of new Set(['click', ...(tag === 'md-segmented-button' ? ['mdChange'] : []), ...(state.selected.events || []).map(event => event.name)])) canvas.addEventListener(name, recordEvent);
       canvas.addEventListener('click', event => { if (event.composedPath().some(element => element?.tagName === 'A')) event.preventDefault(); });
       const overlayTags = new Set(['md-dialog', 'md-bottom-sheet', 'md-side-sheet', 'md-date-picker', 'md-time-picker', 'md-color-picker', 'md-select', 'md-multi-select', 'md-autocomplete', 'md-search']);
       const anchoredTags = new Set(['md-date-picker', 'md-color-picker', 'md-select', 'md-multi-select', 'md-autocomplete']);
@@ -205,7 +224,10 @@ function renderPreview() {
         const demo = canvas.querySelector('.demo');
         canvas.classList.toggle('overlay-open', overlayOpen && anchoredTags.has(tag));
         const height = Math.max(overlayOpen ? 560 : 310, Math.min(560, Math.ceil(demo?.getBoundingClientRect().height || 0) + 64));
-        if (frame.style.height !== `${height}px`) frame.style.height = `${height}px`;
+        if (frame.dataset.autoHeight !== String(height)) {
+          frame.dataset.autoHeight = String(height);
+          studioUI.applyCanvas();
+        }
       };
       for (const type of ['mdOpen', 'mdClose', 'mdOpenChange']) canvas.addEventListener(type, event => {
         if (event.target !== state.target || !overlayTags.has(tag)) return;
@@ -216,7 +238,13 @@ function renderPreview() {
       state.previewObserver.observe(canvas.querySelector('.demo'));
       resizePreview();
       renderProperties(); studioUI.applyCanvas();
-    } catch (error) { if (generation === state.previewGeneration) { root.innerHTML = `<p class="load-error">${escape(error.message)}</p>`; } }
+    },
+    onError: error => {
+      state.previewObserver?.disconnect(); state.previewObserver = null;
+      state.previewDocument = null; state.target = null;
+      root.innerHTML = `<p class="load-error">${escape(error.message)}</p>`;
+      studioUI.applyCanvas();
+    },
   });
   // Wrap before insertion: moving a mounted iframe would reload its component.
   const viewportShell = document.createElement('div'); viewportShell.className = 'canvas-viewport-shell';
@@ -226,14 +254,10 @@ function renderPreview() {
 }
 
 function renderNativePreview() {
-  const component = state.selected;
   const target = nativePreviewTarget(state.platform);
-  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-heading"><div><h3><span aria-hidden="true">◇</span> ${target.title}</h3><p>${escape(displayName(component.tag))} · native AWC adapter</p></div><div class="native-preview-actions"><span class="studio-status"><md-chip class="native-live-badge studio-status-chip" variant="input" selectable="false" removable="false" density="-4" inert aria-hidden="true">Connecting</md-chip><span id="native-live-announcement" class="studio-visually-hidden">Native preview: Connecting</span></span><md-button variant="text" size="xs" id="native-render-button" icon="refresh">Reconnect</md-button></div></div><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div></section>`;
+  $('#preview-content').innerHTML = `<section class="native-snapshot" aria-label="${target.renderer} native preview"><div class="snapshot-frame" id="native-render-frame" aria-busy="true"></div></section>`;
   studioUI.applyCanvas();
-  $('#native-render-button').addEventListener('mdClick', () => scheduleNativeRender(0));
   configureNativeLivePreview();
-  text('#preview-caption', state.platform === 'android' ? 'Real Android emulator · connecting to Jetpack Compose' : 'Real SwiftUI on this Mac · connecting to the live host');
-  text('#recipe-status', 'Native fixture + current root properties');
   scheduleNativeRender(0);
 }
 
@@ -263,6 +287,28 @@ function nativeRenderState(kind, message) {
     frame.append(marker, label);
   }
   text('#native-render-button', kind === 'error' ? 'Retry connection' : 'Reconnect');
+  if (kind !== 'ready') studioUI.applyCanvas();
+}
+
+function nativeCanvasViewport() {
+  const frame = $('#native-render-frame'), fixedWidth = Number(state.layout?.width);
+  return { width: Number.isFinite(fixedWidth) && fixedWidth > 0
+    ? nativeViewportWidth(fixedWidth)
+    : nativeViewportWidth(frame.clientWidth, getComputedStyle(frame)),
+  height: nativeCanvasHeight(state.layout?.height, $('.native-snapshot')?.clientHeight) };
+}
+
+function updateNativeLayout(patch) {
+  if (!nativeLayoutNeedsRender(state.selected?.tag, patch)) return;
+  if (supportsNativeViewportTag(state.selected?.tag) && isNativePlatform(state.platform)
+    && !('direction' in patch) && supportsRetainedPropertyUpdates(state.selected, state.platform)
+    && nativeLive.canUpdate(state.selected.tag)) {
+    const { width, height } = nativeCanvasViewport();
+    // A viewport change must preserve the mounted overlay, including its timers.
+    void nativeLive.resize(width, height).catch(error => toast(error.message));
+    return;
+  }
+  scheduleNativeRender();
 }
 
 function scheduleNativeRender(delay = 300) {
@@ -271,22 +317,25 @@ function scheduleNativeRender(delay = 300) {
   const slots = { ...(recipe.text !== undefined ? { '': recipe.text } : {}), ...state.docSlotValues };
   let payload;
   try {
-    payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark', { ...studioUI.nativeOptions(), buttonAppearanceDefaults: state.buttonAppearanceDefaults, ...(state.selected.tag === 'md-button' ? { buttonAppearance: state.buttonAppearance } : {}), text: slots[''], slots });
+    payload = nativeRenderRequest(state.selected.tag, state.props, document.documentElement.dataset.theme === 'dark', { ...meterThemeOptions(state, studioUI.nativeOptions()), ...componentAppearanceOptions(state), ...(state.selected.tag === 'md-segmented-button' ? { segmentedContext: state.segmentedContext } : {}), ...(state.selected.tag === 'md-button-group' ? { buttonGroupSelection: state.buttonGroupSelection } : {}), text: slots[''], slots });
   } catch (error) { toast(error.message); return; }
   clearTimeout(state.nativeRenderTimer);
   disposeNativePointer(); nativeLive.stop(); state.liveFrame = null; state.liveDisplayedRevision = -1; state.liveImageVersion = (state.liveImageVersion || 0) + 1;
   const request = nativeRequests.start();
   if (state.selected.tag === 'md-button' && state.nativeScenario) payload.scenario = state.nativeScenario;
-  // Fixed presets retain their native logical viewport when the image fits a
-  // narrower card. Responsive mode uses the available width at native scale.
-  const frame = $('#native-render-frame'), frameStyle = getComputedStyle(frame);
-  const fixedWidth = Number(state.layout?.width);
-  payload.width = Number.isFinite(fixedWidth) && fixedWidth > 0
-    ? nativeViewportWidth(fixedWidth)
-    : nativeViewportWidth(frame.clientWidth, frameStyle);
   nativeRenderState('loading', delay ? 'Waiting for property changes…' : 'Checking the native renderer…');
   const platform = state.platform;
-  state.nativeRenderTimer = setTimeout(() => chooseNativePreview(payload, request, platform), delay);
+  state.nativeRenderTimer = setTimeout(async () => {
+    // Initial native navigation can precede the lazy card's first render.
+    // Measure its slotted viewport after readiness, not a temporary zero width.
+    await $('#preview-stage').closest('md-card')?.componentOnReady?.();
+    if (!request.isCurrent()) return;
+    studioUI.applyCanvas();
+    const viewport = nativeCanvasViewport();
+    payload.width = viewport.width;
+    if (supportsNativeViewportTag(payload.tag)) payload.height = viewport.height;
+    void chooseNativePreview(payload, request, platform);
+  }, delay);
 }
 
 async function readNativeResponse(response) {
@@ -333,7 +382,9 @@ function subscribeNativeLive(id, onFrame, onError, platform) {
 function configureNativeLivePreview() {
   state.activeNativeMode = 'live';
   setPreviewRuntime('CONNECTING');
-  text('.props-hint', 'Initial properties · editing restarts the native session.');
+  text('.props-hint', supportsRetainedPropertyUpdates(state.selected, state.platform)
+    ? 'Properties update the connected native component. Reset starts a new component.'
+    : 'Initial properties · editing restarts the native session.');
   if (state.selected.tag === 'md-button' && state.nativeScenario === 'button-behavior') {
     text('.props-hint', 'This linked form demo has fixed actions. Select Button in the library to edit the component.');
   }
@@ -343,8 +394,7 @@ function configureNativeLivePreview() {
   if (state.selected.tag === 'md-button' && state.nativeScenario === 'focus-accessibility') {
     text('.props-hint', 'This linked focus demo has fixed controls. Select Button in the library to edit the component.');
   }
-  text('#preview-caption', state.platform === 'android' ? 'Real Android emulator · Jetpack Compose frames and native events' : 'Persistent macOS SwiftUI app · live frames and native events');
-  text('#recipe-status', 'Click & type · native state persists');
+  text('#preview-caption', state.platform === 'android' ? 'Jetpack Compose · Android native render' : 'SwiftUI · macOS native render');
   text('#native-render-button', 'Reconnect');
 }
 
@@ -411,6 +461,8 @@ function presentNativeLiveFrame(image, result, platform) {
   const target = nativePreviewTarget(platform);
   let surface = $('#native-live-surface');
   const firstFrame = !surface;
+  const sizeChanged = state.liveFrame?.logicalWidth !== result.logicalWidth || state.liveFrame?.logicalHeight !== result.logicalHeight;
+  const inspectionChanged = JSON.stringify(state.liveFrame?.inspection) !== JSON.stringify(result.inspection);
   if (!surface) {
     if (!image) return;
     nativeRenderState('ready', 'Native session connected.');
@@ -433,11 +485,18 @@ function presentNativeLiveFrame(image, result, platform) {
     fps: perf.fps, freshFps: perf.freshFps, decodeMs: +perf.decodeMs.toFixed(2), pixelWidth: result.width, pixelHeight: result.height,
     pixelScale: +(result.width / result.logicalWidth).toFixed(2), ...(result.diagnostics ? { capture: result.diagnostics } : {}) });
   updateNativeLiveFrameMetadata(result, target);
-  if (firstFrame) studioUI.applyCanvas();
+  if (firstFrame || sizeChanged || inspectionChanged) studioUI.applyCanvas();
 }
 
 function updateNativeLiveFrameMetadata(result, target) {
   state.liveDisplayedRevision = result.revision; state.liveFrame = result;
+  if (updateButtonGroupSelection(state, result.buttonGroupSelection)) { documentationUI.syncGroupSelection(); documentationUI.updateSnippet(); }
+  if (updateSplitButtonChecked(state, result.splitButtonChecked)) {
+    const input = $('#prop-trailingChecked');
+    if (input && input !== document.activeElement) input.selected = state.props.trailingChecked;
+    documentationUI.updateSnippet();
+  }
+  if (updateSegmentedSelection(state, result.segmentedSelection)) { documentationUI.syncSegmentedSelection(); documentationUI.updateSnippet(); }
   if ($('#preview-runtime').textContent !== target.badge) setPreviewRuntime(target.badge);
 }
 
@@ -457,16 +516,21 @@ function queueNativeInput(command) {
 function disposeNativePointer() { const cleanup = state.nativePointerCleanup; state.nativePointerCleanup = null; cleanup?.(); }
 
 function bindNativeInput(surface, input) {
+  const keyboard = nativePreviewKeyboardPolicy(state.selected.tag, {
+    retained: supportsRetainedPropertyUpdates(state.selected, state.platform), scenario: Boolean(state.nativeScenario),
+  });
+  if (keyboard.nativeEscape) surface.setAttribute('aria-label', `Live native ${nativePreviewTarget(state.platform).renderer} view. Click or focus, then type. Escape dismisses the open overlay.`);
   const pointerPoint = event => {
     const image = surface.querySelector('img'), frame = state.liveFrame;
     return image && frame ? nativeImagePoint(image.getBoundingClientRect(), image.naturalWidth, image.naturalHeight, frame.logicalWidth, frame.logicalHeight, event.clientX, event.clientY) : null;
   };
   // Native examples contain editors and switches whose platform
   // tracking loops need the host's atomic click path (down + queued release).
-  const pressable = state.selected.tag === 'md-button' && !state.nativeScenario;
+  const pressable = (['md-button', 'md-icon-button', 'md-button-group', 'md-fab', 'md-fab-menu', 'md-fab-menu-item', 'md-segmented-button', 'md-split-button'].includes(state.selected.tag)
+    || supportsNativeViewportTag(state.selected.tag) && supportsRetainedPropertyUpdates(state.selected, state.platform)) && !state.nativeScenario;
   if (pressable) {
     surface.classList.add('native-live-pressable');
-    surface.setAttribute('aria-label', `Live native ${nativePreviewTarget(state.platform).renderer} button. Press and hold, then release to activate. Escape cancels.`);
+    surface.setAttribute('aria-label', `Live native ${nativePreviewTarget(state.platform).renderer} ${displayName(state.selected.tag)}. Press and hold, then release to activate. ${keyboard.nativeEscape ? 'Escape dismisses the open overlay.' : 'Escape releases keyboard.'}`);
     const pointer = createNativePointerInput(queueNativeInput);
     const releaseCapture = id => { if (id !== null && surface.hasPointerCapture(id)) surface.releasePointerCapture(id); };
     let motionFrame, motion;
@@ -512,19 +576,24 @@ function bindNativeInput(surface, input) {
     const value = input.value; input.value = '';
     for (const text of nativeTextChunks(value)) queueNativeInput({ command: 'text', text });
   });
-  input.addEventListener('keydown', event => {
-    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); input.blur(); return; }
-    if (event.isComposing) return;
-    const key = event.key === ' ' ? 'Space' : event.key;
-    const named = ['Enter', 'Space', 'Tab', 'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'];
-    if (!named.includes(key)) return;
-    event.preventDefault(); event.stopPropagation();
-    const modifiers = [['shiftKey', 'shift'], ['ctrlKey', 'control'], ['altKey', 'alt'], ['metaKey', 'meta']].filter(([key]) => event[key]).map(([, value]) => value);
-    queueNativeInput({ command: 'key', key, modifiers });
-  });
+  input.addEventListener('keydown', event => handleNativePreviewKeyDown(event, {
+    ...keyboard, send: queueNativeInput, releaseFocus: () => input.blur(),
+  }));
 }
 
 function recordNativeEvents(events, platform) {
+  if (updateFabMenuState(state, events)) {
+    const input = $('#prop-open');
+    if (input) input.selected = state.props.open;
+    documentationUI.updateSnippet();
+  }
+  const selected = nativeButtonSelection(state, events);
+  if (selected !== undefined) {
+    setButtonSelection(state, selected);
+    const input = $('#prop-selected');
+    if (input) input.selected = selected;
+    documentationUI.updateSnippet();
+  }
   const { eventOrigin } = nativePreviewTarget(platform);
   for (const event of events) {
     const native = Object.fromEntries(['defaultPrevented', 'activation', 'propagationPath'].filter(key => Object.hasOwn(event, key)).map(key => [key, event[key]]));
@@ -549,7 +618,8 @@ function renderProperties() {
   const editors = new Map();
   $('#props-controls').innerHTML = documentationUI.textControl() + (sorted.map(prop => {
     const value = state.props[prop.name], id = `prop-${prop.name}`, type = prop.type || '';
-    const editor = propertyEditor(state.selected, prop, value); editors.set(prop.name, editor);
+    const parentOwned = state.selected.tag === 'md-segmented-button' && state.segmentedContext?.mode === 'set' && SEGMENTED_PARENT_PROPERTIES.includes(prop.name);
+    const editor = parentOwned ? { kind: 'readonly', note: 'Managed by the containing set. Use Preview composition to change the set, or choose Standalone to edit this property.' } : propertyEditor(state.selected, prop, value); editors.set(prop.name, editor);
     const doc = memberDocumentation(state.selected, 'property', prop, state.platform);
     const unsupported = doc.support.status === 'unsupported';
     const attrs = `id="${id}" data-prop="${escape(prop.name)}" aria-label="${escape(prop.name)}" aria-describedby="${id}-error${editor.note || unsupported ? ` ${id}-note` : ''}" ${unsupported ? 'disabled' : ''}`;
@@ -557,7 +627,7 @@ function renderProperties() {
     const header = `<div class="prop-heading">${label}${documentationUI.infoButton('property', prop)}${editor.kind === 'boolean' ? `<md-switch ${attrs} density="-3" ${value ? 'selected' : ''}></md-switch>` : `<span class="prop-type" title="${escape(type)}">${escape(type)}</span>`}</div>`;
     let input;
     if (editor.kind === 'boolean') input = '';
-    else if (editor.kind === 'readonly') input = `<code class="prop-signature" id="${id}">${escape(type)}</code>`;
+    else if (editor.kind === 'readonly') input = `<code class="prop-signature" id="${id}">${escape(parentOwned ? String(value) : type)}</code>`;
     else if (editor.kind === 'literal') {
       const isSet = editor.choices.some(option => Object.is(option, value));
       input = `<md-select ${attrs} variant="outlined" density="-3" data-literal="true" value="${escape(isSet ? encodeLiteralChoice(value) : '')}">${editor.optional || !isSet ? `<md-select-option value="" ${editor.optional ? '' : 'disabled'}>Unset</md-select-option>` : ''}${editor.choices.map(option => `<md-select-option value="${escape(encodeLiteralChoice(option))}">${escape(literalChoiceLabel(option, editor.choices))}</md-select-option>`).join('')}</md-select>`;
@@ -567,16 +637,22 @@ function renderProperties() {
     const note = unsupported ? 'Not available in this native adapter. Try it in the Web reference.' : editor.note;
     const unset = editor.optional && ['text', 'boolean'].includes(editor.kind) ? `<md-button variant="text" size="xs" class="prop-unset" data-unset-prop="${escape(prop.name)}" aria-label="Unset ${escape(prop.name)}" ${unsupported ? 'disabled' : ''}>${value === undefined ? 'Unset · using default' : 'Unset'}</md-button>` : '';
     return `<div class="prop-control ${editor.kind}" data-search="${escape(`${prop.name} ${type} ${doc.description}`.toLowerCase())}">${header}${input}${note ? `<p class="prop-note" id="${id}-note">${escape(note)}</p>` : ''}${unset}<span class="prop-error" id="${id}-error" role="status" hidden></span></div>`;
-  }).join('') || '<p class="prop-note">This structural component has no public properties. Explore it through its parent composition.</p>');
+  }).join('') || '<p class="prop-note">This structural component has no public properties. Explore it through its parent composition.</p>') + documentationUI.configurationControls();
   documentationUI.bindTextControl();
   const applyValue = (name, value) => {
     if (value === undefined) delete state.props[name]; else state.props[name] = value;
     if (state.editedTag !== state.selected.tag) { state.editedTag = state.selected.tag; state.editedProps = {}; }
     state.editedProps[name] = value;
+    if (state.selected.tag === 'md-segmented-button' && state.segmentedContext?.mode === 'set' && name === 'selected') {
+      state.segmentedContext = { ...state.segmentedContext, selection: [value === true, ...state.segmentedContext.selection.slice(1)] };
+      documentationUI.syncSegmentedSelection();
+    }
     if (state.target) state.target[name] = value;
     const unset = [...$('#props-controls').querySelectorAll('[data-unset-prop]')].find(button => button.dataset.unsetProp === name);
     if (unset) unset.textContent = value === undefined ? 'Unset · using default' : 'Unset';
-    documentationUI.updateSnippet(); scheduleNativeRender();
+    if (componentAppearance(state.selected.tag) && state.target) documentationUI.applyOverrides();
+    documentationUI.updateSnippet();
+    if (!dispatchRetainedPropertyEdit({ component: state.selected, platform: state.platform, client: nativeLive, name, value, onError: error => toast(error.message) })) scheduleNativeRender();
   };
   $('#props-controls').querySelectorAll('[data-unset-prop]').forEach(button => button.addEventListener('click', () => {
     const name = button.dataset.unsetProp, input = document.getElementById(`prop-${name}`);
@@ -622,11 +698,19 @@ function selectPropertiesSection(section) {
 }
 function syncReferenceState() {
   if (!state.target) return;
-  for (const name of ['value', 'checked', 'selected', 'expanded', 'open', 'activeTabIndex', 'activeIndex']) {
+  if (state.selected?.tag === 'md-split-button') updateSplitButtonChecked(state, state.target.trailingChecked);
+  if (state.selected?.tag === 'md-fab-menu') setFabMenuOpen(state, state.target.open);
+  if (state.selected?.tag === 'md-button-group' && updateButtonGroupSelection(state, [...state.target.querySelectorAll('md-button,md-icon-button')].map(child => child.selected === true))) documentationUI.syncGroupSelection();
+  if (state.selected?.tag === 'md-segmented-button' && state.segmentedContext?.mode === 'set') {
+    const set = state.target.closest('md-segmented-button-set');
+    if (set && updateSegmentedSelection(state, [...set.querySelectorAll('md-segmented-button')].map(child => child.selected === true))) documentationUI.syncSegmentedSelection();
+  }
+  for (const name of ['value', 'checked', 'selected', 'trailingChecked', 'expanded', 'open', 'activeTabIndex', 'activeIndex']) {
     const input = document.getElementById(`prop-${name}`);
     if (!input || input === document.activeElement || state.target[name] === undefined) continue;
     const value = state.target[name];
     state.props[name] = value;
+    if (name === 'selected') setButtonSelection(state, value);
     if (input.dataset.literal) input.value = encodeLiteralChoice(value);
     else if (input.tagName === 'MD-SWITCH') input.selected = Boolean(value);
     else if (input.dataset.json) input.value = JSON.stringify(value, null, 2);

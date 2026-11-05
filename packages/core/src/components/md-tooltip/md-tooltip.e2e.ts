@@ -502,3 +502,53 @@ describe('md-tooltip (e2e)', () => {
     });
   });
 });
+
+describe('md-tooltip replacement and disabled lifecycle', () => {
+  for (const direction of ['ltr', 'rtl'] as const) {
+    it(`aligns every start/end placement to the trigger in ${direction.toUpperCase()}`, async () => {
+      const page = await newE2EPage();
+      await page.setViewport({ width: 1000, height: 800 });
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+      await page.setContent(`<div dir="${direction}" style="position:absolute;left:350px;top:300px">
+        <md-tooltip text="Placement help" auto-position="false" offset="8"><button style="width:120px;height:60px">Trigger</button></md-tooltip>
+      </div>`);
+      const tooltip = await page.find('md-tooltip');
+      const placements = ['top-start', 'top-end', 'bottom-start', 'bottom-end', 'left-start', 'left-end', 'right-start', 'right-end'];
+      // Expected physical sides/alignment follow the public logical-placement
+      // contract: only the inline axis mirrors in RTL.
+      const rtl = ['top-end', 'top-start', 'bottom-end', 'bottom-start', 'right-start', 'right-end', 'left-start', 'left-end'];
+      for (const [index, position] of placements.entries()) {
+        await tooltip.callMethod('hide'); tooltip.setProperty('position', position); await page.waitForChanges();
+        await tooltip.callMethod('show'); await page.waitForChanges();
+        const expected = direction === 'rtl' ? rtl[index] : position;
+        await page.waitForFunction(placement => document.querySelector('md-tooltip')!.shadowRoot!
+          .querySelector('.md-tooltip__popup')!.classList.contains(`md-tooltip__popup--${placement}`), {}, expected);
+        const deltas = await page.$eval('md-tooltip', (el, placement: string) => {
+          const anchor = el.querySelector('button')!.getBoundingClientRect();
+          const popup = el.shadowRoot!.querySelector('.md-tooltip__popup')!.getBoundingClientRect();
+          const [side, align] = placement.split('-');
+          const gap = side === 'top' ? anchor.top - popup.bottom : side === 'bottom' ? popup.top - anchor.bottom
+            : side === 'left' ? anchor.left - popup.right : popup.left - anchor.right;
+          const alignment = side === 'top' || side === 'bottom'
+            ? align === 'start' ? popup.left - anchor.left : popup.right - anchor.right
+            : align === 'start' ? popup.top - anchor.top : popup.bottom - anchor.bottom;
+          return { gap, alignment };
+        }, expected);
+        expect(deltas.gap).toBeCloseTo(8, 0); expect(deltas.alignment).toBeCloseTo(0, 0);
+      }
+    });
+  }
+
+  it('moves its accessible description to a replacement trigger and restores it after disabled state', async () => {
+    const page = await newE2EPage(); await page.setContent('<md-tooltip text="Help" show-delay="0"><button id="original">Help</button></md-tooltip>');
+    await page.$eval('md-tooltip', el => { const replacement = document.createElement('button'); replacement.id = 'replacement'; replacement.textContent = 'New help'; el.replaceChildren(replacement); });
+    await page.waitForFunction(() => document.querySelector('#replacement')!.getAttribute('aria-description') === 'Help');
+    await page.focus('#replacement'); const tooltip = await page.find('md-tooltip');
+    await page.waitForFunction(() => (document.querySelector('md-tooltip') as HTMLMdTooltipElement).open);
+    tooltip.setProperty('disabled', true); await page.waitForChanges(); expect(await tooltip.getProperty('open')).toBe(false);
+    expect((await page.find('#replacement')).getAttribute('aria-description')).toBeNull();
+    tooltip.setProperty('disabled', false); tooltip.setProperty('text', 'Updated'); await page.waitForChanges();
+    expect((await page.find('#replacement')).getAttribute('aria-description')).toBe('Updated');
+    await page.$eval('md-tooltip', el => el.remove());
+  });
+});

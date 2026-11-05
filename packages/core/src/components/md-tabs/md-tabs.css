@@ -88,9 +88,11 @@
 }
 
 /* Tabs fill container equally (tab-width="equal", the default) */
+/* No min-inline-size here: md-tab owns its density-aware minimum
+   (max(48px, 90px + density × 8px), 90px at density 0). A flat 90px declared on the
+   slotted tab out-cascaded it, so density never narrowed a tab inside a tablist. */
 ::slotted(md-tab) {
   flex: 1;
-  min-inline-size: 90px;
 }
 
 /* tab-width="auto" — content-sized tabs, strip scrolls */

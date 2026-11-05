@@ -457,7 +457,7 @@
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Document access requires a native adapter.",
-      "line": 93
+      "line": 100
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -471,7 +471,7 @@
     "styleUrl": "md-menu-item.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "73bc066c2b75d8419c3e65560c994a6b759ea675ba7f82edc0927f37c6da0ce8"
+    "sha256": "c4c4ad0c85d531a76ed0d72f8addde689f07d6c8e8db8abd07ac903cf3be3770"
   },
   "styles": [
     {
@@ -1770,7 +1770,7 @@
         },
         {
           "property": "gap",
-          "value": "8px",
+          "value": "var(--md-menu-item-gap, 8px)",
           "important": false
         },
         {
@@ -1901,7 +1901,7 @@
         },
         {
           "property": "gap",
-          "value": "8px",
+          "value": "var(--md-menu-item-gap, 8px)",
           "important": false
         },
         {
@@ -2096,11 +2096,18 @@
         "headline",
         "supportingText",
         "trailingText",
+        "disabled",
         "selected",
-        "type",
+        "indeterminate",
+        "keepOpen",
         "divider",
+        "gap",
         "badge",
-        "disabled"
+        "type",
+        "checkPosition",
+        "presentation",
+        "roleOverride",
+        "density"
       ],
       "events": [
         "mdClick"
@@ -2110,55 +2117,50 @@
         "leading-icon",
         "trailing-icon"
       ],
-      "unsupportedProperties": [
-        "indeterminate",
-        "keepOpen",
-        "gap",
-        "checkPosition",
-        "presentation",
-        "roleOverride",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
+      "notes": [
+        "Rendered by its md-menu: one- and two-line rows with the leading-icon and trailing-icon slots, trailing text, badge, divider and gap, checkbox and radio rows (check position, indeterminate, keep-open), option presentation and role override, density; hover, press and keyboard focus show the state layer, the md-ripple wave and the inset 3-point focus ring.",
+        "Activation emits mdClick and closes the menu tree after 150 ms unless keep-open; Space toggles checkbox and radio rows without closing; disabled rows stay focusable in the roving order (APG) but inert."
+      ],
       "verification": "not-device-verified"
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "disabled",
-        "divider",
         "headline",
-        "selected",
         "supportingText",
         "trailingText",
-        "type"
-      ],
-      "events": [
-        "mdClick"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
+        "disabled",
+        "selected",
         "indeterminate",
         "keepOpen",
+        "divider",
         "gap",
         "badge",
+        "type",
         "checkPosition",
         "presentation",
         "roleOverride",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
         "leading-icon",
         "trailing-icon"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Rendered by its md-menu: one- and two-line rows with the leading-icon and trailing-icon slots, trailing text, badge, divider and gap, checkbox and radio rows (check position, indeterminate, keep-open), option presentation and role override, density; hover, press and keyboard focus show the state layer, the md-ripple wave and the inset 3-point focus ring.",
+        "Activation emits mdClick and closes the menu tree after 150 ms unless keep-open; Space toggles checkbox and radio rows without closing; disabled rows stay focusable in the roving order (APG) but inert."
       ],
       "verification": "not-device-verified"
     }

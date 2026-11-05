@@ -1,0 +1,120 @@
+{
+ "tag": "md-button-group",
+ "case": "default",
+ "elements": [
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    209,
+    380,
+    58,
+    40
+   ],
+   "interactive": true,
+   "label": "Day",
+   "traits": [
+    "button",
+    "toggleButton"
+   ],
+   "value": "1"
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    279,
+    380,
+    67,
+    40
+   ],
+   "interactive": true,
+   "label": "Week",
+   "traits": [
+    "button",
+    "toggleButton"
+   ],
+   "value": "0"
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    358,
+    380,
+    73,
+    40
+   ],
+   "interactive": true,
+   "label": "Month",
+   "traits": [
+    "button",
+    "toggleButton"
+   ],
+   "value": "0"
+  }
+ ],
+ "focus": [
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     209,
+     380,
+     58,
+     40
+    ],
+    "interactive": true,
+    "label": "Day",
+    "traits": [
+     "button",
+     "toggleButton"
+    ],
+    "value": "1"
+   }
+  },
+  {},
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     209,
+     380,
+     58,
+     40
+    ],
+    "interactive": true,
+    "label": "Day",
+    "traits": [
+     "button",
+     "toggleButton"
+    ],
+    "value": "1"
+   }
+  },
+  {}
+ ],
+ "id": "md-button-group/default",
+ "image": {
+  "scale": 3,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "ios": "26.3.1",
+ "platform": "ios"
+}

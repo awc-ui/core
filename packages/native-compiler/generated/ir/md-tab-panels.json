@@ -63,28 +63,34 @@
   },
   "diagnostics": [
     {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 41
+    },
+    {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 50
+      "line": 57
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 50
+      "line": 57
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Document access requires a native adapter.",
-      "line": 66
+      "line": 73
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 92
+      "line": 114
     }
   ],
   "source": {
@@ -92,7 +98,7 @@
     "styleUrl": "md-tab-panels.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "29c0548db9900af61e7f7b5c40639aa75c44c1eba9e8a91c7175e4a2382dc75c"
+    "sha256": "9b25f9b478a705c550cddc87acbb64f5b89aeb2ab77312cc7bacbe51ecc9b5a6"
   },
   "styles": [
     {
@@ -170,42 +176,42 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "for"
+        "for",
+        "sizing"
       ],
       "events": [],
       "methods": [],
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "sizing"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "The for property matches an md-tabs native node ID within the same tree or AWCNativeScope. Browser DOM querying and stable max-height measuring are not reproduced."
+        "Shows the panel of the linked md-tabs' active tab: `for` names an md-tabs node ID within the same tree or AWCNativeScope; without it, the nearest preceding md-tabs sibling, as the source.",
+        "sizing stable keeps every panel laid out (the tallest one sizes the region) and shows only the active one; active lays out only the active panel."
       ],
       "verification": "not-device-verified"
     },
     "android": {
       "status": "adapter-implemented",
-      "properties": [],
+      "properties": [
+        "for",
+        "sizing"
+      ],
       "events": [],
       "methods": [],
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "for",
-        "sizing"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Composition container. Pass active on child panels; HTML for/id linkage is not available."
+        "Shows the panel of the linked md-tabs' active tab: `for` names an md-tabs node ID within the same tree or AWCNativeScope; without it, the nearest preceding md-tabs sibling, as the source.",
+        "sizing stable keeps every panel laid out (the tallest one sizes the region) and shows only the active one; active lays out only the active panel."
       ],
       "verification": "not-device-verified"
     }

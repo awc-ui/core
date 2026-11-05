@@ -93,7 +93,7 @@ something else:
 | Situation                            | Entry                                                                                                                       |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
 | Bundler (Vite, webpack, Next, Nuxt…) | `import '@awc-ui/core/define'`                                                                                              |
-| CDN / no bundler                     | load the loader, plus `<link rel="stylesheet" href="…/@awc-ui/tokens/src/tokens.css">`                                      |
+| CDN / no bundler                     | load `@awc-ui/core@<version>/dist/md3/md3.css` in the document head before `@awc-ui/core@<version>/dist/md3/md3.esm.js`, using the same version |
 | Server-side rendering                | `@awc-ui/core/hydrate` — reference apps for Next.js, Nuxt, SvelteKit, Astro, and Angular SSR live under `apps/` in the repo |
 
 ### Smallest bundles: per-component imports
@@ -114,6 +114,23 @@ Declarative-Shadow-DOM hydration support compiled out (≈3 kB gz smaller
 runtime). Import from there directly, or alias
 `@awc-ui/core/dist/components` → `@awc-ui/core/dist/components-csr` in the
 bundler to switch a whole app (framework wrappers included) in one line.
+
+### First paint
+
+Load `@awc-ui/core/css/tokens.css` in the app's root layout or global entry,
+before component JavaScript. For CDN use, put the version-matched stylesheet
+link above the module script in `<head>`.
+
+The Core stylesheet includes design tokens and hides unfinished component hosts
+until their first render adds `.hydrated`. `:defined` only means the element is
+registered; a lazy component can still be loading. Fully rendered SSR output
+already carries the hydration marker and stays visible before client JavaScript.
+Preserve those markers when integrating server rendering.
+
+This prevents raw component content flashing during client rendering, but does
+not reserve its final dimensions. For supported navigation and layout
+components, the optional `@awc-ui/core/css/pre-upgrade.css` provides initial size
+floors. Use SSR when you need the rendered component structure on first paint.
 
 ## Framework wrappers
 

@@ -87,7 +87,14 @@ class MainActivity : ComponentActivity() {
         Text("Native preview", style = MaterialTheme.typography.titleLarge)
         Surface(Modifier.fillMaxWidth().testTag("native-preview"), tonalElevation = 2.dp, shape = MaterialTheme.shapes.large) {
             Box(Modifier.padding(20.dp).heightIn(min = 96.dp)) {
-                key(revision) { AWCComponent(tag, props, onEvent = event) { slot -> SampleSlot(tag, slot, event) } }
+                key(revision) {
+                    if(tag=="md-snackbar") AWCSnackbarScope(Modifier.fillMaxWidth().height(240.dp)) {
+                        Box(Modifier.fillMaxSize())
+                        AWCComponent(tag,props,onEvent=event) { slot->SampleSlot(tag,slot,event) }
+                    } else if(tag=="md-tooltip") AWCTooltipScope(Modifier.fillMaxWidth().height(240.dp)) {
+                        Box(Modifier.fillMaxSize(),contentAlignment=Alignment.Center) { AWCComponent(tag,props,onEvent=event) { slot->SampleSlot(tag,slot,event) } }
+                    } else AWCComponent(tag, props, onEvent = event) { slot -> SampleSlot(tag, slot, event) }
+                }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -148,18 +155,22 @@ internal fun fixture(tag: String): Map<String, AWCValue> = when(tag) {
     "md-list-item" -> mapOf("headline" to "Design system", "supportingText" to "81 components across platforms", "leadingIcon" to "palette", "expandable" to true)
     "md-menu-item", "md-sub-menu-item" -> mapOf("headline" to "Settings", "supportingText" to "Manage preferences")
     "md-menu-item-group" -> mapOf("label" to "Workspace")
-    "md-progress-indicator" -> mapOf("value" to 0.65, "max" to 1, "label" to "Upload progress")
-    "md-meter" -> mapOf("value" to 65, "max" to 100, "label" to "Storage used", "showValue" to true)
+    "md-progress-indicator" -> mapOf("value" to 64, "wave" to true, "label" to "Building native components")
+    "md-meter" -> mapOf("value" to 72, "max" to 100, "label" to "Storage used", "showLabel" to true, "showValue" to true)
     "md-loading-indicator" -> mapOf("label" to "Loading preview")
-    "md-skeleton" -> mapOf("lines" to 3, "height" to 24)
-    "md-status-dot" -> mapOf("state" to "success", "label" to "Online", "inline" to true)
+    "md-skeleton" -> mapOf("lines" to 3, "animation" to "wave", "fullWidth" to true)
+    "md-status-dot" -> mapOf("state" to "online", "label" to "Online")
+    "md-toolbar" -> mapOf("variant" to "floating", "ariaLabelProp" to "Formatting")
     "md-app-bar" -> mapOf("headline" to "Workspace", "subtitle" to "AWC Native", "leadingIcon" to "menu")
     "md-accordion" -> mapOf("exclusive" to true, "keepOneExpanded" to true, "defaultExpanded" to "0")
     "md-list" -> mapOf("selectionMode" to "single-select")
-    "md-accordion-item" -> mapOf("headline" to "How does this work?", "supportingText" to "Expand to read more", "icon" to "info")
-    "md-tab", "md-navigation-tab", "md-navigation-rail-tab" -> mapOf("label" to "Home", "icon" to "home")
+    "md-accordion-item" -> mapOf("headline" to "A shared design language", "supportingText" to "Built for every surface", "expanded" to true)
+    "md-tab" -> mapOf("label" to "Overview", "active" to true)
+    "md-tabs" -> mapOf("ariaLabelProp" to "Workspace sections")
+    "md-navigation-tab" -> mapOf("label" to "Home", "icon" to "home", "active" to true)
+    "md-navigation-rail-tab" -> mapOf("label" to "Home", "icon" to "home")
     "md-step" -> mapOf("label" to "Account details", "description" to "First step", "active" to true)
-    "md-breadcrumb-item" -> mapOf("icon" to "home")
+    "md-breadcrumb-item" -> mapOf("href" to "#projects")
     "md-table-pagination" -> mapOf("count" to 128, "rowsPerPage" to 10, "rowsPerPageOptions" to listOf(10, 25, 50), "showFirstLast" to true)
     "md-table-toolbar" -> mapOf("headline" to "Team members", "supportingText" to "Manage access")
     "md-table-sort-label" -> mapOf("column" to "name", "order" to "asc")
@@ -177,16 +188,21 @@ internal fun fixture(tag: String): Map<String, AWCValue> = when(tag) {
     if(slot == "actions") { AWCComponent("md-button", mapOf("variant" to "text"), onEvent = event) { if(it == "") Text("Learn more") }; return }
     if(slot != "") return
     when(tag) {
-        "md-accordion" -> Column { listOf("Getting started", "Native rendering", "Accessibility").forEach { title -> AWCComponent("md-accordion-item", mapOf("headline" to title), onEvent = event) { if(it == "") Text("AWC components compile to platform-native APIs.") } } }
-        "md-tabs", "md-navigation-bar", "md-navigation-rail" -> {
-            val child = when(tag) { "md-tabs" -> "md-tab"; "md-navigation-rail" -> "md-navigation-rail-tab"; else -> "md-navigation-tab" }
+        // Items are direct children of the group, as in the source markup (a wrapping layout would not be owned).
+        "md-accordion" -> listOf(Triple("A shared design language", "Built for every surface", "Colors, spacing, shapes, and component contracts come from the same AWC source."), Triple("Native by design", "Platform-specific implementations", "Native views retain each platform's own controls and behavior.")).forEachIndexed { index, (title, support, body) -> AWCComponent("md-accordion-item", mapOf("headline" to title, "supportingText" to support, "expanded" to (index == 0)), onEvent = event) { if(it == "") Text(body) } }
+        "md-tabs" -> listOf("Overview", "Activity", "Settings").forEach { label -> AWCComponent("md-tab", mapOf("label" to label), onEvent = event) }
+        "md-navigation-bar" -> listOf("Home" to "home", "Explore" to "explore", "Saved" to "bookmark").forEach { (label, icon) -> AWCComponent("md-navigation-tab", mapOf("label" to label, "icon" to icon), onEvent = event) }
+        "md-navigation-rail" -> {
+            val child = when(tag) { "md-navigation-rail" -> "md-navigation-rail-tab"; else -> "md-navigation-tab" }
             listOf("Home" to "home", "Search" to "search", "Settings" to "settings").forEach { (label, icon) -> AWCComponent(child, mapOf("label" to label, "icon" to icon), onEvent = event) }
         }
         "md-stepper" -> listOf("Account", "Preferences", "Review").forEach { title -> AWCComponent("md-step", mapOf("label" to title, "hideActions" to true), onEvent = event) { if(it == "") Text("Complete the $title step.") } }
         "md-button-group", "md-segmented-button-set" -> listOf("Day", "Week", "Month").forEach { title -> AWCComponent(if(tag == "md-button-group") "md-button" else "md-segmented-button", mapOf("label" to title, "value" to title.lowercase(), "variant" to "outlined", "toggle" to true), onEvent = event) }
         "md-list", "md-menu-item-group" -> listOf("Design system", "Native compiler", "Playground").forEach { title -> AWCComponent("md-list-item", mapOf("headline" to title, "leadingIcon" to "check"), onEvent = event) }
-        "md-menu", "md-fab-menu" -> listOf("Edit", "Duplicate", "Archive").forEach { title -> AWCComponent("md-menu-item", mapOf("headline" to title), onEvent = event) }
-        "md-card" -> Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) { Text("Build once. Render natively.", style = MaterialTheme.typography.titleLarge); Text("A native Material card with content, actions, accessibility and theme support."); AWCComponent("md-button", onEvent = event) { if(it == "") Text("Explore") } }
+        "md-menu" -> listOf("Edit", "Duplicate", "Archive").forEach { title -> AWCComponent("md-menu-item", mapOf("headline" to title), onEvent = event) }
+        "md-fab-menu" -> listOf("edit" to "Edit", "content_copy" to "Duplicate", "archive" to "Archive").forEach { (icon, title) -> AWCComponent("md-fab-menu-item", mapOf("icon" to icon, "label" to title), onEvent = event) }
+        // Laboratory recipe content (the card keeps its source padding and gap).
+        "md-card" -> { Text("✧"); Text("Ideas take shape."); Text("A shared design language, built for every surface."); AWCComponent("md-button", mapOf("variant" to "text"), onEvent = event) { if(it == "") Text("Explore workspace") } }
         "md-table", "md-table-container" -> Column {
             AWCComponent("md-table-head") { if(it == "") TableRow(listOf("Name", "Team", "Status"), event) }
             AWCComponent("md-table-body") { if(it == "") { TableRow(listOf("Alex", "Design", "Active"), event); TableRow(listOf("Sam", "Engineering", "Active"), event); TableRow(listOf("Taylor", "Research", "Away"), event) } }
@@ -196,15 +212,25 @@ internal fun fixture(tag: String): Map<String, AWCValue> = when(tag) {
         "md-table-row" -> listOf("Alex", "Design", "Active").forEach { value -> AWCComponent("md-table-cell") { if(it == "") Text(value) } }
         "md-table-cell" -> Text("Cell content")
         "md-table-sort-label" -> Text("Name")
-        "md-breadcrumbs" -> { AWCComponent("md-breadcrumb-item", onEvent = event) { if(it == "") Text("Workspace") }; Text("/"); AWCComponent("md-breadcrumb-item", mapOf("current" to true), onEvent = event) { if(it == "") Text("Components") } }
-        "md-breadcrumb-item" -> Text("Workspace")
+        "md-breadcrumbs" -> {
+            AWCComponent("md-breadcrumb-item", mapOf("href" to "#home", "icon" to "home"), onEvent = event) { if(it == "") AWCSlotText("Home") }
+            AWCComponent("md-breadcrumb-item", mapOf("href" to "#projects"), onEvent = event) { if(it == "") AWCSlotText("Projects") }
+            AWCComponent("md-breadcrumb-item", onEvent = event) { if(it == "") AWCSlotText("AWC Native") }
+        }
+        "md-breadcrumb-item" -> AWCSlotText("Projects")
         "md-checkbox", "md-radio", "md-switch" -> Text("Enable notifications")
-        "md-toolbar" -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { listOf("edit", "search", "settings").forEach { icon -> AWCComponent("md-icon-button", mapOf("icon" to icon), onEvent = event) } }
+        // Direct children of the toolbar, as in the source markup (it lays out, roves and tints its own children).
+        "md-toolbar" -> {
+            listOf("undo" to "Undo", "redo" to "Redo").forEach { (icon, label) -> AWCComponent("md-icon-button", mapOf("icon" to icon, "aria-label" to label), onEvent = event) }
+            AWCComponent("md-divider", mapOf("vertical" to true), onEvent = event)
+            listOf("format_bold" to "Bold", "format_italic" to "Italic").forEach { (icon, label) -> AWCComponent("md-icon-button", mapOf("icon" to icon, "aria-label" to label, "toggle" to true), onEvent = event) }
+        }
         "md-ripple" -> Text("Tap to see native ripple", Modifier.padding(24.dp))
         "md-tooltip" -> Text("Tap for details", Modifier.padding(12.dp))
-        "md-tab-panels", "md-tab-panel" -> Text("This is native tab panel content.")
+        "md-tab-panels" -> listOf("Your workspace, across every platform.", "Recent activity will appear here.", "Make this workspace your own.").forEachIndexed { index, copy -> AWCComponent("md-tab-panel", mapOf("active" to (index == 0)), onEvent = event) { if(it == "") Text(copy) } }
+        "md-tab-panel" -> Text("Your workspace, across every platform.")
         "md-button" -> Text("Continue")
-        "md-accordion-item" -> Text("The source contract is compiled into typed platform wrappers. Native adapters provide Compose behavior.")
+        "md-accordion-item" -> Text("Colors, spacing, shapes, and component contracts come from the same AWC source.")
         "md-dialog", "md-bottom-sheet", "md-side-sheet", "md-step" -> Text("This content is composed with native Android views. Change props and inspect events below.")
         else -> Unit
     }

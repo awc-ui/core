@@ -10,6 +10,8 @@ class AWCButtonAppearanceTest {
         "letterSpacing" to (-5.0 to 20.0), "cornerRadius" to (0.0 to 200.0), "outlineWidth" to (0.0 to 16.0),
         "paddingInline" to (0.0 to 128.0), "paddingBlock" to (0.0 to 128.0), "gap" to (0.0 to 64.0),
         "hoverOpacity" to (0.0 to 1.0), "focusOpacity" to (0.0 to 1.0), "pressedOpacity" to (0.0 to 1.0),
+        "width" to (0.0 to 2400.0), "minWidth" to (0.0 to 2400.0), "maxWidth" to (0.0 to 2400.0),
+        "height" to (0.0 to 2400.0), "minHeight" to (0.0 to 2400.0),
     )
 
     @Test fun acceptsEverySharedNumericBoundaryAndRejectsMalformedFieldsIndividually() {
@@ -25,11 +27,12 @@ class AWCButtonAppearanceTest {
         assertEquals(500.0, AWCButtonAppearance.fromValues(mapOf("fontWeight" to 500)).fontWeight)
     }
 
-    @Test fun acceptsOnlyHexSixColorsAndDropsUnknownFields() {
-        val fields = listOf("containerColor", "labelColor", "iconColor", "trailingIconColor", "loadingColor", "stateLayerColor", "outlineColor")
+    @Test fun acceptsSixAndEightDigitHexColorsAndDropsUnknownFields() {
+        val fields = listOf("containerColor", "labelColor", "iconColor", "trailingIconColor", "loadingColor", "stateLayerColor", "outlineColor", "focusRingColor")
         for (field in fields) {
             assertEquals("#ABCDEF", AWCButtonAppearance.fromValues(mapOf(field to "#aBcDeF")).values[field])
-            for (value in listOf<Any>("red", "#fff", "#11223344", " #123456", "rgb(1,2,3)", 123456)) {
+            assertEquals("#ABCDEF80", AWCButtonAppearance.fromValues(mapOf(field to "#aBcDeF80")).values[field])
+            for (value in listOf<Any>("red", "#fff", "#1122334", "#112233445", " #123456", "rgb(1,2,3)", 123456)) {
                 assertTrue(AWCButtonAppearance.fromValues(mapOf(field to value)).values.isEmpty())
             }
         }

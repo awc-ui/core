@@ -6,6 +6,50 @@ import { keyed } from "lit/directives/keyed.js";
 import "@awc-ui/core/define";
 import { t } from "../i18n";
 
+/** Exercise the public progress lifecycle against the actual browser animation.
+ * Four variants share the same value and completion-event contract. */
+const lifecyclePlay = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+  const progress = canvasElement.querySelector('md-progress-indicator') as HTMLMdProgressIndicatorElement;
+  await waitFor(() => expect(progress.classList.contains('hydrated')).toBe(true));
+  let completed = 0;
+  progress.addEventListener('mdComplete', () => completed++);
+  for (const value of [3, 45, 96, 100, 60]) {
+    progress.value = value;
+    await waitFor(() => expect(progress.getAttribute('aria-valuenow')).toBe(String(value)));
+    await new Promise(resolve => setTimeout(resolve, 160));
+    for (const path of progress.shadowRoot!.querySelectorAll('path')) expect(path.getAttribute('d') || '').not.toMatch(/NaN|Infinity/);
+  }
+  progress.thickness = 6;
+  progress.size = 72;
+  progress.waveAmplitude = 3;
+  progress.waveLength = 40;
+  await new Promise(resolve => setTimeout(resolve, 100));
+  progress.complete = true;
+  await waitFor(() => expect(completed).toBe(1), { timeout: 6000 });
+  if (progress.variant === 'circular' && !progress.wave) {
+    expect((progress.shadowRoot!.querySelector('[part="active-indicator"]') as SVGElement).style.opacity).toBe('0');
+  } else {
+    expect(progress.classList.contains('md-progress-indicator--complete')).toBe(true);
+  }
+};
+
+export const LinearCompletionLifecycle: Story = {
+  render: () => html`<div style="width:320px" dir="rtl"><md-progress-indicator label="Upload" value="0"></md-progress-indicator></div>`,
+  play: lifecyclePlay,
+};
+export const WavyLinearCompletionLifecycle: Story = {
+  render: () => html`<div style="width:320px"><md-progress-indicator label="Upload" wave value="0"></md-progress-indicator></div>`,
+  play: lifecyclePlay,
+};
+export const CircularCompletionLifecycle: Story = {
+  render: () => html`<md-progress-indicator label="Upload" variant="circular" value="0"></md-progress-indicator>`,
+  play: lifecyclePlay,
+};
+export const WavyCircularCompletionLifecycle: Story = {
+  render: () => html`<md-progress-indicator label="Upload" variant="circular" wave value="0"></md-progress-indicator>`,
+  play: lifecyclePlay,
+};
+
 const meta: Meta = {
   title: "Communication/Progress Indicator",
   component: "md-progress-indicator",

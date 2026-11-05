@@ -409,7 +409,7 @@
     "styleUrl": "md-navigation-rail-tab.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "e1c176bac617ff8eff078a714613e340ad06a9a943e17f43a1c4d8d36a6b0def"
+    "sha256": "643d001603b11d714d197f4b33ad2e068e1bbc495a28cf2b9656514654cced5c"
   },
   "styles": [
     {
@@ -1639,7 +1639,7 @@
       ]
     },
     {
-      "selector": ":host,\n  .md-navigation-rail-tab__indicator,\n  .md-navigation-rail-tab__state-layer,\n  .md-navigation-rail-tab__icon,\n  .md-navigation-rail-tab__label",
+      "selector": ":host,\n  .md-navigation-rail-tab__indicator,\n  .md-navigation-rail-tab__state-layer,\n  .md-navigation-rail-tab__icon,\n  .md-navigation-rail-tab__label,\n  :host(.md-navigation-rail-tab--labels-selected:not(.md-navigation-rail-tab--expanded))\n    .md-navigation-rail-tab__label",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
         {
@@ -1865,6 +1865,17 @@
         {
           "property": "outline-offset",
           "value": "2px",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([data-orientation='horizontal']) .md-navigation-rail-tab__icon-wrapper,\n  :host([data-orientation='horizontal']) .md-navigation-rail-tab__icon-wrapper::after",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
           "important": false
         }
       ]

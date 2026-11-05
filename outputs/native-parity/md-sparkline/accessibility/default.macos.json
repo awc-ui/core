@@ -1,0 +1,141 @@
+{
+ "tag": "md-sparkline",
+ "case": "default",
+ "request": {
+  "tag": "md-sparkline",
+  "properties": {
+   "data": [
+    3,
+    5,
+    4,
+    7,
+    6,
+    9,
+    8
+   ],
+   "noAnimation": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "description": "Sparkline, latest 8, range 3 to 9.",
+       "enabled": true,
+       "frame": [
+        32,
+        36,
+        576,
+        28
+       ],
+       "identifier": "example-md-sparkline",
+       "role": "AXImage",
+       "roleDescription": "image"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      100
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    100
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-sparkline",
+  "properties": {
+   "color": "primary",
+   "cornerRadius": 2,
+   "curve": "smooth",
+   "data": [
+    3,
+    5,
+    4,
+    7,
+    6,
+    9,
+    8
+   ],
+   "noAnimation": true,
+   "showMarks": "extremes",
+   "showTooltip": true,
+   "variant": "area"
+  },
+  "tag": "md-sparkline"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 28,
+     "width": 576,
+     "x": 32,
+     "y": 36
+    },
+    "id": "component",
+    "metrics": {
+     "announcement": "",
+     "areas": 1,
+     "background": "transparent",
+     "bars": 0,
+     "height": 28,
+     "legendHidden": [],
+     "lines": 1,
+     "padding": 0,
+     "plotHeight": 17,
+     "plotWidth": 565,
+     "plotX": 5.5,
+     "plotY": 5.5,
+     "shape": 0,
+     "slices": 0,
+     "width": 576
+    },
+    "name": "md-sparkline"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

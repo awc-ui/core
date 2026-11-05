@@ -341,12 +341,18 @@
    ========================================================== */
 
 @media (prefers-reduced-motion: reduce) {
+  /* Repeat the state selectors: `:host(.md-checkbox--pressed)` and the
+     checked/indeterminate glyph rules are more specific than the bare class,
+     so without them the press squish and the glyph entrance still animate. */
   .md-checkbox__container,
+  :host(.md-checkbox--pressed) .md-checkbox__container,
   .md-checkbox__state-layer {
     transition: none;
   }
 
-  .md-checkbox__icon .material-symbols-outlined {
+  .md-checkbox__icon .material-symbols-outlined,
+  :host(.md-checkbox--checked) .md-checkbox__icon .material-symbols-outlined,
+  :host(.md-checkbox--indeterminate) .md-checkbox__icon .material-symbols-outlined {
     animation: none;
   }
 }

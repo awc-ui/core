@@ -1,0 +1,306 @@
+{
+  "source": "Independent V8 Intl.NumberFormat reference",
+  "node": "v20.18.3",
+  "v8": "11.3.244.8-node.25",
+  "cases": [
+    {
+      "options": {
+        "style": "currency",
+        "currency": "USD",
+        "currencySign": "accounting",
+        "currencyDisplay": "code"
+      },
+      "value": -1234.5,
+      "locale": "en-US",
+      "expected": "(USD 1,234.50)"
+    },
+    {
+      "options": {
+        "style": "currency",
+        "currency": "USD",
+        "currencyDisplay": "narrowSymbol"
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "$1,234.50"
+    },
+    {
+      "options": {
+        "style": "currency",
+        "currency": "USD",
+        "currencyDisplay": "name"
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1,234.50 US dollars"
+    },
+    {
+      "options": {
+        "style": "unit",
+        "unit": "kilometer-per-hour",
+        "unitDisplay": "long"
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1,234.5 kilometers per hour"
+    },
+    {
+      "options": {
+        "style": "unit",
+        "unit": "gigabyte",
+        "unitDisplay": "narrow"
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1,234.5GB"
+    },
+    {
+      "options": {
+        "style": "percent",
+        "minimumFractionDigits": 2
+      },
+      "value": 0.375,
+      "locale": "en-US",
+      "expected": "37.50%"
+    },
+    {
+      "options": {
+        "notation": "engineering",
+        "maximumFractionDigits": 2
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1.23E3"
+    },
+    {
+      "options": {
+        "notation": "compact",
+        "compactDisplay": "long"
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1.2 thousand"
+    },
+    {
+      "options": {
+        "signDisplay": "exceptZero",
+        "minimumIntegerDigits": 4,
+        "useGrouping": false
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "+1234.5"
+    },
+    {
+      "options": {
+        "signDisplay": "negative"
+      },
+      "value": 0,
+      "locale": "en-US",
+      "expected": "0"
+    },
+    {
+      "options": {
+        "signDisplay": "never"
+      },
+      "value": -12,
+      "locale": "en-US",
+      "expected": "12"
+    },
+    {
+      "options": {
+        "numberingSystem": "arab",
+        "maximumSignificantDigits": 3
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "١٬٢٣٠"
+    },
+    {
+      "options": {
+        "minimumSignificantDigits": 7,
+        "maximumSignificantDigits": 8
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1,234.500"
+    },
+    {
+      "options": {
+        "roundingMode": "halfEven",
+        "roundingIncrement": 5,
+        "minimumFractionDigits": 2,
+        "maximumFractionDigits": 2
+      },
+      "value": 1.025,
+      "locale": "en-US",
+      "expected": "1.00"
+    },
+    {
+      "options": {
+        "roundingMode": "ceil",
+        "maximumFractionDigits": 0
+      },
+      "value": 1.2,
+      "locale": "en-US",
+      "expected": "2"
+    },
+    {
+      "options": {
+        "roundingMode": "floor",
+        "maximumFractionDigits": 0
+      },
+      "value": 1.8,
+      "locale": "en-US",
+      "expected": "1"
+    },
+    {
+      "options": {
+        "roundingMode": "expand",
+        "maximumFractionDigits": 0
+      },
+      "value": -1.2,
+      "locale": "en-US",
+      "expected": "-2"
+    },
+    {
+      "options": {
+        "roundingMode": "trunc",
+        "maximumFractionDigits": 0
+      },
+      "value": -1.8,
+      "locale": "en-US",
+      "expected": "-1"
+    },
+    {
+      "options": {
+        "roundingMode": "halfCeil",
+        "maximumFractionDigits": 0
+      },
+      "value": -1.5,
+      "locale": "en-US",
+      "expected": "-1"
+    },
+    {
+      "options": {
+        "roundingMode": "halfFloor",
+        "maximumFractionDigits": 0
+      },
+      "value": 1.5,
+      "locale": "en-US",
+      "expected": "1"
+    },
+    {
+      "options": {
+        "roundingMode": "halfExpand",
+        "maximumFractionDigits": 0
+      },
+      "value": -1.5,
+      "locale": "en-US",
+      "expected": "-2"
+    },
+    {
+      "options": {
+        "roundingMode": "halfTrunc",
+        "maximumFractionDigits": 0
+      },
+      "value": 1.5,
+      "locale": "en-US",
+      "expected": "1"
+    },
+    {
+      "options": {
+        "trailingZeroDisplay": "stripIfInteger",
+        "minimumFractionDigits": 2
+      },
+      "value": 1234,
+      "locale": "en-US",
+      "expected": "1,234"
+    },
+    {
+      "options": {
+        "roundingPriority": "morePrecision",
+        "maximumSignificantDigits": 3,
+        "maximumFractionDigits": 1
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1,234.5"
+    },
+    {
+      "options": {
+        "roundingPriority": "lessPrecision",
+        "maximumSignificantDigits": 3,
+        "maximumFractionDigits": 1
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1,230"
+    },
+    {
+      "options": {
+        "useGrouping": "min2"
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1234.5"
+    },
+    {
+      "options": {
+        "useGrouping": "always"
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1,234.5"
+    },
+    {
+      "options": {
+        "localeMatcher": "lookup"
+      },
+      "locale": "de-DE",
+      "value": 1234.5,
+      "expected": "1.234,5"
+    },
+    {
+      "options": {
+        "localeMatcher": "best fit"
+      },
+      "locale": "hi-IN",
+      "value": 1234.5,
+      "expected": "1,234.5"
+    },
+    {
+      "options": {
+        "style": "unit",
+        "unit": "not-a-unit"
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1234.5"
+    },
+    {
+      "options": {
+        "style": "currency",
+        "currency": "invalid"
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1234.5"
+    },
+    {
+      "options": {
+        "minimumFractionDigits": 4,
+        "maximumFractionDigits": 1
+      },
+      "value": 1234.5,
+      "locale": "en-US",
+      "expected": "1234.5"
+    },
+    {
+      "options": {},
+      "locale": "bad_locale",
+      "value": 1234.5,
+      "expected": "1234.5"
+    }
+  ]
+}

@@ -1,0 +1,480 @@
+{
+  "browser": "Chrome/153.0.8010.36",
+  "puppeteer": "25.11.0",
+  "capturedAt": "2026-10-23T17:46:14.390Z",
+  "page": "/card/lifecycle.html (assets only; the scenarios below build their own cards)",
+  "input": "CDP Input.dispatchMouseEvent / Input.dispatchTouchEvent",
+  "modes": {
+    "mouse": [
+      {
+        "scenario": "reference-click",
+        "events": [
+          {
+            "type": "mdClick",
+            "isTrusted": true,
+            "detail": 1
+          }
+        ],
+        "raw": [
+          "pointermove#1",
+          "pointerdown#1",
+          "pointermove#1",
+          "pointerup#1",
+          "lostpointercapture#1",
+          "click#1"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "reference-drag",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          },
+          {
+            "type": "mdDragMove",
+            "offsetX": 30
+          },
+          {
+            "type": "mdDragMove",
+            "offsetX": 30
+          },
+          {
+            "type": "mdDragEnd",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointermove#1",
+          "pointerdown#1",
+          "pointermove#1",
+          "pointermove#1",
+          "pointerup#1",
+          "lostpointercapture#1",
+          "click#1"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "authored-pointer",
+        "events": [
+          {
+            "type": "mdClick",
+            "isTrusted": true,
+            "detail": 1
+          }
+        ],
+        "raw": [
+          "pointermove#1",
+          "pointerdown#1",
+          "pointermove#1",
+          "pointermove#1",
+          "pointerup#1",
+          "click#1"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "toggle-disabled",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          },
+          {
+            "type": "mdDragMove",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointermove#1",
+          "pointerdown#1",
+          "pointermove#1",
+          "lostpointercapture#1"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "toggle-softDisabled",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          },
+          {
+            "type": "mdDragMove",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointermove#1",
+          "pointerdown#1",
+          "pointermove#1",
+          "lostpointercapture#1",
+          "pointermove#1",
+          "pointermove#1",
+          "pointerup#1",
+          "click#1"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "toggle-dragEnabled",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          },
+          {
+            "type": "mdDragMove",
+            "offsetX": 30
+          },
+          {
+            "type": "mdClick",
+            "isTrusted": true,
+            "detail": 1
+          }
+        ],
+        "raw": [
+          "pointermove#1",
+          "pointerdown#1",
+          "pointermove#1",
+          "lostpointercapture#1",
+          "pointermove#1",
+          "pointermove#1",
+          "pointerup#1",
+          "click#1"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "reentrant-disabled",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointermove#1",
+          "pointerdown#1",
+          "pointermove#1",
+          "lostpointercapture#1"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "reentrant-dragEnabled",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          },
+          {
+            "type": "mdClick",
+            "isTrusted": true,
+            "detail": 1
+          }
+        ],
+        "raw": [
+          "pointermove#1",
+          "pointerdown#1",
+          "pointermove#1",
+          "lostpointercapture#1",
+          "pointermove#1",
+          "pointermove#1",
+          "pointerup#1",
+          "click#1"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "reentrant-disconnect",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointermove#1",
+          "pointerdown#1",
+          "pointermove#1"
+        ],
+        "connected": false,
+        "dragged": false,
+        "transform": null,
+        "value": null
+      },
+      {
+        "scenario": "authored-keyboard",
+        "events": [],
+        "raw": [],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": " a"
+      }
+    ],
+    "touch": [
+      {
+        "scenario": "reference-click",
+        "events": [
+          {
+            "type": "mdClick",
+            "isTrusted": true,
+            "detail": 1
+          }
+        ],
+        "raw": [
+          "pointerdown#2",
+          "pointerup#2",
+          "lostpointercapture#2",
+          "click#2"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "reference-drag",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          },
+          {
+            "type": "mdDragMove",
+            "offsetX": 30
+          },
+          {
+            "type": "mdDragEnd",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointerdown#3",
+          "pointermove#3",
+          "pointerup#3",
+          "lostpointercapture#3"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "authored-pointer",
+        "events": [],
+        "raw": [
+          "pointerdown#4",
+          "pointermove#4",
+          "pointerup#4",
+          "lostpointercapture#4"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "toggle-disabled",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          },
+          {
+            "type": "mdDragMove",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointerdown#5",
+          "pointermove#5",
+          "lostpointercapture#5"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "toggle-softDisabled",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          },
+          {
+            "type": "mdDragMove",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointerdown#6",
+          "pointermove#6",
+          "lostpointercapture#6",
+          "pointermove#6",
+          "pointerup#6"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "toggle-dragEnabled",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          },
+          {
+            "type": "mdDragMove",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointerdown#7",
+          "pointermove#7",
+          "lostpointercapture#7",
+          "pointermove#7",
+          "pointerup#7"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "reentrant-disabled",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointerdown#8",
+          "pointermove#8",
+          "lostpointercapture#8"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "reentrant-dragEnabled",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointerdown#9",
+          "pointermove#9",
+          "lostpointercapture#9",
+          "pointermove#9",
+          "pointerup#9"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      },
+      {
+        "scenario": "reentrant-disconnect",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointerdown#10",
+          "pointermove#10"
+        ],
+        "connected": false,
+        "dragged": false,
+        "transform": null,
+        "value": null
+      },
+      {
+        "scenario": "pointer-ownership",
+        "events": [],
+        "raw": [
+          "pointerdown#11",
+          "pointerdown#12",
+          "pointermove#12",
+          "pointerup#11",
+          "lostpointercapture#11",
+          "pointerdown#13",
+          "pointerup#13",
+          "lostpointercapture#13",
+          "pointerup#12",
+          "lostpointercapture#12"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null,
+        "during": {
+          "events": [],
+          "transform": ""
+        }
+      },
+      {
+        "scenario": "pointercancel",
+        "events": [
+          {
+            "type": "mdDragStart",
+            "offsetX": 30
+          },
+          {
+            "type": "mdDragMove",
+            "offsetX": 30
+          }
+        ],
+        "raw": [
+          "pointerdown#14",
+          "pointermove#14",
+          "pointercancel#14",
+          "lostpointercapture#14"
+        ],
+        "connected": true,
+        "dragged": false,
+        "transform": "",
+        "value": null
+      }
+    ]
+  }
+}

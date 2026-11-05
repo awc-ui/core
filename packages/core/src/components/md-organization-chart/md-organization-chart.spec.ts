@@ -28,6 +28,57 @@ const items = (page: { root?: HTMLElement | null }) =>
   Array.from(shadow(page)?.querySelectorAll('[role="treeitem"]') ?? []);
 
 describe('md-organization-chart', () => {
+  it('navigates the visible hierarchy and selects through the rendered tree keyboard contract', async () => {
+    const page = await withNodes(TREE, 'selection-mode="multiple"');
+    const byId = (id: string) => shadow(page)!.querySelector(`[data-id="${id}"]`) as HTMLElement;
+    const press = async (id: string, key: string) => {
+      // mock-doc bubbles focus, unlike the browser's focus event; model the
+      // browser contract so ancestor treeitems cannot steal the roving owner.
+      for (const item of items(page)) (item as HTMLElement).focus = () => item.dispatchEvent(new Event('focus'));
+      byId(id).dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      await page.waitForChanges();
+    };
+    const focus = () => shadow(page)!.querySelector('[tabindex="0"]')!.getAttribute('data-id');
+    await press('a', 'ArrowRight'); expect(focus()).toBe('b');
+    await press('b', 'ArrowDown'); expect(focus()).toBe('d');
+    await press('d', 'ArrowLeft'); expect(focus()).toBe('b');
+    await press('b', 'ArrowLeft'); expect(byId('b').getAttribute('aria-expanded')).toBe('false');
+    await press('b', 'ArrowRight'); expect(byId('b').getAttribute('aria-expanded')).toBe('true');
+    await press('b', 'End'); expect(focus()).toBe('c');
+    await press('c', 'ArrowUp'); expect(focus()).toBe('d');
+    await press('d', 'Home'); expect(focus()).toBe('a');
+    await press('a', 'Enter'); expect(byId('a').getAttribute('aria-selected')).toBe('true');
+    await press('a', ' '); expect(byId('a').getAttribute('aria-selected')).toBe('false');
+    await press('a', 'Tab'); expect(focus()).toBe('a');
+    await press('a', 'ArrowUp'); expect(focus()).toBe('a');
+    await press('a', 'ArrowLeft'); expect(byId('a').getAttribute('aria-expanded')).toBe('false');
+    await press('a', 'ArrowLeft'); expect(focus()).toBe('a');
+  });
+
+  it('uses activation to expand nonselectable groups and accepts single-root JSON updates', async () => {
+    const page = await withNodes(TREE, 'selection-mode="none"');
+    const rootItem = () => shadow(page)!.querySelector('[data-id="a"]') as HTMLElement;
+    rootItem().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    await page.waitForChanges();
+    expect(rootItem().getAttribute('aria-expanded')).toBe('false');
+    rootItem().dispatchEvent(new KeyboardEvent('keydown', { key: 'Spacebar', bubbles: true }));
+    await page.waitForChanges();
+    expect(rootItem().getAttribute('aria-expanded')).toBe('true');
+    const toggle = rootItem().querySelector('[part="toggle"]')!;
+    const bubbled = jest.fn(); page.root!.addEventListener('pointerdown', bubbled);
+    toggle.dispatchEvent(new Event('pointerdown', { bubbles: true, composed: true }));
+    expect(bubbled).not.toHaveBeenCalled();
+    (page.root as HTMLMdOrganizationChartElement).nodes = JSON.stringify({ id: 'new', name: 'New owner' });
+    await page.waitForChanges();
+    expect(items(page)).toHaveLength(1);
+    expect(items(page)[0].getAttribute('tabindex')).toBe('0');
+    (page.root as HTMLMdOrganizationChartElement).nodes = '{invalid';
+    await page.waitForChanges();
+    expect(shadow(page)!.querySelector('[part="empty"]')).toBeTruthy();
+    (page.root as HTMLMdOrganizationChartElement).nodes = '';
+    await page.waitForChanges();
+    expect(shadow(page)!.querySelector('[part="empty"]')).toBeTruthy();
+  });
   describe('rendering', () => {
     it('renders an empty state when there are no nodes', async () => {
       const page = await newSpecPage({
@@ -320,5 +371,26 @@ describe('trail geometry hooks', () => {
     const group = page.root?.shadowRoot?.querySelector('.md-org-chart__group');
     // Stale inline geometry would leave a coloured stub behind on a cleared tree.
     expect(group?.hasAttribute('data-trail')).toBe(false);
+  });
+});
+
+describe('md-organization-chart reading direction', () => {
+  it('reverses hierarchy arrows in RTL and preserves single-selection and nonselectable nodes', async () => {
+    const computed = globalThis.getComputedStyle;
+    const style = jest.spyOn(globalThis, 'getComputedStyle').mockImplementation(element => {
+      const value = computed(element); Object.defineProperty(value, 'direction', { value: 'rtl', configurable: true }); return value;
+    });
+    try {
+      const page = await withNodes([{ id: 'root', name: 'Director', accent: 'red', expanded: false, children: [{ id: 'leaf', name: 'Vacant', selectable: false }] }], 'selection-mode="single" dir="rtl"');
+      const root = () => shadow(page)!.querySelector('[data-id="root"]') as HTMLElement;
+      const key = async (key: string) => { root().dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true })); await page.waitForChanges(); };
+      await key('ArrowLeft'); expect(root().getAttribute('aria-expanded')).toBe('true');
+      await key('Enter'); expect((page.root as HTMLMdOrganizationChartElement).selectedIds).toEqual(['root']);
+      await key('Enter'); expect((page.root as HTMLMdOrganizationChartElement).selectedIds).toEqual([]);
+      const leaf = shadow(page)!.querySelector('[data-id="leaf"]') as HTMLElement;
+      leaf.click(); await page.waitForChanges(); expect(leaf.hasAttribute('aria-selected')).toBe(false);
+      await key('ArrowRight'); expect(root().getAttribute('aria-expanded')).toBe('false');
+      expect(root().querySelector('[part="node"]')!.getAttribute('style')).toContain('--_accent');
+    } finally { style.mockRestore(); }
   });
 });

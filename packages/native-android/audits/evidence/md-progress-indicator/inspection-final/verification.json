@@ -1,0 +1,44 @@
+{
+  "command": "JAVA_HOME=/Users/ionut-valentinmitrache/Library/Java/JavaVirtualMachines/openjdk-23.0.1/Contents/Home ANDROID_HOME=/Users/ionut-valentinmitrache/Documents/Codex/2026-10-07/p/work/android-sdk ANDROID_SERIAL=emulator-5554 apps/native-android-playground/gradlew -p apps/native-android-playground :app:connectedDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=dev.awc.playground.NativeProgressPathOracleTest' --console=plain",
+  "deviceMethods": [
+    {
+      "name": "rotatedCircularInspectionPartsMatchActualWebElementRectangles",
+      "passed": true
+    },
+    {
+      "name": "actualIndeterminatePaintContoursMirrorPreciselyIncludingPhysicalCorners",
+      "passed": true
+    },
+    {
+      "name": "nativeCurvesMatchEveryPausedWebWavePath",
+      "passed": true
+    },
+    {
+      "name": "flatCircularSweepRotationAndFourColorsMatchPausedCssFrames",
+      "passed": true
+    }
+  ],
+  "sourceHashes": {
+    "packages/native-android/src/main/java/dev/awc/nativeui/AWCProgressIndicatorAppearance.kt": "6a01ef3b0ddea0397b03b21ac9948dd7906c0c108895df3a5abb85e67aaaaac0",
+    "packages/native-android/src/main/java/dev/awc/nativeui/NativeProgressGeometry.kt": "50931895fcc380d1121e72e6cffdf09b00cf43bb64b0a144dca0d9948b9bafba",
+    "packages/native-android/src/main/java/dev/awc/nativeui/NativeProgressMotion.kt": "bf7cfbb291c030b2ce35b82607907b0c438f65a19b1a2df44133015345478ed0",
+    "packages/native-android/src/main/java/dev/awc/nativeui/NativeProgressIndicator.kt": "86442217c469297d9085d1b267b15bea58b4f5cbd794bd24a8303ff35e9c32cd",
+    "packages/native-android/src/main/java/dev/awc/nativeui/NativeProgressPath.kt": "ef04da993d964ced2b0e7cbdb841487b749cc95bf008557345c5f634924f148c",
+    "packages/native-android/src/test/java/dev/awc/nativeui/NativeProgressContractTest.kt": "12fbe0eee08dbd2b385c87db75c38fe82ea2db86ca3bfbfe940a1379b33639bb",
+    "apps/native-android-playground/src/androidTest/java/dev/awc/playground/NativeProgressPathOracleTest.kt": "353f5950a7cd9271b7f837f284c1d784a71b64b07ccb46278162e345daccfac0",
+    "apps/native-android-playground/src/androidTest/java/dev/awc/playground/NativeProgressParityTest.kt": "c6d607fcc499297ca760e0462fc1da66860d262ccf633d3abf1790635204d03c",
+    "apps/native-android-playground/src/androidTest/java/dev/awc/playground/LivePreviewHostTest.kt": "f6ca94d16e912f7cabf6e195f68724cb1388303ec6422e88860dee93d0f0d028",
+    "apps/native-android-playground/src/debug/java/dev/awc/playground/LivePreviewActivity.kt": "8cc85e9652e27d05baaeb08a6fc13876d6c4136275470cd72a30441260eda6f8",
+    "apps/native-android-playground/src/debug/java/dev/awc/playground/LivePreviewProgress.kt": "bc6c1b2639a2620fe3e54d7855c9fd8efdf3cea35b5d5d73cfca6319dea32af6",
+    "packages/native-android/src/main/java/dev/awc/nativeui/AWCComponent.kt": "2ac0b31d17cbcecfce127050804437efc7e6888ae6892aada94da371d6a55d09",
+    "apps/native-android-playground/src/main/java/dev/awc/playground/MainActivity.kt": "f1794b7257a5cdfe20e41f778ead2201216bad47d3b5fd2928490d19178a8c00",
+    "packages/native-android/support.json": "eaa8a34845cf73bd8020125f9708b65a88b69917ba2c227f65514c0abfd23261",
+    "packages/native-android/generate-support.py": "4af07e336f42264aeeedee4fc931110c0870901570f01a7810e19ceba03adfb6",
+    "apps/native-android-playground/app/build/outputs/apk/debug/app-debug.apk": "1d9993acc5db358e09fe802432ebe12ff4a32310db5867abb07c61eb1dcb7aa0",
+    "apps/native-android-playground/src/androidTest/assets/ProgressWeb-edges.json": "cb1d19de5c7c15627a065eb19b5b961e44495f03ef8fc89203d150b6fc3571cf",
+    "apps/native-android-playground/src/androidTest/assets/ProgressWeb-dark.json": "2ba07b795ea7cacd67312601e7b00d057bdba3b6eaf1a801b8ced1c163a2ce1e",
+    "apps/native-android-playground/src/androidTest/assets/ProgressWeb-light.json": "4dbaabe57bd70303067d7d967eaa5bf9f28173ab6676ec3b149cf25ab90c3321"
+  },
+  "scope": "Inspection rectangles follow transformed local geometric SVG boxes; painting and path transforms unchanged. Prior112-unit/9-device and integrated Laboratory evidence retained.",
+  "partBoxToleranceDp": 0.04
+}

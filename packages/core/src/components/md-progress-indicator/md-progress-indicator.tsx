@@ -1,4 +1,4 @@
-import { Component, Host, h, Prop, Element, Watch, State, Event, EventEmitter } from '@stencil/core';
+import { Component, Host, h, Prop, Element, Watch, State, Event, EventEmitter, forceUpdate } from '@stencil/core';
 
 /* ============================================================================
  * Material Design 3 — Progress Indicator (Expressive generation)
@@ -189,6 +189,7 @@ export class MdProgressIndicator {
   private linearWidth = 0; // cached layout width (refreshed on render + resize)
   private visible = true;
   private rtl = false; // cached layout direction (refreshed each render)
+  private syncedDensity = 0;
 
   // ── completion animation state ────────────────────────────────────────────
   private completingFromFrac = 0;
@@ -345,6 +346,15 @@ export class MdProgressIndicator {
   }
 
   componentDidRender() {
+    // Reflected density attributes become visible to CSS during rendering.
+    // Reconcile the host dimensions and SVG viewBox together after that step.
+    // Otherwise an initial local density leaves the host at its old size while
+    // the animated path reads the new density and shrinks inside it.
+    if (!Object.is(this.syncedDensity, this.densityScale)) {
+      this.syncHostStyles();
+      forceUpdate(this);
+      return;
+    }
     this.ensureLoop();
     // Refresh the cached layout direction (inherited from ancestors via dir=rtl).
     this.rtl = this.computeRtl();
@@ -414,6 +424,7 @@ export class MdProgressIndicator {
   @Watch('wave')
   @Watch('waveAmplitude')
   @Watch('waveLength')
+  @Watch('waveSpeed')
   @Watch('variant')
   onDimensionChange() {
     this.syncHostStyles();
@@ -425,6 +436,13 @@ export class MdProgressIndicator {
   @Watch('wave')
   @Watch('reducedMotion')
   onAmplitudeInputChange() {
+    if (this.reducedMotion && (this.wlcPhase > 0 || this.flcPhase > 0 || this.ccPhase > 0)) {
+      this.wlcPhase = 0;
+      this.amp = this.ampTo = 0;
+      this.handleComplete();
+      this.stopLoop();
+      return;
+    }
     if (this.ccPhase > 0) return; // a completion sequence owns the geometry
     this.retargetAmplitude();
     // A value change also needs to wake the loop so the wavy circular sweep
@@ -439,6 +457,13 @@ export class MdProgressIndicator {
     // Wave linear: multi-phase rAF sequence (fill → flatten → scaleY collapse).
     // Snap amp to 1 now so the flatten always starts from a fully visible wave.
     if (this.variant === 'linear' && this.wave) {
+      // The wave phases require rAF; reduced motion disables that loop.
+      // Settle immediately instead of leaving completion permanently pending.
+      if (this.reducedMotion || typeof requestAnimationFrame === 'undefined') {
+        this.handleComplete();
+        this.stopLoop();
+        return;
+      }
       this.amp = 1;
       this.ampFrom = 1;
       this.ampTo = 1;
@@ -521,6 +546,7 @@ export class MdProgressIndicator {
   private syncHostStyles() {
     const s = this.el?.style;
     if (!s) return;
+    this.syncedDensity = this.densityScale;
     const t = this.resolvedThickness;
     s.setProperty('--_thickness', `${t}px`);
     s.setProperty('--_linear-height', `${this.wave ? this.linearWaveHeight : t}px`);
@@ -949,8 +975,11 @@ export class MdProgressIndicator {
     const drawBar = (barRef: HTMLDivElement | null, pathRef: SVGPathElement | null) => {
       if (!barRef || !pathRef) return;
       const br = barRef.getBoundingClientRect();
-      const startX = br.left - containerRect.left;
-      const endX = br.right - containerRect.left;
+      // Bounds are already mirrored by the RTL container transform. Convert
+      // them back into the SVG's local coordinates before drawing; the SVG
+      // and track mask receive the same container flip when they are painted.
+      const startX = this.rtl ? containerRect.right - br.right : br.left - containerRect.left;
+      const endX = this.rtl ? containerRect.right - br.left : br.right - containerRect.left;
       if (endX - startX < 1) { pathRef.setAttribute('d', ''); return; }
       pathRef.setAttribute('d', this.buildLinearWaveSVGPath(startX, endX, this.amp, this.linearPhase));
       // Widen by r so the round caps don't leave a sliver of track showing.

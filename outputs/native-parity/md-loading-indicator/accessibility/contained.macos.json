@@ -1,0 +1,151 @@
+{
+ "tag": "md-loading-indicator",
+ "case": "contained",
+ "request": {
+  "tag": "md-loading-indicator",
+  "properties": {
+   "label": "Loading projects",
+   "variant": "contained"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "description": "Loading projects",
+         "focused": false,
+         "frame": [
+          296,
+          32,
+          48,
+          48
+         ],
+         "identifier": "example-md-loading-indicator",
+         "role": "AXProgressIndicator",
+         "roleDescription": "progress indicator",
+         "valueDescription": "Indeterminate"
+        }
+       ],
+       "enabled": true,
+       "frame": [
+        296,
+        32,
+        48,
+        48
+       ],
+       "identifier": "example-md-loading-indicator",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      112
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    112
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-loading-indicator",
+  "properties": {
+   "density": 0,
+   "label": "Loading projects",
+   "variant": "contained"
+  },
+  "tag": "md-loading-indicator"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 48,
+     "width": 48,
+     "x": 296,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI morphing progress indicator",
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "name": "md-loading-indicator"
+   },
+   {
+    "bounds": {
+     "height": 38.016,
+     "width": 38.016,
+     "x": 300.992,
+     "y": 36.992
+    },
+    "id": "component.shape",
+    "name": "md-loading-indicator ::part(shape)",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

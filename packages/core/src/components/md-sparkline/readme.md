@@ -116,9 +116,10 @@ footer, empty or loading slot by design.
 - **`referenceAreas` `from` / `to` are data INDICES, not values** — they shade a
   vertical window of the series (a weekend, an outage), not a value band. They
   are drawn on the `line` and `area` variants only.
-- A reference area's `color` is used as a raw CSS colour, not an MD3 role: a
-  `#rrggbb` or `rgb(...)` value is tinted to 18% alpha, anything else is used as
-  given. Omit it to get a tint of the line colour.
+- A reference area's `color` is used as a raw CSS colour, not an MD3 role. An
+  opaque colour, in any syntax (`#rrggbb`, `rgb()`, `hsl()`, a name), is tinted
+  to 18% alpha; one that already carries its own alpha (`rgba(…, .3)`,
+  `#rrggbbaa`) is used as given. Omit it to get a 12% tint of the line colour.
 - **`curve`, `show-marks`, `line-width` and `mark-size` apply to `line` / `area`
   only**; `bar-width` and `corner-radius` apply to `bar` only.
 - **Switching `variant` between `bar` and the others swaps the engine** and

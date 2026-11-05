@@ -87,4 +87,42 @@ describe('md-skeleton', () => {
     });
     expect(page.root!).toHaveClass('md-skeleton--anim-wave');
   });
+
+  it.each([false, true])('keeps the motion preference synchronized after reconnect (initial=%s)', async initial => {
+    const page = await newSpecPage({ components: [MdSkeleton], html: '' });
+    const original = Object.getOwnPropertyDescriptor(window, 'matchMedia');
+    const listeners = new Set<() => void>();
+    const query = {
+      matches: initial,
+      addEventListener: jest.fn((_type: string, listener: () => void) => listeners.add(listener)),
+      removeEventListener: jest.fn((_type: string, listener: () => void) => listeners.delete(listener)),
+    };
+    Object.defineProperty(window, 'matchMedia', { configurable: true, value: () => query });
+    try {
+      await page.setContent('<md-skeleton animation="wave"></md-skeleton>');
+      const host = page.root!;
+      expect(host).toHaveClass(`md-skeleton--anim-${initial ? 'none' : 'wave'}`);
+      expect(listeners.size).toBe(1);
+
+      host.remove();
+      await page.waitForChanges();
+      expect(listeners.size).toBe(0);
+      query.matches = !initial; // Preference changed while detached.
+      page.body.appendChild(host);
+      await page.waitForChanges();
+      expect(host).toHaveClass(`md-skeleton--anim-${!initial ? 'none' : 'wave'}`);
+      expect(listeners.size).toBe(1);
+
+      query.matches = initial;
+      listeners.forEach(listener => listener());
+      await page.waitForChanges();
+      expect(host).toHaveClass(`md-skeleton--anim-${initial ? 'none' : 'wave'}`);
+      host.remove();
+      await page.waitForChanges();
+      expect(listeners.size).toBe(0);
+    } finally {
+      if (original) Object.defineProperty(window, 'matchMedia', original);
+      else delete (window as unknown as { matchMedia?: unknown }).matchMedia;
+    }
+  });
 });

@@ -373,7 +373,9 @@ export function syncOverlay(
       // currently shown or hidden. Set every render, since that is what changes.
       chip.setAttribute('aria-pressed', String(!l.hidden));
       const [dot, txt] = Array.from(chip.children) as HTMLElement[];
-      dot.style.cssText = `width:10px;height:10px;border-radius:3px;background:${l.color};opacity:${l.hidden ? 0.4 : 1};flex:none`;
+      // forced-color-adjust:none — under forced colors the canvas keeps the series
+      // colours, so the legend key must too, or it no longer says which line is which.
+      dot.style.cssText = `width:10px;height:10px;border-radius:3px;background:${l.color};opacity:${l.hidden ? 0.4 : 1};flex:none;forced-color-adjust:none`;
       txt.style.cssText = 'overflow:hidden;text-overflow:ellipsis;min-width:0';
       if (txt.textContent !== l.label) txt.textContent = l.label;
       // The clipped text is still the full name to a screen reader, but a

@@ -524,6 +524,9 @@ export class MdSearch {
   }
 
   componentWillLoad() {
+    // Light-DOM content already exists before the first slotchange event.
+    this.hasSlottedLeading = Array.from(this.el.children).some((child) => child.getAttribute('slot') === 'leading');
+    this.hasSlottedTrailing = Array.from(this.el.children).some((child) => child.getAttribute('slot') === 'trailing');
     this.barExpanded = this.open;
     this.panelVisible = this.open;
     // Seed the loading morph so an initial `loading` renders without a flash.
@@ -545,17 +548,9 @@ export class MdSearch {
     const shadow = this.el.shadowRoot;
     if (!shadow) return;
 
-    const leadingSlot = shadow.querySelector('slot[name="leading"]') as HTMLSlotElement | null;
     const trailingSlot = shadow.querySelector('slot[name="trailing"]') as HTMLSlotElement | null;
     // Kept for mdTrailingIconClick hit-testing against assigned (slotted) nodes.
     this.trailingSlotEl = trailingSlot ?? undefined;
-
-    leadingSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedLeading = leadingSlot.assignedElements().length > 0;
-    });
-    trailingSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedTrailing = trailingSlot.assignedElements().length > 0;
-    });
 
     // Recompute the announcement when the slotted results change in a real
     // browser. The count itself is read from the host's light DOM (see
@@ -1336,6 +1331,10 @@ export class MdSearch {
 
   private handleInputKeyDown = (e: KeyboardEvent) => {
     if (this.disabled) return;
+    // The Enter (or Space) that commits an IME composition belongs to the
+    // IME, not to the search: no submit, no open. WebKit reports the commit
+    // keydown with keyCode 229 and isComposing already false.
+    if (e.isComposing || e.keyCode === 229) return;
     // When closed, Enter / Space activate the field for input (open the view)
     // rather than submitting / inserting a space.
     if (!this.open) {
@@ -1357,6 +1356,9 @@ export class MdSearch {
   @Listen('keydown', { target: 'window' })
   handleWindowKeyDown(e: KeyboardEvent) {
     if (!this.open) return;
+    // The docked view is non-modal: keys typed in an unrelated page control
+    // belong to that control. Full-screen is modal and owns the keyboard.
+    if (this.layout !== 'full-screen' && !this.ownsKeyboardFocus()) return;
     if (e.key === 'Escape' && this.escapeCloses) {
       e.preventDefault();
       this.open = false;
@@ -1378,7 +1380,7 @@ export class MdSearch {
     if (focusables.length === 0) return;
     const first = focusables[0];
     const last = focusables[focusables.length - 1];
-    const active = (this.el.shadowRoot?.activeElement ?? document.activeElement) as HTMLElement | null;
+    const active = this.deepActiveElement();
     if (e.shiftKey && active === first) {
       e.preventDefault();
       last.focus();
@@ -1388,18 +1390,100 @@ export class MdSearch {
     }
   }
 
+  /**
+   * The focused element, followed down through open shadow roots, so focus
+   * inside a slotted row's own shadow (md-list-item's inner span) or inside a
+   * page whose md-search sits in another component's shadow reads correctly.
+   */
+  private deepActiveElement(): HTMLElement | null {
+    if (typeof document === 'undefined') return null;
+    let active = document.activeElement as HTMLElement | null;
+    while (active?.shadowRoot?.activeElement) {
+      active = active.shadowRoot.activeElement as HTMLElement;
+    }
+    return active;
+  }
+
+  /**
+   * Whether keyboard focus is this search's to act on: focus is in the
+   * search (its shadow, its slotted content, or its external trigger), or
+   * nowhere at all (the document body).
+   */
+  private ownsKeyboardFocus(): boolean {
+    const outer = typeof document !== 'undefined' ? document.activeElement : null;
+    if (!outer || outer === document.body || outer === document.documentElement) return true;
+    const trigger = this.wiredTrigger ?? this.resolveExternalTrigger();
+    const active = this.deepActiveElement();
+    return (
+      this.composedContains(this.el, active) ||
+      (trigger !== null && this.composedContains(trigger, active))
+    );
+  }
+
+  /** `ancestor.contains(node)` across shadow boundaries. */
+  private composedContains(ancestor: Node, node: Node | null): boolean {
+    while (node) {
+      if (node === ancestor) return true;
+      node =
+        node.parentNode ??
+        (node.nodeType === 11 ? ((node as ShadowRoot).host ?? null) : null);
+    }
+    return false;
+  }
+
+  /**
+   * Tabbable elements in composed (focus-navigation) order: the shadow tree
+   * walked with each slot replaced by its flattened assigned content, and
+   * descending into open shadow roots — so slotted results whose tab stop
+   * lives in their own shadow (md-list's roving row) are part of the trap.
+   */
   private collectFocusables(): HTMLElement[] {
     const root = this.el.shadowRoot;
     if (!root) return [];
-    const sel =
-      'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]), md-icon-button, md-button';
-    const inShadow = Array.from(root.querySelectorAll(sel)) as HTMLElement[];
-    const inLight = Array.from(this.el.querySelectorAll(sel)) as HTMLElement[];
-    return [...inShadow, ...inLight].filter((node) => {
-      if (node.hasAttribute('disabled')) return false;
-      const tabindex = node.getAttribute('tabindex');
-      return tabindex !== '-1';
-    });
+    const out: HTMLElement[] = [];
+    const visitChildren = (parent: ParentNode) => {
+      for (const child of Array.from(parent.children)) visit(child as HTMLElement);
+    };
+    const visit = (el: HTMLElement) => {
+      if (el.hasAttribute('hidden') || el.hasAttribute('inert')) return;
+      if (el.localName === 'slot') {
+        const slot = el as unknown as HTMLSlotElement;
+        // `flatten` resolves nested slots and falls back to the slot's own
+        // content when nothing is assigned.
+        const assigned =
+          typeof slot.assignedElements === 'function'
+            ? slot.assignedElements({ flatten: true })
+            : Array.from(slot.children);
+        for (const node of assigned) visit(node as HTMLElement);
+        return;
+      }
+      if (this.isTabbable(el)) out.push(el);
+      visitChildren(el.shadowRoot ?? el);
+    };
+    visitChildren(root);
+    return out;
+  }
+
+  private isTabbable(el: HTMLElement): boolean {
+    if (el.hasAttribute('disabled')) return false;
+    const attr = el.getAttribute('tabindex');
+    const index = attr === null || attr.trim() === '' ? NaN : Number(attr);
+    if (!Number.isNaN(index)) {
+      if (index < 0) return false;
+    } else if (
+      !el.matches(
+        'a[href], area[href], button, input:not([type="hidden"]), select, textarea, ' +
+          'iframe, summary, [contenteditable=""], [contenteditable="true"]',
+      )
+    ) {
+      return false;
+    }
+    const check = (el as HTMLElement & {
+      checkVisibility?: (o: Record<string, boolean>) => boolean;
+    }).checkVisibility;
+    return typeof check === 'function'
+      ? check.call(el, { checkVisibilityCSS: true, visibilityProperty: true })
+      : true;
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -1457,12 +1541,9 @@ export class MdSearch {
   private moveResultFocus(delta: number): boolean {
     const items = this.resultItems();
     if (items.length === 0) return false;
-    const active = (this.el.shadowRoot?.activeElement ??
-      (typeof document !== 'undefined' ? document.activeElement : null)) as
-      | HTMLElement
-      | null;
+    const active = this.deepActiveElement();
     const current = active
-      ? items.findIndex((it) => it === active || it.contains(active))
+      ? items.findIndex((it) => this.composedContains(it, active))
       : -1;
 
     if (delta > 0) {
@@ -1624,7 +1705,9 @@ export class MdSearch {
         part="leading"
         onClick={this.handleLeadingClick}
       >
-        <slot name="leading">
+        <slot name="leading" onSlotchange={(event) => {
+          this.hasSlottedLeading = (event.currentTarget as HTMLSlotElement).assignedElements().length > 0;
+        }}>
           <button
             type="button"
             class="md-search__leading-button"
@@ -1737,7 +1820,9 @@ export class MdSearch {
           </span>
         )}
         {showVoice && this.renderVoiceButton()}
-        <slot name="trailing"></slot>
+        <slot name="trailing" ref={(slot) => { this.trailingSlotEl = slot; }} onSlotchange={(event) => {
+          this.hasSlottedTrailing = (event.currentTarget as HTMLSlotElement).assignedElements().length > 0;
+        }}></slot>
       </span>
     );
   }

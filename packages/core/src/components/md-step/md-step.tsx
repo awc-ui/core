@@ -183,14 +183,14 @@ export class MdStep {
     ) as HTMLMdStepElement[];
   }
 
-  /** Every prior step completed — or optional, which may be skipped. Mirrors
+  /** Every prior step completed — or optional / disabled, which may be skipped. Mirrors
    *  the parent stepper's `canNavigateTo` so header affordance and actual
    *  navigability never disagree. */
   private allPriorPassable(): boolean {
     const siblings = this.stepSiblings();
     for (let i = 0; i < this.index; i++) {
       const s = siblings[i];
-      if (!s?.completed && !s?.optional) return false;
+      if (!s?.completed && !s?.optional && !s?.disabled) return false;
     }
     return true;
   }

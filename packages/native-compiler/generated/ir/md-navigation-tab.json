@@ -218,6 +218,10 @@
   ],
   "cssProperties": [
     {
+      "name": "--md-navigation-tab-active-indicator-color",
+      "description": "Active indicator (pill) colour"
+    },
+    {
       "name": "--md-navigation-tab-active-indicator-width",
       "description": "(default 56px)"
     },
@@ -228,6 +232,22 @@
     {
       "name": "--md-navigation-tab-active-indicator-shape",
       "description": "(default full-rounded)"
+    },
+    {
+      "name": "--md-navigation-tab-active-icon-color",
+      "description": "Icon colour of the active destination"
+    },
+    {
+      "name": "--md-navigation-tab-inactive-icon-color",
+      "description": "Icon colour of inactive destinations"
+    },
+    {
+      "name": "--md-navigation-tab-active-label-color",
+      "description": "Label colour of the active destination"
+    },
+    {
+      "name": "--md-navigation-tab-inactive-label-color",
+      "description": "Label colour of inactive destinations"
     },
     {
       "name": "--md-navigation-tab-label-font",
@@ -248,6 +268,26 @@
     {
       "name": "--md-navigation-tab-padding-block-end",
       "description": "(default 5px)"
+    },
+    {
+      "name": "--md-navigation-tab-hover-state-layer-color",
+      "description": "State-layer colour on hover"
+    },
+    {
+      "name": "--md-navigation-tab-focus-state-layer-color",
+      "description": "State-layer colour on keyboard focus"
+    },
+    {
+      "name": "--md-navigation-tab-pressed-state-layer-color",
+      "description": "State-layer colour while pressed"
+    },
+    {
+      "name": "--md-navigation-tab-badge-color",
+      "description": "Badge colour"
+    },
+    {
+      "name": "--md-navigation-tab-badge-on-color",
+      "description": "Badge text colour"
     },
     {
       "name": "--md-navigation-tab-disabled-opacity",
@@ -423,7 +463,7 @@
     "styleUrl": "md-navigation-tab.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "ceea801d1bc4f64bf0281377703108ef651c2457d3d2c717fbc36c73c833400b"
+    "sha256": "3aa7dfad7c7406960678b229147c161becc1eb44e88c0cb2c0586276ded54a55"
   },
   "styles": [
     {
@@ -1351,11 +1391,6 @@
           "property": "opacity",
           "value": "0",
           "important": false
-        },
-        {
-          "property": "visibility",
-          "value": "hidden",
-          "important": false
         }
       ]
     },
@@ -1526,75 +1561,149 @@
       "status": "adapter-implemented",
       "properties": [
         "active",
+        "disabled",
+        "softDisabled",
         "label",
         "icon",
         "activeIcon",
         "badge",
         "badgeValue",
+        "badgeMax",
         "href",
-        "disabled",
-        "softDisabled"
+        "target",
+        "labelBehavior",
+        "density"
       ],
       "events": [
         "mdTabClick"
       ],
-      "methods": [],
+      "methods": [
+        "focusEl"
+      ],
       "slots": [
         "",
         "active-icon",
         "icon"
       ],
-      "unsupportedProperties": [
-        "badgeMax",
-        "target",
-        "labelBehavior",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "focusEl"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
+      "notes": [
+        "Rendered by its bar (geometry, state and motion) or, outside a bar, as a single destination with its own active state; activation emits mdTabClick { index } and follows href / target through the host URL router unless prevented.",
+        "The 56 × 32 indicator pill (scaleX 200 ms emphasized-decelerate, opacity 100 ms), the icon (activeIcon and the active-icon / icon slots), the label (600 active / 500 inactive, hidden but named in selected mode, absent in icon-only mode), dot and capped large badges (badgeMax), hard and soft disabled, density 0 to -4.",
+        "Hover / press / focus state layers (8 / 12 / 10 %), the focus ring around the indicator and the md-ripple wave; focusEl() through AWCNavigationTabController for a destination outside a bar.",
+        "Typed ::part() targets (AWCNavigationTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and badge (fill, text) colours; container and icon-container are layout wrappers (exception record, md-navigation-bar.md)."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "label",
+        "indicator",
+        "badge"
+      ],
+      "appearance": {
+        "api": ".awcNavigationTabAppearance(AWCNavigationTabAppearance)",
+        "fields": [
+          "activeIndicatorColor",
+          "activeIndicatorWidth",
+          "activeIndicatorHeight",
+          "activeIndicatorShape",
+          "activeIconColor",
+          "inactiveIconColor",
+          "activeLabelColor",
+          "inactiveLabelColor",
+          "labelFont",
+          "labelFontSize",
+          "labelFontWeight",
+          "iconSize",
+          "paddingBlockStart",
+          "paddingBlockEnd",
+          "hoverStateLayerColor",
+          "focusStateLayerColor",
+          "pressedStateLayerColor",
+          "focusStateLayerOpacity",
+          "badgeColor",
+          "badgeOnColor",
+          "disabledOpacity",
+          "slottedIconFont"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
         "active",
+        "disabled",
+        "softDisabled",
+        "label",
+        "icon",
         "activeIcon",
         "badge",
         "badgeValue",
-        "disabled",
-        "icon",
-        "label",
+        "badgeMax",
+        "href",
+        "target",
         "labelBehavior",
-        "softDisabled"
+        "density"
       ],
       "events": [
         "mdTabClick"
       ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "badgeMax",
-        "href",
-        "target",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "focusEl"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "",
         "active-icon",
         "icon"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Rendered by its bar (geometry, state and motion) or, outside a bar, as a single destination with its own active state; activation emits mdTabClick { index } and follows href / target through the host URL router unless prevented.",
+        "The 56 × 32 indicator pill (scaleX 200 ms emphasized-decelerate, opacity 100 ms), the icon (activeIcon and the active-icon / icon slots), the label (600 active / 500 inactive, hidden but named in selected mode, absent in icon-only mode), dot and capped large badges (badgeMax), hard and soft disabled, density 0 to -4.",
+        "Hover / press / focus state layers (8 / 12 / 10 %), the focus ring around the indicator and the md-ripple wave; focusEl() through AWCNavigationTabController for a destination outside a bar.",
+        "Typed ::part() targets (AWCNavigationTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and badge (fill, text) colours; container and icon-container are layout wrappers (exception record, md-navigation-bar.md)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "label",
+        "indicator",
+        "badge"
+      ],
+      "appearance": {
+        "api": "AWCNavigationTabAppearanceScope(AWCNavigationTabAppearance)",
+        "fields": [
+          "activeIndicatorColor",
+          "activeIndicatorWidth",
+          "activeIndicatorHeight",
+          "activeIndicatorShape",
+          "activeIconColor",
+          "inactiveIconColor",
+          "activeLabelColor",
+          "inactiveLabelColor",
+          "labelFont",
+          "labelFontSize",
+          "labelFontWeight",
+          "iconSize",
+          "paddingBlockStart",
+          "paddingBlockEnd",
+          "hoverStateLayerColor",
+          "focusStateLayerColor",
+          "pressedStateLayerColor",
+          "focusStateLayerOpacity",
+          "badgeColor",
+          "badgeOnColor",
+          "disabledOpacity",
+          "slottedIconFont"
+        ]
+      }
     }
   }
 }

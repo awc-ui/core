@@ -325,6 +325,11 @@
       "name": "pressed",
       "type": "inferred",
       "initializer": "false"
+    },
+    {
+      "name": "anchorFocusVisible",
+      "type": "inferred",
+      "initializer": "false"
     }
   ],
   "events": [
@@ -338,7 +343,7 @@
     {
       "name": "mdChange",
       "detail": "MdButtonChangeDetail",
-      "cancelable": true,
+      "cancelable": false,
       "bubbles": true,
       "composed": true
     }
@@ -396,23 +401,83 @@
     },
     {
       "name": "--md-button-icon-color",
-      "description": "Icon-only color override"
+      "description": "Leading icon color (trailing fallback)"
     },
     {
       "name": "--md-button-icon-size",
-      "description": "Icon dimensions"
+      "description": "Leading icon dimensions (trailing fallback)"
+    },
+    {
+      "name": "--md-button-trailing-icon-size",
+      "description": "Trailing icon dimensions"
+    },
+    {
+      "name": "--md-button-loading-color",
+      "description": "Loading indicator color"
+    },
+    {
+      "name": "--md-button-loading-size",
+      "description": "Loading indicator dimensions"
+    },
+    {
+      "name": "--md-button-state-layer-color",
+      "description": "Hover/focus/press overlay color"
+    },
+    {
+      "name": "--md-button-hover-opacity",
+      "description": "Hover overlay opacity"
+    },
+    {
+      "name": "--md-button-focus-opacity",
+      "description": "Focus overlay opacity"
+    },
+    {
+      "name": "--md-button-pressed-opacity",
+      "description": "Press overlay opacity"
+    },
+    {
+      "name": "--md-button-font-size",
+      "description": "Label font size"
+    },
+    {
+      "name": "--md-button-font-weight",
+      "description": "Label font weight"
+    },
+    {
+      "name": "--md-button-line-height",
+      "description": "Label line height"
+    },
+    {
+      "name": "--md-button-letter-spacing",
+      "description": "Label letter spacing"
+    },
+    {
+      "name": "--md-button-padding-inline",
+      "description": "Content inset from the outer inline edges"
+    },
+    {
+      "name": "--md-button-padding-block",
+      "description": "Vertical content padding"
+    },
+    {
+      "name": "--md-button-gap",
+      "description": "Icon/label/loading gap"
     },
     {
       "name": "--md-button-container-shape",
-      "description": "Border-radius override"
+      "description": "Fixed border radius, including pressed/selected"
     },
     {
       "name": "--md-button-outline-color",
-      "description": "Outlined border color"
+      "description": "Border color"
     },
     {
       "name": "--md-button-outline-width",
-      "description": "Outlined border width"
+      "description": "Border width (enables a border on any variant)"
+    },
+    {
+      "name": "--md-button-focus-ring-color",
+      "description": "Keyboard focus ring color"
     },
     {
       "name": "--md-button-width",
@@ -435,10 +500,7 @@
       "description": "Minimum block-size (default: per-size touch target)"
     },
     {
-      "name": "--md-button-loading-size"
-    },
-    {
-      "name": "--md-button-focus-ring-color"
+      "name": "--md-button-trailing-icon-color"
     }
   ],
   "render": {
@@ -447,7 +509,7 @@
     "attributes": [
       {
         "name": "class",
-        "value": "{\n          'md-button': true,\n          [`md-button--${this.variant}`]: true,\n          [`md-button--${this.size}`]: true,\n          [`md-button--${this.shape}`]: true,\n          'md-button--with-leading-icon': hasLeadingIcon || this.hasSlottedLeadingIcon,\n          'md-button--with-trailing-icon': hasTrailingIcon || this.hasSlottedTrailingIcon,\n          'md-button--disabled': this.disabled || this.softDisabled,\n          'md-button--loading': this.loading,\n          'md-button--toggle': this.toggle,\n          'md-button--selected': this.selected,\n          'md-button--shape-morph': this.shapeMorph,\n          'md-button--pressed': this.shapeMorph && this.pressed,\n          'md-button--pressing': this.pressed,\n          'md-button--connected-left': this.connectedLeft,\n          'md-button--connected-right': this.connectedRight,\n          'md-button--full-width': this.fullWidth,\n        }"
+        "value": "{\n          'md-button': true,\n          [`md-button--${this.variant}`]: true,\n          [`md-button--${this.size}`]: true,\n          [`md-button--${this.shape}`]: true,\n          'md-button--with-leading-icon': hasLeadingIcon || this.hasSlottedLeadingIcon,\n          'md-button--with-trailing-icon': hasTrailingIcon || this.hasSlottedTrailingIcon,\n          'md-button--disabled': this.disabled || this.softDisabled,\n          'md-button--loading': this.loading,\n          'md-button--toggle': this.toggle,\n          'md-button--selected': this.selected,\n          'md-button--shape-morph': this.shapeMorph,\n          'md-button--pressed': this.shapeMorph && this.pressed,\n          'md-button--pressing': this.pressed,\n          'md-button--connected-left': this.connectedLeft,\n          'md-button--connected-right': this.connectedRight,\n          'md-button--full-width': this.fullWidth,\n          'md-button--anchor-focus-visible': !!linkHref && this.anchorFocusVisible,\n          'md-button--link': !!linkHref,\n        }"
       },
       {
         "name": "role",
@@ -497,7 +559,7 @@
       },
       {
         "kind": "expression",
-        "source": "linkHref ? (\n          <a\n            class=\"md-button__anchor\"\n            part=\"anchor\"\n            role=\"link\"\n            href={linkHref}\n            target={this.target || undefined}\n            rel={opensNewContext ? SAFE_LINK_REL : undefined}\n            tabindex={this.groupTabindex !== null ? String(this.groupTabindex) : '0'}\n            aria-disabled={isEffectivelyDisabled ? 'true' : null}\n          >\n            {this.renderContent(isEffectivelyDisabled, hasLeadingIcon, hasTrailingIcon)}\n          </a>\n        ) : (\n          this.renderContent(isEffectivelyDisabled, hasLeadingIcon, hasTrailingIcon)\n        )"
+        "source": "linkHref ? (\n          <a\n            class=\"md-button__anchor\"\n            part=\"anchor\"\n            role=\"link\"\n            href={linkHref}\n            target={this.target || undefined}\n            rel={opensNewContext ? SAFE_LINK_REL : undefined}\n            tabindex={this.groupTabindex !== null ? String(this.groupTabindex) : '0'}\n            aria-disabled={isEffectivelyDisabled ? 'true' : null}\n            onFocus={this.handleAnchorFocus}\n            onBlur={this.handleAnchorBlur}\n          >\n            {this.renderContent(isEffectivelyDisabled, hasLeadingIcon, hasTrailingIcon)}\n          </a>\n        ) : (\n          this.renderContent(isEffectivelyDisabled, hasLeadingIcon, hasTrailingIcon)\n        )"
       },
       {
         "kind": "text",
@@ -516,25 +578,25 @@
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 200
+      "line": 208
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 203
+      "line": 211
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 207
+      "line": 215
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Window access requires a native adapter.",
-      "line": 275
+      "line": 283
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -548,7 +610,7 @@
     "styleUrl": "md-button.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "50f0bd49f15754b328973af415c2bcdf2a14a33ebebc8ecbe01953fd453a8873"
+    "sha256": "8b47ca6b608a170af5d984436acf18b9207019870d2c66212f14c03b992958d3"
   },
   "styles": [
     {
@@ -1558,7 +1620,7 @@
       ]
     },
     {
-      "selector": ":host(.md-button--filled:focus-visible)",
+      "selector": ":host(.md-button--filled:focus-visible),\n:host(.md-button--filled.md-button--anchor-focus-visible)",
       "context": null,
       "declarations": [
         {
@@ -1611,7 +1673,7 @@
       ]
     },
     {
-      "selector": ":host(.md-button--outlined:focus-visible)",
+      "selector": ":host(.md-button--outlined:focus-visible),\n:host(.md-button--outlined.md-button--anchor-focus-visible)",
       "context": null,
       "declarations": [
         {
@@ -1680,7 +1742,7 @@
       ]
     },
     {
-      "selector": ":host(.md-button--elevated:focus-visible)",
+      "selector": ":host(.md-button--elevated:focus-visible),\n:host(.md-button--elevated.md-button--anchor-focus-visible)",
       "context": null,
       "declarations": [
         {
@@ -1734,7 +1796,7 @@
       ]
     },
     {
-      "selector": ":host(.md-button--tonal:focus-visible)",
+      "selector": ":host(.md-button--tonal:focus-visible),\n:host(.md-button--tonal.md-button--anchor-focus-visible)",
       "context": null,
       "declarations": [
         {
@@ -1918,7 +1980,7 @@
       ]
     },
     {
-      "selector": ":host(:focus-visible) .md-button__state-layer",
+      "selector": ":host(:focus-visible) .md-button__state-layer,\n:host(.md-button--anchor-focus-visible) .md-button__state-layer",
       "context": null,
       "declarations": [
         {
@@ -1955,7 +2017,7 @@
       "declarations": [
         {
           "property": "outline-color",
-          "value": "var(--md-sys-color-secondary)",
+          "value": "var(--md-button-focus-ring-color, var(--md-sys-color-secondary))",
           "important": false
         },
         {
@@ -2608,7 +2670,7 @@
       ]
     },
     {
-      "selector": ":host(:has(.md-button__anchor:focus-visible))",
+      "selector": ":host(.md-button--anchor-focus-visible)",
       "context": null,
       "declarations": [
         {
@@ -2619,6 +2681,64 @@
         {
           "property": "outline-offset",
           "value": "var(--md-sys-state-focus-ring-offset, 2px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-button--link)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "padding",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "0",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-button--link) .md-button__anchor",
+      "context": null,
+      "declarations": [
+        {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
+          "property": "align-self",
+          "value": "stretch",
+          "important": false
+        },
+        {
+          "property": "block-size",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "padding-block",
+          "value": "var(--md-button-padding-block, 0px)",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "max(0px, calc(var(--_padding-inline) - var(--_link-outline-width, var(--md-button-outline-width, 0px))))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-button--link.md-button--outlined)",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_link-outline-width",
+          "value": "var(--_outline-width)",
           "important": false
         }
       ]
@@ -2702,16 +2822,17 @@
       "unsupportedSlots": [],
       "notes": [
         "Dedicated native Button uses source size/density metrics, variant/toggle/disabled color tokens, Roboto and Material Symbols fonts, slot fallback, and source loader placement.",
-        "Actual SwiftUI isPressed drives shape morphing (200ms press, 400ms release). Pointer-origin ripple uses source farthest-corner geometry and 450ms growth/150ms fade; hover and pointer geometry are forwarded by the native preview. Reduce Motion suppresses shape/ripple animations. Per-instance CSS overrides are not reproduced.",
-        "Loading draws the source 48-vertex morphing polygons with the original 4.55s keyframes and easing; Reduce Motion uses the source opacity pulse. Native button groups do not automatically inject connected corner props. RTL icon mirroring uses native layout direction; expanded trailing-icon rotation requires an explicit aria-expanded property on the native node.",
-        "mdClick describes the proposed state before commit and includes value, toggle, selected, href and target; mdChange follows commit and includes selected and value. originalEvent is omitted.",
+        "Actual SwiftUI isPressed drives shape morphing (200ms press, 400ms release). Pointer-origin ripple uses source farthest-corner geometry and 450ms growth/150ms fade; hover and pointer geometry are forwarded by the native preview. Reduce Motion suppresses shape/ripple animations. Per-instance source visual hooks are exposed through AWCButtonAppearance rather than CSS execution.",
+        "Loading draws the source 48-vertex morphing polygons with the original 4.55s keyframes and easing; Reduce Motion uses the source opacity pulse. Native button groups inject direct child size, shape, toggle and connected corner props; composite-specific neighbor motion is not reproduced. RTL icon mirroring uses native layout direction; expanded trailing-icon rotation requires an explicit aria-expanded property on the native node.",
+        "mdClick describes the proposed state before commit and includes value, toggle, selected, href and target; mdChange follows commit and includes selected and value. originalEvent is omitted; activation.source identifies pointer, keyboard, accessibility or unknown native provenance.",
         "AWCButtonAction dispatches actual native capture, target and bubble phases before defaults. preventDefault vetoes activation; stopPropagation retains same-scope listeners and stopImmediatePropagation stops them. Legacy onEvent receives final cancellation, propagationPath and native activation metadata. Native mdChange is noncancelable. Soft-disabled and loading controls keep native keyboard focus while suppressing activation.",
         "type submit/reset uses the nearest AWCFormScope or an explicit owner registry. All 13 source form-control families auto-register with stable per-view identity, ordered successful values and validation. Cancelable mdSubmit/mdReset precede form effects; reset restores initial native bindings (OTP clears). Single-line Enter activates the first registered default submit button. AWCFormEncoding generates local UTF-8 URL-encoded data without network submission. target is passed to AWCURLRouter; raw nonempty href suppresses form actions.",
         "AWCNavigationCoordinator implements local _self/_blank/_parent/_top and named presentation contexts, current-base relative resolution, ordered histories/back and host veto/presentation callbacks. AWCButtonNavigationDemo shows real button propagation controls and local navigation without external page loads. Named reuse is an explicit native policy, not source noopener browser behavior.",
         "groupTabindex implements the source null/0/-1 native focus contract: -1 skips sequential keyboard entry while retaining pointer, programmatic and accessibility actions. Hard-disabled excludes focus; soft-disabled/loading remain focusable and inert. Positive HTML tabindex sorting is not reproduced.",
         "roleOverride supports native button/link/gridcell mappings with safe inference for empty/unknown roles. Gridcell selected state is independent of toggle. AppKit exposes a native actionable cell; UIKit supplies button/selected traits and data-table-cell coordinates through explicit AWCGridCellContext, not arbitrary ARIA roles or a browser calendar grid.",
         "Native responder/accessibility assertions run on macOS. UIKit focus-engine/responder synchronization is implemented against documented iOS 17+ APIs, but this host has no iOS SDK/device to validate hardware keyboard or VoiceOver runtime behavior.",
-        "AWCButtonAppearance and View.awcButtonAppearance provide validated native appearance values inherited fieldwise by subtree and overridden locally. These are native visual equivalents; CSS parts/selectors/custom properties remain Web-only. Explicit cornerRadius fixes all states; custom colors preserve disabled alpha. Nested slotted components may retain their own authored styling."
+        "AWCButtonAppearance and View.awcButtonAppearance provide validated native appearance values inherited fieldwise by subtree and overridden locally. These are native visual equivalents; CSS parts/selectors/custom properties remain Web-only. Explicit cornerRadius fixes ordinary states; connected corners take source precedence; custom colors preserve disabled alpha. Nested slotted components may retain their own authored styling.",
+        "Width/minWidth/maxWidth/height/minHeight use source border-box sizing with minimum constraints winning conflicts; content remains centered and nowrap, with overflow clipped by the button shape. Typed AWCNode.symbol / AWCMaterialSymbol children inherit icon sizing and color and are decorative by default. A supplied circular indeterminate progress loader keeps its own dimensions."
       ],
       "verification": "not-device-verified",
       "visualParts": [
@@ -2746,7 +2867,13 @@
           "gap",
           "hoverOpacity",
           "focusOpacity",
-          "pressedOpacity"
+          "pressedOpacity",
+          "focusRingColor",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight"
         ]
       },
       "nativeEquivalents": {
@@ -2886,7 +3013,13 @@
           "gap",
           "hoverOpacity",
           "focusOpacity",
-          "pressedOpacity"
+          "pressedOpacity",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "focusRingColor"
         ]
       },
       "nativeEquivalents": {

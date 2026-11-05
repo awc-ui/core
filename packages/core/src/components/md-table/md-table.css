@@ -412,6 +412,13 @@
   .md-table__bar {
     animation: none;
   }
+  /* The custom scrollbar thumbs' hover/press colour change is a transition
+     like the rows' state layers: drop it with them. */
+  .md-table__hscroll-thumb,
+  .md-table__vscroll-thumb {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
 }
 
 @media (forced-colors: active) {

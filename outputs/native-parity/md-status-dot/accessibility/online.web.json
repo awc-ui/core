@@ -1,0 +1,119 @@
+{
+ "tag": "md-status-dot",
+ "case": "online",
+ "html": "<div style=\"position:relative;width:48px;height:48px\"><md-icon-button id=\"demo-status-dot-anchor\" icon=\"notifications\" size=\"md\" aria-label=\"Notifications\" style=\"--md-icon-button-container-width:48px;--md-icon-button-container-height:48px\"></md-icon-button><md-status-dot data-ax-node=\"n0\" id=\"example-md-status-dot\"></md-status-dot></div>",
+ "props": {
+  "n0": {
+   "density": 0,
+   "inline": false,
+   "label": "All systems operational",
+   "live": false,
+   "shape": "rect",
+   "size": "medium",
+   "state": "online"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "generic",
+    "name": "",
+    "ignored": false,
+    "frame": [
+     16,
+     16,
+     48,
+     48
+    ],
+    "children": [
+     {
+      "role": "button",
+      "name": "Notifications",
+      "ignored": false,
+      "focusable": true,
+      "frame": [
+       16,
+       16,
+       48,
+       48
+      ],
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         }
+        ]
+       },
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       },
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       }
+      ]
+     },
+     {
+      "role": "image",
+      "name": "All systems operational",
+      "ignored": false,
+      "frame": [
+       54,
+       54,
+       12,
+       12
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-icon-button",
+   "role": "button",
+   "name": "Notifications",
+   "frame": [
+    16,
+    16,
+    48,
+    48
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

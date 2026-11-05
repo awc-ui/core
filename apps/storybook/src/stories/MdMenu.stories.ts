@@ -2623,3 +2623,25 @@ export const Responsive: Story = {
    pattern) surfaces the empty-state message. A MutationObserver
    watches inline style/hidden changes on the items.
    ═══════════════════════════════════════════════════════════ */
+
+export const NestedKeyboardAndSiblingLifecycle: Story = {
+  render: () => html`<button id="nested-life-anchor">Open actions</button><md-menu id="nested-life-menu" anchor="nested-life-anchor" quick><md-sub-menu-item id="nested-first" headline="Share" open-delay="0" close-delay="0"><md-menu slot="submenu" quick><md-menu-item headline="Email"></md-menu-item><md-menu-item headline="Copy link"></md-menu-item></md-menu></md-sub-menu-item><md-sub-menu-item id="nested-second" headline="Export" open-delay="0" close-delay="0"><md-menu slot="submenu" quick><md-menu-item headline="PDF"></md-menu-item></md-menu></md-sub-menu-item><md-menu-item headline="Unavailable" disabled></md-menu-item></md-menu>`,
+  play: async ({ canvasElement }) => {
+    const menu = await getMenu(canvasElement, 'nested-life-menu') as HTMLMdMenuElement;
+    await menu.show({ autoFocus: true });
+    const first = canvasElement.querySelector('#nested-first') as HTMLMdSubMenuItemElement;
+    const second = canvasElement.querySelector('#nested-second') as HTMLMdSubMenuItemElement;
+    const child = first.querySelector('md-menu') as HTMLMdMenuElement;
+    first.focus(); key(first, 'ArrowRight');
+    await waitFor(() => expect(child.open).toBe(true));
+    await waitFor(() => expect(document.activeElement?.getAttribute('headline')).toBe('Email'));
+    key(document.activeElement!, 'ArrowLeft'); await waitFor(() => expect(child.open).toBe(false));
+    expect(document.activeElement).toBe(first);
+    key(first, ' '); await waitFor(() => expect(child.open).toBe(true));
+    second.focus(); key(second, 'Enter');
+    await waitFor(() => expect((second.querySelector('md-menu') as HTMLMdMenuElement).open).toBe(true));
+    await waitFor(() => expect(child.open).toBe(false));
+    await second.collapse(); await waitFor(() => expect(second.getAttribute('aria-expanded')).toBe('false'));
+    await menu.close(); await menu.whenClosed();
+  },
+};

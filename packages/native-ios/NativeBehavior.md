@@ -139,7 +139,7 @@ The legacy observation callback still runs after dispatch, even when propagation
 stops. `AWCEvent.defaultPrevented`, `propagationPath` and optional `activation`
 provide its final native metadata. Activation distinguishes nativeControl,
 implicitSubmit and programmatic entry, with an action UUID shared by mdClick and
-mdChange. It is not a raw OS event, DOM MouseEvent or browser isTrusted assertion.
+mdChange. Its source is pointer, keyboard, accessibility or unknown according to the actual native input path. Programmatic callers can supply provenance explicitly; the default stays unknown. It is not a raw OS event, DOM MouseEvent or browser isTrusted assertion.
 Finished contexts retain target/path but clear phase/current scope and reject
 late cancellation. Nested dispatch owns a separate transaction.
 

@@ -1,0 +1,3275 @@
+{
+  "component": "md-accordion",
+  "cases": [
+    {
+      "id": "defaults-pass",
+      "properties": {
+        "defaultExpanded": "0,1"
+      },
+      "items": [
+        {},
+        {}
+      ],
+      "mode": "pass",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 0,
+            "expanded": true,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 0,
+            "expanded": true,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 0,
+            "expanded": true,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": true,
+            "expandedIndices": [
+              0,
+              1
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": true,
+            "expandedIndices": [
+              0,
+              1
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": true,
+            "expandedIndices": [
+              0,
+              1
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": true,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 256
+    },
+    {
+      "id": "defaults-prevent",
+      "properties": {
+        "defaultExpanded": "0,1"
+      },
+      "items": [
+        {},
+        {}
+      ],
+      "mode": "prevent",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": true,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 0,
+            "expanded": true,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 0,
+            "expanded": true,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 0,
+            "expanded": true,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": true,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": true,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": true,
+            "expandedIndices": [
+              0,
+              1
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": true,
+            "expandedIndices": [
+              0,
+              1
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": true,
+            "expandedIndices": [
+              0,
+              1
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": true,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": true,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 256
+    },
+    {
+      "id": "defaults-stop",
+      "properties": {
+        "defaultExpanded": "0,1"
+      },
+      "items": [
+        {},
+        {}
+      ],
+      "mode": "stop",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": true,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 256
+    },
+    {
+      "id": "defaults-immediate",
+      "properties": {
+        "defaultExpanded": "0,1"
+      },
+      "items": [
+        {},
+        {}
+      ],
+      "mode": "immediate",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": true,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 256
+    },
+    {
+      "id": "defaults-capture-stop",
+      "properties": {
+        "defaultExpanded": "0,1"
+      },
+      "items": [
+        {},
+        {}
+      ],
+      "mode": "capture-stop",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": true,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 256
+    },
+    {
+      "id": "exclusive-authored-pass",
+      "properties": {
+        "exclusive": true
+      },
+      "items": [
+        {
+          "expanded": true
+        },
+        {
+          "expanded": true
+        }
+      ],
+      "mode": "pass",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": false,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": false,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": false,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": false,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "exclusive-authored-prevent",
+      "properties": {
+        "exclusive": true
+      },
+      "items": [
+        {
+          "expanded": true
+        },
+        {
+          "expanded": true
+        }
+      ],
+      "mode": "prevent",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": true,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": false,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": false,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": false,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": true,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": false,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "exclusive-authored-stop",
+      "properties": {
+        "exclusive": true
+      },
+      "items": [
+        {
+          "expanded": true
+        },
+        {
+          "expanded": true
+        }
+      ],
+      "mode": "stop",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": false,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "exclusive-authored-immediate",
+      "properties": {
+        "exclusive": true
+      },
+      "items": [
+        {
+          "expanded": true
+        },
+        {
+          "expanded": true
+        }
+      ],
+      "mode": "immediate",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": false,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "exclusive-authored-capture-stop",
+      "properties": {
+        "exclusive": true
+      },
+      "items": [
+        {
+          "expanded": true
+        },
+        {
+          "expanded": true
+        }
+      ],
+      "mode": "capture-stop",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": false,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "keep-one-pass",
+      "properties": {
+        "keepOneExpanded": true
+      },
+      "items": [
+        {
+          "disabled": true
+        },
+        {}
+      ],
+      "mode": "pass",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": true,
+            "expandedIndices": [
+              1
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": false,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": true,
+            "expandedIndices": [
+              1
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": false,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": true,
+            "expandedIndices": [
+              1
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": false,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": false,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": false,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": true,
+          "collapsible": false,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "keep-one-prevent",
+      "properties": {
+        "keepOneExpanded": true
+      },
+      "items": [
+        {
+          "disabled": true
+        },
+        {}
+      ],
+      "mode": "prevent",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": true,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": true,
+            "expandedIndices": [
+              1
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": false,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": true,
+            "expandedIndices": [
+              1
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": false,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": true,
+            "expandedIndices": [
+              1
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": false,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": true,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": false,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": false,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": true,
+          "collapsible": false,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "keep-one-stop",
+      "properties": {
+        "keepOneExpanded": true
+      },
+      "items": [
+        {
+          "disabled": true
+        },
+        {}
+      ],
+      "mode": "stop",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": false,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": true,
+          "collapsible": false,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "keep-one-immediate",
+      "properties": {
+        "keepOneExpanded": true
+      },
+      "items": [
+        {
+          "disabled": true
+        },
+        {}
+      ],
+      "mode": "immediate",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": false,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": true,
+          "collapsible": false,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "keep-one-capture-stop",
+      "properties": {
+        "keepOneExpanded": true
+      },
+      "items": [
+        {
+          "disabled": true
+        },
+        {}
+      ],
+      "mode": "capture-stop",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": true,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": false,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": false,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": true,
+          "collapsible": false,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "exclusive-union-pass",
+      "properties": {
+        "exclusive": true,
+        "defaultExpanded": "0"
+      },
+      "items": [
+        {},
+        {
+          "expanded": true
+        }
+      ],
+      "mode": "pass",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": false,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": false,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": false,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 0,
+            "expanded": true,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 0,
+            "expanded": true,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 0,
+            "expanded": true,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": false,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "exclusive-union-prevent",
+      "properties": {
+        "exclusive": true,
+        "defaultExpanded": "0"
+      },
+      "items": [
+        {},
+        {
+          "expanded": true
+        }
+      ],
+      "mode": "prevent",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": true,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": true,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": false,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": false,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 1,
+            "expanded": false,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": true,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 0,
+            "expanded": true,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 0,
+            "expanded": true,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdToggle",
+          "target": "accordion",
+          "detail": {
+            "index": 0,
+            "expanded": true,
+            "expandedIndices": [
+              0
+            ]
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "bubble",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": true,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": false,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "exclusive-union-stop",
+      "properties": {
+        "exclusive": true,
+        "defaultExpanded": "0"
+      },
+      "items": [
+        {},
+        {
+          "expanded": true
+        }
+      ],
+      "mode": "stop",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": false,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "exclusive-union-immediate",
+      "properties": {
+        "exclusive": true,
+        "defaultExpanded": "0"
+      },
+      "items": [
+        {},
+        {
+          "expanded": true
+        }
+      ],
+      "mode": "immediate",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": false,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "target",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": false,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 196
+    },
+    {
+      "id": "exclusive-union-capture-stop",
+      "properties": {
+        "exclusive": true,
+        "defaultExpanded": "0"
+      },
+      "items": [
+        {},
+        {
+          "expanded": true
+        }
+      ],
+      "mode": "capture-stop",
+      "trace": [
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "first",
+          "detail": {
+            "expanded": true,
+            "index": 0
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": true,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        },
+        {
+          "phase": "capture",
+          "name": "mdItemToggle",
+          "target": "second",
+          "detail": {
+            "expanded": false,
+            "index": 1
+          },
+          "prevented": false,
+          "stopped": true,
+          "items": [
+            {
+              "id": "first",
+              "expanded": true,
+              "collapsible": true,
+              "index": 0
+            },
+            {
+              "id": "second",
+              "expanded": false,
+              "collapsible": true,
+              "index": 1
+            }
+          ]
+        }
+      ],
+      "final": [
+        {
+          "id": "first",
+          "expanded": true,
+          "collapsible": true,
+          "index": 0
+        },
+        {
+          "id": "second",
+          "expanded": false,
+          "collapsible": true,
+          "index": 1
+        }
+      ],
+      "height": 196
+    }
+  ],
+  "sourceSHA256": "6f1f05b37721f2a6e8b87b2200e695f4a04b86d79d4027d4b48cb35bed85abac"
+}

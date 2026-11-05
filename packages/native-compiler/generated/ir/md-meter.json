@@ -303,7 +303,7 @@
     "styleUrl": "md-meter.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "3fb46243a71d389045364b2872576bb18ffad569cd6e20848a7e3e4d29aab9a0"
+    "sha256": "d84b570580631dab0c8bd96e5dd381c63d6f13bf17b15abc0d709e28c6641952"
   },
   "styles": [
     {
@@ -947,33 +947,61 @@
         "showLabel",
         "showValue",
         "valueText",
+        "locale",
+        "formatOptions",
+        "color",
         "variant",
         "size",
-        "thickness"
+        "thickness",
+        "density"
       ],
       "events": [],
       "methods": [],
       "slots": [],
-      "unsupportedProperties": [
-        "locale",
-        "formatOptions",
-        "color",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
+      "notes": [
+        "Dedicated read-only native Meter implements bounded finite ranges, extreme-range overflow protection, linear/circular geometry, density, RTL, actual named level semantics, source line boxes and timed value/opacity transitions. There are no source events, slots or methods.",
+        "Public AWCMeterFormatter uses data-only system JavaScriptCore Intl.NumberFormat with omitted-versus-empty options preserved, raw-number fallback for invalid locale/options, and signed-zero-safe caching. Intl option and locale data follow the installed Apple OS. Arbitrary case-sensitive theme color roles and RGBA values are retained; seven sparse appearance fields merge inherited defaults and local overrides.",
+        "Actual macOS SwiftUI/AppKit fixture passed2669 checks across196 hydrated Web theme configurations, including108 independent formatting cases and real motion, RTL text, native semantics, hidden and zero geometry. Five parts report actual layout; circular track/indicator bounds describe paths rather than stroke extents. iOS SDK/device execution is unavailable; see audits/md-meter.md for precise evidence and platform boundaries."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "track",
+        "indicator",
+        "label",
+        "value",
+        "circular"
+      ],
+      "appearance": {
+        "api": "AWCMeterAppearance / View.awcMeterAppearance",
+        "fields": [
+          "indicatorColor",
+          "trackColor",
+          "trackShape",
+          "height",
+          "labelColor",
+          "valueColor",
+          "size"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "color",
+        "density",
+        "formatOptions",
         "label",
+        "locale",
         "max",
         "min",
         "showLabel",
         "showValue",
+        "size",
+        "thickness",
         "value",
         "valueText",
         "variant"
@@ -981,21 +1009,33 @@
       "events": [],
       "methods": [],
       "slots": [],
-      "unsupportedProperties": [
-        "locale",
-        "formatOptions",
-        "color",
-        "size",
-        "thickness",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated read-only Compose meter supports the fourteen source properties, native ICU locale formatting and seven typed appearance hooks. AWCMeterRangeKey retains the exact Double range alongside Android accessibility range data. Native paths, shaped text and measured visual parts replace SVG and CSS. Runtime verification is recorded separately in the parity audit."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "track",
+        "indicator",
+        "label",
+        "value",
+        "circular"
+      ],
+      "appearance": {
+        "api": "AWCMeterAppearance / AWCMeterAppearanceScope / AWCCornerShape",
+        "fields": [
+          "indicatorColor",
+          "trackColor",
+          "trackShape",
+          "height",
+          "labelColor",
+          "valueColor",
+          "size"
+        ]
+      }
     }
   }
 }

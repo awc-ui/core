@@ -134,6 +134,22 @@
       "description": "The role=\"tree\" root list"
     },
     {
+      "name": "branch",
+      "description": "A role=\"treeitem\" list item (the node and its subtree)"
+    },
+    {
+      "name": "branch-on-path",
+      "description": "A branch on the path from a selection up to its root"
+    },
+    {
+      "name": "node",
+      "description": "A node card"
+    },
+    {
+      "name": "node-selected",
+      "description": "A selected node card"
+    },
+    {
       "name": "avatar-image",
       "description": "The avatar's <img> (exported)"
     }
@@ -145,7 +161,19 @@
     "md-tooltip",
     "md-icon-button"
   ],
-  "dataTypes": [],
+  "dataTypes": [
+    {
+      "name": "NodeInput",
+      "kind": "type",
+      "body": "OrgChartNode[] | string | null | undefined"
+    },
+    {
+      "name": "OrgChartNode",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Stable identifier — used for selection, expansion, and eventing. */\n  id: string;\n  /** Primary label (person / unit name), rendered in the emphasis weight. */\n  name: string;\n  /** Secondary label (role / department), rendered muted under the name. */\n  title?: string;\n  /** Avatar image URL. Falls back to initials → name-derived initials. */\n  avatar?: string;\n  /** Explicit avatar initials (overrides name-derived ones). */\n  avatarInitials?: string;\n  /** Optional accent colour for the node's avatar ring + selected tint. */\n  accent?: string;\n  /** Initial expanded state for this node's subtree (default: expanded). */\n  expanded?: boolean;\n  /** When false the node cannot be selected (default: selectable). */\n  selectable?: boolean;\n  /** Child nodes. */\n  children?: OrgChartNode[];"
+    }
+  ],
   "callableProps": [],
   "eventTypes": [
     {
@@ -153,12 +181,6 @@
       "kind": "interface",
       "extends": "",
       "body": "  /** The node that was clicked / toggled. */\n  node: OrgChartNode;\n  /** The full set of selected ids after the change. */\n  selectedIds: string[];"
-    },
-    {
-      "name": "OrgChartNode",
-      "kind": "interface",
-      "extends": "",
-      "body": "  /** Stable identifier — used for selection, expansion, and eventing. */\n  id: string;\n  /** Primary label (person / unit name), rendered in the emphasis weight. */\n  name: string;\n  /** Secondary label (role / department), rendered muted under the name. */\n  title?: string;\n  /** Avatar image URL. Falls back to initials → name-derived initials. */\n  avatar?: string;\n  /** Explicit avatar initials (overrides name-derived ones). */\n  avatarInitials?: string;\n  /** Optional accent colour for the node's avatar ring + selected tint. */\n  accent?: string;\n  /** Initial expanded state for this node's subtree (default: expanded). */\n  expanded?: boolean;\n  /** When false the node cannot be selected (default: selectable). */\n  selectable?: boolean;\n  /** Child nodes. */\n  children?: OrgChartNode[];"
     },
     {
       "name": "OrgChartToggleDetail",

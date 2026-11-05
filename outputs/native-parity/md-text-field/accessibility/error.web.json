@@ -1,0 +1,282 @@
+{
+ "tag": "md-text-field",
+ "case": "error",
+ "html": "<md-text-field data-ax-node=\"n0\" id=\"example-md-text-field\"></md-text-field>",
+ "props": {
+  "n0": {
+   "appearFocused": false,
+   "autoCapitalize": "",
+   "autocomplete": "",
+   "chipsWrap": false,
+   "clearable": "internal",
+   "debounce": 0,
+   "density": 0,
+   "disabled": false,
+   "enterKeyHint": "",
+   "error": true,
+   "errorText": "Enter a valid email address",
+   "focusBorderWidth": 3,
+   "formatOn": "blur",
+   "hidePasswordLabel": "Hide password",
+   "inputAriaAutocomplete": "",
+   "inputExpanded": false,
+   "inputMode": "",
+   "inputRole": "",
+   "label": "Email",
+   "multiline": false,
+   "name": "",
+   "passwordToggle": false,
+   "pattern": "",
+   "placeholder": "e.g. AWC Native",
+   "prefixText": "",
+   "readOnly": false,
+   "required": false,
+   "reserveSupportingSpace": false,
+   "restrict": "",
+   "showPasswordLabel": "Show password",
+   "speechLang": "",
+   "speechToText": false,
+   "spellcheck": true,
+   "suffixText": "",
+   "supportingText": "A name your team will recognize",
+   "throttle": 0,
+   "type": "text",
+   "value": "alex@",
+   "variant": "filled"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "generic",
+    "name": "",
+    "ignored": false,
+    "invalid": "false",
+    "frame": [
+     16,
+     16,
+     608,
+     76
+    ],
+    "children": [
+     {
+      "role": "generic",
+      "name": "",
+      "ignored": false,
+      "frame": [
+       16,
+       16,
+       608,
+       56
+      ],
+      "children": [
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         39,
+         24,
+         494,
+         40
+        ],
+        "children": [
+         {
+          "role": "LabelText",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           39,
+           24,
+           30.015625,
+           16
+          ],
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Email",
+            "ignored": false,
+            "frame": [
+             39,
+             25,
+             30.015625,
+             14
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Email",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "textbox",
+            "name": "Email",
+            "ignored": false,
+            "description": "Enter a valid email address",
+            "value": "alex@",
+            "invalid": "true",
+            "focusable": true,
+            "editable": "plaintext",
+            "settable": true,
+            "readonly": false,
+            "required": false,
+            "frame": [
+             39,
+             40,
+             494,
+             24
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "generic",
+              "name": "",
+              "ignored": false,
+              "editable": "plaintext",
+              "frame": [
+               39,
+               40,
+               494,
+               24
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "alex@",
+                "ignored": false,
+                "editable": "plaintext",
+                "frame": [
+                 39,
+                 43,
+                 48.09375,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "alex@",
+                  "ignored": false,
+                  "editable": "plaintext"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "button",
+        "name": "Clear",
+        "ignored": false,
+        "invalid": "false",
+        "focusable": true,
+        "frame": [
+         527,
+         24,
+         40,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         }
+        ]
+       },
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         16,
+         71,
+         608,
+         1
+        ]
+       }
+      ]
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "alert",
+        "name": "",
+        "ignored": false,
+        "live": "assertive",
+        "atomic": true,
+        "relevant": "additions text",
+        "frame": [
+         32,
+         76,
+         144.75,
+         16
+        ],
+        "children": [
+         {
+          "role": "StaticText",
+          "name": "Enter a valid email address",
+          "ignored": false,
+          "frame": [
+           32,
+           77,
+           144.75,
+           14
+          ],
+          "children": [
+           {
+            "role": "InlineTextBox",
+            "name": "Enter a valid email address",
+            "ignored": false
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

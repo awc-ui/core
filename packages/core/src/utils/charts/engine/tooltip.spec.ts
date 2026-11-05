@@ -136,7 +136,8 @@ describe('default tooltip (no renderer, no missing formatter)', () => {
   const BODY =
     '<div style="font-weight: 600; margin-bottom: 4px;">Feb</div>' +
     '<div style="display: flex; align-items: center; gap: 8px; line-height: 1.5;">' +
-    '<span style="width: 10px; height: 10px; border-radius: 3px; background: #6750A4; flex: none;"></span>' +
+    // forced-color-adjust: a colour key keeps its series colour under forced colors.
+    '<span style="width: 10px; height: 10px; border-radius: 3px; background: #6750A4; flex: none; forced-color-adjust: none;"></span>' +
     '<span style="flex: 1;">A</span><strong>20</strong></div>';
 
   it('is unchanged — same box, same header, same rows', () => {

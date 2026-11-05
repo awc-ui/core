@@ -55,7 +55,7 @@ export function createThemeExportUI({ root, getTheme, notify, writeText = text =
 
 export function createStudioUI({ getState, onLayoutChange, onThemeChange, notify }) {
   const state = getState();
-  state.layout = { direction: 'ltr', width: 'fit', grid: false, bounds: false, expanded: false };
+  state.layout = { direction: 'ltr', width: 'fit', height: 'auto', grid: false, bounds: false, expanded: false };
   const canvas = createCanvasTools({ getState, onLayoutChange });
   state.studioTheme = computeStudioTheme(loadStudioTheme());
   const themeExport = createThemeExportUI({ root: $('#theme-sheet'), getTheme: () => state.studioTheme, notify });
@@ -299,30 +299,105 @@ export function renderCoverageContent(entry, category) {
 }
 
 export function createCoverageUI({ getState }) {
-  let category = 'unit', currentTag, result, generation = 0;
-  async function load(refresh = false) {
-    const tag = getState().selected?.tag, root = $('#coverage-panel');
-    if (!tag) return;
-    if (!refresh && tag === currentTag && result) { render(); return; }
-    const request = ++generation; currentTag = tag; result = null;
-    root.innerHTML = '<div class="coverage-loading" role="status"><md-progress-indicator variant="circular" indeterminate size="24" label="Loading coverage evidence"></md-progress-indicator><span>Reading test sources and reports…</span></div>';
-    try {
-      const response = await fetch(`/api/coverage/${encodeURIComponent(tag)}`);
-      if (!response.ok) throw new Error('Coverage evidence could not be loaded.');
-      const data = await response.json();
-      if (request !== generation || tag !== getState().selected?.tag) return;
-      result = data; render();
-    } catch (error) { if (request === generation) root.innerHTML = `<p class="load-error">${escape(error.message)}</p>`; }
+  const keys = Object.keys(coverageCategories);
+  let category = 'unit', currentTag, result, generation = 0, view, inFlight;
+  const mounted = tag => view?.tag === tag && $('#coverage-panel').contains(view.tabs) && $('#coverage-panel').contains(view.body);
+  function busy(value) {
+    const root = $('#coverage-panel');
+    if (value) root.setAttribute('aria-busy', 'true'); else root.removeAttribute('aria-busy');
+    if (mounted(currentTag)) {
+      view.refresh.disabled = value;
+      view.refresh.textContent = value ? 'Refreshing…' : 'Refresh';
+    }
   }
-  function render() {
-    if (!result) return;
-    const keys = Object.keys(coverageCategories);
-    const selected = result.categories[category];
-    $('#coverage-panel').innerHTML = `<div class="coverage-heading"><div><h2>Test coverage</h2><p>${category === 'accessibility' ? 'Recorded accessibility checks' : 'Measured Web source coverage'} for <code>${escape(result.tag)}</code>.</p></div><md-button id="coverage-refresh" variant="text" size="sm" icon="refresh">Refresh</md-button></div>
-      <md-tabs id="coverage-tabs" variant="secondary" tab-width="auto" active-tab-index="${keys.indexOf(category)}" aria-label="Coverage category">${keys.map(key => `<md-tab label="${escape(result.categories[key].label)}"></md-tab>`).join('')}</md-tabs>
-      <div class="coverage-body">${renderCoverageContent(selected, category)}</div>`;
-    $('#coverage-refresh').addEventListener('mdClick', () => load(true));
-    $('#coverage-tabs').addEventListener('mdTabChange', event => { if (event.target !== $('#coverage-tabs')) return; category = keys[event.detail.index] || 'unit'; render(); });
+  function load(refresh = false) {
+    const tag = getState().selected?.tag, root = $('#coverage-panel');
+    if (!tag || !root) return Promise.resolve();
+    if (inFlight?.tag === tag) return inFlight.promise;
+    if (!refresh && tag === currentTag && result && mounted(tag)) return Promise.resolve();
+    const keep = tag === currentTag && result && mounted(tag);
+    const request = { tag, generation: ++generation }; inFlight = request; currentTag = tag;
+    if (!keep) {
+      result = null; view = null;
+      root.innerHTML = '<div class="coverage-loading" role="status"><md-progress-indicator variant="circular" indeterminate size="24" label="Loading coverage evidence"></md-progress-indicator><span>Reading test sources and reports…</span></div>';
+    } else { view.error.hidden = true; view.error.textContent = ''; }
+    busy(true);
+    request.promise = (async () => {
+      try {
+        const response = await fetch(`/api/coverage/${encodeURIComponent(tag)}`);
+        if (!response.ok) throw new Error('Coverage evidence could not be loaded.');
+        const data = await response.json();
+        if (request.generation !== generation || tag !== getState().selected?.tag) return;
+        if (data?.tag !== tag || keys.some(key => !data.categories?.[key] || typeof data.categories[key] !== 'object')) throw new Error('Coverage evidence did not match the selected component.');
+        await render(data, request);
+      } catch (error) {
+        if (request.generation !== generation || tag !== getState().selected?.tag) return;
+        if (keep && mounted(tag)) {
+          view.error.textContent = `Refresh failed. Showing the previously loaded report. ${error.message}`;
+          view.error.hidden = false;
+        } else {
+          result = null; view = null;
+          root.innerHTML = `<p class="load-error" role="alert">${escape(error.message)}</p>`;
+        }
+      } finally {
+        if (inFlight === request) { inFlight = null; busy(false); }
+      }
+    })();
+    return request.promise;
+  }
+  function renderBody() {
+    if (!result || !mounted(result.tag)) return;
+    view.description.innerHTML = `${category === 'accessibility' ? 'Recorded accessibility checks' : 'Measured Web source coverage'} for <code>${escape(result.tag)}</code>.`;
+    for (const panel of view.panels) panel.hidden = panel.dataset.category !== category;
+    const index = keys.indexOf(category);
+    if (view.tabs.activeTabIndex !== index) view.tabs.activeTabIndex = index;
+  }
+  async function render(data, request) {
+    const root = $('#coverage-panel');
+    const reuse = mounted(data.tag), staging = document.createElement('div');
+    let committed = false;
+    staging.hidden = true;
+    staging.setAttribute('aria-hidden', 'true');
+    const panels = keys.map(key => `<div class="coverage-category" data-category="${key}" hidden>${renderCoverageContent(data.categories[key], key)}</div>`).join('');
+    staging.innerHTML = reuse ? panels : `<div class="coverage-heading"><div><h2>Test coverage</h2><p id="coverage-description"></p></div><md-button id="coverage-refresh" variant="text" size="sm" icon="refresh">Refresh</md-button></div>
+      <md-tabs id="coverage-tabs" variant="secondary" tab-width="auto" active-tab-index="${keys.indexOf(category)}" aria-label="Coverage category">${keys.map(key => `<md-tab label="${escape(data.categories[key].label)}"></md-tab>`).join('')}</md-tabs>
+      <p id="coverage-error" class="load-error" role="alert" hidden></p><div class="coverage-body">${panels}</div>`;
+    const nextPanels = [...staging.querySelectorAll('.coverage-category')];
+    // Hydrate in the final connected location: moving a hydrated AWC host can
+    // run its disconnect cleanup. Old evidence stays visible during refresh.
+    if (reuse) view.body.append(...nextPanels);
+    else root.append(staging);
+    try {
+      const hosts = reuse ? nextPanels.flatMap(panel => [...panel.querySelectorAll('*')]) : [...staging.querySelectorAll('*')];
+      await Promise.all(hosts.filter(node => typeof node.componentOnReady === 'function').map(node => node.componentOnReady()));
+      if (request.generation !== generation || data.tag !== getState().selected?.tag) return;
+      if (reuse) {
+        for (const panel of view.panels) panel.remove();
+        view.panels = nextPanels;
+      } else {
+        for (const child of [...root.children]) if (child !== staging) child.remove();
+        view = { tag: data.tag, tabs: root.querySelector('#coverage-tabs'), refresh: root.querySelector('#coverage-refresh'),
+          description: root.querySelector('#coverage-description'), error: root.querySelector('#coverage-error'), body: root.querySelector('.coverage-body'), panels: nextPanels };
+        view.refresh.addEventListener('mdClick', () => load(true));
+        view.tabs.addEventListener('mdTabChange', event => {
+          if (event.target !== view.tabs) return;
+          const next = keys[event.detail.index];
+          if (!next || next === category) return;
+          category = next; renderBody();
+        });
+      }
+      result = data;
+      view.error.hidden = true; view.error.textContent = '';
+      renderBody();
+      staging.hidden = false;
+      staging.removeAttribute('aria-hidden');
+      committed = true;
+    } finally {
+      if (!committed) {
+        for (const panel of nextPanels) panel.remove();
+        staging.remove();
+      }
+    }
   }
   return { load };
 }

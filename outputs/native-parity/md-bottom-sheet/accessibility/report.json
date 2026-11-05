@@ -1,0 +1,177 @@
+{
+ "tag": "md-bottom-sheet",
+ "at": "2026-10-29T11:11:41.657Z",
+ "rows": [
+  {
+   "case": "open",
+   "web": {
+    "elements": [
+     "dialog:Project details",
+     "button:Close bottom sheet"
+    ],
+    "texts": [
+     "Every great project starts with a shared workspace."
+    ],
+    "focus": [
+     "button:Close bottom sheet",
+     "button:Close bottom sheet",
+     "button:Close bottom sheet",
+     "button:Close bottom sheet"
+    ],
+    "contrast": {
+     "measured": 4,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "group:Project details",
+      "button:Close bottom sheet"
+     ],
+     "texts": [
+      "Every great project starts with a shared workspace."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Close bottom sheet",
+      "button:Close bottom sheet",
+      "button:Close bottom sheet",
+      "button:Close bottom sheet"
+     ],
+     "findings": [
+      {
+       "kind": "role",
+       "web": {
+        "role": "dialog",
+        "name": "Project details",
+        "states": {
+         "modal": "true"
+        }
+       },
+       "native": {
+        "role": "group",
+        "name": "Project details"
+       },
+       "detail": "role dialog → group (\"Project details\")",
+       "status": "expected",
+       "reason": "Decision 7: SwiftUI exposes an in-window modal surface as a named group; it offers no way to set the dialog subrole (AXApplicationDialog/AXApplicationAlertDialog) and `isModal` has no macOS mapping. Modality holds natively (focus trapped in the surface, content behind hidden from accessibility, Escape/scrim dismiss); VoiceOver reads the title, then the message."
+      },
+      {
+       "kind": "state",
+       "web": {
+        "role": "dialog",
+        "name": "Project details",
+        "states": {
+         "modal": "true"
+        }
+       },
+       "native": {
+        "role": "group",
+        "name": "Project details"
+       },
+       "detail": "dialog \"Project details\" modal: true → ∅",
+       "status": "expected",
+       "reason": "Decision 7: no AXModal for SwiftUI in-window surfaces; the modal behavior itself (focus trap, hidden background) is native."
+      }
+     ],
+     "contrastMeasured": 4
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Close bottom sheet"
+     ],
+     "texts": [
+      "Project details",
+      "Every great project starts with a shared workspace."
+     ],
+     "focus": [
+      "button:Close bottom sheet",
+      "button:Close bottom sheet",
+      "button:Close bottom sheet",
+      "button:Close bottom sheet"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: button \"Close bottom sheet\" target 40×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "dialog:Project details",
+      "button:Close bottom sheet"
+     ],
+     "texts": [
+      "Every great project starts with a shared workspace."
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Close bottom sheet",
+      "button:Close bottom sheet",
+      "button:Close bottom sheet",
+      "button:Close bottom sheet"
+     ],
+     "findings": [],
+     "contrastMeasured": 4,
+     "atf": {
+      "elements": 18,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

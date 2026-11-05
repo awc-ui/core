@@ -1,0 +1,448 @@
+{
+ "tag": "md-button-group",
+ "at": "2026-10-29T11:11:39.037Z",
+ "rows": [
+  {
+   "case": "default",
+   "web": {
+    "elements": [
+     "radiogroup:",
+     "togglebutton:Day",
+     "togglebutton:Week",
+     "togglebutton:Month"
+    ],
+    "texts": [],
+    "focus": [
+     "togglebutton:Day"
+    ],
+    "contrast": {
+     "measured": 6,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "togglebutton:Day {\"selected\":\"true\",\"pressed\":\"true\"}",
+      "togglebutton:Week {\"pressed\":\"false\"}",
+      "togglebutton:Month {\"pressed\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "togglebutton:Day",
+      "togglebutton:Day",
+      "togglebutton:Day",
+      "togglebutton:Day"
+     ],
+     "findings": [],
+     "contrastMeasured": 6
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "switch:Day {\"checked\":\"true\"}",
+      "switch:Week {\"checked\":\"false\"}",
+      "switch:Month {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "focus": [
+      "switch:Day",
+      "∅",
+      "switch:Day",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Day\" target 58×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Week\" target 67×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Month\" target 73×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "togglebutton:Day {\"pressed\":\"true\"}",
+      "togglebutton:Week {\"pressed\":\"false\"}",
+      "togglebutton:Month {\"pressed\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "togglebutton:Day",
+      "togglebutton:Day",
+      "togglebutton:Day",
+      "togglebutton:Day"
+     ],
+     "findings": [],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 17,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "multi-select",
+   "web": {
+    "elements": [
+     "togglebutton:Day",
+     "togglebutton:Week",
+     "togglebutton:Month"
+    ],
+    "texts": [],
+    "focus": [
+     "togglebutton:Day"
+    ],
+    "contrast": {
+     "measured": 6,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "togglebutton:Day {\"selected\":\"true\",\"pressed\":\"true\"}",
+      "togglebutton:Week {\"pressed\":\"false\"}",
+      "togglebutton:Month {\"pressed\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "togglebutton:Day",
+      "togglebutton:Day",
+      "togglebutton:Day",
+      "togglebutton:Day"
+     ],
+     "findings": [],
+     "contrastMeasured": 6
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "switch:Day {\"checked\":\"true\"}",
+      "switch:Week {\"checked\":\"false\"}",
+      "switch:Month {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "focus": [
+      "switch:Day",
+      "∅",
+      "switch:Day",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Day\" target 58×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Week\" target 67×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Month\" target 73×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "togglebutton:Day {\"pressed\":\"true\"}",
+      "togglebutton:Week {\"pressed\":\"false\"}",
+      "togglebutton:Month {\"pressed\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "togglebutton:Day",
+      "togglebutton:Day",
+      "togglebutton:Day",
+      "togglebutton:Day"
+     ],
+     "findings": [],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 17,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "no-selection",
+   "web": {
+    "elements": [
+     "togglebutton:Day",
+     "togglebutton:Week",
+     "togglebutton:Month"
+    ],
+    "texts": [],
+    "focus": [
+     "togglebutton:Day"
+    ],
+    "contrast": {
+     "measured": 6,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "togglebutton:Day {\"selected\":\"true\",\"pressed\":\"true\"}",
+      "togglebutton:Week {\"pressed\":\"false\"}",
+      "togglebutton:Month {\"pressed\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "togglebutton:Day",
+      "togglebutton:Day",
+      "togglebutton:Day",
+      "togglebutton:Day"
+     ],
+     "findings": [],
+     "contrastMeasured": 6
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "switch:Day {\"checked\":\"true\"}",
+      "switch:Week {\"checked\":\"false\"}",
+      "switch:Month {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "focus": [
+      "switch:Day",
+      "∅",
+      "switch:Day",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Day\" target 58×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Week\" target 67×40 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Month\" target 73×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "togglebutton:Day {\"pressed\":\"true\"}",
+      "togglebutton:Week {\"pressed\":\"false\"}",
+      "togglebutton:Month {\"pressed\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "togglebutton:Day",
+      "togglebutton:Day",
+      "togglebutton:Day",
+      "togglebutton:Day"
+     ],
+     "findings": [],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 17,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

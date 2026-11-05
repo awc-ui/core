@@ -4,7 +4,7 @@
   "slug": "button",
   "category": "Actions",
   "subComponentOf": null,
-  "storyId": "actions-button--localized",
+  "storyId": "actions-button--ripple-motion-contract",
   "props": [
     {
       "name": "type",
@@ -265,23 +265,83 @@
     },
     {
       "name": "--md-button-icon-color",
-      "description": "Icon-only color override"
+      "description": "Leading icon color (trailing fallback)"
     },
     {
       "name": "--md-button-icon-size",
-      "description": "Icon dimensions"
+      "description": "Leading icon dimensions (trailing fallback)"
+    },
+    {
+      "name": "--md-button-trailing-icon-size",
+      "description": "Trailing icon dimensions"
+    },
+    {
+      "name": "--md-button-loading-color",
+      "description": "Loading indicator color"
+    },
+    {
+      "name": "--md-button-loading-size",
+      "description": "Loading indicator dimensions"
+    },
+    {
+      "name": "--md-button-state-layer-color",
+      "description": "Hover/focus/press overlay color"
+    },
+    {
+      "name": "--md-button-hover-opacity",
+      "description": "Hover overlay opacity"
+    },
+    {
+      "name": "--md-button-focus-opacity",
+      "description": "Focus overlay opacity"
+    },
+    {
+      "name": "--md-button-pressed-opacity",
+      "description": "Press overlay opacity"
+    },
+    {
+      "name": "--md-button-font-size",
+      "description": "Label font size"
+    },
+    {
+      "name": "--md-button-font-weight",
+      "description": "Label font weight"
+    },
+    {
+      "name": "--md-button-line-height",
+      "description": "Label line height"
+    },
+    {
+      "name": "--md-button-letter-spacing",
+      "description": "Label letter spacing"
+    },
+    {
+      "name": "--md-button-padding-inline",
+      "description": "Content inset from the outer inline edges"
+    },
+    {
+      "name": "--md-button-padding-block",
+      "description": "Vertical content padding"
+    },
+    {
+      "name": "--md-button-gap",
+      "description": "Icon/label/loading gap"
     },
     {
       "name": "--md-button-container-shape",
-      "description": "Border-radius override"
+      "description": "Fixed border radius, including pressed/selected"
     },
     {
       "name": "--md-button-outline-color",
-      "description": "Outlined border color"
+      "description": "Border color"
     },
     {
       "name": "--md-button-outline-width",
-      "description": "Outlined border width"
+      "description": "Border width (enables a border on any variant)"
+    },
+    {
+      "name": "--md-button-focus-ring-color",
+      "description": "Keyboard focus ring color"
     },
     {
       "name": "--md-button-width",
@@ -304,11 +364,7 @@
       "description": "Minimum block-size (default: per-size touch target)"
     },
     {
-      "name": "--md-button-loading-size",
-      "description": ""
-    },
-    {
-      "name": "--md-button-focus-ring-color",
+      "name": "--md-button-trailing-icon-color",
       "description": ""
     }
   ],

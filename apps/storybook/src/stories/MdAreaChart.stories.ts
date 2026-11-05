@@ -4,6 +4,7 @@ import { html } from 'lit';
 import { ref } from 'lit/directives/ref.js';
 import { t } from '../i18n';
 import { chartPlay } from '../testing/chart-play';
+import { cartesianContractPlay } from '../testing/cartesian-contract-play';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -1358,4 +1359,15 @@ export const AxisBreaks: Story = {
     </div>
   `,
   play: chartPlay(),
+};
+
+/** A live-data consumer: keyboard navigation, legend updates, zoom, and export. */
+export const PublicInteractions: Story = {
+  render: () => html`<md-area-chart
+    no-animation animation="none" show-marks zoom="both" stack="none" legend="right" label="Quarterly revenue"
+    style="display:block;width:min(100%,720px);height:420px"
+    .series=${[{ id: 'sales', label: 'Sales', data: [10, 20, 30, 40, 50, 60] }, { id: 'costs', label: 'Costs', data: [6, 8, 10, 12, 14, 16] }]}
+    .xAxis=${{ data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] }}
+  ></md-area-chart>`,
+  play: cartesianContractPlay('md-area-chart'),
 };

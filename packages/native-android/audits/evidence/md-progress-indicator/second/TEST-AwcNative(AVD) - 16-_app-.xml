@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="dev.awc.playground.NativeProgressParityTest" tests="3" failures="2" errors="0" skipped="0" time="29.448" timestamp="2026-10-20T20:09:27" hostname="localhost">
+  <properties>
+    <property name="device" value="AwcNative(AVD) - 16" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="determinateUpdatesAnimateAndReducedMotionDoesNotFreezeIndeterminatePaint" classname="dev.awc.playground.NativeProgressParityTest" time="1.439" />
+  <testcase name="mountedCompletionRetainsIdentityAndEmitsExactlyOneVoidEvent" classname="dev.awc.playground.NativeProgressParityTest" time="1.279">
+    <failure>java.lang.AssertionError: Only flat circular retains its empty track expected:&lt;false&gt; but was:&lt;true&gt;
+at org.junit.Assert.fail(Assert.java:89)
+at org.junit.Assert.failNotEquals(Assert.java:835)
+at org.junit.Assert.assertEquals(Assert.java:120)
+at dev.awc.playground.NativeProgressParityTest.mountedCompletionRetainsIdentityAndEmitsExactlyOneVoidEvent(NativeProgressParityTest.kt:138)
+</failure>
+  </testcase>
+  <testcase name="actual184ThemeFixturesAnd52EdgeConfigurationsMatchMeasuredRootAndParts" classname="dev.awc.playground.NativeProgressParityTest" time="26.301">
+    <failure>java.lang.AssertionError: light/circular-wave-1 track x native=3.053131103515625 Web=3.604248046875
+light/circular-wave-1 track width native=41.98802185058594 Web=40.79998779296875
+light/circular-wave-1 track height native=39.130767822265625 Web=38.580078125
+light/circular-wave-10 track x native=3.088134765625 Web=3.5992431640625
+light/circular-wave-10 track width native=41.82337951660156 Web=40.800048828125
+light/circular-wave-37 track x native=3.06787109375 Web=3.6187744140625
+light/circular-wave-37 track width native=27.852127075195312 Web=27.30126953125
+light/circular-wave-37 track height native=39.12422180175781 Web=38.57275390625
+light/circular-wave-density-1 track x native=2.837860107421875 Web=3.3545684814453125
+light/circular-wave-density-1 track width native=26.082138061523438 Web=25.5654296875
+light/circular-wave-density-1 track height native=36.69673156738281 Web=36.176513671875
+light/circular-wave-rtl track x native=3.06787109375 Web=3.6187591552734375
+light/circular-wave-rtl track width native=27.852127075195312 Web=27.301239013671875
+light/circular-wave-rtl track height native=39.12422180175781 Web=38.57275390625
+light/circular-wave-local track x native=2.837860107421875 Web=3.35455322265625
+light/circular-wave-local track width native=26.082138061523438 Web=25.5654296875
+light/circular-wave-local track height native=36.69673156738281 Web=36.176513671875
+light/circular-wave-indeterminate track x native=3.088134765625 Web=3.5992431640625
+light/circular-wave-indeterminate track width native=41.82337951660156 Web=40.800048828125
+light/circular-size80 track height native=72.33811950683594 Web=71.544921875
+light/circular-size300 track x native=2.778289794921875 Web=3.5947265625
+light/circular-size300 track width native=195.2217254638672 Web=194.4052734375
+light/circular-size300 track height native=233.09420776367188 Web=232.40478515625
+light/circular-wave-four-color track x native=3.088134765625 Web=3.5992431640625
+light/circular-wave-four-color track width native=41.82337951660156 Web=40.800048828125
+dark/circular-wave-1 track x native=3.053131103515625 Web=3.604248046875
+dark/circular-wave-1 track width native=41.98802185058594 Web=40.79998779296875
+dark/circular-wave-1 track height native=39.130767822265625 Web=38.580078125
+dark/circular-wave-10 track x native=3.088134765625 Web=3.5992431640625
+dark/circular-wave-10 track width native=41.82337951660156 Web=40.800048828125
+dark/circular-wave-37 track x native=3.06787109375 Web=3.6187744140625
+dark/circular-wave-37 track width native=27.852127075195312 Web=27.30126953125
+dark/circular-wave-37 track height native=39.12422180175781 Web=38.57275390625
+dark/circular-wave-density-1 track x native=2.837860107421875 Web=3.3545684814453125
+dark/circular-wave-density-1 track width native=26.082138061523438 Web=25.5654296875
+dark/circular-wave-density-1 track height native=36.69673156738281 Web=36.176513671875
+dark/circular-wave-rtl track x native=3.06787109375 Web=3.6187591552734375
+dark/circular-wave-rtl track width native=27.852127075195312 Web=27.301239013671875
+dark/circular-wave-rtl track height native=39.12422180175781 Web=38.57275390625
+dark/circular-wave-local track x native=2.837860107421875 Web=3.35455322265625
+dark/circular-wave-local track width native=26.082138061523438 Web=25.5654296875
+dark/circular-wave-local track height native=36.69673156738281 Web=36.176513671875
+dark/circular-wave-indeterminate track x native=3.088134765625 Web=3.5992431640625
+dark/circular-wave-indeterminate track width native=41.82337951660156 Web=40.800048828125
+dark/circular-size80 track height native=72.33811950683594 Web=71.544921875
+dark/circular-size300 track x native=2.778289794921875 Web=3.5947265625
+dark/circular-size300 track width native=195.2217254638672 Web=194.4052734375
+dark/circular-size300 track height native=233.09420776367188 Web=232.40478515625
+dark/circular-wave-four-color track x native=3.088134765625 Web=3.5992431640625
+dark/circular-wave-four-color track width native=41.82337951660156 Web=40.800048828125
+light/linear-flat-negativeGap track x native=92.80000305175781 Web=79.796875
+light/linear-flat-negativeGap track width native=147.1999969482422 Web=160.203125
+light/linear-flat-negativeTrailing stop-indicator x native=236.0 Web=243.0
+light/linear-flat-negativeBoth track x native=92.80000305175781 Web=79.796875
+light/linear-flat-negativeBoth track width native=147.1999969482422 Web=160.203125
+light/linear-flat-negativeBoth stop-indicator x native=236.0 Web=243.0
+light/linear-wave-negativeGap track x native=92.80000305175781 Web=79.796875
+light/linear-wave-negativeGap track width native=147.1999969482422 Web=160.203125
+light/linear-wave-negativeTrailing stop-indicator x native=236.0 Web=243.0
+light/linear-wave-negativeBoth track x native=92.80000305175781 Web=79.796875
+light/linear-wave-negativeBoth track width native=147.1999969482422 Web=160.203125
+light/linear-wave-negativeBoth stop-indicator x native=236.0 Web=243.0
+light/circular-wave-control track x native=3.06787109375 Web=3.6187744140625
+light/circular-wave-control track width native=27.852127075195312 Web=27.30120849609375
+light/circular-wave-control track height native=39.12422180175781 Web=38.5728759765625
+light/circular-wave-max-100-value-37 track x native=3.06787109375 Web=3.6187744140625
+light/circular-wave-max-100-value-37 track width native=27.852127075195312 Web=27.30126953125
+light/circular-wave-max-100-value-37 track height native=39.12422180175781 Web=38.5728759765625
+light/circular-wave-negativeGap track x native=3.06787109375 Web=3.6187744140625
+light/circular-wave-negativeGap track width native=27.852127075195312 Web=27.30120849609375
+light/circular-wave-negativeGap track height native=39.12422180175781 Web=38.5728759765625
+light/circular-wave-negativeTrailing track x native=3.06787109375 Web=3.6187744140625
+light/circular-wave-negativeTrailing track width native=27.852127075195312 Web=27.30120849609375
+light/circular-wave-negativeTrailing track height native=39.12422180175781 Web=38.5728759765625
+light/circular-wave-negativeBoth track x native=3.06787109375 Web=3.6187744140625
+light/circular-wave-negativeBoth track width native=27.852127075195312 Web=27.30126953125
+light/circular-wave-negativeBoth track height native=39.12422180175781 Web=38.5728759765625
+at org.junit.Assert.fail(Assert.java:89)
+at org.junit.Assert.assertTrue(Assert.java:42)
+at dev.awc.playground.NativeProgressParityTest.actual184ThemeFixturesAnd52EdgeConfigurationsMatchMeasuredRootAndParts(NativeProgressParityTest.kt:115)
+</failure>
+  </testcase>
+</testsuite>

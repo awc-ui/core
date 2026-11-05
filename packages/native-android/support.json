@@ -3,40 +3,134 @@
   "components": {
     "md-accordion": {
       "properties": [
-        "defaultExpanded",
+        "variant",
+        "density",
+        "elevation",
+        "reorderable",
+        "floating",
+        "initialX",
+        "initialY",
+        "bringToFront",
         "exclusive",
-        "keepOneExpanded"
+        "keepOneExpanded",
+        "headingLevel",
+        "region",
+        "regionThreshold",
+        "transition",
+        "defaultExpanded"
       ],
       "events": [
-        "mdToggle"
+        "mdToggle",
+        "mdReorder",
+        "mdDragStart",
+        "mdDragMove",
+        "mdDragEnd"
       ],
       "methods": [],
       "slots": [
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native exclusive and keep-one-expanded coordination with comma-separated defaultExpanded indices. Reorder and floating drag remain unsupported."
-      ]
+        "Dedicated native renderer: all fifteen properties, five events, the default slot and fourteen appearance hooks. Direct-child ownership, exclusive and keep-one coordination, heading/region presentation, pointer and keyboard reorder, lifted clipping, reorder motion, interaction states, drop-placeholder paint and the floating panel are checked against Chrome oracles.",
+        "Floating mode: the nearest AWCAccordionViewport or the window root (insets are not subtracted) stands in for the CSS viewport. Compose zIndex orders a panel only among siblings of its container, whereas CSS position: fixed stacks against the whole document.",
+        "drop-placeholder is rendered natively and styled through the five drop-placeholder appearance fields; native views accept no ::part declarations for it. Dash centres drift along the border path by up to 1.20 px (open).",
+        "Android Compose rendering, events, retained-host and device suites are recorded; TalkBack delivery and OS accessibility traversal remain unverified."
+      ],
+      "appearance": {
+        "api": "AWCAccordionAppearanceScope(AWCAccordionAppearance)",
+        "fields": [
+          "gap",
+          "outlineColor",
+          "containerShape",
+          "elevation",
+          "floatingWidth",
+          "floatingBackground",
+          "floatingElevation",
+          "floatingElevationActive",
+          "floatingRadius",
+          "dropPlaceholderColor",
+          "dropPlaceholderOutlineColor",
+          "dropPlaceholderOutlineWidth",
+          "dropPlaceholderShape",
+          "dropPlaceholderOpacity"
+        ]
+      }
     },
     "md-accordion-item": {
       "properties": [
-        "collapsible",
-        "disabled",
-        "expanded",
         "headline",
+        "supportingText",
         "icon",
-        "supportingText"
+        "expanded",
+        "disabled",
+        "headingLevel",
+        "collapsible",
+        "regionRole",
+        "contentMaxHeight",
+        "density"
       ],
       "events": [
-        "mdItemToggle"
+        "mdItemToggle",
+        "mdItemRequestFocus",
+        "mdItemRequestReorder"
       ],
-      "methods": [],
+      "methods": [
+        "toggle",
+        "focusHeader"
+      ],
       "slots": [
-        ""
+        "",
+        "leading-icon",
+        "headline",
+        "trailing-icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native item: all ten properties, three events, toggle() and focusHeader() through AWCAccordionItemControllerScope, four slots, twenty-four appearance hooks and eleven typed part targets. mdItemRequestFocus and mdItemRequestReorder bubble to the owning accordion, which performs the source navigation and keyboard reorder.",
+        "An item that is not a direct child of an accordion is never owned and keeps its own disclosure state and events, like the source element.",
+        "chassis-handle and chassis-handle-bar render on the first item of a floating accordion and are styled through chassisHandleColor and chassisHandleBackgroundHover; they accept no part declarations.",
+        "Android Compose rendering, events, retained-host and device suites are recorded; TalkBack delivery and OS accessibility traversal remain unverified."
+      ],
+      "appearance": {
+        "api": "AWCAccordionItemAppearanceScope(AWCAccordionItemAppearance)",
+        "fields": [
+          "containerColor",
+          "containerColorExpanded",
+          "containerColorDragging",
+          "containerShape",
+          "containerShapeExpanded",
+          "containerShapeDragging",
+          "headerColor",
+          "headerColorExpanded",
+          "headlineColor",
+          "headlineColorExpanded",
+          "supportingColor",
+          "iconColor",
+          "iconColorExpanded",
+          "stateLayerColor",
+          "stateLayerColorExpanded",
+          "headerPadding",
+          "contentPadding",
+          "headerMinHeight",
+          "expandDuration",
+          "collapseDuration",
+          "elevation",
+          "elevationExpanded",
+          "chassisHandleColor",
+          "chassisHandleBackgroundHover"
+        ]
+      },
+      "visualParts": [
+        "heading",
+        "header",
+        "state-layer",
+        "drag-handle",
+        "leading-icon",
+        "headline",
+        "supporting-text",
+        "trailing-icon",
+        "panel",
+        "content",
+        "content-inner"
       ]
     },
     "md-app-bar": {
@@ -61,34 +155,102 @@
     },
     "md-area-chart": {
       "properties": [
-        "connectNulls",
-        "fillOpacity",
-        "grid",
-        "heightProp",
         "label",
-        "labelEmpty",
-        "legend",
+        "subtitle",
+        "titleAlign",
+        "series",
+        "xAxis",
+        "yAxis",
+        "curve",
+        "stack",
+        "connectNulls",
+        "showMarks",
         "lineWidth",
+        "markSize",
+        "legend",
+        "tooltip",
+        "zoom",
+        "locale",
+        "valueFormatter",
+        "tooltipRenderer",
+        "heightProp",
+        "noAnimation",
+        "animation",
+        "animationDuration",
+        "fillOpacity",
+        "showLine",
+        "grid",
+        "inverted",
+        "seriesLabels",
+        "summary",
+        "tableLabels",
+        "labelEmpty",
         "loading",
         "loadingLabel",
-        "markSize",
-        "series",
-        "showMarks",
-        "subtitle",
-        "summary",
-        "xAxis"
+        "labelZoomStart",
+        "labelZoomEnd",
+        "axisTicks",
+        "showLabels",
+        "labelPlot",
+        "labelPoint",
+        "density"
       ],
       "events": [
+        "mdMarkerClick",
+        "mdLineClick",
         "mdAreaClick",
+        "mdAxisClick",
         "mdLegendClick",
-        "mdReady"
+        "mdHover",
+        "mdReady",
+        "mdZoom"
       ],
-      "methods": [],
-      "slots": [],
+      "methods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "toDataURL",
+        "getInstance",
+        "setZoom",
+        "resetZoom"
+      ],
+      "slots": [
+        "header",
+        "empty",
+        "loader",
+        "loading",
+        "footer"
+      ],
+      "unsupportedMethods": [
+        "getInstance"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
-      ]
+        "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
+        "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL."
+      ],
+      "appearance": {
+        "api": "AWCChartAppearanceScope(AWCChartAppearance)",
+        "fields": [
+          "blockSize",
+          "minBlockSize",
+          "aspectRatio",
+          "background",
+          "padding",
+          "shape",
+          "emptyColor",
+          "emptyBackground",
+          "emptyFont",
+          "emptyFontSize",
+          "emptyIconSize",
+          "zoomSize",
+          "zoomTrackColor",
+          "zoomWindowColor",
+          "zoomHandleColor",
+          "zoomBandColor"
+        ]
+      },
+      "visualParts": []
     },
     "md-autocomplete": {
       "properties": [
@@ -131,116 +293,357 @@
     },
     "md-avatar": {
       "properties": [
+        "src",
         "alt",
-        "initials",
-        "label",
         "name",
-        "shape",
+        "initials",
         "size",
-        "src"
+        "shape",
+        "label",
+        "colorFromName",
+        "loading",
+        "crossorigin",
+        "density"
       ],
       "events": [
-        "mdError",
-        "mdLoad"
+        "mdLoad",
+        "mdError"
       ],
       "methods": [],
-      "slots": [],
+      "slots": [
+        ""
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native asynchronous HTTP(S) bitmap loading with initials/name fallback. CSS loading/crossorigin policies do not map to Android."
+        "Dedicated native avatar: all eleven properties (image → initials → default slot → person icon; size presets with density 0…−4 and custom CSS lengths: unitless px, px, rem, em, vw, vh, vmin, vmax, pt, pc, in, cm, mm, q with calc/min/max/clamp; circle, rounded and square shapes with physical corners), mdLoad/mdError with { src }, the default slot, twenty-five appearance hooks and three typed part targets.",
+        "Identity as in the source: explicit initials (trimmed, three graphemes, locale upper-case) or the first and last name tokens; the name palette bucket uses the source's JavaScript hash; role img with the label, alt or name, otherwise hidden from assistive technology.",
+        "As in the source, a name palette wins over containerColor/labelColor (they color neutral avatars); the fourteen palette hooks (missing from the CEM) recolor their own bucket.",
+        "Images decode natively from data:, file: and http(s) sources; loading=lazy has no viewport deferral and crossorigin has no CORS semantics (a crossorigin change re-requests a displayed image, as Chrome does). Inline SVG slot content has no native equivalent; native views go in the slot.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+      ],
+      "appearance": {
+        "api": "AWCAvatarAppearanceScope(AWCAvatarAppearance)",
+        "fields": [
+          "size",
+          "containerColor",
+          "containerShape",
+          "labelColor",
+          "labelFontFamily",
+          "labelFontSize",
+          "labelFontWeight",
+          "labelLetterSpacing",
+          "iconSize",
+          "outlineColor",
+          "outlineWidth",
+          "palette1Container",
+          "palette1Label",
+          "palette2Container",
+          "palette2Label",
+          "palette3Container",
+          "palette3Label",
+          "palette4Container",
+          "palette4Label",
+          "palette5Container",
+          "palette5Label",
+          "palette6Container",
+          "palette6Label",
+          "palette7Container",
+          "palette7Label"
+        ]
+      },
+      "visualParts": [
+        "image",
+        "initials",
+        "icon"
       ]
     },
     "md-badge": {
       "properties": [
+        "density",
+        "icon",
         "max",
+        "shape",
         "value",
         "variant"
       ],
       "events": [],
       "methods": [],
-      "slots": [],
+      "slots": [
+        "icon"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native badge implements all six source properties, the authored icon slot and ten typed appearance hooks. AWCBadgeHost uses the actual parent size for physical top-right rect/circle anchors; offsets combine native lengths with fractions of badge size. Explicit empty icon content suppresses fallback. Native layout and font rasterization replace CSS/browser rendering; runtime acceptance is recorded separately in the parity audit."
+      ],
+      "appearance": {
+        "api": "AWCBadgeAppearance / AWCBadgeAppearanceScope / AWCBadgeOffset / AWCBadgePadding",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "cornerRadius",
+          "iconColor",
+          "iconSize",
+          "offsetX",
+          "offsetY",
+          "largeHeight",
+          "largePadding",
+          "smallSize"
+        ]
+      },
+      "visualParts": [
+        "label",
+        "icon"
       ]
     },
     "md-bar-chart": {
       "properties": [
-        "cornerRadius",
-        "heightProp",
         "label",
+        "subtitle",
+        "titleAlign",
+        "series",
+        "xAxis",
+        "yAxis",
+        "yAxis2",
+        "layout",
+        "stack",
+        "categoryGap",
+        "barGap",
+        "barWidth",
+        "cornerRadius",
         "legend",
+        "tooltip",
+        "zoom",
+        "locale",
+        "valueFormatter",
+        "tooltipRenderer",
+        "heightProp",
+        "noAnimation",
+        "animation",
+        "animationDuration",
+        "showLabels",
+        "showTotals",
+        "chevron",
+        "polar",
+        "polarHole",
+        "polarSweep",
+        "axisTicks",
+        "clickable",
+        "labelZoomStart",
+        "labelZoomEnd",
+        "labelPlot",
+        "labelPoint",
         "loading",
         "loadingLabel",
-        "series",
-        "subtitle",
-        "xAxis"
+        "density"
       ],
       "events": [
         "mdBarClick",
         "mdLegendClick",
-        "mdReady"
+        "mdHover",
+        "mdReady",
+        "mdZoom"
       ],
-      "methods": [],
-      "slots": [],
+      "methods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "drill",
+        "toDataURL",
+        "getInstance",
+        "setZoom",
+        "resetZoom"
+      ],
+      "slots": [
+        "header",
+        "empty",
+        "loader",
+        "loading",
+        "footer"
+      ],
+      "unsupportedMethods": [
+        "getInstance"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
-      ]
+        "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
+        "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL."
+      ],
+      "appearance": {
+        "api": "AWCChartAppearanceScope(AWCChartAppearance)",
+        "fields": [
+          "blockSize",
+          "minBlockSize",
+          "aspectRatio",
+          "background",
+          "padding",
+          "shape",
+          "emptyColor",
+          "emptyBackground",
+          "emptyFont",
+          "emptyFontSize",
+          "emptyIconSize",
+          "zoomSize",
+          "zoomTrackColor",
+          "zoomWindowColor",
+          "zoomHandleColor",
+          "zoomBandColor"
+        ]
+      },
+      "visualParts": []
     },
     "md-bottom-sheet": {
       "properties": [
-        "bottomDivider",
-        "closeable",
-        "headline",
         "open",
-        "scrimDismissible",
+        "variant",
+        "headline",
         "showDragHandle",
-        "topDivider"
+        "closeable",
+        "scrimDismissible",
+        "topDivider",
+        "bottomDivider",
+        "sheetAriaLabel",
+        "scrollShadow",
+        "headlineAlign",
+        "contentAlign",
+        "density"
       ],
       "events": [
-        "mdCancel",
+        "mdOpen",
         "mdClose",
-        "mdOpen"
+        "mdCancel"
       ],
-      "methods": [],
+      "methods": [
+        "show",
+        "close"
+      ],
       "slots": [
         "",
+        "headline",
+        "close",
         "actions"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native bottom sheet hosted by AWCModalScope: standard (modal, edge-attached) and detached variants; all thirteen properties, mdOpen/mdClose/mdCancel with null payloads, show/close through AWCBottomSheetController (the source has no whenClosed), drag-handle dismissal with the source threshold, all four slots, sixteen appearance hooks and eleven typed part targets.",
+        "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
+        "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+      ],
+      "appearance": {
+        "api": "AWCBottomSheetAppearanceScope(AWCBottomSheetAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "contentColor",
+          "headlineColor",
+          "scrimColor",
+          "dragHandleColor",
+          "dividerColor",
+          "iconColor",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight",
+          "detachedMargin",
+          "contentPaddingInline"
+        ]
+      },
+      "visualParts": [
+        "scrim",
+        "container",
+        "drag-handle",
+        "drag-handle-indicator",
+        "header",
+        "headline",
+        "close",
+        "divider-top",
+        "divider-bottom",
+        "content",
+        "actions"
       ]
     },
     "md-breadcrumb-item": {
       "properties": [
-        "collapsed",
-        "current",
-        "disabled",
         "href",
-        "icon"
+        "target",
+        "rel",
+        "current",
+        "icon",
+        "disabled",
+        "collapsed",
+        "itemIndex",
+        "itemTotal",
+        "density"
       ],
       "events": [
         "mdSelect"
       ],
       "methods": [],
       "slots": [
-        ""
+        "",
+        "icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "A link crumb (href, not current, not disabled) or a static span; mdSelect { href, label, current, itemIndex, itemTotal } is cancelable and, unless prevented, the link opens through the host URL router (target honoured; rel has no native browsing-context effect).",
+        "collapsed, itemIndex and itemTotal are managed by the trail (as the source sets them); a crumb outside a trail renders as the first crumb and is the current page only when authored.",
+        "Hover, press and keyboard focus (12 % layer, 3-point secondary ring) with the md-ripple wave; labels truncate at 32 ch with an ellipsis and keep the full accessible name."
+      ],
+      "appearance": {
+        "api": "AWCBreadcrumbsAppearanceScope(AWCBreadcrumbsAppearance)",
+        "fields": [
+          "linkColor",
+          "currentColor",
+          "currentBackground",
+          "disabledColor",
+          "hoverColor",
+          "stateLayerColor",
+          "itemGap",
+          "itemPadding"
+        ]
+      }
     },
     "md-breadcrumbs": {
-      "properties": [],
-      "events": [],
-      "methods": [],
+      "properties": [
+        "label",
+        "expandLabel",
+        "separator",
+        "maxItems",
+        "itemsBeforeCollapse",
+        "itemsAfterCollapse",
+        "density"
+      ],
+      "events": [
+        "mdExpand"
+      ],
+      "methods": [
+        "expand",
+        "collapse"
+      ],
       "slots": [
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Composition row. Automatic collapse/maxItems and generated separators are not yet implemented."
-      ]
+        "Dedicated native renderer (SwiftUI / Compose): the wrapping list, separators, the collapse window with the overflow toggle, the current-page promotion and the staggered entrance computed from the authored md-breadcrumb-item children, as the source.",
+        "expand() / collapse() through AWCBreadcrumbsController emit mdExpand { expanded, itemCount } (cancelable like the source event; the state does not depend on it). The toggle moves focus to the first revealed link.",
+        "The twelve hooks through .awcBreadcrumbsAppearance(…) / AWCBreadcrumbsAppearanceScope; density follows the md3 ladder including the rung-only spacing tokens.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Mac Chrome 153 oracles (paint, interaction states and motion); the trail is a labelled navigation container."
+      ],
+      "appearance": {
+        "api": "AWCBreadcrumbsAppearanceScope(AWCBreadcrumbsAppearance)",
+        "fields": [
+          "gap",
+          "separatorColor",
+          "textColor",
+          "stagger",
+          "linkColor",
+          "currentColor",
+          "currentBackground",
+          "disabledColor",
+          "hoverColor",
+          "stateLayerColor",
+          "itemGap",
+          "itemPadding"
+        ]
+      }
     },
     "md-button": {
       "properties": [
@@ -363,7 +766,13 @@
           "gap",
           "hoverOpacity",
           "focusOpacity",
-          "pressedOpacity"
+          "pressedOpacity",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "focusRingColor"
         ]
       },
       "visualParts": [
@@ -377,9 +786,13 @@
     },
     "md-button-group": {
       "properties": [
+        "density",
         "fullWidth",
         "required",
-        "selectionMode"
+        "selectionMode",
+        "shape",
+        "size",
+        "variant"
       ],
       "events": [
         "mdSelectionChange"
@@ -389,97 +802,301 @@
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native single/multi selection and required coordination. A roving focus stop follows recent focus/activation, selected single-select child, then first enabled child. Real Left/Right wrap with RTL reversal; Home/End move to endpoints without selecting. Disabled children are skipped; soft-disabled/loading children remain keyboard focusable but inert. Native groups isolate nearest-group membership rather than traversing nested DOM descendants. Retained keyed child reordering requires re-registration to update traversal order. DOM originalEvent is omitted from payloads."
-      ]
+        "Native nowrap layout with source density gaps, connected mixed-button corners, content-box flex sizing, seven typed layout hooks, standard neighbor press motion, ordered selection snapshots and roving focus. Raw click reconciliation runs after child behavior even when child action was canceled or soft-disabled/loading; required can reselect the clicked child. The group emits once per raw click, including unchanged deltas. Nested and wrapped descendants participate in every ancestor group, with shared selected state, inner-to-outer raw-click reconciliation and authored-tree focus order. DOM originalEvent is replaced by actual child activation metadata, not fabricated."
+      ],
+      "appearance": {
+        "api": "AWCButtonGroupAppearance / AWCButtonGroupAppearanceScope",
+        "fields": [
+          "gap",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight"
+        ]
+      },
+      "nativeEquivalents": {
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Compose layout, AWCButtonFocusScope, AWCButtonGroupStateScope",
+          "description": "Native authored layout-tree traversal includes nested and wrapped descendants; shared selection and inner-to-outer reconciliation preserve ancestor participation. Logical layout direction and roving keyboard focus replace DOM queries.",
+          "limitations": [
+            "Native layout-tree traversal replaces querySelectorAll; arbitrary CSS selector evaluation is not exposed."
+          ]
+        },
+        "DOM_OBSERVER": {
+          "status": "implemented",
+          "api": "Composable default slot",
+          "description": "Native button and icon-button children register in measured composition order and retain state across keyed reordering.",
+          "limitations": [
+            "DOM MutationObserver and CSS selectors are replaced by composition and layout lifecycle."
+          ]
+        },
+        "CSS_RUNTIME": {
+          "status": "implemented",
+          "api": "AWCButtonGroupAppearanceScope / native density and layout values",
+          "description": "Typed native appearance, density and child layout metrics provide the gap, geometry and neighbor-press motion inputs that the Web component reads from computed CSS.",
+          "limitations": [
+            "Arbitrary CSS rules are not evaluated by the native renderer."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionEvent",
+          "description": "mdSelectionChange is dispatched through native action scopes after selection is reconciled, with values, added and removed arrays and actual child activation metadata. Cancellation does not reverse the already committed selection, matching the Web event order.",
+          "limitations": [
+            "Native scope propagation replaces DOM bubbling and composed paths; a browser originalEvent object is not fabricated."
+          ]
+        }
+      }
     },
     "md-card": {
       "properties": [
-        "disabled",
-        "fullWidth",
+        "variant",
         "interactive",
+        "dragEnabled",
+        "disabled",
         "softDisabled",
-        "variant"
+        "ripple",
+        "fullWidth",
+        "fullHeight",
+        "density"
       ],
       "events": [
-        "mdClick"
+        "mdClick",
+        "mdDragStart",
+        "mdDragMove",
+        "mdDragEnd"
       ],
       "methods": [],
       "slots": [
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native card: all nine properties, mdClick and the three drag events with the source payloads, the default slot, fourteen appearance hooks and two typed part targets (state-layer, outline). The source cascade is followed rule by rule, including pressed styles outranking dragged styles under real pointer input.",
+        "The card is a button with a tab stop only when interactive and its content has no interactive controls. Native content cannot be introspected like the DOM: Swift derives this from authored AWC nodes and AWCCardInteractiveRegion, Compose content marks controls with Modifier.awcCardInteractiveContent().",
+        "Compose pointer input does not move focus to authored buttons (Chrome focuses a pressed <button>); Material buttons join Tab traversal only in keyboard input mode.",
+        "While dragging, the raised stacking (z-index 1000) orders the card only among the siblings of its container; CSS z-index stacks against the document.",
+        "The grab/grabbing/pointer cursors and aria-grabbed are not mapped.",
+        "Android Compose rendering, events, retained-host and device suites are recorded; TalkBack delivery and OS accessibility traversal remain unverified."
+      ],
+      "appearance": {
+        "api": "AWCCardAppearanceScope(AWCCardAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "containerElevation",
+          "outlineColor",
+          "outlineWidth",
+          "stateLayerColor",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight",
+          "padding",
+          "gap"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "outline"
       ]
     },
     "md-checkbox": {
       "properties": [
-        "checked",
-        "disabled",
+        "valueMissingLabel",
         "error",
         "errorText",
-        "indeterminate",
-        "name",
-        "required",
-        "softDisabled",
         "supportingText",
-        "value"
+        "checked",
+        "indeterminate",
+        "disabled",
+        "softDisabled",
+        "required",
+        "name",
+        "value",
+        "density"
       ],
       "events": [
-        "mdChange"
+        "mdChange",
+        "mdValidityChange"
       ],
-      "methods": [],
+      "methods": [
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
       "slots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+        "Dedicated native checkbox: all twelve properties (indeterminate, error/errorText, supportingText, density 0…−4), mdChange and mdValidityChange, fourteen appearance hooks and five typed part targets.",
+        "Methods through AWCSelectionControlController: getValidity/checkValidity/reportValidity/setCustomValidity follow the source's constraint validation; reportValidity() shows the message in the supporting line and focuses the checkbox.",
+        "Click toggles (indeterminate → checked), Space once per press with the pressed pulse and a centred ripple, Enter inert; soft disabled stays focusable; the native form resets checked and indeterminate without events.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS runs through the simulator harness; VoiceOver/TalkBack execution remains unverified."
+      ],
+      "appearance": {
+        "api": "AWCCheckboxAppearanceScope(AWCCheckboxAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "containerSize",
+          "selectedContainerColor",
+          "outlineColor",
+          "outlineWidth",
+          "iconColor",
+          "iconSize",
+          "stateLayerColor",
+          "selectedStateLayerColor",
+          "stateLayerSize",
+          "touchTargetSize",
+          "supportingTextColor",
+          "errorTextColor"
+        ]
+      },
+      "visualParts": [
+        "target",
+        "state-layer",
+        "container",
+        "icon",
+        "supporting-text"
       ]
     },
     "md-chip": {
       "properties": [
-        "disabled",
+        "variant",
         "icon",
-        "label",
-        "removable",
-        "selectable",
+        "trailingIcon",
         "selected",
+        "selectable",
+        "appearance",
+        "color",
+        "elevated",
+        "disabled",
         "softDisabled",
-        "variant"
+        "removable",
+        "label",
+        "contentAlign",
+        "density"
       ],
       "events": [
         "mdClick",
-        "mdRemove",
-        "mdSelect"
+        "mdSelect",
+        "mdRemove"
       ],
       "methods": [],
       "slots": [
-        ""
+        "",
+        "leading-icon",
+        "trailing-icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native chip: all fourteen properties (assist, filter, input and suggestion variants; outlined, filled and elevated appearances; colour roles; contentAlign; density 0…−4), mdClick, mdSelect and the cancelable mdRemove, the default, leading-icon and trailing-icon slots, twelve appearance hooks and seven typed part targets.",
+        "Roles as in the source: a button chip, a group with a primary action and the remove button, and a display token. Enter and Space activate; Delete and Backspace remove.",
+        "Lengths: SwiftUI takes px, em, rem and ch (AWCChipLength); Compose takes dp. The primary part has no native styling target.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS runs through the simulator harness; VoiceOver/TalkBack execution remains unverified."
+      ],
+      "appearance": {
+        "api": "AWCChipAppearanceScope(AWCChipHookAppearance)",
+        "fields": [
+          "containerColor",
+          "containerColorSelected",
+          "labelColor",
+          "labelColorSelected",
+          "iconColor",
+          "iconSize",
+          "containerShape",
+          "containerHeight",
+          "outlineColor",
+          "outlineWidth",
+          "stateLayerColor",
+          "elevation"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "outline",
+        "primary",
+        "checkmark",
+        "icon",
+        "label",
+        "remove",
+        "trailing-icon"
       ]
     },
     "md-color-picker": {
       "properties": [
+        "locale",
+        "variant",
+        "value",
+        "format",
         "alpha",
-        "ariaLabelProp",
-        "disabled",
-        "dismissOnOutsideClick",
-        "open",
-        "presets",
         "showHex",
-        "value"
+        "showInputs",
+        "disabled",
+        "presets",
+        "ariaLabelProp",
+        "open",
+        "dismissOnOutsideClick",
+        "density"
       ],
       "events": [
-        "mdChange",
         "mdInput",
+        "mdChange",
         "mdOpenChange"
       ],
-      "methods": [],
-      "slots": [],
+      "methods": [
+        "show",
+        "close"
+      ],
+      "slots": [
+        "trigger"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native RGB sliders, alpha and presets; HEX/RGB output implemented. HSL output and complete source color parsing remain unsupported."
+        "Dedicated native renderers (SwiftUI AWCNativeColorPicker, Compose NativeColorPicker): the saturation / value plate, the hue and alpha tracks, the hex and channel fields, the presets, the inline variant and the popover with the consumer's trigger in the trigger slot.",
+        "The eleven source hooks through AWCColorPickerAppearance (.awcColorPickerAppearance(_:) / AWCColorPickerAppearanceScope): lengths in points / dp, #RRGGBB(AA) colours and the popover elevation as CSS box-shadow text.",
+        "Methods through AWCColorPickerController: show() and close() act on a popover picker (show() not while disabled), emit mdOpenChange, and close() returns focus that was inside the popover to the trigger.",
+        "mdInput only when the formatted value changes and mdChange on commit; keyboard steps with RTL-mirrored arrows; Escape is claimed inside an md-dialog. macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Chrome 153 oracles (paint and interaction)."
+      ],
+      "appearance": {
+        "api": "AWCColorPickerAppearanceScope(AWCColorPickerAppearance)",
+        "fields": [
+          "width",
+          "plateHeight",
+          "radius",
+          "surfaceColor",
+          "onSurface",
+          "outlineColor",
+          "outlineStrong",
+          "thumbSize",
+          "thumbBorder",
+          "presetSize",
+          "popoverElevation"
+        ]
+      },
+      "visualParts": [
+        "popover",
+        "plate",
+        "thumb",
+        "hue",
+        "alpha",
+        "field-hex",
+        "label",
+        "field-a",
+        "inputs",
+        "field-r",
+        "field-g",
+        "field-b",
+        "field-h",
+        "field-s",
+        "field-l",
+        "presets",
+        "preset",
+        "panel",
+        "sliders",
+        "preview"
       ]
     },
     "md-date-picker": {
@@ -516,26 +1133,70 @@
     },
     "md-dialog": {
       "properties": [
-        "cancelLabel",
-        "fullscreen",
-        "headline",
-        "icon",
-        "okLabel",
         "open",
-        "scrimDismissible"
+        "headline",
+        "dialogAriaLabel",
+        "icon",
+        "fullscreen",
+        "scrimDismissible",
+        "locale",
+        "closeLabel",
+        "cancelLabel",
+        "okLabel",
+        "divider",
+        "headerDivider",
+        "density"
       ],
       "events": [
-        "mdCancel",
+        "mdOpen",
         "mdClose",
-        "mdOpen"
+        "mdCancel"
       ],
-      "methods": [],
+      "methods": [
+        "show",
+        "whenClosed",
+        "close"
+      ],
       "slots": [
         "",
-        "actions"
+        "actions",
+        "headline",
+        "header-action",
+        "icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native dialog hosted by AWCModalScope in the app's own viewport (not a platform window): basic (centred alert dialog over a scrim) and fullscreen; all thirteen properties, mdOpen/mdClose/mdCancel in the source order with null payloads, show/close/whenClosed through AWCDialogController, all five slots, ten appearance hooks and eleven typed part targets.",
+        "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
+        "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+      ],
+      "appearance": {
+        "api": "AWCDialogAppearanceScope(AWCDialogAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "headlineColor",
+          "contentColor",
+          "iconColor",
+          "iconSize",
+          "scrimColor",
+          "dividerColor",
+          "zIndex",
+          "scrimZIndex"
+        ]
+      },
+      "visualParts": [
+        "scrim",
+        "container",
+        "header",
+        "icon",
+        "headline",
+        "content",
+        "divider",
+        "actions",
+        "cancel-button",
+        "ok-button",
+        "close-button"
       ]
     },
     "md-divider": {
@@ -549,50 +1210,211 @@
       "methods": [],
       "slots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native divider uses a measured inner painted line, signed logical inset margins and nonnegative thickness. Inset-start overrides both-side inset; inset-end takes precedence when multiple flags are true. Vertical insets apply at the top and bottom. Native drawing replaces CSS; runtime verification is recorded separately in the parity audit."
+      ],
+      "appearance": {
+        "api": "AWCDividerAppearance / AWCDividerAppearanceScope",
+        "fields": [
+          "color",
+          "thickness",
+          "insetStart",
+          "insetEnd"
+        ]
+      },
+      "visualParts": [
+        "divider"
       ]
     },
     "md-fab": {
       "properties": [
+        "density",
         "disabled",
+        "extended",
         "icon",
         "label",
+        "lowered",
+        "ripple",
+        "size",
         "softDisabled",
         "variant"
       ],
       "events": [
         "mdClick"
       ],
-      "methods": [],
+      "methods": [
+        "setMenuIcon"
+      ],
       "slots": [
         "icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated Compose FAB preserves source sizes, density, seven palettes, labelled extended/collapsed geometry and motion, lowered elevation, disabled state, pointer ripple, keyboard focus and activation. The icon slot retains authored content during controller overrides. mdClick callback detail is null in place of a DOM MouseEvent; scoped AWCActionEvent detail is an empty map and truthful input metadata is available through activation. Android elevation rasterization and native text shaping remain platform-specific. Menu-owned shape/icon-morph choreography is verified with the menu component separately."
+      ],
+      "appearance": {
+        "api": "AWCFabAppearance / AWCFabAppearanceScope",
+        "fields": [
+          "containerColor",
+          "iconColor",
+          "iconSize",
+          "cornerRadius",
+          "labelColor"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "label"
+      ],
+      "nativeEquivalents": {
+        "SHADOW_DOM": {
+          "status": "implemented",
+          "api": "AWCComponent content / AWCSlotsScope",
+          "description": "Retained named icon composition replaces shadow content. Public typed appearance and measured visual parts replace the five source hooks.",
+          "limitations": [
+            "No DOM nodes or CSS selector engine are exposed."
+          ]
+        },
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Compose label measurement and named icon composition",
+          "description": "The actual native text layout supplies label width; retained slot composition supplies current icon content.",
+          "limitations": [
+            "Arbitrary DOM traversal is not reproduced."
+          ]
+        },
+        "SLOT_INTROSPECTION": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry / native subcomposition",
+          "description": "Actual authored slot layout determines fallback presence, including explicit empty Text elements. Temporary menu icons hide rather than discard authored content.",
+          "limitations": [
+            "Native composables replace HTMLElement assignments."
+          ]
+        },
+        "ANIMATION_FRAME": {
+          "status": "implemented",
+          "api": "Compose animation frame clock",
+          "description": "The initial target is applied without mount animation. Subsequent extent and label changes use the source spatial and effects curves; native reduced-motion settings disable motion.",
+          "limitations": [
+            "Native frame timing replaces requestAnimationFrame."
+          ]
+        },
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "Bundled Roboto and Compose TextMeasurer",
+          "description": "Native layout and font resolution remeasure label width when content, typography or density changes, without document.fonts.",
+          "limitations": [
+            "Native glyph shaping and physical-pixel rounding can differ from browser text rendering."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionEvent",
+          "description": "Cancelable native capture/target/bubble delivery provides actual input metadata; no default action is attached to FAB notification. Callback detail is null; the scoped map is empty.",
+          "limitations": [
+            "DOM MouseEvent and browser propagation objects are not fabricated."
+          ]
+        }
+      }
     },
     "md-fab-menu": {
       "properties": [
+        "anchor",
+        "density",
         "menuLabel",
-        "open"
+        "open",
+        "placement",
+        "quick",
+        "variant"
       ],
       "events": [
         "mdClose",
         "mdOpen"
       ],
-      "methods": [],
+      "methods": [
+        "show",
+        "close",
+        "whenClosed"
+      ],
       "slots": [
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Native nonmodal FAB menu uses AWCFabMenuScope with separately authored ID anchors, actual native bounds, a retained item tree and scoped controller show/close/whenClosed lifecycle. Source input ordering, roving focus, typeahead and typed appearance are implemented; runtime acceptance is recorded separately in audits/md-fab-menu.md. AWCSlotText or AWCSearchableLabelScope supplies actual searchable names for arbitrary native label content. Native scoped appearance restores authored FAB colors on close rather than deleting immutable authored appearance as Web inline-style cleanup does."
+      ],
+      "appearance": {
+        "api": "AWCFabMenuAppearance / AWCFabMenuAppearanceScope",
+        "fields": [
+          "itemContainerColor",
+          "itemLabelColor",
+          "itemGap"
+        ]
+      },
+      "nativeEquivalents": {
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "AWCFabMenuScope / authored id and anchor properties",
+          "description": "A scoped native registry resolves authored anchor identity, pointer modality, focus and nonmodal outside activation.",
+          "limitations": [
+            "The scope is the native viewport; global document lookup is not exposed."
+          ]
+        },
+        "DOM_LAYOUT": {
+          "status": "implemented",
+          "api": "Compose LayoutCoordinates",
+          "description": "Actual transformed anchor bounds are tracked while open and drive logical-edge positioning and auto placement.",
+          "limitations": [
+            "Native dp replaces browser CSS pixels."
+          ]
+        },
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Native authored layout-tree traversal / AWCSlotText / AWCSearchableLabelScope",
+          "description": "Registered item descendants retain authored order for roving focus and typeahead. Explicit native text registration replaces DOM textContent.",
+          "limitations": [
+            "An arbitrary Compose content lambda cannot be introspected for text; use the supplied native searchable-label equivalent."
+          ]
+        },
+        "SHADOW_DOM": {
+          "status": "implemented",
+          "api": "Composable default slot and nonmodal overlay layer",
+          "description": "The retained native layer separates menu flow layout from authored items and anchor.",
+          "limitations": [
+            "No DOM shadow root is created."
+          ]
+        },
+        "CSS_RUNTIME": {
+          "status": "implemented",
+          "api": "AWCFabMenuAppearanceScope / native layout direction and density",
+          "description": "Typed appearance and applied native geometry replace runtime computed CSS values.",
+          "limitations": [
+            "Arbitrary CSS selectors are not evaluated."
+          ]
+        },
+        "ANIMATION_FRAME": {
+          "status": "implemented",
+          "api": "AWCFabMenuController / Compose frame clock",
+          "description": "Initial paint readiness, cancelable pending opens, delayed close commit and retained cycle completion follow native frame lifecycle.",
+          "limitations": [
+            "Native frame scheduling replaces requestAnimationFrame."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionEvent",
+          "description": "Void lifecycle callbacks and synchronous scoped capture/target/bubble events preserve committed-state ordering.",
+          "limitations": [
+            "DOM event objects are not fabricated."
+          ]
+        }
+      }
     },
     "md-fab-menu-item": {
       "properties": [
+        "density",
         "disabled",
         "icon",
         "label",
+        "rovingFocusVisible",
         "softDisabled"
       ],
       "events": [
@@ -604,17 +1426,58 @@
         "icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native menu item supports all six properties, icon and fallback label slots, actual density geometry, native ripple and roving focus. Void mdClick callbacks use null; scoped event detail is an empty map with truthful activation metadata. Native text shaping remains platform-specific; runtime acceptance is recorded separately in the menu audit."
+      ],
+      "appearance": {
+        "api": "AWCFabMenuItemAppearance / AWCFabMenuItemAppearanceScope",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "iconSize",
+          "cornerRadius"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "label"
+      ],
+      "nativeEquivalents": {
+        "SLOT_INTROSPECTION": {
+          "status": "implemented",
+          "api": "AWCSlotsScope / native subcomposition",
+          "description": "Actual authored icon content, including explicit empty Text, controls icon fallback and padding.",
+          "limitations": [
+            "Native composition replaces assignedElements."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionEvent",
+          "description": "Cancelable synchronous native delivery preserves pointer and keyboard metadata and allows propagation to the parent menu to be stopped.",
+          "limitations": [
+            "DOM MouseEvent and KeyboardEvent are not fabricated."
+          ]
+        }
+      }
     },
     "md-icon-button": {
       "properties": [
+        "buttonWidth",
+        "connectedLeft",
+        "connectedRight",
+        "density",
         "disabled",
         "groupTabindex",
         "href",
         "icon",
+        "ripple",
         "selected",
         "selectedIcon",
+        "shape",
+        "shapeMorph",
+        "size",
         "softDisabled",
         "target",
         "toggle",
@@ -625,139 +1488,509 @@
         "mdClick"
       ],
       "methods": [],
-      "slots": [],
+      "slots": [
+        "",
+        "selected"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated Compose renderer implements all 19 source properties, all five size and density rungs, narrow/default/wide widths, four source palettes, selected/pressed/resting morph precedence, connected logical corners, pointer-origin ripple, keyboard focus and native group coordination. Default/selected slots replace glyph fallbacks; direct native badges adorn without suppressing the icon and avatars retain their own dimensions. Navigation and toggle commit before cancelable mdClick notification, exactly as the source does; no mdChange is emitted. The nine public CSS hooks map to AWCIconButtonAppearance. Native layout evidence covers the visual root, state-layer and active icon part. Source DOM objects, CSS selector evaluation, browser windows and forced-colors media queries remain platform-specific."
+      ],
+      "nativeEquivalents": {
+        "SHADOW_DOM": {
+          "status": "implemented",
+          "api": "AWCSlotsScope / AWCSlotRegistry / AWCComponent content",
+          "description": "Default and selected composable slots replace source glyphs. Direct native badges and avatars preserve their source slot sizing roles.",
+          "limitations": [
+            "Native composition replaces shadow DOM; arbitrary DOM inspection is not exposed."
+          ]
+        },
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry / AWCNavigationScope",
+          "description": "Native slot lookup and injected application routing replace the component-specific DOM queries.",
+          "limitations": [
+            "No arbitrary CSS selector engine or browser window is created."
+          ]
+        },
+        "SLOT_INTROSPECTION": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry / native subcomposition",
+          "description": "Subcomposition detects actual child layout and selects the default or selected icon layer; badges do not count as replacement icons. Explicit Text composables, including empty editor text, represent authored replacement elements.",
+          "limitations": [
+            "Compose children replace DOM nodes; omission restores fallback while an authored empty element suppresses it."
+          ]
+        },
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "AWCNavigationCoordinator / AWCNavigationContext / AWCNavigationScope / AWCURLRouter",
+          "description": "Safe relative links resolve against the source native context current URL. Observable native contexts implement self, blank, parent, top and reusable named destinations, independent history, back and subtree close. A host can reject navigation before commit and present accepted destinations after commit. Unsafe raw links never fall through to form actions.",
+          "limitations": [
+            "Contexts are native application state, not browser windows, documents, origins or opener relationships; no page is fetched by the coordinator.",
+            "Named native destinations are deliberately reusable; source window.open with noopener/noreferrer may instead create fresh browser contexts. Browser modifier/middle-click navigation and window APIs are not reproduced.",
+            "URLs must parse as native URIs. Applications supply presentation for coordinator destinations; the legacy default router still opens absolute Android URIs."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionTargetScope / AWCActionEvent",
+          "description": "Scoped native capture/target/bubble delivery exposes cancelable mdClick after safe navigation and selection have already committed, matching the source icon-button ordering.",
+          "limitations": [
+            "Calling preventDefault marks the notification but cannot undo effects that preceded it. OS input and DOM propagation are not fabricated."
+          ]
+        }
+      },
+      "appearance": {
+        "api": "AWCIconButtonAppearance / AWCIconButtonAppearanceScope",
+        "fields": [
+          "containerColor",
+          "iconColor",
+          "stateLayerColor",
+          "iconSize",
+          "cornerRadius",
+          "outlineColor",
+          "outlineWidth",
+          "width",
+          "height"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "selected-icon"
       ]
     },
     "md-line-chart": {
       "properties": [
-        "area",
-        "connectNulls",
-        "grid",
-        "heightProp",
         "label",
-        "labelEmpty",
-        "legend",
+        "subtitle",
+        "markLines",
+        "titleAlign",
+        "series",
+        "xAxis",
+        "yAxis",
+        "yAxes",
+        "curve",
+        "stack",
+        "connectNulls",
+        "showMarks",
         "lineWidth",
+        "markSize",
+        "area",
+        "showLine",
+        "legend",
+        "tooltip",
+        "grid",
+        "axisTicks",
+        "inverted",
+        "showLabels",
+        "seriesLabels",
+        "zoom",
+        "locale",
+        "labelEmpty",
+        "labelPlot",
+        "labelPoint",
+        "labelZoomStart",
+        "labelZoomEnd",
+        "summary",
+        "tableLabels",
+        "valueFormatter",
+        "tooltipRenderer",
+        "heightProp",
+        "noAnimation",
+        "animation",
+        "animationDuration",
         "loading",
         "loadingLabel",
-        "markSize",
-        "series",
-        "showMarks",
-        "subtitle",
-        "summary",
-        "xAxis"
+        "density"
       ],
       "events": [
-        "mdLegendClick",
         "mdMarkerClick",
-        "mdReady"
+        "mdLineClick",
+        "mdAreaClick",
+        "mdAxisClick",
+        "mdLegendClick",
+        "mdHover",
+        "mdReady",
+        "mdZoom"
       ],
-      "methods": [],
-      "slots": [],
+      "methods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "toDataURL",
+        "getInstance",
+        "setZoom",
+        "resetZoom"
+      ],
+      "slots": [
+        "header",
+        "empty",
+        "loader",
+        "loading",
+        "footer"
+      ],
+      "unsupportedMethods": [
+        "getInstance"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
-      ]
+        "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
+        "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL."
+      ],
+      "appearance": {
+        "api": "AWCChartAppearanceScope(AWCChartAppearance)",
+        "fields": [
+          "blockSize",
+          "minBlockSize",
+          "aspectRatio",
+          "background",
+          "padding",
+          "shape",
+          "emptyColor",
+          "emptyBackground",
+          "emptyFont",
+          "emptyFontSize",
+          "emptyIconSize",
+          "zoomSize",
+          "zoomTrackColor",
+          "zoomWindowColor",
+          "zoomHandleColor",
+          "zoomBandColor"
+        ]
+      },
+      "visualParts": []
     },
     "md-list": {
       "properties": [
-        "label",
         "listStyle",
-        "selectionMode"
+        "selectionMode",
+        "interactionMode",
+        "reorderable",
+        "label",
+        "labelledby",
+        "roleOverride",
+        "density"
       ],
       "events": [
-        "mdSelect"
+        "mdSelect",
+        "mdActivate",
+        "mdReorder"
       ],
-      "methods": [],
+      "methods": [
+        "activateNext",
+        "activatePrevious",
+        "selectItem",
+        "getSelectedIndices"
+      ],
       "slots": [
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native single/multi selection; native events omit DOM item references. Reordering remains unsupported."
+        "Dedicated native list: all eight properties (list, listbox with single/multi selection, menu and other role overrides, density 0…−4), mdSelect, mdActivate and mdReorder with the source payloads (item references become stable native node IDs), the four methods through AWCListController, ten appearance hooks and the drop-placeholder part.",
+        "Roving focus with wrap, Home/End and 500 ms typeahead; pointer reorder from the drag handle (lift, sibling shift, dashed placeholder glide, drop) and Alt+Arrow keyboard reorder, measured against Chrome frame by frame.",
+        "A reorder keeps the authored composition and translates rows to their displayed slots; on Compose the accessibility order follows the authored order until the host applies mdReorder.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+      ],
+      "appearance": {
+        "api": "AWCListAppearanceScope(AWCListAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "paddingBlock",
+          "paddingInline",
+          "segmentedGap",
+          "dropPlaceholderColor",
+          "dropPlaceholderOutlineColor",
+          "dropPlaceholderOutlineWidth",
+          "dropPlaceholderShape",
+          "dropPlaceholderOpacity"
+        ]
+      },
+      "visualParts": [
+        "drop-placeholder"
       ]
     },
     "md-list-item": {
       "properties": [
+        "type",
+        "headline",
+        "overline",
+        "supportingText",
+        "trailingSupportingText",
+        "leadingIcon",
+        "trailingIcon",
+        "leadingAvatar",
+        "leadingAvatarAlt",
+        "leadingAvatarName",
+        "leadingAvatarLabel",
+        "leadingImage",
+        "leadingImageAlt",
+        "lines",
+        "href",
+        "target",
         "disabled",
+        "softDisabled",
+        "selected",
         "expandable",
         "expanded",
-        "headline",
-        "leadingIcon",
-        "overline",
-        "selected",
-        "softDisabled",
-        "supportingText",
-        "trailingSupportingText"
+        "tabbable",
+        "rovingFocusVisible",
+        "selectionMode",
+        "interactionMode",
+        "containerRole",
+        "reorderable",
+        "density"
       ],
       "events": [
         "mdClick",
-        "mdExpand",
-        "mdItemClick",
-        "mdItemSelect"
+        "mdExpand"
       ],
-      "methods": [],
+      "methods": [
+        "setFocus",
+        "focusItem",
+        "toggle",
+        "expand",
+        "collapse"
+      ],
       "slots": [
         "",
-        "expanded-content",
         "leading",
-        "trailing"
+        "overline",
+        "headline",
+        "supporting-text",
+        "trailing",
+        "trailing-supporting-text",
+        "expanded-content"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native list item: all twenty-eight properties (the list-managed ones — tabbable, rovingFocusVisible, selectionMode, interactionMode, containerRole, reorderable — follow the parent list as in the source), mdClick and mdExpand with the source payloads and order, the five methods through AWCListItemController, all eight slots, sixty-eight appearance hooks and twenty-seven typed part targets.",
+        "mdItemClick, mdItemSelect, mdRequestActivation and mdItemRequestReorder are the source's internal item-to-list protocol; natively the list coordinates its rows directly and emits mdSelect, mdActivate and mdReorder instead.",
+        "Accessibility: a selection row is an option with its selected state (a radio button in a single-select listbox, a checkbox in a multi-select one), a menu row is a menu item (a button on Compose), the primary action is a button or link; the row's index is its set position. The headline and supporting text use the shared md-tooltip while clipped.",
+        "The headline-tooltip-popup and supporting-tooltip-popup parts are styled through the shared md-tooltip appearance, not the list item part API.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+      ],
+      "appearance": {
+        "api": "AWCListItemAppearanceScope(AWCListItemAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "containerShapeStartStart",
+          "containerShapeStartEnd",
+          "containerShapeEndStart",
+          "containerShapeEndEnd",
+          "activeContainerShape",
+          "hoverContainerShape",
+          "focusContainerShape",
+          "pressedContainerShape",
+          "selectedContainerShape",
+          "draggedContainerShape",
+          "hoverStateLayerOpacity",
+          "focusStateLayerOpacity",
+          "pressedStateLayerOpacity",
+          "draggedStateLayerOpacity",
+          "disabledStateLayerOpacity",
+          "labelTextColor",
+          "labelTextFont",
+          "supportingTextColor",
+          "supportingTextFont",
+          "overlineColor",
+          "trailingSupportingTextColor",
+          "trailingSupportingTextFont",
+          "leadingIconColor",
+          "leadingIconSize",
+          "leadingIconExpressiveSize",
+          "trailingIconColor",
+          "unselectedTrailingIconColor",
+          "trailingIconSize",
+          "trailingIconExpressiveSize",
+          "leadingSpace",
+          "trailingSpace",
+          "topSpace",
+          "bottomSpace",
+          "betweenSpace",
+          "threeLineTopSpace",
+          "threeLineBottomSpace",
+          "draggedContainerElevation",
+          "leadingVideoWidth",
+          "leadingVideoHeight",
+          "leadingVideoShape",
+          "leadingVideoTopSpace",
+          "leadingAvatarColor",
+          "leadingAvatarLabelColor",
+          "leadingAvatarSize",
+          "leadingAvatarShape",
+          "leadingImageWidth",
+          "leadingImageHeight",
+          "leadingImageShape",
+          "leadingImageExpressiveShape",
+          "leadingImageSelectionScrimColor",
+          "leadingImageSelectionCircleColor",
+          "leadingImageSelectionIconColor",
+          "leadingImageSelectionIconSize",
+          "selectedContainerColor",
+          "selectedLabelTextColor",
+          "selectedActiveIconColor",
+          "selectedDisabledContainerColor",
+          "expandChevronColor",
+          "expandDuration",
+          "collapseDuration",
+          "expandedPanelPaddingBlock",
+          "expandedPanelPaddingInline",
+          "expandedPanelPaddingInlineStart",
+          "expandedPanelBackground",
+          "expandButtonSize",
+          "expandChevronSize"
+        ]
+      },
+      "visualParts": [
+        "leading",
+        "avatar",
+        "image-wrap",
+        "image",
+        "image-selection-indicator",
+        "image-selection-circle",
+        "image-selection-check",
+        "leading-icon",
+        "content",
+        "overline",
+        "headline",
+        "supporting-text",
+        "trailing",
+        "trailing-supporting-text",
+        "trailing-icon",
+        "expand-button",
+        "drag-handle",
+        "primary",
+        "row",
+        "state-layer",
+        "expanded-panel",
+        "expanded-panel-inner",
+        "avatar-image",
+        "avatar-initials",
+        "avatar-icon",
+        "expand-button-state-layer",
+        "expand-button-icon"
       ]
     },
     "md-loading-indicator": {
       "properties": [
-        "label"
+        "density",
+        "label",
+        "variant"
       ],
       "events": [],
       "methods": [],
       "slots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native polygon animation preserves source geometry, colors, density, clipping, exact keyframes and typed corner radii. AWCLoadingIndicatorShapeAppearanceScope styles the measured shape part. Android animation preference supplies reduced motion; explicit AWCAccessibilityAppearanceScope forcedColors is a native environment override, not inferred from system contrast. No default tabstop is added; caller focus modifiers opt into native focus. Runtime verification is recorded separately."
+      ],
+      "appearance": {
+        "api": "AWCLoadingIndicatorAppearance / AWCLoadingIndicatorAppearanceScope / AWCCornerShape",
+        "fields": [
+          "color",
+          "size",
+          "shapeSize",
+          "containerColor",
+          "containerShape"
+        ]
+      },
+      "visualParts": [
+        "shape"
       ]
     },
     "md-menu": {
       "properties": [
-        "open"
+        "open",
+        "anchor",
+        "placement",
+        "quick",
+        "variant",
+        "layout",
+        "useGap",
+        "emptyText",
+        "matchAnchorWidth",
+        "responsive",
+        "persistent",
+        "autoFocus",
+        "maxHeight",
+        "listLabel",
+        "listbox",
+        "density"
       ],
       "events": [
-        "mdClose",
-        "mdOpen"
+        "mdOpen",
+        "mdClose"
       ],
-      "methods": [],
+      "methods": [
+        "getScrollViewport",
+        "show",
+        "reposition",
+        "whenClosed",
+        "close"
+      ],
       "slots": [
-        ""
+        "",
+        "header"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native renderer (SwiftUI / Compose): the baseline, standard and vibrant surfaces, the standard and grouped (gap) layouts, the header slot, empty text, density, a capped scrolling viewport (max-height, --md-menu-max-block-size) and the 150 ms scale-and-fade entrance and exit (quick and Reduce Motion snap), verified against the Mac Chrome 153 oracles (paint, interaction states and motion).",
+        "Anchored menus present in the nearest AWCMenuScope (the menus' top layer): bottom/top-start/end placement against the anchor's live frame (physical, as the source), flipped and kept inside the viewport margin, match-anchor-width and the responsive full-width surface. Outside a scope a menu renders in flow.",
+        "Source behaviour: auto-focus of the first row, roving focus with typeahead, Escape and Tab close the tree and restore focus to the anchor, outside clicks close non-persistent menus, opening a menu closes its open peers; mdOpen / mdClose as the source. listbox exposes the surface as a listbox of options.",
+        "show({ autoFocus }), close(), whenClosed() and reposition() through AWCMenuScopeState.menu(id); getScrollViewport() returns the viewport geometry (scrollTop, scrollHeight, clientHeight) rather than an element. setComboboxElement() and setVirtualProvider() are the DOM combobox and virtualization plumbing of md-select / md-autocomplete and have no native counterpart.",
+        "The six menu hooks and the five row hooks (inherited by every row) through .awcMenuAppearance(…) / AWCMenuAppearanceScope."
+      ],
+      "appearance": {
+        "api": "AWCMenuAppearanceScope(AWCMenuAppearance)",
+        "fields": [
+          "minWidth",
+          "maxWidth",
+          "maxBlockSize",
+          "viewportMargin",
+          "groupGap",
+          "sectionGap",
+          "itemHeight",
+          "itemPaddingInline",
+          "itemGap",
+          "itemIconSize",
+          "itemCheckSize"
+        ]
+      }
     },
     "md-menu-item": {
       "properties": [
-        "disabled",
-        "divider",
         "headline",
-        "selected",
         "supportingText",
         "trailingText",
-        "type"
+        "disabled",
+        "selected",
+        "indeterminate",
+        "keepOpen",
+        "divider",
+        "gap",
+        "badge",
+        "type",
+        "checkPosition",
+        "presentation",
+        "roleOverride",
+        "density"
       ],
       "events": [
         "mdClick"
       ],
       "methods": [],
-      "slots": [],
+      "slots": [
+        "leading-icon",
+        "trailing-icon"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Rendered by its md-menu: one- and two-line rows with the leading-icon and trailing-icon slots, trailing text, badge, divider and gap, checkbox and radio rows (check position, indeterminate, keep-open), option presentation and role override, density; hover, press and keyboard focus show the state layer, the md-ripple wave and the inset 3-point focus ring.",
+        "Activation emits mdClick and closes the menu tree after 150 ms unless keep-open; Space toggles checkbox and radio rows without closing; disabled rows stay focusable in the roving order (APG) but inert."
       ]
     },
     "md-menu-item-group": {
       "properties": [
-        "label"
+        "label",
+        "density"
       ],
       "events": [],
       "methods": [],
@@ -765,16 +1998,22 @@
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "A labelled group (role group) with its label row; the grouped layout of its md-menu draws it as a card; density as the source."
       ]
     },
     "md-meter": {
       "properties": [
+        "color",
+        "density",
+        "formatOptions",
         "label",
+        "locale",
         "max",
         "min",
         "showLabel",
         "showValue",
+        "size",
+        "thickness",
         "value",
         "valueText",
         "variant"
@@ -783,64 +2022,167 @@
       "methods": [],
       "slots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated read-only Compose meter supports the fourteen source properties, native ICU locale formatting and seven typed appearance hooks. AWCMeterRangeKey retains the exact Double range alongside Android accessibility range data. Native paths, shaped text and measured visual parts replace SVG and CSS. Runtime verification is recorded separately in the parity audit."
+      ],
+      "appearance": {
+        "api": "AWCMeterAppearance / AWCMeterAppearanceScope / AWCCornerShape",
+        "fields": [
+          "indicatorColor",
+          "trackColor",
+          "trackShape",
+          "height",
+          "labelColor",
+          "valueColor",
+          "size"
+        ]
+      },
+      "visualParts": [
+        "track",
+        "indicator",
+        "label",
+        "value",
+        "circular"
       ]
     },
     "md-multi-select": {
       "properties": [
-        "clearLabel",
-        "clearable",
-        "disabled",
+        "valueMissingLabel",
+        "reserveSupportingSpace",
+        "variant",
+        "label",
+        "placeholder",
+        "supportingText",
         "error",
         "errorText",
-        "filterable",
-        "label",
-        "loading",
-        "maxHeight",
-        "maxSelected",
-        "name",
-        "noOptionsText",
-        "noResultsText",
-        "open",
-        "options",
-        "placeholder",
-        "required",
-        "searchPlaceholder",
-        "selectAllLabel",
-        "showSelectAll",
+        "disabled",
         "softDisabled",
-        "supportingText",
-        "value"
+        "required",
+        "density",
+        "options",
+        "filterable",
+        "value",
+        "maxSelected",
+        "showSelectAll",
+        "selectAllLabel",
+        "placement",
+        "maxHeight",
+        "matchTriggerWidth",
+        "displayMode",
+        "chipOverflow",
+        "chipPosition",
+        "trigger",
+        "triggerIcon",
+        "triggerLabel",
+        "searchPlaceholder",
+        "filterLabel",
+        "noResultsText",
+        "noOptionsText",
+        "loadingText",
+        "loading",
+        "clearable",
+        "clearIcon",
+        "clearLabel",
+        "dropdownIcon",
+        "name",
+        "open"
       ],
       "events": [
         "mdChange",
-        "mdClear",
-        "mdClose",
         "mdOpen",
-        "mdRemove"
+        "mdClose",
+        "mdRemove",
+        "mdClear",
+        "mdValidityChange"
       ],
-      "methods": [],
+      "methods": [
+        "show",
+        "close",
+        "focusTrigger",
+        "reset",
+        "loadOptions",
+        "setQuery",
+        "getLabels",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
       "slots": [
-        ""
+        "",
+        "trigger",
+        "loader",
+        "dropdown-icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+        "Dedicated native renderer (SwiftUI / Compose): chips (bottom / top / sides / inline with count or wrap overflow), the button trigger, select-all, max-selected, filterable search, clear and remove, on the md-menu listbox; verified against the Mac Chrome 153 oracles (paint 1222 checks; interaction states, full and reduced).",
+        "Not supported: virtualize (not virtualized: the native lists render every option (loadOptions / options replace the list)).",
+        "Not supported: filterMode (filtering is local (contains); the source's remote mode is the app's (setQuery / loadOptions)).",
+        "Not supported: rowHeight (virtualization row height (no virtualized list)).",
+        "Not supported: countFormatter (a JavaScript function value).",
+        "Not supported: searchingLabel (remote-search status text (no remote mode))."
       ]
     },
     "md-navigation-bar": {
       "properties": [
-        "activeIndex"
+        "activeIndex",
+        "labelBehavior",
+        "manualActivation",
+        "density"
       ],
       "events": [
         "mdChange"
       ],
-      "methods": [],
+      "methods": [
+        "select",
+        "focusTab"
+      ],
       "slots": [
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native renderer (SwiftUI / Compose): the full-width row of equal destinations (flex 1 1 0, min 64), surface-container, the density-tapered 64-point height, the top divider, corners and elevation hooks, computed from the authored md-navigation-tab children as the source.",
+        "Selection as the source: activeIndex is truncated and clamped to an activatable destination (forward, then backward; −1 when none); clicks, Enter/Space, the arrows (automatic activation unless manualActivation; mirrored in RTL; soft-disabled destinations reachable but never activated), Home/End, activeIndex writes and select(index) emit mdChange { index, previousIndex } when the selection changes.",
+        "One tab stop (the active destination); focusTab(index) focuses without selecting. labelBehavior (always / selected / none) passes to destinations without their own value. Reduced motion removes the transitions (the ripple stays).",
+        "The bar's 7 hooks and the 22 destination hooks (the stylesheet's documented list; the CEM lists 12 of them) through .awcNavigationBarAppearance(…) / AWCNavigationBarAppearanceScope; select / focusTab through AWCNavigationBarController.",
+        "Verified against the Mac Chrome 153 oracles (paint, interaction states and motion).",
+        "Typed ::part(container) target (AWCNavigationBarPartAppearance): the bar background."
+      ],
+      "appearance": {
+        "api": "AWCNavigationBarAppearanceScope(AWCNavigationBarAppearance)",
+        "fields": [
+          "containerColor",
+          "containerHeight",
+          "containerShape",
+          "containerElevation",
+          "dividerColor",
+          "dividerWidth",
+          "zIndex",
+          "activeIndicatorColor",
+          "activeIndicatorWidth",
+          "activeIndicatorHeight",
+          "activeIndicatorShape",
+          "activeIconColor",
+          "inactiveIconColor",
+          "activeLabelColor",
+          "inactiveLabelColor",
+          "labelFont",
+          "labelFontSize",
+          "labelFontWeight",
+          "iconSize",
+          "paddingBlockStart",
+          "paddingBlockEnd",
+          "hoverStateLayerColor",
+          "focusStateLayerColor",
+          "pressedStateLayerColor",
+          "focusStateLayerOpacity",
+          "badgeColor",
+          "badgeOnColor",
+          "disabledOpacity",
+          "slottedIconFont"
+        ]
+      },
+      "visualParts": [
+        "container"
       ]
     },
     "md-navigation-rail": {
@@ -884,142 +2226,357 @@
     "md-navigation-tab": {
       "properties": [
         "active",
+        "disabled",
+        "softDisabled",
+        "label",
+        "icon",
         "activeIcon",
         "badge",
         "badgeValue",
-        "disabled",
-        "icon",
-        "label",
+        "badgeMax",
+        "href",
+        "target",
         "labelBehavior",
-        "softDisabled"
+        "density"
       ],
       "events": [
         "mdTabClick"
       ],
-      "methods": [],
-      "slots": [],
+      "methods": [
+        "focusEl"
+      ],
+      "slots": [
+        "",
+        "active-icon",
+        "icon"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Rendered by its bar (geometry, state and motion) or, outside a bar, as a single destination with its own active state; activation emits mdTabClick { index } and follows href / target through the host URL router unless prevented.",
+        "The 56 × 32 indicator pill (scaleX 200 ms emphasized-decelerate, opacity 100 ms), the icon (activeIcon and the active-icon / icon slots), the label (600 active / 500 inactive, hidden but named in selected mode, absent in icon-only mode), dot and capped large badges (badgeMax), hard and soft disabled, density 0 to -4.",
+        "Hover / press / focus state layers (8 / 12 / 10 %), the focus ring around the indicator and the md-ripple wave; focusEl() through AWCNavigationTabController for a destination outside a bar.",
+        "Typed ::part() targets (AWCNavigationTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and badge (fill, text) colours; container and icon-container are layout wrappers (exception record, md-navigation-bar.md)."
+      ],
+      "appearance": {
+        "api": "AWCNavigationTabAppearanceScope(AWCNavigationTabAppearance)",
+        "fields": [
+          "activeIndicatorColor",
+          "activeIndicatorWidth",
+          "activeIndicatorHeight",
+          "activeIndicatorShape",
+          "activeIconColor",
+          "inactiveIconColor",
+          "activeLabelColor",
+          "inactiveLabelColor",
+          "labelFont",
+          "labelFontSize",
+          "labelFontWeight",
+          "iconSize",
+          "paddingBlockStart",
+          "paddingBlockEnd",
+          "hoverStateLayerColor",
+          "focusStateLayerColor",
+          "pressedStateLayerColor",
+          "focusStateLayerOpacity",
+          "badgeColor",
+          "badgeOnColor",
+          "disabledOpacity",
+          "slottedIconFont"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "label",
+        "indicator",
+        "badge"
       ]
     },
     "md-number-field": {
       "properties": [
-        "allowOutOfRange",
-        "decrementLabel",
-        "disabled",
+        "variant",
+        "label",
+        "placeholder",
+        "supportingText",
         "error",
         "errorText",
-        "incrementLabel",
-        "label",
-        "max",
-        "min",
-        "name",
-        "placeholder",
+        "disabled",
         "readOnly",
         "required",
-        "step",
-        "steppers",
-        "supportingText",
+        "name",
+        "density",
         "value",
-        "variant"
+        "locale",
+        "formatOptions",
+        "min",
+        "max",
+        "step",
+        "smallStep",
+        "largeStep",
+        "snapOnStep",
+        "allowOutOfRange",
+        "allowWheelScrub",
+        "steppers",
+        "incrementLabel",
+        "decrementLabel",
+        "valueMissingLabel",
+        "reserveSupportingSpace"
       ],
       "events": [
+        "mdInput",
         "mdChange",
-        "mdInput"
+        "mdValidityChange"
       ],
-      "methods": [],
+      "methods": [
+        "setFocus",
+        "select",
+        "stepUp",
+        "stepDown",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
       "slots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+        "Dedicated native number field composed on the native text field (SwiftUI, Compose): all 27 properties — filled and outlined, density 0…−4, inline / split / no steppers, min / max / step / smallStep / largeStep, snapOnStep, allowOutOfRange, the opt-in wheel scrub, locale and Intl.NumberFormat formatOptions (the source's own parsing, formatting and key filter) — mdInput / mdChange with value, formattedValue and reason, mdValidityChange, five hooks, and the field part through the text field hooks.",
+        "Keyboard: ArrowUp / ArrowDown step (Shift: largeStep; Alt: smallStep snapped to the nearest step), Home / End go to min / max, Enter commits and submits the form; typed text stays verbatim while editing and is committed on blur or Enter; disallowed keys and pastes are refused. Press-and-hold on a stepper repeats after 400 ms every 60 ms; a mouse press keeps the input focused, a touch does not (the source's pointer-type contract).",
+        "Methods through AWCNumberFieldController: setFocus(), select(), stepUp(times) / stepDown(times), getValidity / checkValidity / reportValidity / setCustomValidity (customError, else valueMissing with errorText or valueMissingLabel); value and formattedValue are readable.",
+        "Forms: registers the numeric value with the native form (name, required, reset to the initial value without events).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153 (paint incl. Intl formats, per-frame motion, events, hold timing). iOS has no scroll-wheel input, so allowWheelScrub has no effect there; a tap focuses on release (UIKit convention)."
+      ],
+      "appearance": {
+        "api": "AWCNumberFieldAppearanceScope(AWCNumberFieldAppearance)",
+        "fields": [
+          "width",
+          "minWidth",
+          "stepperIconSize",
+          "stepperColor",
+          "splitStepperSize"
+        ],
+        "parts": "AWCTextFieldAppearanceScope(AWCTextFieldAppearance) (the field part is the inner md-text-field)"
+      },
+      "visualParts": [
+        "field"
       ]
     },
     "md-organization-chart": {
       "properties": [
-        "collapseLabel",
-        "collapsible",
-        "expandLabel",
-        "label",
         "nodes",
+        "selectionMode",
         "selectedIds",
-        "selectionMode"
+        "collapsible",
+        "orientation",
+        "label",
+        "expandLabel",
+        "collapseLabel",
+        "density"
       ],
       "events": [
-        "mdNodeToggle",
-        "mdSelectionChange"
+        "mdSelectionChange",
+        "mdNodeToggle"
       ],
       "methods": [],
-      "slots": [],
+      "slots": [
+        "empty"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native indented tree with accessible cards; horizontal connector layout is not yet ported.",
-        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
-      ]
+        "Dedicated native organization chart: all nine properties (nodes as an array, an object or a JSON string; selection none/single/multiple with selectedIds; collapsible; vertical and horizontal orientation; label, expandLabel, collapseLabel; density 0…−4), mdSelectionChange { node, selectedIds } and mdNodeToggle { node, expanded } with the full node object, the empty slot (default \"No data\" status) and the fifteen --md-org-chart-* appearance hooks.",
+        "Layout is the source's CSS model: centred flex tree in a scrolling viewport (RTL starts at the right edge), pseudo-element connectors with 12px elbows, the selection trail up to the root (also from folded-away selections), Roboto card text measured exactly, md-avatar (accent ring) and md-icon-button togglers in md-tooltip hung on the card edge; RTL mirrors both orientations.",
+        "Interaction as in the source: roving tree-item tab stop (first root, then the last focused), WAI-ARIA tree keys (ArrowUp/Down, forward/backward with RTL swap in both orientations, Home/End, Enter/Space select or toggle), a press focuses the item and a click selects it, a toggler click folds and focuses its row; folding or new data hands focus to the visible owner.",
+        "Motion: border, selection ring, hover elevation and state layer transition 300 ms emphasized (pseudo-class changes start at once, state changes a frame later like the source's async render); md-org-chart-grow on every inserted group and on keyframe changes; a 100 ms z-index hold; reduced motion removes them (md-ripple still runs).",
+        "::part() styling has no native equivalent yet: the parts are listed as unsupported visual parts (decision recorded in md-organization-chart-source-review.md)."
+      ],
+      "appearance": {
+        "api": "AWCOrgChartAppearanceScope(AWCOrgChartAppearance)",
+        "fields": [
+          "connectorColor",
+          "connectorWidth",
+          "nodeColor",
+          "nodeOutlineColor",
+          "nodeOutlineWidth",
+          "nodeShape",
+          "nodeMinWidth",
+          "nodeMaxWidth",
+          "selectedColor",
+          "focusRingColor",
+          "stateLayerColor",
+          "toggleSize",
+          "levelGap",
+          "siblingGap",
+          "duration"
+        ]
+      },
+      "visualParts": []
     },
     "md-otp-field": {
       "properties": [
-        "disabled",
-        "error",
-        "errorText",
-        "label",
         "length",
+        "value",
+        "validationType",
+        "transform",
         "mask",
+        "autoSubmit",
+        "groupSize",
+        "inputMode",
         "name",
+        "disabled",
         "readOnly",
         "required",
+        "error",
+        "errorText",
         "supportingText",
-        "transform",
-        "validationType",
-        "value"
+        "label",
+        "cellLabelTemplate",
+        "valueMissingLabel",
+        "incompleteLabel",
+        "density",
+        "reserveSupportingSpace"
       ],
       "events": [
+        "mdInput",
         "mdChange",
         "mdComplete",
-        "mdInput",
-        "mdInvalidInput"
+        "mdInvalidInput",
+        "mdValidityChange"
       ],
-      "methods": [],
-      "slots": [],
+      "methods": [
+        "setFocus",
+        "clear",
+        "getValidity",
+        "setCustomValidity",
+        "checkValidity",
+        "reportValidity"
+      ],
+      "slots": [
+        "separator"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
-        "Uses a native constrained text entry; separated cells, grouping and automatic form submission are not yet ported."
+        "Dedicated native OTP field (SwiftUI on AppKit / UIKit inputs, Compose BasicTextField): one real input per character with the source's single pipeline — strip whitespace → transform → validation-type filter → clamp — for typing, paste, autofill bursts and programmatic writes; the contiguous value model; groups with the separator slot; mask; density 0…−4; seven hooks.",
+        "Keyboard: Backspace clears the cell (or the previous one from an empty cell), Delete removes the character at the cell, ←/→/Home/End move between cells, every cell is a Tab stop, Enter submits the form; a paste anywhere replaces the whole code from cell 0; mdInput, mdChange (on completion and when focus leaves the group), mdComplete (a complete paste re-announces it), mdInvalidInput with the rejected text, mdValidityChange; auto-submit requests the form submission after mdComplete.",
+        "Methods through AWCOTPFieldController: setFocus() (first empty cell), clear() (silent), getValidity / setCustomValidity / checkValidity / reportValidity (customError, valueMissing with valueMissingLabel or incompleteLabel).",
+        "Forms: the code is the form value; an empty code submits no entry; reset clears it. Cell 0 carries the one-time-code content type (SMS autofill).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153 (paint, per-frame border motion, events). iOS has no pointer hover (touch), so the hover outline does not apply there."
+      ],
+      "appearance": {
+        "api": "AWCOTPFieldAppearanceScope(AWCOTPFieldAppearance)",
+        "fields": [
+          "cellGap",
+          "cellHeight",
+          "cellShape",
+          "cellWidth",
+          "focusColor",
+          "fontSize",
+          "outlineColor"
+        ]
+      },
+      "visualParts": [
+        "separator",
+        "cell",
+        "cells",
+        "supporting-text"
       ]
     },
     "md-pie-chart": {
       "properties": [
-        "data",
-        "endAngle",
-        "heightProp",
-        "innerRadius",
         "label",
-        "labelEmpty",
+        "titleAlign",
+        "data",
+        "innerRadius",
+        "outerRadius",
+        "startAngle",
+        "endAngle",
+        "paddingAngle",
+        "cornerRadius",
+        "showLabels",
+        "labelMode",
+        "monochrome",
+        "gradient",
+        "highlight",
         "legend",
+        "tooltip",
+        "locale",
+        "subtitle",
+        "summary",
+        "tableLabels",
+        "labelEmpty",
         "loading",
         "loadingLabel",
-        "startAngle",
-        "subtitle",
-        "summary"
+        "labelPlot",
+        "labelPoint",
+        "tooltipRenderer",
+        "valueFormatter",
+        "ringWidths",
+        "heightProp",
+        "noAnimation",
+        "animation",
+        "animationDuration",
+        "density"
       ],
       "events": [
+        "mdSliceClick",
         "mdLegendClick",
-        "mdReady",
-        "mdSliceClick"
+        "mdReady"
       ],
-      "methods": [],
-      "slots": [],
+      "methods": [
+        "refreshTheme",
+        "resize",
+        "replay",
+        "drill",
+        "toDataURL",
+        "getInstance"
+      ],
+      "slots": [
+        "header",
+        "center",
+        "empty",
+        "loader",
+        "loading",
+        "footer"
+      ],
+      "unsupportedMethods": [
+        "getInstance"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
-      ]
+        "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
+        "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL.",
+        "The center slot is centred on the ring centre and capped at the hole, as in the source."
+      ],
+      "appearance": {
+        "api": "AWCChartAppearanceScope(AWCChartAppearance)",
+        "fields": [
+          "blockSize",
+          "minBlockSize",
+          "aspectRatio",
+          "background",
+          "padding",
+          "shape",
+          "emptyColor",
+          "emptyBackground",
+          "emptyFont",
+          "emptyFontSize",
+          "emptyIconSize",
+          "centerColor"
+        ]
+      },
+      "visualParts": []
     },
     "md-progress-indicator": {
       "properties": [
+        "complete",
+        "density",
+        "fourColor",
         "indeterminate",
         "label",
         "max",
+        "size",
+        "thickness",
         "value",
-        "variant"
+        "variant",
+        "wave",
+        "waveAmplitude",
+        "waveLength",
+        "waveSpeed"
       ],
       "events": [
         "mdComplete"
@@ -1027,61 +2584,166 @@
       "methods": [],
       "slots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native progress paths implement all fourteen source properties, thirteen typed appearance hooks and the mounted completion lifecycle. Initial complete=true is inert; later completion emits one void mdComplete after the actual visual sequence. Reduced-motion and native accessibility range behavior are provided without a default action or live region. Runtime verification and native coordinate limits are recorded separately in the parity audit."
+      ],
+      "appearance": {
+        "api": "AWCProgressIndicatorAppearance / AWCProgressIndicatorAppearanceScope / AWCCornerShape",
+        "fields": [
+          "activeIndicatorColor",
+          "activeIndicatorShape",
+          "trackColor",
+          "trackShape",
+          "stopIndicatorColor",
+          "stopIndicatorShape",
+          "stopIndicatorSize",
+          "stopIndicatorTrailingSpace",
+          "trackActiveIndicatorSpace",
+          "fourColor1",
+          "fourColor2",
+          "fourColor3",
+          "fourColor4"
+        ]
+      },
+      "visualParts": [
+        "track",
+        "active-indicator",
+        "stop-indicator"
       ]
     },
     "md-radio": {
       "properties": [
+        "valueMissingLabel",
         "checked",
         "disabled",
-        "name",
-        "required",
         "softDisabled",
-        "value"
+        "required",
+        "name",
+        "value",
+        "density"
       ],
       "events": [
-        "mdChange"
+        "mdChange",
+        "mdFocus",
+        "mdBlur",
+        "mdValidityChange"
       ],
-      "methods": [],
+      "methods": [
+        "syncValidityFromGroup",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity",
+        "setFocus",
+        "setBlur",
+        "select"
+      ],
       "slots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+        "Dedicated native radio with a name-scoped group: all eight properties, mdChange, mdFocus/mdBlur and mdValidityChange, seven appearance hooks and typed part targets for the state layer and the outer and inner circles (the container part paints nothing).",
+        "Methods through AWCSelectionControlController: setFocus() with the focus ring, setBlur(), select() (checks an enabled radio and emits mdChange), getValidity/checkValidity/reportValidity/setCustomValidity with the group's required rule, and syncValidityFromGroup() (validity and the roving tab stop are derived natively).",
+        "One tab stop per group, arrow keys move and check (wrapping), checking unchecks the siblings silently; document order is the rendered reading order.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS runs through the simulator harness; VoiceOver/TalkBack execution remains unverified."
+      ],
+      "appearance": {
+        "api": "AWCRadioAppearanceScope(AWCRadioAppearance)",
+        "fields": [
+          "iconColor",
+          "selectedIconColor",
+          "iconSize",
+          "innerCircleSize",
+          "stateLayerSize",
+          "stateLayerColor",
+          "selectedStateLayerColor"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "container",
+        "outer-circle",
+        "inner-circle"
       ]
     },
     "md-rating": {
       "properties": [
+        "value",
         "defaultValue",
-        "disabled",
         "max",
-        "name",
+        "precision",
+        "size",
         "readonly",
-        "showValueLabel",
+        "disabled",
         "softDisabled",
-        "value"
+        "icon",
+        "emptyIcon",
+        "outlineEmpty",
+        "getLabel",
+        "showValueLabel",
+        "ratingLabel",
+        "name",
+        "hover",
+        "density"
       ],
       "events": [
+        "mdHover",
         "mdChange"
       ],
-      "methods": [],
+      "methods": [
+        "focusRating"
+      ],
       "slots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
-        "Native whole-star rating; fractional precision, hover and custom icon rendering remain unsupported."
-      ]
+        "Dedicated native rating: precision 1 / 0.5, hover preview, keyboard, pop / state layer / ripple motion, readonly, disabled and soft-disabled, the value label; getLabel goes through the native label closure; hooks through AWCRatingAppearance; focusRating() through AWCRatingController.",
+        "Host value changes are validated and clamped like @Watch('value'); a smaller max re-clamps the value.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint, pointer / keyboard / touch replays with events, motion per frame (plain and reduced motion), lifecycle (runtime property changes through the Stencil watchers, form reset), RTL."
+      ],
+      "appearance": {
+        "api": "AWCRatingAppearanceScope(AWCRatingAppearance)",
+        "fields": [
+          "itemSize",
+          "itemGap",
+          "activeColor",
+          "inactiveColor",
+          "focusRingColor",
+          "focusRingWidth",
+          "focusRingOffset",
+          "stateLayerColor",
+          "valueLabelColor",
+          "valueLabelFont",
+          "popScale",
+          "duration",
+          "iconFontFamily"
+        ]
+      },
+      "visualParts": []
     },
     "md-ripple": {
       "properties": [
         "disabled"
       ],
       "events": [],
-      "methods": [],
+      "methods": [
+        "trigger",
+        "whenSettled"
+      ],
       "slots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Uses the Compose ripple on a tappable native surface; standalone DOM ripple attachment has no native counterpart."
-      ]
+        "Dedicated native primitive: the surface decorator .awcRipple(…) / Modifier.awcRipple(…) (the composition md-ripple forms with its positioned parent) and the md-ripple node, with disabled, the six hooks (colour, opacity, both extents, grow duration and CSS easing text with the source's fallbacks) and the global --md-sys-ripple-enabled token.",
+        "Methods through AWCRippleController: trigger() starts a centred, self-releasing wave; whenSettled() keeps the source's 200 ms bound and never settles a later wave.",
+        "Only a primary press inside the rounded host shape starts a wave; the host's own gestures keep working. The origin is physical in RTL; a new press replaces the wave; disabling, losing the window/scene and leaving the hierarchy remove it.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Chrome oracles (paint, motion and behaviour); the ripple is hidden from assistive technologies."
+      ],
+      "appearance": {
+        "api": "AWCRippleAppearanceScope(AWCRippleAppearance)",
+        "fields": [
+          "color",
+          "opacity",
+          "extendInline",
+          "extendBlock",
+          "growDuration",
+          "growEasing"
+        ]
+      },
+      "visualParts": []
     },
     "md-search": {
       "properties": [
@@ -1105,9 +2767,16 @@
     },
     "md-segmented-button": {
       "properties": [
+        "density",
         "disabled",
         "icon",
         "label",
+        "noCheckmark",
+        "ripple",
+        "segmentDensity",
+        "segmentIndex",
+        "segmentMultiselect",
+        "segmentTotal",
         "selected",
         "softDisabled",
         "value"
@@ -1121,11 +2790,56 @@
         "icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native segment preserves controlled standalone proposals, retained checkmark space, additive named icon content and all seven typed appearance hooks. The supporting set commits selection by child identity, synchronizes parent-owned properties and exposes actual ordered state. Native font shaping and physical-pixel rounding replace browser rendering; runtime acceptance is recorded separately."
+      ],
+      "appearance": {
+        "api": "AWCSegmentedButtonAppearance / AWCSegmentedButtonAppearanceScope",
+        "fields": [
+          "containerColor",
+          "selectedContainerColor",
+          "labelColor",
+          "selectedLabelColor",
+          "outlineColor",
+          "cornerRadius",
+          "iconSize"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "checkmark",
+        "icon",
+        "label"
+      ],
+      "nativeEquivalents": {
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Compose authored layout-tree traversal / AWCSegmentedButtonSetStateScope",
+          "description": "Native descendants retain authored identity and order for parent synchronization, exact selection and keyboard movement.",
+          "limitations": [
+            "Arbitrary DOM queries are replaced by native layout-tree registration."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionTargetScope / onEvent",
+          "description": "Synchronous native event phases preserve selection proposals, propagation stops and parent commit ordering. Cancellation does not undo the set commit.",
+          "limitations": [
+            "DOM events are not fabricated. Set onEvent detail is the source values array; scoped rawDetail preserves the same array; segmentedSelectionValues exposes typed values."
+          ]
+        },
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "AWCSlotText / AWCSearchableLabelScope / native content composition",
+          "description": "Native authored labels and explicit accessible names replace document text and development-time name validation.",
+          "limitations": [
+            "Compose content is not a DOM and cannot expose arbitrary textContent. Authored native content retains its own accessibility semantics."
+          ]
+        }
+      }
     },
     "md-segmented-button-set": {
       "properties": [
+        "density",
         "multiselect"
       ],
       "events": [
@@ -1136,132 +2850,301 @@
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native exclusive/multiple selection coordinated by child identity; supports duplicate child values."
-      ]
+        "Dedicated native set uses equal grid tracks, joined segment outlines and authored descendant order. Single-select arrows activate the next hard-enabled child; multiselect arrows only move focus. onEvent mdChange detail is the exact ordered values array; scoped AWCActionEvent.rawDetail preserves the array and segmentedSelectionValues provides a typed accessor. AWCSegmentedButtonSetStateScope exposes ordered Boolean state without conflating duplicate values."
+      ],
+      "nativeEquivalents": {
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Compose authored layout-tree traversal / AWCSegmentedButtonSetStateScope",
+          "description": "Native descendants retain authored identity and order for parent synchronization, exact selection and keyboard movement.",
+          "limitations": [
+            "Arbitrary DOM queries are replaced by native layout-tree registration."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionTargetScope / onEvent",
+          "description": "Synchronous native event phases preserve selection proposals, propagation stops and parent commit ordering. Cancellation does not undo the set commit.",
+          "limitations": [
+            "DOM events are not fabricated. Set onEvent detail is the source values array; scoped rawDetail preserves the same array; segmentedSelectionValues exposes typed values."
+          ]
+        }
+      }
     },
     "md-select": {
       "properties": [
-        "clearLabel",
-        "clearable",
+        "valueMissingLabel",
+        "reserveSupportingSpace",
+        "variant",
+        "label",
+        "placeholder",
+        "value",
         "disabled",
+        "required",
         "error",
         "errorText",
-        "filterable",
-        "label",
-        "loading",
-        "maxHeight",
-        "name",
-        "noOptionsText",
-        "noResultsText",
-        "open",
-        "options",
-        "placeholder",
-        "required",
-        "searchPlaceholder",
         "supportingText",
-        "value"
+        "density",
+        "clearable",
+        "matchTriggerWidth",
+        "placement",
+        "maxHeight",
+        "options",
+        "filterable",
+        "name",
+        "searchPlaceholder",
+        "filterLabel",
+        "noResultsText",
+        "noOptionsText",
+        "clearLabel",
+        "loadingText",
+        "clearIcon",
+        "dropdownIcon",
+        "loading",
+        "fullWidth",
+        "open"
       ],
       "events": [
         "mdChange",
+        "mdOpen",
         "mdClose",
-        "mdOpen"
+        "mdValidityChange"
+      ],
+      "methods": [
+        "show",
+        "close",
+        "focusTrigger",
+        "reset",
+        "loadOptions",
+        "setQuery",
+        "getLabels",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "slots": [
+        "",
+        "loader",
+        "dropdown-icon"
+      ],
+      "notes": [
+        "Dedicated native renderer (SwiftUI / Compose): an md-text-field (AWCFieldHooks) trigger with the caret, clear button, loader and the md-menu listbox (filterable search, empty / no-results text, loading bar), verified against the Mac Chrome 153 oracles (paint 1577 checks; interaction states and motion, full and reduced).",
+        "Methods through AWCSelectController (show, close, focusTrigger, reset, loadOptions, setQuery, getLabels, getValidity, checkValidity, reportValidity, setCustomValidity); form participation through AWCFormScope.",
+        "Not supported: virtualize (not virtualized: the native lists render every option (loadOptions / options replace the list)).",
+        "Not supported: filterMode (filtering is local (contains); the source's remote mode is the app's (setQuery / loadOptions)).",
+        "Not supported: rowHeight (virtualization row height (no virtualized list)).",
+        "Not supported: searchingLabel (remote-search status text (no remote mode))."
+      ]
+    },
+    "md-select-option": {
+      "properties": [
+        "value",
+        "label",
+        "disabled",
+        "selected",
+        "icon",
+        "supportingText"
+      ],
+      "events": [
+        "mdSelectOptionChange"
       ],
       "methods": [],
       "slots": [
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
-      ]
-    },
-    "md-select-option": {
-      "properties": [
-        "disabled",
-        "label",
-        "selected",
-        "supportingText",
-        "value"
-      ],
-      "events": [
-        "mdSelectOptionChange"
-      ],
-      "methods": [],
-      "slots": [],
-      "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Declares an option of its md-select (value, label, supporting text, icon, selected, disabled); outside a select it keeps the generic input.",
+        "Not supported: iconColor (per-option icon colour: --md-*-option-icon-color applies)."
       ]
     },
     "md-side-sheet": {
       "properties": [
-        "closeable",
-        "headline",
         "open",
-        "scrimDismissible",
+        "variant",
+        "side",
+        "headline",
+        "closeable",
         "showBack",
-        "side"
+        "scrimDismissible",
+        "topDivider",
+        "bottomDivider",
+        "detached",
+        "sheetAriaLabel",
+        "density"
       ],
       "events": [
-        "mdBack",
-        "mdCancel",
+        "mdOpen",
         "mdClose",
-        "mdOpen"
+        "mdCancel",
+        "mdBack"
       ],
-      "methods": [],
+      "methods": [
+        "show",
+        "whenClosed",
+        "close"
+      ],
       "slots": [
         "",
+        "back",
+        "headline",
+        "close",
         "actions"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native side sheet: standard (in-flow, no scrim) and modal variants on the start or end side, attached or detached; all twelve properties, mdOpen/mdClose/mdCancel/mdBack with null payloads, show/close/whenClosed through AWCSideSheetController, all five slots, nine appearance hooks and nine typed part targets.",
+        "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
+        "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+      ],
+      "appearance": {
+        "api": "AWCSideSheetAppearanceScope(AWCSideSheetAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "headlineColor",
+          "contentColor",
+          "scrimColor",
+          "dividerColor",
+          "iconColor",
+          "width",
+          "maxWidth"
+        ]
+      },
+      "visualParts": [
+        "scrim",
+        "container",
+        "header",
+        "headline",
+        "close",
+        "divider-top",
+        "divider-bottom",
+        "content",
+        "actions"
       ]
     },
     "md-skeleton": {
       "properties": [
+        "animation",
         "announce",
         "ariaLabelProp",
+        "density",
+        "fullHeight",
+        "fullWidth",
         "height",
         "lines",
-        "variant"
+        "variant",
+        "width"
       ],
       "events": [],
       "methods": [],
       "slots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Static native skeleton blocks; shimmer/pulse motion remains unsupported."
+        "Dedicated native Skeleton implements all ten source properties and eleven typed appearance hooks. Affine native lengths retain parent-relative and font-relative sizing; AWCSkeletonSizingContext supplies definite containing-block height and actual font context. AWCSkeletonPartAppearanceScope targets actual shape, line and final-line paint. Entrance, pulse and RTL-aware clipped shimmer use the source timing curves. Announced native semantics provide a polite accessible name and explicit busy metadata; decorative output is hidden. Native coordinate limits, unsupported CSS grammar, platform accessibility differences and actual runtime verification remain explicit in the component audit."
+      ],
+      "appearance": {
+        "api": "AWCSkeletonAppearance / AWCSkeletonAppearanceScope / AWCSkeletonLength / AWCCornerShape",
+        "fields": [
+          "color",
+          "highlight",
+          "radius",
+          "roundedRadius",
+          "width",
+          "height",
+          "size",
+          "lineGap",
+          "pulseDuration",
+          "waveDuration",
+          "bloomDuration"
+        ]
+      },
+      "visualParts": [
+        "shape",
+        "line",
+        "line-last"
       ]
     },
     "md-slider": {
       "properties": [
-        "disabled",
-        "labeled",
-        "max",
         "min",
-        "name",
-        "nameEnd",
-        "nameStart",
-        "range",
-        "sliderAriaLabel",
-        "step",
+        "max",
         "value",
-        "valueEnd",
-        "valueIndicator",
+        "step",
+        "disabled",
+        "name",
+        "nameStart",
+        "nameEnd",
+        "variant",
+        "range",
+        "stops",
         "valueStart",
-        "valueText"
+        "valueEnd",
+        "size",
+        "orientation",
+        "fullHeight",
+        "valueIndicator",
+        "labeled",
+        "insetIcon",
+        "icon",
+        "sliderAriaLabel",
+        "ariaLabelStart",
+        "ariaLabelEnd",
+        "valueText",
+        "valueStartText",
+        "valueEndText",
+        "controlled",
+        "density"
       ],
       "events": [
+        "mdInput",
         "mdChange",
-        "mdInput"
+        "mdFocus",
+        "mdBlur",
+        "mdDragStart",
+        "mdDragEnd"
       ],
       "methods": [],
-      "slots": [],
+      "slots": [
+        "inset-icon"
+      ],
+      "unsupportedSlots": [
+        "inset-icon"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
-        "Horizontal Compose slider/range slider; vertical, custom icons and drag event parity remain unsupported."
-      ]
+        "Dedicated native slider: standard / centered / range, five sizes, stops, value indicator, inset icon (Material Symbols from icon), vertical orientation, keyboard, pointer and touch input with the source events and order, the stylesheet transitions; hooks through AWCSliderAppearance.",
+        "Host property changes follow the Stencil watchers: value / valueStart / valueEnd changes clear a live drag value, min / max changes re-clamp (written back to the node).",
+        "The inset-icon slot (custom icon content) is not rendered natively: the inset icon comes from the icon property.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint, pointer / keyboard / touch replays with events, motion per frame (plain and reduced motion), lifecycle (runtime property changes through the Stencil watchers, form reset), RTL."
+      ],
+      "appearance": {
+        "api": "AWCSliderAppearanceScope(AWCSliderAppearance)",
+        "fields": [
+          "trackLength",
+          "activeColor",
+          "inactiveColor",
+          "trackShape",
+          "trackHeight",
+          "tickActiveColor",
+          "tickFilledColor",
+          "tickInactiveColor",
+          "thumbColor",
+          "thumbWidth",
+          "thumbHeight",
+          "valueBackground",
+          "valueColor",
+          "valueShape",
+          "valueFontFamily",
+          "valueFontSize",
+          "valueFontWeight",
+          "valueLineHeight",
+          "valuePaddingInline",
+          "valuePaddingBlock",
+          "insetIconColor",
+          "insetIconActiveColor",
+          "minTrackLength"
+        ]
+      },
+      "visualParts": []
     },
     "md-snackbar": {
       "properties": [
@@ -1269,9 +3152,12 @@
         "autoHide",
         "autoHideDuration",
         "closeable",
+        "density",
         "dismissLabel",
         "message",
         "open",
+        "politeness",
+        "position",
         "stacked"
       ],
       "events": [
@@ -1279,44 +3165,98 @@
         "mdClose",
         "mdOpen"
       ],
-      "methods": [],
+      "methods": [
+        "show",
+        "hide"
+      ],
       "slots": [
-        ""
+        "",
+        "action",
+        "close"
+      ],
+      "appearance": {
+        "api": "AWCSnackbarAppearance / AWCSnackbarAppearanceScope / AWCSnackbarLength / AWCCornerShape",
+        "fields": [
+          "containerColor",
+          "messageColor",
+          "actionColor",
+          "closeColor",
+          "containerShape",
+          "minWidth",
+          "maxWidth"
+        ]
+      },
+      "visualParts": [
+        "surface",
+        "message",
+        "actions",
+        "close",
+        "close-icon"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native Snackbar supports all eleven source properties, three lifecycle events, two retained controller methods and three actual authored slots. AWCSnackbarScope supplies the viewport and peer order; native timers, hover/focus, Escape and retained Laboratory resize follow source behavior. Seven typed appearance hooks and five part targets are implemented. Original and supplemental geometry/paint, default-palette, motion and lifecycle gates pass; final Laboratory acceptance remains separate in the audit. CSS syntax, native accessibility and rasterization boundaries remain documented."
       ]
     },
     "md-sparkline": {
       "properties": [
-        "cornerRadius",
         "data",
+        "labels",
+        "variant",
+        "color",
+        "curve",
+        "showTooltip",
+        "showMarks",
+        "referenceAreas",
+        "valueFormatter",
         "heightProp",
+        "noAnimation",
+        "cornerRadius",
+        "min",
+        "max",
         "lineWidth",
         "markSize",
-        "max",
-        "min",
-        "showMarks",
-        "variant"
+        "barWidth"
       ],
       "events": [
-        "mdReady",
-        "mdSparkClick"
+        "mdSparkClick",
+        "mdReady"
       ],
-      "methods": [],
+      "methods": [
+        "refreshTheme",
+        "resize",
+        "getInstance"
+      ],
       "slots": [],
+      "unsupportedMethods": [
+        "getInstance"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
-      ]
+        "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
+        "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL."
+      ],
+      "appearance": {
+        "api": "AWCChartAppearanceScope(AWCChartAppearance)",
+        "fields": [
+          "blockSize",
+          "inlineSize",
+          "minInlineSize"
+        ]
+      },
+      "visualParts": []
     },
     "md-split-button": {
       "properties": [
+        "controls",
+        "density",
         "disabled",
         "fullWidth",
+        "haspopup",
         "icon",
         "label",
         "menuLabel",
+        "ripple",
+        "size",
         "softDisabled",
         "trailingChecked",
         "trailingIcon",
@@ -1331,123 +3271,349 @@
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native Split Button has independent focus/action targets, source size and density geometry, additive default content, six typed appearance hooks and committed trailing state. AWCPopupScope/AWCPopupTargetScope connect controls IDs to mounted native popup focus without opening or closing it. Runtime acceptance is recorded separately in the parity audit."
+      ],
+      "appearance": {
+        "api": "AWCSplitButtonAppearance / AWCSplitButtonAppearanceScope",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "outlineColor",
+          "cornerRadius",
+          "iconSize"
+        ]
+      },
+      "visualParts": [
+        "leading",
+        "trailing",
+        "leading-state-layer",
+        "trailing-state-layer",
+        "icon",
+        "label",
+        "trailing-icon"
+      ],
+      "nativeEquivalents": {
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "Compose semantics / AWCPopupScope / AWCPopupTargetScope",
+          "description": "Real native names, expanded state and popup target focus replace browser accessibility relationships and development-time name validation.",
+          "limitations": [
+            "Android has no DOM aria-controls graph; a mounted target is connected by a real native accessibility focus action and typed relationship metadata."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionTargetScope / onEvent",
+          "description": "Synchronous native phases preserve null leading detail and post-commit trailing checked detail; cancellation does not roll back source state.",
+          "limitations": [
+            "DOM events are not fabricated. Scoped rawDetail preserves the null leading payload; native activation records actual source input."
+          ]
+        }
+      }
     },
     "md-status-dot": {
       "properties": [
+        "density",
         "inline",
         "label",
+        "live",
         "shape",
+        "size",
         "state"
       ],
       "events": [],
       "methods": [],
       "slots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated Compose status dot implements all seven source properties and eight typed appearance hooks. AWCStatusDotHost uses the measured parent for logical RTL-aware rect/circle anchoring; inline uses ordinary flow. Insets combine dp with fractions of parent dimensions, colors support RGB/RGBA, and pulse duration uses seconds. Native layout rounds outlines to physical pixels. Source and Android runtime evidence are tracked separately; integrated Laboratory and final accessibility review remain pending."
+      ],
+      "appearance": {
+        "api": "AWCStatusDotAppearance / AWCStatusDotAppearanceScope / AWCStatusDotInset / AWCStatusDotHost",
+        "fields": [
+          "size",
+          "color",
+          "pulseColor",
+          "outlineColor",
+          "outlineWidth",
+          "insetEnd",
+          "insetBlockEnd",
+          "pulseDuration"
+        ]
+      },
+      "visualParts": []
     },
     "md-step": {
       "properties": [
-        "active",
-        "completed",
+        "label",
         "description",
-        "disabled",
-        "editable",
+        "completed",
+        "active",
         "error",
         "errorText",
+        "disabled",
+        "optional",
+        "editable",
+        "icon",
+        "completedIcon",
+        "errorIcon",
+        "accessibleName",
         "hideActions",
-        "label"
+        "density"
       ],
       "events": [
-        "mdStepBack",
         "mdStepClick",
-        "mdStepNext"
+        "mdStepNext",
+        "mdStepBack"
       ],
       "methods": [],
       "slots": [
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Rendered by its stepper: the header control (a button named like the source, disabled when unreachable, expanded / collapsed with a panel), its panel and actions are the stepper's own layout, so the authored order is the keyboard order. A step's own style hooks apply to that step.",
+        "Standalone (no stepper) it renders like the source with its data-* defaults (first, horizontal, shared panel) and its own active.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint (142 cases + per-step hooks and step density), the state / motion replays per frame (20 runs, plain and reduced motion) with the md* events, the announcements and the keyframe animations each step starts."
+      ],
+      "appearance": {
+        "api": "AWCStepperAppearanceScope(AWCStepperAppearance)",
+        "fields": [
+          "indicatorSize",
+          "indicatorRing",
+          "indicatorColor",
+          "indicatorText",
+          "activeColor",
+          "activeText",
+          "activeHaloColor",
+          "completedColor",
+          "completedText",
+          "errorColor",
+          "errorText",
+          "connectorColor",
+          "connectorFilledColor",
+          "connectorThickness",
+          "labelColor",
+          "labelActiveColor",
+          "descriptionColor",
+          "stateLayerColor",
+          "panelPaddingBlockStart",
+          "connectorDuration",
+          "expandDuration",
+          "collapseDuration"
+        ]
+      },
+      "visualParts": []
     },
     "md-stepper": {
       "properties": [
+        "orientation",
+        "indicator",
+        "variant",
+        "mode",
         "active",
+        "autoComplete",
+        "nav",
+        "readonly",
+        "nextDisabled",
+        "loading",
+        "lazy",
+        "label",
+        "stepWord",
+        "ofWord",
+        "completedWord",
+        "currentWord",
+        "errorWord",
+        "optionalWord",
+        "nextLabel",
         "backLabel",
         "finishLabel",
-        "loading",
-        "nextDisabled",
-        "nextLabel",
-        "readonly"
+        "density"
       ],
       "events": [
         "mdBeforeChange",
-        "mdComplete",
-        "mdStepChange"
+        "mdStepChange",
+        "mdComplete"
       ],
-      "methods": [],
+      "methods": [
+        "next",
+        "prev",
+        "goTo",
+        "reset"
+      ],
       "slots": [
-        ""
+        "",
+        "content"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native stepper: horizontal row (shared content slot or per-step panels), vertical rail with per-step panels and Back / Continue, mobile bar (dots or \"Step N of M\"), numbered / dot indicators, density, RTL; linear / non-linear reachability, auto-complete, the cancelable mdBeforeChange, mdStepChange, mdComplete, the polite / assertive announcements; the stylesheet transitions and keyframe animations; hooks through AWCStepperAppearance; next() / prev() / goTo() / reset() through AWCStepperController.",
+        "Host property changes follow the Stencil watchers: a host write to active runs @Watch('active') (clamp, auto-complete, mdStepChange after the update); the component's own writes (active, completed, error) persist until the host changes that property.",
+        "The built-in Back / Continue / Finish are native md-buttons; their own events stay internal, as the source stops them.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint (142 cases + per-step hooks and step density), the state / motion replays per frame (20 runs, plain and reduced motion) with the md* events, the announcements and the keyframe animations each step starts."
+      ],
+      "appearance": {
+        "api": "AWCStepperAppearanceScope(AWCStepperAppearance)",
+        "fields": [
+          "indicatorSize",
+          "indicatorRing",
+          "indicatorColor",
+          "indicatorText",
+          "activeColor",
+          "activeText",
+          "activeHaloColor",
+          "completedColor",
+          "completedText",
+          "errorColor",
+          "errorText",
+          "connectorColor",
+          "connectorFilledColor",
+          "connectorThickness",
+          "labelColor",
+          "labelActiveColor",
+          "descriptionColor",
+          "stateLayerColor",
+          "panelPaddingBlockStart",
+          "gap",
+          "connectorDuration",
+          "expandDuration",
+          "collapseDuration"
+        ]
+      },
+      "visualParts": []
     },
     "md-sub-menu-item": {
       "properties": [
+        "headline",
+        "supportingText",
         "disabled",
         "divider",
-        "headline",
-        "supportingText"
+        "gap",
+        "badge",
+        "openDelay",
+        "closeDelay",
+        "density"
       ],
       "events": [
         "mdClick"
       ],
-      "methods": [],
+      "methods": [
+        "collapse"
+      ],
       "slots": [
+        "leading-icon",
         "submenu"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Opens its slotted md-menu as a flyout beside the row: hover intent with openDelay / closeDelay, ArrowRight, Enter and Space open it with focus on its first row, ArrowLeft and Escape return to the row; the caret rotates as the source and mirrors in RTL.",
+        "collapse() closes the flyout at once (no exit motion) through AWCMenuScopeState.menu(id).collapse(row:) / collapse(rowID)."
       ]
     },
     "md-switch": {
       "properties": [
-        "disabled",
-        "name",
-        "required",
+        "valueMissingLabel",
         "selected",
+        "disabled",
         "softDisabled",
-        "value"
+        "required",
+        "name",
+        "value",
+        "icons",
+        "showOnlySelectedIcon",
+        "selectedIcon",
+        "unselectedIcon",
+        "density"
       ],
       "events": [
+        "mdInput",
         "mdChange",
-        "mdInput"
+        "mdValidityChange"
       ],
-      "methods": [],
-      "slots": [],
+      "methods": [
+        "setFocus",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity"
+      ],
+      "slots": [
+        "selected-icon",
+        "unselected-icon"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+        "Dedicated native switch: all twelve properties (icons, showOnlySelectedIcon and custom selectedIcon/unselectedIcon glyphs, density 0…−4), the cancelable mdInput before mdChange, mdValidityChange, the selected-icon/unselected-icon slots, twelve appearance hooks and four typed part targets.",
+        "Methods through AWCSelectionControlController: setFocus() shows the programmatic focus ring; getValidity/checkValidity/reportValidity/setCustomValidity follow the source's constraint validation (valueMissingLabel, custom message first); reportValidity() presents the message inline and focuses the switch.",
+        "Pointer press/leave/release, Space on key-down (repeats ignored), Enter inert, soft disabled focusable but inert; the native form registers the value and resets without events.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS runs through the simulator harness; VoiceOver/TalkBack execution remains unverified."
+      ],
+      "appearance": {
+        "api": "AWCSwitchAppearanceScope(AWCSwitchAppearance)",
+        "fields": [
+          "trackWidth",
+          "trackHeight",
+          "handleSize",
+          "trackColor",
+          "trackOutlineColor",
+          "handleColor",
+          "selectedTrackColor",
+          "selectedHandleColor",
+          "iconColor",
+          "selectedIconColor",
+          "stateLayerColor",
+          "focusRingColor"
+        ]
+      },
+      "visualParts": [
+        "track",
+        "state-layer",
+        "handle",
+        "icon"
       ]
     },
     "md-tab": {
       "properties": [
+        "label",
+        "icon",
         "active",
         "disabled",
-        "icon",
-        "label"
+        "inlineIcon",
+        "variant",
+        "badge",
+        "controls",
+        "density"
       ],
       "events": [
         "mdTabClick"
       ],
       "methods": [],
-      "slots": [],
+      "slots": [
+        "icon",
+        "badge"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Rendered by its md-tabs (geometry, state and motion) or, outside a tablist, as a single tab with its own active state; activation outside a tablist emits mdTabClick only.",
+        "Stacked (icon above the label) or inline icons, the secondary variant, badges (a count or a dot, on the icon or inline), density 0 to -4 and label truncation as the source; slotted icon and badge content renders natively.",
+        "Hover, press and keyboard focus (8 % / 12 % state layer, inset 3-point focus ring) with the md-ripple wave; colours transition over 200 ms.",
+        "Typed ::part() targets (AWCTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and divider colours; content is a layout wrapper (exception record, md-tabs.md)."
+      ],
+      "appearance": {
+        "api": "AWCTabAppearanceScope(AWCTabAppearance)",
+        "fields": [
+          "containerColor",
+          "activeLabelColor",
+          "inactiveLabelColor",
+          "activeIconColor",
+          "inactiveIconColor",
+          "activeIndicatorColor",
+          "activeIndicatorHeight",
+          "dividerColor",
+          "glideDuration"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "label",
+        "indicator",
+        "divider"
       ]
     },
     "md-tab-panel": {
@@ -1460,52 +3626,141 @@
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "role tabpanel named by its tab; an inactive panel keeps its box but is not painted, hit-tested or exposed to accessibility.",
+        "Natively the panel is not a keyboard Tab stop (focus moves to the controls inside it); Web gives the active panel tabindex 0."
       ]
     },
     "md-tab-panels": {
-      "properties": [],
+      "properties": [
+        "for",
+        "sizing"
+      ],
       "events": [],
       "methods": [],
       "slots": [
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Composition container. Pass active on child panels; HTML for/id linkage is not available."
+        "Shows the panel of the linked md-tabs' active tab: `for` names an md-tabs node ID within the same tree or AWCNativeScope; without it, the nearest preceding md-tabs sibling, as the source.",
+        "sizing stable keeps every panel laid out (the tallest one sizes the region) and shows only the active one; active lays out only the active panel."
       ]
     },
     "md-table": {
       "properties": [
+        "density",
+        "columnTemplate",
+        "columns",
+        "minWidth",
+        "stickyHeader",
+        "frozenHeader",
+        "keepHeight",
+        "scrollbar",
+        "pinMode",
+        "pinIcon",
+        "stickyFooter",
+        "striped",
+        "noDividers",
+        "hoverable",
+        "motion",
+        "selection",
+        "sortBy",
+        "sortOrder",
+        "loading",
+        "loadingMode",
+        "loadingRows",
+        "empty",
+        "label",
         "caption",
+        "summary",
+        "rowOffset",
+        "rowCount"
+      ],
+      "events": [
+        "mdSortChange",
+        "mdSelectionChange",
+        "mdPinChange",
+        "mdColumnVisibilityChange",
+        "mdScroll"
+      ],
+      "methods": [
+        "getSelection",
+        "selectAll",
+        "deselectAll",
+        "toggleSelectAll",
+        "setSort",
+        "pinColumn",
+        "setColumnVisibility",
+        "animateNextChange"
+      ],
+      "slots": [
+        "",
+        "empty",
+        "head",
+        "loader",
         "loading"
       ],
-      "events": [],
-      "methods": [],
-      "slots": [
-        ""
-      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Every property, event, method and slot of the source.",
+        "Methods through AWCTableController (.awcTableController(_, for: id) / AWCTableControllerScope): getSelection returns { count, total, values, all, indeterminate }; pinColumn returns the effective side or nil/null; setColumnVisibility returns the effective visibility. Sorting follows the source contract: mdSortChange, the application reorders its rows.",
+        "Typed hooks through AWCTableAppearance (or the raw --md-table-* declarations with .awcTableHooks / AWCTableHooksScope); they inherit down the family like CSS custom properties.",
+        "rowOffset / rowCount drive the row index semantics on Android (CollectionInfo / CollectionItemInfo); SwiftUI has no row-index accessibility API (AUDIT exception, decision log).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "appearance": {
+        "api": "AWCTableAppearanceScope(AWCTableAppearance)",
+        "fields": [
+          "rowHeightCompact",
+          "rowHeightStandard",
+          "rowHeightComfortable",
+          "headerHeight",
+          "cellPaddingInline",
+          "cellPaddingBlock",
+          "dividerColor",
+          "stripeColor",
+          "headBackground",
+          "headColor",
+          "footBackground",
+          "rowHoverColor",
+          "rowSelectedBackground",
+          "rowSelectedColor",
+          "columnsTemplate",
+          "minWidth",
+          "bodyMaxHeight",
+          "emptyMinHeight"
+        ]
+      },
+      "visualParts": []
     },
     "md-table-body": {
-      "properties": [],
+      "properties": [
+        "presentational"
+      ],
       "events": [],
       "methods": [],
       "slots": [
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). The body row group; presentational drops the rowgroup role, as in the source.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "visualParts": []
     },
     "md-table-cell": {
       "properties": [
         "align",
-        "head",
         "numeric",
-        "padding"
+        "padding",
+        "head",
+        "scope",
+        "sticky",
+        "colSpan",
+        "rowSpan",
+        "ellipsis",
+        "variant",
+        "noPinIndicator",
+        "pinIcon",
+        "density"
       ],
       "events": [],
       "methods": [],
@@ -1513,44 +3768,95 @@
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Alignment, numeric, padding variants, head / scope, sticky pinning with the pin indicator, colSpan, ellipsis, meta variant, density.",
+        "rowSpan is reflected for assistive technology only and does not span rows, as in the source (decision log). Hooks through AWCTableCellAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "appearance": {
+        "api": "AWCTableCellAppearanceScope(AWCTableCellAppearance)",
+        "fields": [
+          "color",
+          "background",
+          "paddingInline",
+          "paddingBlock",
+          "minHeight",
+          "stickyBackground",
+          "stickyTransition",
+          "pinDisplay",
+          "pinColor",
+          "pinSize"
+        ]
+      },
+      "visualParts": []
     },
     "md-table-container": {
       "properties": [
-        "variant"
+        "variant",
+        "shape",
+        "maxHeight",
+        "minHeight",
+        "vibrant",
+        "elevation"
       ],
       "events": [],
       "methods": [],
       "slots": [
-        ""
+        "",
+        "top",
+        "bottom"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Variants, shapes, vibrant, elevation, max / min height (scrollport with sticky header and footer), top / bottom slots.",
+        "Hooks through AWCTableContainerAppearance. As in the source, the shape class and the variant surface rules win over --md-table-container-shape / -color (no visible effect; decision log).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "appearance": {
+        "api": "AWCTableContainerAppearanceScope(AWCTableContainerAppearance)",
+        "fields": [
+          "color",
+          "shape",
+          "elevation",
+          "outlineColor",
+          "outlineWidth"
+        ]
+      },
+      "visualParts": []
     },
     "md-table-expand-toggle": {
       "properties": [
-        "buttonLabel"
+        "buttonLabel",
+        "icon"
       ],
       "events": [],
       "methods": [],
       "slots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Standalone visual toggle; nested table row has its own bound expansion control."
-      ]
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). The row's expand toggle (mirrored caret in right-to-left layouts); outside a row it does nothing, as in the source.",
+        "Hooks through AWCTableExpandToggleAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "appearance": {
+        "api": "AWCTableExpandToggleAppearanceScope(AWCTableExpandToggleAppearance)",
+        "fields": [
+          "rotation"
+        ]
+      },
+      "visualParts": []
     },
     "md-table-foot": {
-      "properties": [],
+      "properties": [
+        "presentational"
+      ],
       "events": [],
       "methods": [],
       "slots": [
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). The foot row group (sticky footer from the table).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "visualParts": []
     },
     "md-table-head": {
       "properties": [],
@@ -1560,60 +3866,108 @@
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). The head row group: sticky / frozen header, header row height and colours from the table.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "visualParts": []
     },
     "md-table-pagination": {
       "properties": [
         "count",
-        "disabled",
-        "labelNextPage",
-        "labelPreviousPage",
         "page",
         "rowsPerPage",
         "rowsPerPageOptions",
-        "showFirstLast"
+        "showFirstLast",
+        "labelDisplayedRows",
+        "labelRowsPerPage",
+        "labelFirstPage",
+        "labelPreviousPage",
+        "labelNextPage",
+        "labelLastPage",
+        "labelAll",
+        "label",
+        "compact",
+        "disabled",
+        "density"
       ],
       "events": [
         "mdPageChange",
         "mdRowsPerPageChange"
       ],
-      "methods": [],
-      "slots": [],
+      "methods": [
+        "goToPage",
+        "setRowsPerPage"
+      ],
+      "slots": [
+        "actions"
+      ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Range text, rows-per-page select (including the All option), previous / next and first / last buttons, compact, disabled, density, the actions slot.",
+        "goToPage / setRowsPerPage through AWCTablePaginationController. Hooks through AWCTablePaginationAppearance; --md-table-pagination-padding-inline has no effect in the source and none natively (decision log).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "appearance": {
+        "api": "AWCTablePaginationAppearanceScope(AWCTablePaginationAppearance)",
+        "fields": [
+          "color",
+          "background",
+          "paddingBlock",
+          "paddingInline",
+          "selectWidth"
+        ]
+      },
+      "visualParts": []
     },
     "md-table-row": {
       "properties": [
-        "clickable",
+        "rowgroup",
+        "selected",
         "disabled",
+        "selectable",
+        "clickable",
+        "value",
         "expandable",
         "expanded",
-        "selectable",
-        "selected",
-        "value"
+        "highlight"
       ],
       "events": [
         "mdRowClick",
-        "mdRowExpandedChange",
-        "mdRowSelectionChange"
+        "mdRowSelectionChange",
+        "mdRowExpandedChange"
       ],
-      "methods": [],
+      "methods": [
+        "toggle"
+      ],
       "slots": [
         "",
         "expanded"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Selection (checkbox cell), clickable rows, expansion with the expanded slot, highlight, disabled, and the three events.",
+        "toggle() through AWCTableController.toggleRow(rowID). Hooks through AWCTableRowAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "appearance": {
+        "api": "AWCTableRowAppearanceScope(AWCTableRowAppearance)",
+        "fields": [
+          "hoverColor"
+        ]
+      },
+      "visualParts": []
     },
     "md-table-sort-label": {
       "properties": [
         "column",
-        "defaultOrder",
         "disabled",
-        "order"
+        "defaultOrder",
+        "iconPosition",
+        "icon",
+        "inactiveIcon",
+        "active",
+        "order",
+        "sortedAscendingLabel",
+        "sortedDescendingLabel",
+        "density"
       ],
       "events": [
         "mdSortRequest"
@@ -1623,155 +3977,499 @@
         ""
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Sort label with direction arrow motion, hover / focus states and the sortedAscending / Descending announcements; inside a table it drives the table sort, alone it emits mdSortRequest.",
+        "Hooks through AWCTableSortLabelAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "appearance": {
+        "api": "AWCTableSortLabelAppearanceScope(AWCTableSortLabelAppearance)",
+        "fields": [
+          "color",
+          "activeColor",
+          "iconSize",
+          "gap",
+          "restOpacity"
+        ]
+      },
+      "visualParts": []
     },
     "md-table-toolbar": {
       "properties": [
         "headline",
-        "labelSelected",
+        "supportingText",
         "numSelected",
-        "supportingText"
-      ],
-      "events": [],
-      "methods": [],
-      "slots": [
-        "actions"
-      ],
-      "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
-    },
-    "md-tabs": {
-      "properties": [
-        "activeTabIndex",
-        "divider"
-      ],
-      "events": [
-        "mdTabChange"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
-    },
-    "md-text-field": {
-      "properties": [
-        "clearable",
-        "disabled",
-        "error",
-        "errorText",
-        "hidePasswordLabel",
-        "label",
-        "max",
-        "maxLength",
-        "min",
-        "minLength",
-        "multiline",
-        "name",
-        "passwordToggle",
-        "pattern",
-        "placeholder",
-        "prefixText",
-        "readOnly",
-        "required",
-        "rows",
-        "showPasswordLabel",
-        "step",
-        "suffixText",
-        "supportingText",
-        "type",
-        "value",
-        "variant"
-      ],
-      "events": [
-        "mdChange",
-        "mdClear",
-        "mdInput",
-        "mdPasswordToggle",
-        "mdSearch"
-      ],
-      "methods": [],
-      "slots": [
-        "trailing-icon"
-      ],
-      "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
-      ]
-    },
-    "md-time-picker": {
-      "properties": [
-        "cancelLabel",
-        "disabled",
-        "error",
-        "errorText",
-        "format",
-        "headline",
-        "hideTrigger",
-        "label",
-        "max",
-        "min",
-        "minuteStep",
-        "name",
-        "okLabel",
-        "open",
-        "required",
-        "supportingText",
-        "value"
-      ],
-      "events": [
-        "mdCancel",
-        "mdChange",
-        "mdClose",
-        "mdInput",
-        "mdOpen"
-      ],
-      "methods": [],
-      "slots": [],
-      "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
-        "Uses Material TimePicker; dialog native layout replaces docked web variants."
-      ]
-    },
-    "md-toolbar": {
-      "properties": [
+        "autoBind",
+        "labelSelected",
+        "compact",
         "density"
       ],
       "events": [],
       "methods": [],
       "slots": [
-        "",
         "leading",
-        "trailing"
-      ],
-      "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ]
-    },
-    "md-tooltip": {
-      "properties": [
-        "disabled",
-        "open",
-        "subhead",
-        "text"
-      ],
-      "events": [
-        "mdClose",
-        "mdOpen"
-      ],
-      "methods": [],
-      "slots": [
-        "",
+        "headline",
+        "supporting-text",
+        "title-area",
+        "selection-actions",
         "actions"
       ],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native visible tooltip surface toggles on tap; platform hover/delay/anchor positioning is not ported."
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Headline / supporting text (props and slots), leading / title-area / actions / selection-actions slots, the selection band with numSelected or autoBind to the container table.",
+        "Hooks through AWCTableToolbarAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "appearance": {
+        "api": "AWCTableToolbarAppearanceScope(AWCTableToolbarAppearance)",
+        "fields": [
+          "color",
+          "background",
+          "selectionBackground",
+          "selectionColor",
+          "paddingBlock",
+          "paddingInline",
+          "minHeight"
+        ]
+      },
+      "visualParts": []
+    },
+    "md-tabs": {
+      "properties": [
+        "activeTabIndex",
+        "variant",
+        "divider",
+        "ariaLabelProp",
+        "tabWidth",
+        "width"
+      ],
+      "events": [
+        "mdTabChange"
+      ],
+      "methods": [
+        "selectTab"
+      ],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Dedicated native renderer (SwiftUI / Compose): the primary / secondary tablist with equal, auto or fixed tab widths, the scrolling strip (the active tab revealed, edge fades, wheel), the full or per-tab divider and the indicator glide (FLIP from the outgoing indicator, held one frame, then 400 ms emphasized-decelerate), computed from the authored md-tab children as the source.",
+        "Selection as the source: activeTabIndex is rounded and clamped past disabled tabs and its writes are silent; clicks, Enter/Space, the arrows (automatic activation, wrapping, mirrored in RTL), Home/End and selectTab(index) emit mdTabChange { index, previousIndex }; the active tab is followed by identity across reorders and removals.",
+        "One tab stop (the active tab, else the first enabled one). The system Reduce Motion setting removes the glide and the state-layer fades (colours still transition), as prefers-reduced-motion does.",
+        "The two tab-bar hooks and the nine md-tab hooks (inherited by every tab) through .awcTabsAppearance(…) / AWCTabsAppearanceScope; selectTab(index) through AWCTabsController.",
+        "Verified against the Mac Chrome 153 oracles (paint, interaction states and motion); the tablist is the platform tab group whose tabs report their selection.",
+        "Typed ::part(container) target (AWCTabsPartAppearance): the scrolling strip background."
+      ],
+      "appearance": {
+        "api": "AWCTabsAppearanceScope(AWCTabsAppearance)",
+        "fields": [
+          "containerColor",
+          "dividerColor",
+          "tabContainerColor",
+          "activeLabelColor",
+          "inactiveLabelColor",
+          "activeIconColor",
+          "inactiveIconColor",
+          "activeIndicatorColor",
+          "activeIndicatorHeight",
+          "tabDividerColor",
+          "glideDuration"
+        ]
+      },
+      "visualParts": [
+        "container"
+      ]
+    },
+    "md-text-field": {
+      "properties": [
+        "reserveSupportingSpace",
+        "variant",
+        "label",
+        "value",
+        "placeholder",
+        "type",
+        "name",
+        "pattern",
+        "minLength",
+        "min",
+        "max",
+        "step",
+        "autocomplete",
+        "inputMode",
+        "enterKeyHint",
+        "autoCapitalize",
+        "spellcheck",
+        "disabled",
+        "readOnly",
+        "required",
+        "error",
+        "errorText",
+        "supportingText",
+        "prefixText",
+        "suffixText",
+        "maxLength",
+        "clearable",
+        "passwordToggle",
+        "showPasswordLabel",
+        "hidePasswordLabel",
+        "density",
+        "multiline",
+        "rows",
+        "speechToText",
+        "speechLang",
+        "restrict",
+        "formatter",
+        "parser",
+        "formatOn",
+        "focusBorderWidth",
+        "appearFocused",
+        "chipsWrap",
+        "debounce",
+        "throttle",
+        "inputRole",
+        "inputExpanded",
+        "inputAriaAutocomplete"
+      ],
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdSearch",
+        "mdClear",
+        "mdPasswordToggle",
+        "mdSpeechResult",
+        "mdValidityChange"
+      ],
+      "methods": [
+        "setFocus",
+        "select",
+        "getInputElement",
+        "getValidity",
+        "setCustomValidity",
+        "checkValidity",
+        "reportValidity"
+      ],
+      "slots": [
+        "leading-icon",
+        "chips",
+        "clear-icon",
+        "password-toggle-icon",
+        "speech-icon",
+        "error-icon",
+        "trailing-icon"
+      ],
+      "notes": [
+        "Dedicated native text field (SwiftUI on AppKit/UIKit text input, Compose BasicTextField): all 47 properties — filled and outlined, density 0…−4, the floating label and outlined notch, prefix/suffix, counter, clearable / password toggle / speech-to-text in internal and external modes, single-line and auto-grow/fixed multiline, chips with chipsWrap, restrict, debounce/throttle mdSearch, the combobox input role — every event, the seven slots, seventeen hooks and typed parts for the container, label, input, supporting text and counter.",
+        "Real native text input: IME composition (marked text), selection, caret colour, secure entry with the password toggle, keyboard type / return key / content type from type, inputMode, enterKeyHint and autocomplete; no automatic capitalisation, correction or smart punctuation unless autoCapitalize asks for it (Chrome inserts exactly the keys typed).",
+        "Methods through AWCTextFieldController: setFocus(), select(), getValidity/checkValidity/reportValidity/setCustomValidity with Chrome's ValidityState flags and English messages; getInputElement() returns AWCTextFieldInputInfo (value, selection, focus, composition) instead of a DOM element. formatter/parser closures go through AWCTextFieldFormatting (.awcTextFieldFormatting / AWCTextFieldFormattingScope).",
+        "Forms: registers with the native form (name, value, constraint validation, reset without events); Enter submits a single-line field's form. Speech-to-text internal mode uses the platform recognizer (SFSpeechRecognizer with the app's usage descriptions; Android SpeechRecognizer with RECORD_AUDIO); external mode reports the microphone state.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153 (paint incl. ::part cases, per-frame motion, events and timing). On iOS a tap focuses on release (UIKit convention), so the focus motion starts one tap later than Chrome's mouse press."
+      ],
+      "appearance": {
+        "api": "AWCTextFieldAppearanceScope(AWCTextFieldAppearance)",
+        "fields": [
+          "activeIndicatorColor",
+          "containerColor",
+          "containerShape",
+          "cursor",
+          "errorColor",
+          "filledPill",
+          "focusBorderWidth",
+          "focusInset",
+          "iconColor",
+          "iconSize",
+          "inputColor",
+          "labelColor",
+          "opticalNudge",
+          "outlineColor",
+          "paddingInlineStart",
+          "paddingInlineEnd",
+          "supportingTextColor"
+        ],
+        "parts": "AWCTextFieldPartAppearanceScope(AWCTextFieldPartAppearance)"
+      },
+      "visualParts": [
+        "input",
+        "container",
+        "label",
+        "chips",
+        "supporting-text",
+        "counter"
+      ]
+    },
+    "md-time-picker": {
+      "properties": [
+        "variant",
+        "format",
+        "value",
+        "name",
+        "min",
+        "max",
+        "required",
+        "label",
+        "supportingText",
+        "error",
+        "errorText",
+        "reserveSupportingSpace",
+        "headline",
+        "headlineInputLabel",
+        "headlineDialLabel",
+        "valueMissingLabel",
+        "rangeUnderflowLabel",
+        "rangeOverflowLabel",
+        "rangeOutsideLabel",
+        "disabled",
+        "open",
+        "minuteStep",
+        "cancelLabel",
+        "okLabel",
+        "hideTrigger",
+        "amLabel",
+        "pmLabel",
+        "hourLabel",
+        "minuteLabel",
+        "toggleDialLabel",
+        "toggleInputLabel",
+        "periodLabel",
+        "periodLayout",
+        "orientation",
+        "responsive",
+        "density"
+      ],
+      "events": [
+        "mdChange",
+        "mdInput",
+        "mdOpen",
+        "mdClose",
+        "mdCancel",
+        "mdModeChange",
+        "mdValidityChange"
+      ],
+      "methods": [
+        "show",
+        "hide",
+        "checkValidity",
+        "reportValidity",
+        "getValidity"
+      ],
+      "slots": [],
+      "notes": [
+        "Dedicated native renderers (SwiftUI AWCNativeTimePicker, Compose NativeTimePicker): the read-only trigger field and the modal dialog (dial and input variants, 12h / 24h, the period toggle, the landscape and responsive layouts) in the AWCModalScope layer; Compose presents in its own modal layer.",
+        "The 81 source hooks through AWCTimePickerAppearance, a hook map (.awcTimePickerAppearance(_:) / AWCTimePickerAppearanceScope): CSS text as the stylesheet reads it, motion-easing as cubic-bezier() and hand-length as a percentage of the dial radius.",
+        "Methods through AWCTimePickerController: show(), hide() (Cancel: mdCancel then mdClose), checkValidity(), reportValidity() (shows the message as the trigger's error text and focuses the trigger) and getValidity().",
+        "Events with the source details (mdInput / mdChange time records, mdOpen, mdClose, mdCancel, mdModeChange, mdValidityChange), the dialog's focus trap and the focus return to the trigger. macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Chrome 153 oracles (paint and interaction)."
+      ],
+      "appearance": {
+        "api": "AWCTimePickerAppearanceScope(AWCTimePickerAppearance)",
+        "fields": [
+          "actionCancelBg",
+          "actionColor",
+          "actionConfirmBg",
+          "actionPrimaryColor",
+          "actionShape",
+          "actionsGap",
+          "dialBg",
+          "dialCenterSize",
+          "dialHandColor",
+          "dialHandWidth",
+          "dialNumberActiveColor",
+          "dialNumberActiveFontWeight",
+          "dialNumberColor",
+          "dialNumberFontSize",
+          "dialNumberFontWeight",
+          "dialSize",
+          "dialTargetSize",
+          "dialogColor",
+          "dialogElevation",
+          "dialogEnterDuration",
+          "dialogHorizontalWidth12h",
+          "dialogHorizontalWidth24h",
+          "dialogMinWidth",
+          "dialogOnColor",
+          "dialogPadding",
+          "dialogShape",
+          "footerGap",
+          "handLength",
+          "headlineColor",
+          "headlineFontSize",
+          "headlineFontWeight",
+          "headlineSpacing",
+          "inputActiveBg",
+          "inputActiveColor",
+          "inputActiveOutlineColor",
+          "inputBg",
+          "inputBorderWidth",
+          "inputColor",
+          "inputErrorColor",
+          "inputFontSize",
+          "inputFontWeight",
+          "inputHeight",
+          "inputHintColor",
+          "inputHintGap",
+          "inputHoverOpacity",
+          "inputOutlineColor",
+          "inputSeparatorColor",
+          "inputSeparatorWidth",
+          "inputShape",
+          "inputWidth",
+          "modeSwapDuration",
+          "motionEasing",
+          "periodActiveBg",
+          "periodActiveColor",
+          "periodBg",
+          "periodColor",
+          "periodFontSize",
+          "periodFontWeight",
+          "periodHorizontalHeight",
+          "periodHorizontalWidth",
+          "periodHoverOpacity",
+          "periodOutlineColor",
+          "periodOutlineWidth",
+          "periodShape",
+          "periodVerticalHeight",
+          "periodVerticalHeightInput",
+          "periodVerticalWidth",
+          "scrimColor",
+          "timeDisplayShape",
+          "toggleBg",
+          "toggleIconColor",
+          "toggleIconSize",
+          "toggleShape",
+          "triggerColor",
+          "triggerFocusColor",
+          "triggerHoverColor",
+          "triggerIconColor",
+          "triggerIconSize",
+          "triggerMinWidth",
+          "triggerOutlineColor",
+          "triggerShape"
+        ]
+      },
+      "visualParts": [
+        "period-am",
+        "period-pm",
+        "trigger",
+        "trigger-icon",
+        "period-toggle",
+        "period-am-ripple",
+        "period-pm-ripple",
+        "dial-wrap",
+        "dial",
+        "dial-hand",
+        "input-area",
+        "input-hour",
+        "input-minute",
+        "time-area",
+        "scrim",
+        "dialog",
+        "headline",
+        "body",
+        "footer",
+        "toggle-mode",
+        "actions",
+        "cancel-button",
+        "confirm-button"
+      ]
+    },
+    "md-toolbar": {
+      "properties": [
+        "variant",
+        "color",
+        "layout",
+        "alignment",
+        "containerSemantics",
+        "ariaLabelProp",
+        "ariaLabelledby",
+        "density"
+      ],
+      "events": [],
+      "methods": [
+        "setFocus"
+      ],
+      "slots": [
+        "",
+        "leading",
+        "trailing",
+        "fab"
+      ],
+      "notes": [
+        "Dedicated native toolbar (SwiftUI / Compose): docked bar and floating pill (horizontal or vertical), standard / vibrant colours, the leading / default / trailing sections with their gaps and alignment, the paired FAB, density, and the opt-in scrolling / wrapping overflow, computed from the authored children as the source.",
+        "Roving focus over the icon buttons and buttons (one Tab stop, arrows on the bar's axis, Home / End, wrap; soft-disabled members reachable, hidden / disabled / aria-hidden ones skipped; other controls keep their own stop), re-synced when children change; the toolbar-only icon-button tints; role toolbar with orientation and name, or a generic container.",
+        "Hooks through .awcToolbarAppearance(…) / AWCToolbarAppearanceScope; setFocus() through AWCToolbarController.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration, roving focus, Tab order, the dynamic re-sync, pointer state layers, RTL and density."
+      ],
+      "appearance": {
+        "api": "AWCToolbarAppearanceScope(AWCToolbarAppearance)",
+        "fields": [
+          "containerColor",
+          "iconColor",
+          "containerShape",
+          "containerHeight",
+          "padding",
+          "gap",
+          "fabGap",
+          "overflowX",
+          "overflowY",
+          "flexWrap",
+          "scrollbarWidth"
+        ]
+      }
+    },
+    "md-tooltip": {
+      "properties": [
+        "text",
+        "subhead",
+        "variant",
+        "position",
+        "autoPosition",
+        "offset",
+        "crossOffset",
+        "open",
+        "showDelay",
+        "hideDelay",
+        "disabled",
+        "density"
+      ],
+      "events": [
+        "mdOpen",
+        "mdClose"
+      ],
+      "methods": [
+        "show",
+        "hide"
+      ],
+      "slots": [
+        "",
+        "subhead",
+        "content",
+        "actions"
+      ],
+      "notes": [
+        "Dedicated native anchor and overlay scope retain all twelve properties, four content outlets, two lifecycle methods, eleven appearance hooks and five typed part targets.",
+        "Source mdOpen/mdClose events have null detail and are cancelable, non-bubbling and non-composed: same-tree capture and target listeners run; cancellation does not undo committed visibility.",
+        "Public typed slots, part styles and measured overlay coordinates replace DOM selectors, shadow slots and computed CSS. Arbitrary native content keeps its own handlers and explicitly authored layout.",
+        "The native overlay scope must cover the intended viewport. Hover/focus delays, grace periods, RTL placement, flipping, clamping, Escape ownership and retained updates are implemented.",
+        "Android Compose rendering, authored callbacks, focus/hover, event boundary and retained-host checks are recorded; TalkBack delivery and OS accessibility traversal remain unverified."
+      ],
+      "appearance": {
+        "api": "AWCTooltipAppearanceScope(AWCTooltipAppearance)",
+        "fields": [
+          "plainContainerColor",
+          "plainTextColor",
+          "richContainerColor",
+          "richSubheadColor",
+          "richTextColor",
+          "richActionColor",
+          "plainShape",
+          "plainMaxWidth",
+          "richShape",
+          "richMinWidth",
+          "richMaxWidth"
+        ]
+      },
+      "visualParts": [
+        "popup",
+        "subhead",
+        "supporting-text",
+        "actions",
+        "text"
       ]
     },
     "md-transfer-list": {

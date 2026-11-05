@@ -1,5 +1,6 @@
 import type { Config } from '@stencil/core';
 import { config as baseConfig } from './stencil.config';
+import { coreStylesOutputTarget } from '../../scripts/core-styles.cjs';
 
 // Lean build for the Storybook dev loop.
 //
@@ -23,6 +24,7 @@ export const config: Config = {
   ...baseConfig,
   sourceMap: false,
   outputTargets: [
+    coreStylesOutputTarget(),
     {
       type: 'dist',
     },

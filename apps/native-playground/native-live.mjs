@@ -1,3 +1,8 @@
+import { nativeViewportCommand } from './native-viewport.js';
+import { splitButtonCheckedOptions } from './split-button-state.js';
+import { segmentedContextOptions, segmentedSelectionOptions } from './segmented-context.js';
+import { nativeMethodCommand, nativeMethodResultsCommand, nativeMethodReply, nativeMethodValue } from './native-methods.js';
+import { buttonGroupSelectionOptions } from './button-group-state.js';
 import { nativeContentSlots } from './content-slots.js';
 import { spawn } from 'node:child_process';
 import { access } from 'node:fs/promises';
@@ -7,9 +12,11 @@ import path from 'node:path';
 import { RenderError } from './native-render.mjs';
 import { nativeEventMetadata } from './native-event-metadata.mjs';
 import { nativeThemeOptions } from './native-theme-options.js';
+import { validateNativeInspection } from './native-inspection.mjs';
+import { isNativePreviewKey } from './native-preview-keys.js';
+import { nativePropertyUpdate } from './native-property-updates.js';
 
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-const KEYS = new Set(['Enter', 'Space', 'Tab', 'Escape', 'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']);
 const MODIFIERS = new Set(['shift', 'control', 'alt', 'meta']);
 const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const failure = (status, code, message) => new RenderError(status, code, message);
@@ -31,6 +38,26 @@ export function validateLiveInput(value, { logicalWidth, logicalHeight, tag }) {
   const exactKeys = allowed => {
     if (Object.keys(value).some(key => !allowed.includes(key))) throw failure(400, 'INVALID_INPUT', 'The native input contains unsupported fields.');
   };
+  if (value.command === 'resize') {
+    exactKeys(['command', 'width', 'height']);
+    try { return nativeViewportCommand(tag, value.width, value.height); }
+    catch (error) { throw failure(400, error.code, error.message); }
+  }
+  if (value.command === 'update') {
+    exactKeys(['command', 'properties']);
+    try { return nativePropertyUpdate(tag, value.properties); }
+    catch (error) { throw failure(400, error.code, error.message); }
+  }
+  if (value.command === 'method') {
+    exactKeys(['command', 'method', 'arguments', 'callId', 'target']);
+    try { return nativeMethodCommand(tag, value.method, value.arguments, Object.hasOwn(value, 'callId') || Object.hasOwn(value, 'target') ? { callId: value.callId, target: value.target } : undefined); }
+    catch (error) { throw failure(400, error.code, error.message); }
+  }
+  if (value.command === 'method-results') {
+    exactKeys(['command', 'callIds', 'acknowledged']);
+    try { return nativeMethodResultsCommand(tag, value.callIds, value.acknowledged); }
+    catch (error) { throw failure(400, error.code, error.message); }
+  }
   if (value.command === 'click') {
     exactKeys(['command', 'x', 'y']);
     if (![value.x, value.y].every(Number.isFinite) || value.x < 0 || value.y < 0 || value.x >= logicalWidth || value.y >= logicalHeight) {
@@ -40,8 +67,8 @@ export function validateLiveInput(value, { logicalWidth, logicalHeight, tag }) {
   }
   if (value.command === 'pointer') {
     exactKeys(['command', 'phase', 'x', 'y']);
-    if (tag !== 'md-button' || !['down', 'up', 'cancel', 'move', 'leave'].includes(value.phase)) {
-      throw failure(400, 'INVALID_POINTER', 'Held pointer input is available only for button previews.');
+    if (!['md-button', 'md-icon-button', 'md-button-group', 'md-fab', 'md-fab-menu', 'md-fab-menu-item', 'md-segmented-button', 'md-split-button', 'md-snackbar', 'md-tooltip', 'md-accordion', 'md-accordion-item', 'md-card', 'md-list', 'md-list-item', 'md-dialog', 'md-bottom-sheet', 'md-side-sheet'].includes(tag) || !['down', 'up', 'cancel', 'move', 'leave'].includes(value.phase)) {
+      throw failure(400, 'INVALID_POINTER', 'Pointer input is unavailable for this component preview.');
     }
     if (![value.x, value.y].every(Number.isFinite)) throw failure(400, 'INVALID_COORDINATES', 'Pointer coordinates must be finite.');
     const inside = value.x >= 0 && value.y >= 0 && value.x < logicalWidth && value.y < logicalHeight;
@@ -60,7 +87,7 @@ export function validateLiveInput(value, { logicalWidth, logicalHeight, tag }) {
   if (value.command === 'key') {
     exactKeys(['command', 'key', 'modifiers']);
     const modifiers = value.modifiers ?? [];
-    if (!KEYS.has(value.key) || !Array.isArray(modifiers) || modifiers.length > 4 || modifiers.some(modifier => !MODIFIERS.has(modifier)) || new Set(modifiers).size !== modifiers.length) {
+    if (!isNativePreviewKey(value.key) || !Array.isArray(modifiers) || modifiers.length > 4 || modifiers.some(modifier => !MODIFIERS.has(modifier)) || new Set(modifiers).size !== modifiers.length) {
       throw failure(400, 'INVALID_KEY', 'Use a supported preview key and modifiers.');
     }
     return { command: 'key', key: value.key, modifiers };
@@ -159,6 +186,10 @@ export function createNativeLiveRenderer({
       throw failure(502, 'INVALID_LIVE_FRAME', 'The live renderer did not return a valid PNG frame.');
     }
     const events = eventResult(session, message.events);
+    const inspection = validateNativeInspection(message.inspection, 'macos');
+    let selection;
+    try { selection = { ...splitButtonCheckedOptions(message.splitButtonChecked, session.tag), ...buttonGroupSelectionOptions(message.buttonGroupSelection, session.tag), ...segmentedSelectionOptions(message.segmentedSelection, session.tag, session.segmentedContext) }; }
+    catch { throw failure(502, 'INVALID_LIVE_FRAME', 'Invalid ordered child selection.'); }
     session.logicalWidth = message.logicalWidth;
     session.logicalHeight = message.logicalHeight;
     return session.lastFrame = {
@@ -173,6 +204,7 @@ export function createNativeLiveRenderer({
       logicalHeight: message.logicalHeight,
       revision: ++session.revision,
       events,
+      ...(inspection === undefined ? {} : { inspection }), ...selection,
     };
   }
 
@@ -208,9 +240,19 @@ export function createNativeLiveRenderer({
         return;
       }
       try {
-        const result = message.ack === true
-          ? { sessionId: session.id, revision: session.revision, events: eventResult(session, message.events) }
+        const command = session.pending.payload;
+        const resized = command.command === 'resize';
+        if (resized && (message.ack !== true || message.logicalWidth !== command.width || message.logicalHeight !== command.height)) throw failure(502, 'INVALID_VIEWPORT_FRAME', 'Native resize must acknowledge a captured frame at the requested applied dimensions.');
+        if ((command.callId || command.command === 'method-results') && message.ack !== true) throw failure(502, 'INVALID_METHOD_RESULT', 'Native lifecycle methods require a separate acknowledgement.');
+        let methodReply;
+        try { methodReply = nativeMethodReply(message, command); }
+        catch (error) { throw failure(502, error.code, error.message); }
+        const result = message.ack === true && !resized
+          ? { sessionId: session.id, revision: session.revision, events: eventResult(session, message.events), ...methodReply }
           : frameResult(session, message);
+        if (command.command === 'method' && !command.callId && message.result !== undefined) {
+          try { result.methodResult = nativeMethodValue(message.result); } catch (error) { throw failure(502, error.code, error.message); }
+        }
         if (session.pending.payload.command === 'stream' && session.pending.payload.enabled === false) {
           session.undeliveredEvents = [...session.undeliveredEvents, ...result.events].slice(-256);
           result.events = [];
@@ -267,7 +309,7 @@ export function createNativeLiveRenderer({
     const availability = await status();
     if (!availability.available || disposed) throw failure(503, 'LIVE_RENDERER_UNAVAILABLE', availability.message);
     if (children.size >= maxSessions) throw failure(429, 'LIVE_RENDERER_BUSY', 'Two native previews are already open. Close one or wait for it to expire.');
-    const session = { id: randomUUID(), tag: request.tag, revision: 0, eventSequence: 0, queue: [], buffer: Buffer.alloc(0), stderrBytes: 0, closed: false, exited: false, subscriber: null, streamAllowed: false, undeliveredEvents: [] };
+    const session = { id: randomUUID(), tag: request.tag, segmentedContext: request.segmentedContext, revision: 0, eventSequence: 0, queue: [], buffer: Buffer.alloc(0), stderrBytes: 0, closed: false, exited: false, subscriber: null, streamAllowed: false, undeliveredEvents: [] };
     sessions.set(session.id, session);
     try {
       session.child = spawnProcess(binary, ['--stdio'], { stdio: ['pipe', 'pipe', 'pipe'], shell: false, windowsHide: true });
@@ -287,7 +329,7 @@ export function createNativeLiveRenderer({
         children.delete(session);
         stop(session, failure(502, 'LIVE_PROCESS_EXITED', 'The native preview process exited. Start it again.'));
       });
-      return await enqueue(session, { command: 'configure', tag: request.tag, properties: request.properties, dark: request.dark, width: request.width, ...(request.scenario ? { scenario: request.scenario } : {}), ...(request.text !== undefined ? { text: request.text } : {}), ...nativeThemeOptions(request), ...nativeContentSlots(request.slots) });
+      return await enqueue(session, { command: 'configure', tag: request.tag, properties: request.properties, dark: request.dark, width: request.width, ...(request.height !== undefined ? { height: request.height } : {}), ...(request.scenario ? { scenario: request.scenario } : {}), ...(request.text !== undefined ? { text: request.text } : {}), ...nativeThemeOptions(request), ...nativeContentSlots(request.slots), ...buttonGroupSelectionOptions(request.buttonGroupSelection, request.tag), ...segmentedContextOptions(request.segmentedContext, request.tag) });
     } catch (error) {
       const safeError = error instanceof RenderError ? error : failure(502, 'LIVE_PROCESS_FAILED', 'The native preview process could not start.');
       stop(session, safeError);

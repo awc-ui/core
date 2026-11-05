@@ -1,5 +1,32 @@
 import { newE2EPage } from '@stencil/core/testing';
 
+describe('md-segmented-button standalone and multiple selection', () => {
+  it('emits alternate selection states for an icon-only multi-select segment', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<md-segmented-button icon="format_bold" aria-label="Bold" value="bold" segment-multiselect></md-segmented-button>');
+    const segment = await page.find('md-segmented-button');
+    const selected = await segment.spyOnEvent('mdSegmentClick');
+    await segment.click();
+    await page.waitForChanges();
+    expect(selected.events[0].detail).toEqual({ value: 'bold', selected: true });
+    segment.setProperty('selected', true);
+    await page.waitForChanges();
+    expect((await page.find('md-segmented-button >>> [part="checkmark"]')).textContent).toBe('check');
+    await segment.focus();
+    await page.keyboard.press('Space');
+    await page.waitForChanges();
+    expect(selected.events[1].detail).toEqual({ value: 'bold', selected: false });
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('Escape');
+    expect(selected.events).toHaveLength(2);
+    segment.setProperty('noCheckmark', true);
+    await page.waitForChanges();
+    expect((await page.find('md-segmented-button >>> [part="icon"]')).textContent).toBe('format_bold');
+    expect(await page.find('md-segmented-button >>> [part="label"]')).toBeNull();
+  });
+});
+
 describe('md-segmented-button browser behavior', () => {
   it('requests single selection and reflects the owning set response in aria-checked', async () => {
     const page = await newE2EPage();

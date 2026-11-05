@@ -1,0 +1,214 @@
+{
+ "tag": "md-fab",
+ "case": "icon-only",
+ "request": {
+  "tag": "md-fab",
+  "properties": {
+   "label": "",
+   "aria-label": "Create",
+   "extended": false
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Create",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          292,
+          32,
+          56,
+          56
+         ],
+         "identifier": "example-md-fab",
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "button",
+         "selected": false
+        }
+       ],
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        267,
+        7,
+        106,
+        106
+       ],
+       "identifier": "example-md-fab",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      120
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    120
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-fab",
+  "properties": {
+   "aria-label": "Create",
+   "density": 0,
+   "disabled": false,
+   "extended": false,
+   "icon": "add",
+   "label": "",
+   "lowered": false,
+   "ripple": true,
+   "size": "standard",
+   "softDisabled": false,
+   "variant": "primary-container"
+  },
+  "tag": "md-fab"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Create",
+    "frame": [
+     292,
+     32,
+     56,
+     56
+    ],
+    "identifier": "example-md-fab",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Create",
+    "frame": [
+     292,
+     32,
+     56,
+     56
+    ],
+    "identifier": "example-md-fab",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 56,
+     "width": 56,
+     "x": 292,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI Button",
+     "gap": {
+      "column": 0,
+      "row": 0
+     },
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "name": "md-fab"
+   },
+   {
+    "bounds": {
+     "height": 24,
+     "width": 24,
+     "x": 308,
+     "y": 48
+    },
+    "id": "component.icon",
+    "name": "md-fab ::part(icon)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 56,
+     "width": 56,
+     "x": 292,
+     "y": 32
+    },
+    "id": "component.state-layer",
+    "name": "md-fab ::part(state-layer)",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

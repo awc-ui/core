@@ -1,0 +1,174 @@
+{
+ "tag": "md-chip",
+ "case": "soft-disabled",
+ "html": "<md-chip data-ax-node=\"n0\" id=\"example-md-chip\"></md-chip>",
+ "props": {
+  "n0": {
+   "appearance": "outlined",
+   "contentAlign": "center",
+   "density": 0,
+   "disabled": false,
+   "elevated": false,
+   "icon": "star",
+   "label": "Design system",
+   "removable": true,
+   "selected": false,
+   "softDisabled": true,
+   "trailingIcon": "",
+   "variant": "filter"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "group",
+    "name": "Design system",
+    "ignored": false,
+    "disabled": true,
+    "roledescription": "chip",
+    "frame": [
+     16,
+     16,
+     161.109375,
+     32
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       }
+      ]
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "button",
+      "name": "Design system",
+      "ignored": false,
+      "disabled": true,
+      "focusable": true,
+      "pressed": "false",
+      "frame": [
+       16,
+       16,
+       161.109375,
+       32
+      ]
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "StaticText",
+          "name": "Design system",
+          "ignored": false,
+          "frame": [
+           50,
+           24,
+           94,
+           17
+          ],
+          "children": [
+           {
+            "role": "InlineTextBox",
+            "name": "Design system",
+            "ignored": false
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "role": "button",
+      "name": "Remove Design system",
+      "ignored": false,
+      "disabled": true,
+      "invalid": "false",
+      "frame": [
+       151.109375,
+       23,
+       18,
+       18
+      ],
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "span",
+   "role": "button",
+   "name": "Design system",
+   "frame": [
+    16,
+    16,
+    161.109375,
+    32
+   ],
+   "props": {
+    "disabled": true,
+    "focusable": true,
+    "focused": true,
+    "pressed": "false"
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

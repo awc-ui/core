@@ -37,6 +37,10 @@ function apiRecipe(tag, kind, member) {
   const source = recipeFor(tag);
   const recipe = { ...source, props: { ...source.props } };
   const props = recipe.props;
+  if (tag === 'md-segmented-button' && member === 'mdSegmentClick') {
+    recipe.html = '<md-segmented-button></md-segmented-button>';
+    Object.assign(props, { label: 'Week', value: 'week', segmentMultiselect: true });
+  }
   if (tag === 'md-button' && member === 'mdChange') props.toggle = true;
   if (tag === 'md-card') {
     if (member === 'mdClick') props.interactive = true;
@@ -105,6 +109,12 @@ function eventExample(component, tag, doc, framework) {
     const veto = tag === 'md-button' ? ' Use mdClick to veto the activation beforehand.' : tag === 'md-switch' ? ' Use mdInput to veto the toggle beforehand.' : '';
     notes.push(`This notification observes a committed change. Calling preventDefault() here does not undo that change.${veto}`);
   }
+  if (tag === 'md-button-group' && doc.name === 'mdSelectionChange') notes.push('Selection is stored on child buttons. This event observes committed selection; preventDefault() cannot undo it. values, added and removed use child values, so use unique values to identify individual children.');
+  if (tag === 'md-split-button' && doc.name === 'mdTrailingClick') notes.push('trailingChecked changes before this event. detail contains checked; preventDefault cannot undo the committed state. Opening a menu is an explicit application action, not built-in behavior.');
+  if (tag === 'md-split-button' && doc.name === 'mdLeadingClick') notes.push('The leading action has no detail payload and does not toggle trailingChecked.');
+  if (tag === 'md-icon-button' && doc.name === 'mdClick') notes.push('mdClick observes the committed selected state. Navigation and toggle occur before this event; preventDefault() cannot undo those effects. Its detail contains selected only.');
+  if (tag === 'md-segmented-button' && doc.name === 'mdSegmentClick') notes.push('This standalone segment only proposes { value, selected }; it does not assign selected itself. Commit the proposal explicitly in application state if desired. Inside a set, the parent commits selection by child identity, stops propagation and emits mdChange; preventDefault does not veto that commit.');
+  if (tag === 'md-segmented-button-set' && doc.name === 'mdChange') notes.push('The set has already committed selection on its child segments. detail is an ordered string array; duplicate and empty values are valid and cannot identify individual child instances.');
   if (framework === 'svelte') notes.push('Uses Svelte 5 event properties; event names are case-sensitive.');
   if (tag === 'md-card' && doc.name.startsWith('mdDrag')) notes.push('Drag the card surface with the primary pointer; movement past the threshold starts the drag sequence.');
   if (tag === 'md-text-field' && doc.name === 'mdSpeechResult') notes.push('External speech mode reports the microphone control state; connect your speech-recognition service in this handler.');
@@ -179,6 +189,7 @@ function methodExample(component, tag, doc, framework) {
   if (framework === 'vue') notes.push('The Vue ref is a wrapper instance; $el is the underlying custom element.');
   if (framework === 'angular') notes.push('The Angular wrapper proxies this method to the underlying custom element.');
   if (['setZoom', 'setSort', 'pinColumn', 'setColumnVisibility', 'selectItem', 'selectTab', 'focusTab', 'goTo', 'goToPage'].includes(doc.name)) notes.push('Indices and column keys refer to the populated sample above; use values present in your own data.');
+  if (tag === 'md-fab' && doc.name === 'setMenuIcon') notes.push('Pass null or an empty string to restore authored icon/slot content. The promise resolves after applying temporary state, without waiting for the icon animation.');
   if (doc.name === 'drill') notes.push('This arms the next data change. After awaiting drill(), assign the next data (pie) or series and xAxis (bar) to animate the transition.');
   if (doc.name === 'getLabels' || doc.name === 'setQuery') notes.push('This sample supplies options up front; use values present in your own option data.');
   if (doc.name === 'setCustomValidity') notes.push('Pass an empty string to clear the custom validation error.');
@@ -194,7 +205,7 @@ function methodExample(component, tag, doc, framework) {
 const defaultContent = {
   'md-accordion': '<md-accordion-item headline="Details"><p>Account settings</p></md-accordion-item>',
   'md-breadcrumbs': '<md-breadcrumb-item href="/">Home</md-breadcrumb-item>',
-  'md-button-group': '<md-button>Save</md-button><md-button>Cancel</md-button>',
+  'md-button-group': '<md-button value="day" selected>Day</md-button><md-button value="week">Week</md-button><md-button value="month">Month</md-button>',
   'md-fab-menu': '<md-fab-menu-item icon="edit">Edit</md-fab-menu-item>',
   'md-list': '<md-list-item headline="Design systems"></md-list-item>',
   'md-menu': '<md-menu-item headline="Save"></md-menu-item>',
@@ -230,6 +241,58 @@ function slotContent(tag, slot) {
   return `<span${attr}>${html(labels[slot] || 'Custom content')}</span>`;
 }
 function slotExample(tag, doc, framework) {
+  if (tag === 'md-split-button' && !doc.name) {
+    const component = { tag, properties: ['label', 'icon'].map(name => ({ name })), slots: [{ name: '' }], events: [] };
+    const code = usageSnippet(component, { label: 'Create', icon: 'add' }, framework, { html: '<md-split-button></md-split-button>', slots: { '': ' project' } });
+    return result('Add leading content', 'Add authored default-slot content after the leading label.', code, languages[framework], [
+      'The slot is additive: label remains visible before this content. An empty slot does not remove label.',
+      'The trailing button is independent. Default content does not replace its icon or create a menu.',
+    ]);
+  }
+  if (tag === 'md-badge' && doc.name === 'icon') {
+    const source = recipeFor(tag);
+    const code = usageSnippet({ tag, properties: ['variant', 'value', 'icon'].map(name => ({ name })), slots: [{ name: 'icon' }], events: [] },
+      { ...source.props, variant: 'large', icon: 'notifications' }, framework,
+      { html: source.html, slots: { icon: { kind: 'symbol', value: 'priority_high' } } });
+    return result('Fill the icon slot', 'Supply a Material Symbol inside the large badge on its actual parent.', code, languages[framework], [
+      'Load @awc-ui/core/css/tokens.css once in your application entry.',
+      'The icon slot appears only in the large variant. Authored content replaces the icon-property fallback; an empty supplied element still suppresses that fallback.',
+      'The parent remains 48 × 48. shape changes the badge anchor geometry, not the badge corner radius.',
+    ]);
+  }
+  if (tag === 'md-icon-button') {
+    const component = { tag, properties: ['toggle', 'selected'].map(name => ({ name })), events: [], slots: ['', 'selected'].map(name => ({ name })) };
+    const code = usageSnippet(component, doc.name === 'selected' ? { toggle: true, selected: true } : {}, framework, {
+      html: '<md-icon-button aria-label="Save to favorites"></md-icon-button>',
+      slots: { [doc.name]: { kind: 'symbol', value: doc.name === 'selected' ? 'favorite' : 'favorite_border' } },
+    });
+    return result(doc.name ? 'Fill the selected slot' : 'Fill the default icon slot',
+      'Supply a Material Symbol with the icon button’s size and color.', code, languages[framework], [
+        'Load @awc-ui/core/css/tokens.css once in your application entry.',
+        'Provide an accessible action name through aria-label.',
+        doc.name ? 'Enable toggle and selected to display the selected slot.' : 'Default content replaces the icon-property fallback. Badge adornments do not suppress it.',
+      ]);
+  }
+  if (tag === 'md-fab' && doc.name === 'icon') {
+    const code = usageSnippet({ tag, properties: [{ name: 'label' }, { name: 'icon' }], slots: [{ name: 'icon' }], events: [] }, { label: 'Create', icon: 'add' }, framework, { html: '<md-fab></md-fab>', slots: { icon: { kind: 'symbol', value: 'edit' } } });
+    return result('Fill the icon slot', 'Replace the authored icon fallback with a Material Symbol.', code, languages[framework], ['Temporary setMenuIcon presentation hides this slot without deleting it. Clearing that override restores authored content.']);
+  }
+  if (tag === 'md-button') {
+    const value = doc.name === 'loader' ? { kind: 'progress' }
+      : { kind: 'symbol', value: doc.name === 'trailing-icon' ? 'arrow_forward' : 'favorite' };
+    const component = { tag, properties: [{ name: 'loading' }], events: [],
+      slots: ['', 'leading-icon', 'trailing-icon', 'loader'].map(name => ({ name })) };
+    const code = usageSnippet(component, doc.name === 'loader' ? { loading: true } : {}, framework, {
+      html: `<md-button>${doc.name === 'loader' ? 'Saving' : 'Continue'}</md-button>`,
+      ...(doc.name ? { slots: { [doc.name]: value } } : {}),
+    });
+    return result(doc.name ? `Fill the ${doc.name} slot` : 'Fill the default slot',
+      doc.name ? `Supply ${doc.name} content directly on the button. It replaces the corresponding fallback.` : 'Supply the visible action label as default content.',
+      code, languages[framework], [
+        'Load @awc-ui/core/css/tokens.css once in your application entry.',
+        doc.name === 'loader' ? 'Enable loading to display the supplied circular progress indicator. Its own minimum size is 24.' : doc.name ? 'The bundled Material Symbol uses the button’s icon size and color. Supplied content replaces the icon property fallback.' : 'Use a short action label.',
+      ]);
+  }
   const source = `<${tag}>\n${indent(slotContent(tag, doc.name))}\n</${tag}>`;
   const tags = [...new Set([...source.matchAll(/<(md-[a-z0-9-]+)/g)].map(match => match[1]))];
   const names = tags.map(pascal);
@@ -252,7 +315,20 @@ function partExample(tag, doc, framework) {
   let declarations = 'outline: 2px solid #6750a4;\noutline-offset: 2px;';
   let purpose = `Add an outline to the exposed ${doc.name} part`;
   const notes = ['The part must be rendered for the style to be visible. ::part() targets the exposed shadow element directly.'];
-  if (/^(?:label|headline|heading|title|subtitle|supporting-text|overline|text|message|caption|name|value-label|description)$/.test(doc.name)) {
+  if (tag === 'md-meter' && ['track', 'indicator', 'label', 'value', 'circular'].includes(doc.name)) {
+    declarations = { track: 'background-color: #d0e8e580;', indicator: 'background-color: #006a6a;', label: 'color: #4f378b;', value: 'color: #006a6a;', circular: 'width: 72px;\nheight: 72px;' }[doc.name];
+    purpose = `Customize the ${doc.name} visual`;
+    notes.push('The track and indicator examples above style the linear variant. For circular SVG paths, use stroke instead of background-color, or set the shared --md-meter-track-color and --md-meter-indicator-color hooks on the host.');
+    notes.push('Enable show-label/show-value to render the text parts. The circular box exists only for variant="circular"; prefer --md-meter-size on the host when changing the box and its SVG geometry together.');
+  } else if (tag === 'md-divider' && doc.name === 'divider') {
+    declarations = 'background-color: #006a6a;';
+    purpose = 'Change the painted divider line color';
+    notes.push('This part is the inner painted line, not the host. Set --md-divider-thickness on md-divider to change thickness. The inset flags activate the signed --md-divider-inset-start and --md-divider-inset-end margins; insetEnd takes precedence when multiple flags are true.');
+  } else if (tag === 'md-loading-indicator' && doc.name === 'shape') {
+    declarations = 'width: 20px;\nheight: 30px;\nbackground-color: #6750a4;';
+    purpose = 'Set the actual morphing shape box and fill';
+    notes.push('The shape keeps its source animation. The host still controls clipping; an oversized shape can shrink horizontally in its flex row.');
+  } else if (/^(?:label|headline|heading|title|subtitle|supporting-text|overline|text|message|caption|name|value-label|description)$/.test(doc.name)) {
     declarations = 'color: #4f378b;\nfont-weight: 600;';
     purpose = `Change the ${doc.name} text color and weight`;
   } else if (/^(?:icon|leading-icon|trailing-icon|selected-icon|unselected-icon|close-icon|trigger-icon|expand-button-icon)$/.test(doc.name)) {
@@ -284,5 +360,8 @@ function partExample(tag, doc, framework) {
   else if (framework === 'svelte') { code = `<style>\n${indent(rule.replace(selector, `:global(${selector})`))}\n</style>`; language = 'svelte'; notes.push(':global(...) keeps Svelte from adding its component scope to the shadow part selector.'); }
   else notes.push('Put this rule in a stylesheet loaded by the page, or inside a <style> block.');
   if (tag === 'md-button' && doc.name === 'anchor') notes.push('Set a valid href on md-button to render its anchor part.');
+  if (tag === 'md-badge') notes.push(doc.name === 'icon'
+    ? 'Use variant="large" and a nonempty icon property to render the fallback icon part. Custom slotted content is styled on its own element.'
+    : 'Use variant="large" and a nonempty value to render the label part.');
   return result(`Style ::part(${doc.name})`, `${purpose} of ${tag}. Adjust these declarations to match your design.`, code, language, notes);
 }

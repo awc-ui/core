@@ -155,8 +155,9 @@ attributes plus `--md-step-idx` that the stepper stamps on each `md-step`.
   marks the current step completed, then emits `mdComplete`. `next()` and
   `prev()` skip `disabled` steps.
 - `mode="linear"` gating: backward is always allowed; forward is allowed only
-  when the target is already `completed`, or every earlier step is `completed`
-  or `optional`. Unreachable step headers are `aria-disabled` and out of the
+  when the target is already `completed`, or every earlier step is `completed`,
+  `optional` or `disabled` (a disabled step can never be completed, and
+  Continue already walks past it). Unreachable step headers are `aria-disabled` and out of the
   tab order. `mode="non-linear"` allows any non-disabled step.
 - **`next-disabled` and `loading` gate only the built-in Continue button.**
   Clicking a step header and calling `next()` / `goTo()` are unaffected — use
@@ -369,7 +370,8 @@ roving tabindex: every reachable header is its own tab stop, activated with
 `Enter` or `Space`; unreachable and disabled headers are removed from the tab
 order. Two visually-hidden live regions announce changes — a polite one for
 "Step 2 of 4: Payment, current" and an assertive one when a step enters
-`error`. After the built-in nav moves a vertical stepper, focus lands on the
+`error`. The assertive region is emptied once no step is in error, so a stale
+error is never left behind and the same error raised again is announced again. After the built-in nav moves a vertical stepper, focus lands on the
 new active header rather than falling to `<body>`. Cancelling `mdBeforeChange`
 should be paired with a visible, announced reason — a silent block is invisible
 to screen-reader users. Keep DOM order equal to step order.

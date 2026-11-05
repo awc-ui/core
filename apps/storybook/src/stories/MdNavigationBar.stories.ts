@@ -1063,3 +1063,48 @@ export const Responsiveness: Story = {
 /* ════════════════════════════════════════════════════════════════════
    17. NO DESTINATIONS — edge: empty bar
    ════════════════════════════════════════════════════════════════════ */
+
+export const RuntimeDestinationsAndDisabledStates: Story = {
+  render: () => html`<md-navigation-bar label="Destinations"><md-navigation-tab label="Inbox" icon="mail" badge badge-value="1200" badge-max="99"></md-navigation-tab><md-navigation-tab label="Search" icon="search"></md-navigation-tab></md-navigation-bar>`,
+  play: async ({ canvasElement }) => {
+    const bar = canvasElement.querySelector('md-navigation-bar') as HTMLMdNavigationBarElement;
+    await waitFor(() => expect(bar.classList.contains('hydrated')).toBe(true));
+    const tabs = Array.from(bar.children) as HTMLMdNavigationTabElement[];
+    tabs[1].softDisabled = true; await waitFor(() => expect(tabs[1].getAttribute('aria-disabled')).toBe('true'));
+    tabs[1].click(); expect(tabs[1].active).toBe(false);
+    tabs[1].softDisabled = false; tabs[1].badgeValue = 'new';
+    await waitFor(() => expect(tabs[1].getAttribute('aria-disabled')).toBe('false'));
+    await bar.select(1); await waitFor(() => expect(tabs[1].active).toBe(true));
+    tabs[0].disabled = true; await waitFor(() => expect(tabs[0].getAttribute('aria-disabled')).toBe('true'));
+    await tabs[0].focusEl(); expect(document.activeElement).not.toBe(tabs[0]);
+    const third = document.createElement('md-navigation-tab'); third.label = 'Settings'; third.icon = 'settings'; bar.append(third);
+    await waitFor(() => expect(third.classList.contains('hydrated')).toBe(true));
+    await bar.select(2); await waitFor(() => expect(third.active).toBe(true));
+    third.remove(); await waitFor(() => expect(bar.querySelectorAll('md-navigation-tab')).toHaveLength(2));
+  },
+};
+
+export const DeferredDestinations: Story = {
+  render: () => html`<md-navigation-bar aria-label="Loaded destinations"></md-navigation-bar>`,
+  play: async ({ canvasElement }) => {
+    const bar = canvasElement.querySelector('md-navigation-bar') as HTMLMdNavigationBarElement;
+    await waitFor(() => expect(bar.classList.contains('hydrated')).toBe(true));
+    const changes: Array<{ index: number; previousIndex: number }> = [];
+    bar.addEventListener('mdChange', event => changes.push((event as CustomEvent).detail));
+    // Frameworks can set the desired route while their async data is pending.
+    await bar.select(2);
+    expect(bar.activeIndex).toBe(2); expect(changes).toEqual([]);
+    const destinations = ['Inbox', 'Search', 'Settings'].map(label => {
+      const tab = document.createElement('md-navigation-tab'); tab.setAttribute('label', label); return tab;
+    });
+    bar.append(...destinations);
+    await waitFor(() => expect(destinations.map(tab => tab.getAttribute('aria-selected'))).toEqual(['false', 'false', 'true']));
+    expect(changes).toEqual([]);
+    destinations[2].disabled = true;
+    await waitFor(() => expect(destinations[2].hasAttribute('disabled')).toBe(true));
+    await bar.select(2);
+    await waitFor(() => expect(bar.activeIndex).toBe(1));
+    expect(changes).toEqual([{ index: 1, previousIndex: 2 }]);
+    expect(destinations[1].getAttribute('tabindex')).toBe('0');
+  },
+};

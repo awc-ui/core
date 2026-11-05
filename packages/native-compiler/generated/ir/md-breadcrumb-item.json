@@ -224,6 +224,10 @@
       {
         "name": "role",
         "value": "listitem"
+      },
+      {
+        "name": "style",
+        "value": "{ '--_enter-index': String(this.itemIndex) }"
       }
     ],
     "children": [
@@ -265,7 +269,7 @@
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
-      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "message": "assignedNodes depends on browser semantics and requires a native adapter.",
       "line": 136
     },
     {
@@ -280,7 +284,7 @@
     "styleUrl": "md-breadcrumb-item.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "50bf1ae4a4e27072ca49ea8d139860ad6821b6500788dd9e68b348eda4c50ae6"
+    "sha256": "6d19940de0700e28aac4133af82b79a3ca7cf22af1bcd6fe5f9c489ae4b4cdcc"
   },
   "styles": [
     {
@@ -289,7 +293,7 @@
       "declarations": [
         {
           "property": "--_link-color",
-          "value": "var(--md-breadcrumb-item-link-color, var(--md-sys-color-on-surface-variant, #49454F))",
+          "value": "var(--md-breadcrumb-item-link-color, var(--md-breadcrumbs-text-color, var(--md-sys-color-on-surface-variant, #49454F)))",
           "important": false
         },
         {
@@ -390,6 +394,101 @@
         {
           "property": "letter-spacing",
           "value": "var(--md-sys-typescale-label-large-letter-spacing, 0.1px)",
+          "important": false
+        },
+        {
+          "property": "--_enter-duration",
+          "value": "var(--md-sys-motion-spring-spatial-default-duration, 500ms)",
+          "important": false
+        },
+        {
+          "property": "--_enter-easing",
+          "value": "var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00))",
+          "important": false
+        },
+        {
+          "property": "animation",
+          "value": "md-breadcrumb-enter var(--_enter-duration) var(--_enter-easing) both",
+          "important": false
+        },
+        {
+          "property": "animation-delay",
+          "value": "calc(var(--md-breadcrumbs-stagger, 40ms) * min(var(--_enter-index, 0), 11))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:dir(rtl))",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation-name",
+          "value": "md-breadcrumb-enter-rtl",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-breadcrumb-enter",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(-8px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-breadcrumb-enter",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(0)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "from",
+      "context": "@keyframes md-breadcrumb-enter-rtl",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(8px)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-breadcrumb-enter-rtl",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(0)",
           "important": false
         }
       ]
@@ -813,6 +912,17 @@
       ]
     },
     {
+      "selector": ":host",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "animation",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
       "selector": ".md-breadcrumb-item__link,\n  .md-breadcrumb-item__static,\n  .md-breadcrumb-item__icon .material-symbols-outlined,\n  .md-breadcrumb-item__separator,\n  .md-breadcrumb-item__state-layer",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
@@ -959,10 +1069,15 @@
       "status": "adapter-implemented",
       "properties": [
         "href",
+        "target",
+        "rel",
         "current",
         "icon",
+        "disabled",
+        "collapsed",
         "itemIndex",
-        "disabled"
+        "itemTotal",
+        "density"
       ],
       "events": [
         "mdSelect"
@@ -972,53 +1087,75 @@
         "",
         "icon"
       ],
-      "unsupportedProperties": [
-        "target",
-        "rel",
-        "collapsed",
-        "itemTotal",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native event has index and href; DOM MouseEvent omitted."
+        "A link crumb (href, not current, not disabled) or a static span; mdSelect { href, label, current, itemIndex, itemTotal } is cancelable and, unless prevented, the link opens through the host URL router (target honoured; rel has no native browsing-context effect).",
+        "collapsed, itemIndex and itemTotal are managed by the trail (as the source sets them); a crumb outside a trail renders as the first crumb and is the current page only when authored.",
+        "Hover, press and keyboard focus (12 % layer, 3-point secondary ring) with the md-ripple wave; labels truncate at 32 ch with an ellipsis and keep the full accessible name."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": ".awcBreadcrumbsAppearance(AWCBreadcrumbsAppearance)",
+        "fields": [
+          "linkColor",
+          "currentColor",
+          "currentBackground",
+          "disabledColor",
+          "hoverColor",
+          "stateLayerColor",
+          "itemGap",
+          "itemPadding"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "collapsed",
-        "current",
-        "disabled",
         "href",
-        "icon"
+        "target",
+        "rel",
+        "current",
+        "icon",
+        "disabled",
+        "collapsed",
+        "itemIndex",
+        "itemTotal",
+        "density"
       ],
       "events": [
         "mdSelect"
       ],
       "methods": [],
       "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
-        "target",
-        "rel",
-        "itemIndex",
-        "itemTotal",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+        "",
         "icon"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "A link crumb (href, not current, not disabled) or a static span; mdSelect { href, label, current, itemIndex, itemTotal } is cancelable and, unless prevented, the link opens through the host URL router (target honoured; rel has no native browsing-context effect).",
+        "collapsed, itemIndex and itemTotal are managed by the trail (as the source sets them); a crumb outside a trail renders as the first crumb and is the current page only when authored.",
+        "Hover, press and keyboard focus (12 % layer, 3-point secondary ring) with the md-ripple wave; labels truncate at 32 ch with an ellipsis and keep the full accessible name."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCBreadcrumbsAppearanceScope(AWCBreadcrumbsAppearance)",
+        "fields": [
+          "linkColor",
+          "currentColor",
+          "currentBackground",
+          "disabledColor",
+          "hoverColor",
+          "stateLayerColor",
+          "itemGap",
+          "itemPadding"
+        ]
+      }
     }
   }
 }

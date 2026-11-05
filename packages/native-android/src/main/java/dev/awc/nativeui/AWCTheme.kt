@@ -4,6 +4,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,8 +59,12 @@ fun AWCTheme(darkTheme: Boolean = isSystemInDarkTheme(), tokenOverrides: Map<Str
         large = RoundedCornerShape(dimension("--md-sys-shape-corner-large", 16f).dp),
         extraLarge = RoundedCornerShape(dimension("--md-sys-shape-corner-extra-large", 28f).dp),
     )
-    MaterialTheme(colorScheme = colors, shapes = shapes, typography = typography, content = content)
+    CompositionLocalProvider(LocalAWCThemeTokens provides tokens) {
+        MaterialTheme(colorScheme = colors, shapes = shapes, typography = typography, content = content)
+    }
 }
+
+internal val LocalAWCThemeTokens=staticCompositionLocalOf<Map<String,String>> { AWCGeneratedTokens.light }
 
 /** Exact MD3 roles exported by the AWC theme generator; excludes executable CSS and layout overrides. */
 val AWCThemeColorRoles: Set<String> = setOf(
@@ -72,9 +78,9 @@ val AWCThemeColorRoles: Set<String> = setOf(
 ).map { "--md-sys-color-$it" }.toSet()
 
 fun normalizeAWCThemeOverrides(tokens: Map<String, String>): Map<String, String> {
-    require(tokens.size <= AWCThemeColorRoles.size) { "Too many native theme colors." }
+    require(tokens.size <= 128) { "Too many native theme colors." }
     return tokens.mapValues { (name, value) ->
-        require(name in AWCThemeColorRoles && value.matches(Regex("#[0-9a-fA-F]{6}"))) { "Native theme colors require supported MD3 roles and six-digit hex values." }
+        require(name.length<=96 && name.matches(Regex("--md-sys-color-[A-Za-z][A-Za-z0-9-]*")) && value.matches(Regex("#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?"))) { "Native theme colors require bounded source-role names and RGB/RGBA hexadecimal values." }
         value.uppercase(java.util.Locale.ROOT)
     }
 }

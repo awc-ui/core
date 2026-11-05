@@ -216,3 +216,17 @@ test('actual server AST enrichment reaches button and inline validity payload do
   assert.equal(validity.fields.find(field => field.name === 'flags').type, 'Record<string, boolean>');
   assert.match(validity.definition, /Record<string, boolean>/);
 });
+
+
+test('button group private fallback sentinel never becomes a public CSS override after documentation merges', () => {
+  const publicNames = ['gap', 'width', 'min-width', 'max-width', 'height', 'min-height', 'max-height'].map(name => `--md-button-group-${name}`);
+  const source = { tagName: 'md-button-group', cssProperties: publicNames.map(name => ({ name })) };
+  const catalog = { cssProperties: [{ name: '--md-button-group-_unset' }, { name: '--md-button-group-gap', description: 'Public gap' }] };
+  const usage = { cssCustomProps: [{ name: '--md-button-group-_unset', description: 'Compiler-only fallback' }] };
+  const before = JSON.stringify([source, catalog, usage]);
+  const merged = mergeComponentDocumentation(source, catalog, usage);
+  assert.deepEqual(merged.cssProperties.map(item => item.name), publicNames);
+  assert.equal(merged.cssProperties[0].description, 'Public gap');
+  assert.deepEqual(mergeComponentDocumentation(merged, catalog, usage).cssProperties.map(item => item.name), publicNames);
+  assert.equal(JSON.stringify([source, catalog, usage]), before, 'raw audit inputs remain unchanged');
+});

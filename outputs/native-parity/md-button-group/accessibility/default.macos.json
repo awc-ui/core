@@ -1,0 +1,401 @@
+{
+ "tag": "md-button-group",
+ "case": "default",
+ "request": {
+  "tag": "md-button-group",
+  "properties": {},
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Day",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            209,
+            32,
+            58,
+            40
+           ],
+           "identifier": "segment-0",
+           "invalid": "false",
+           "required": false,
+           "role": "AXCheckBox",
+           "roleDescription": "toggle button",
+           "selected": true,
+           "subrole": "AXToggle",
+           "value": true
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          185,
+          8,
+          106,
+          88
+         ],
+         "identifier": "segment-0",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Week",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            279,
+            32,
+            67,
+            40
+           ],
+           "identifier": "segment-1",
+           "invalid": "false",
+           "required": false,
+           "role": "AXCheckBox",
+           "roleDescription": "toggle button",
+           "selected": false,
+           "subrole": "AXToggle",
+           "value": false
+          }
+         ],
+         "enabled": true,
+         "frame": [
+          255,
+          8,
+          115,
+          88
+         ],
+         "identifier": "segment-1",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Month",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            358,
+            32,
+            73,
+            40
+           ],
+           "identifier": "segment-2",
+           "invalid": "false",
+           "required": false,
+           "role": "AXCheckBox",
+           "roleDescription": "toggle button",
+           "selected": false,
+           "subrole": "AXToggle",
+           "value": false
+          }
+         ],
+         "enabled": true,
+         "frame": [
+          334,
+          8,
+          121,
+          88
+         ],
+         "identifier": "segment-2",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        }
+       ],
+       "description": "",
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        185,
+        8,
+        270,
+        88
+       ],
+       "identifier": "example-md-button-group",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      104
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    104
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [
+     {
+      "children": [],
+      "id": "38E53ABB-1576-437B-8287-A058E3C20669",
+      "properties": {
+       "text": "Day"
+      },
+      "tag": "#text"
+     }
+    ],
+    "id": "segment-0",
+    "properties": {
+     "label": "Day",
+     "selected": true,
+     "value": "day"
+    },
+    "tag": "md-button"
+   },
+   {
+    "children": [
+     {
+      "children": [],
+      "id": "387C9440-64AF-484D-8EB9-2B61B88E906D",
+      "properties": {
+       "text": "Week"
+      },
+      "tag": "#text"
+     }
+    ],
+    "id": "segment-1",
+    "properties": {
+     "label": "Week",
+     "selected": false,
+     "value": "week"
+    },
+    "tag": "md-button"
+   },
+   {
+    "children": [
+     {
+      "children": [],
+      "id": "957B95BA-6F2B-4986-84B6-AFD91ED04AC2",
+      "properties": {
+       "text": "Month"
+      },
+      "tag": "#text"
+     }
+    ],
+    "id": "segment-2",
+    "properties": {
+     "label": "Month",
+     "selected": false,
+     "value": "month"
+    },
+    "tag": "md-button"
+   }
+  ],
+  "id": "example-md-button-group",
+  "properties": {
+   "density": 0,
+   "fullWidth": false,
+   "required": false,
+   "selectionMode": "single-select",
+   "shape": "round",
+   "size": "sm",
+   "variant": "standard"
+  },
+  "tag": "md-button-group"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Day",
+    "frame": [
+     209,
+     32,
+     58,
+     40
+    ],
+    "identifier": "segment-0",
+    "role": "AXCheckBox",
+    "subrole": "AXToggle"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Day",
+    "frame": [
+     209,
+     32,
+     58,
+     40
+    ],
+    "identifier": "segment-0",
+    "role": "AXCheckBox",
+    "subrole": "AXToggle"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Day",
+    "frame": [
+     209,
+     32,
+     58,
+     40
+    ],
+    "identifier": "segment-0",
+    "role": "AXCheckBox",
+    "subrole": "AXToggle"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Day",
+    "frame": [
+     209,
+     32,
+     58,
+     40
+    ],
+    "identifier": "segment-0",
+    "role": "AXCheckBox",
+    "subrole": "AXToggle"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 40,
+     "width": 222,
+     "x": 209,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI Layout",
+     "gap": {
+      "column": 12,
+      "row": 0
+     },
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "name": "md-button-group"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 58,
+     "x": 209,
+     "y": 32
+    },
+    "id": "component.child.segment-0",
+    "name": "md-button",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 67,
+     "x": 279,
+     "y": 32
+    },
+    "id": "component.child.segment-1",
+    "name": "md-button",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 73,
+     "x": 358,
+     "y": 32
+    },
+    "id": "component.child.segment-2",
+    "name": "md-button",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

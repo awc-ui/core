@@ -567,6 +567,41 @@ describe('md-progress-indicator', () => {
 
   // ── RTL ────────────────────────────────────────────────────
   describe('RTL', () => {
+    it.each([
+      [[-24, 36], [110, 170]],
+      [[-140, -20], [210, 300]],
+    ])('maps mirrored indeterminate bars back into local SVG and track-mask coordinates (%j, %j)', async (first, second) => {
+      const page = await create('<md-progress-indicator wave indeterminate></md-progress-indicator>');
+      const component = page.rootInstance as any;
+      const viewport = { left: 100, right: 340, width: 240 };
+      const bars = [component.indetBar1Ref, component.indetBar2Ref] as HTMLDivElement[];
+      const intervals = [first, second];
+      component.linearWaveSvgRef.getBoundingClientRect = () => viewport;
+      component.amp = 1;
+      component.linearPhase = 0.6;
+      const sample = (rtl: boolean) => {
+        component.rtl = rtl;
+        bars.forEach((bar, index) => {
+          const [start, end] = intervals[index];
+          bar.getBoundingClientRect = () => ({
+            left: rtl ? viewport.right - end : viewport.left + start,
+            right: rtl ? viewport.right - start : viewport.left + end,
+            width: end - start,
+          } as DOMRect);
+        });
+        component.updateLinearIndeterminate();
+        return {
+          paths: [component.indetPath1Ref, component.indetPath2Ref].map(path => path.getAttribute('d')),
+          mask: component.indetTrackRef.style.getPropertyValue('mask-image'),
+        };
+      };
+      const ltr = sample(false);
+      expect(ltr.paths.every(path => path.startsWith('M'))).toBe(true);
+      expect(ltr.mask).toContain('linear-gradient');
+      expect(sample(true)).toEqual(ltr);
+      expect(sample(false)).toEqual(ltr);
+    });
+
     it('renders in an RTL context (linear)', async () => {
       const page = await newSpecPage({
         components: [MdProgressIndicator],
@@ -709,6 +744,45 @@ describe('md-progress-indicator', () => {
 
   // ── linear wave completion trigger ────────────────────────────
   describe('linear wave completion trigger', () => {
+    it('finishes once when reduced motion prevents the wave completion loop', async () => {
+      const page = await create('<md-progress-indicator wave value="37"></md-progress-indicator>');
+      const complete = jest.fn();
+      page.root!.addEventListener('mdComplete', complete);
+      (page.rootInstance as any).reducedMotion = true;
+      (page.root as any).complete = true;
+      await page.waitForChanges();
+      expect(page.root).toHaveClass('md-progress-indicator--complete');
+      expect(complete).toHaveBeenCalledTimes(1);
+      (page.root as any).complete = false;
+      (page.root as any).complete = true;
+      await page.waitForChanges();
+      expect(complete).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ['linear', false],
+      ['linear', true],
+      ['circular', false],
+      ['circular', true],
+    ])('settles in-flight %s completion (wave=%s) when reduced motion is enabled', async (variant, wave) => {
+      const page = await create(`<md-progress-indicator variant="${variant}" ${wave ? 'wave' : ''} value="37"></md-progress-indicator>`);
+      const complete = jest.fn();
+      page.root!.addEventListener('mdComplete', complete);
+      (page.root as any).complete = true;
+      await page.waitForChanges();
+      expect(complete).not.toHaveBeenCalled();
+      (page.rootInstance as any).reducedMotion = true;
+      await page.waitForChanges();
+      if (variant === 'circular' && !wave) {
+        expect(page.root).not.toHaveClass('md-progress-indicator--complete');
+        expect((page.root!.shadowRoot!.querySelector('[part="active-indicator"]') as SVGElement).style.opacity).toBe('0');
+        expect(page.root!.shadowRoot!.querySelector('[part="track"]')!.hasAttribute('stroke-dasharray')).toBe(false);
+      } else {
+        expect(page.root).toHaveClass('md-progress-indicator--complete');
+      }
+      expect(complete).toHaveBeenCalledTimes(1);
+    });
+
     it('sets wlcPhase=1 when complete is set for wave linear', async () => {
       const page = await create('<md-progress-indicator wave value="60"></md-progress-indicator>');
       const i = page.rootInstance as any;

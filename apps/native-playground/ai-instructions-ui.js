@@ -4,17 +4,25 @@ const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': 
 
 export function createAIInstructionsUI({ getState, notify }) {
   const cache = new Map();
-  let generation = 0, rendered;
-  async function load(refresh = false) {
+  let generation = 0, rendered, pending;
+  function load(refresh = false) {
     const tag = getState().selected?.tag;
     const panel = document.querySelector('#ai-instructions-panel');
-    if (!tag || !panel) return;
-    const request = ++generation;
-    const existing = refresh && rendered?.tag === tag && panel.contains(rendered.card) ? rendered : null;
+    if (!tag || !panel) return Promise.resolve();
+    if (pending?.tag === tag && pending.panel === panel) return pending.promise;
+    const existing = rendered?.tag === tag && panel.contains(rendered.card) ? rendered : null;
+    if (existing && !refresh) return Promise.resolve();
+    const operation = { tag, panel, generation: ++generation };
+    pending = operation;
+    operation.promise = update(operation, existing, refresh);
+    return operation.promise;
+  }
+  async function update(operation, existing, refresh) {
+    const { tag, panel, generation: request } = operation;
     panel.setAttribute('aria-busy', 'true');
     if (!existing) {
       rendered = undefined;
-      panel.innerHTML = '<div class="coverage-loading" role="status"><md-progress-indicator variant="circular" indeterminate size="24" label="Loading AI instructions"></md-progress-indicator><span>Reading component instructions…</span></div>';
+      if (refresh || !cache.has(tag)) panel.innerHTML = '<div class="coverage-loading" role="status"><md-progress-indicator variant="circular" indeterminate size="24" label="Loading AI instructions"></md-progress-indicator><span>Reading component instructions…</span></div>';
     }
     try {
       let guide = refresh ? null : cache.get(tag);
@@ -55,7 +63,10 @@ export function createAIInstructionsUI({ getState, notify }) {
         else panel.innerHTML = `<p class="load-error">${escape(error.message)}</p>`;
       }
     } finally {
-      if (request === generation) panel.removeAttribute('aria-busy');
+      if (pending === operation) {
+        pending = undefined;
+        panel.removeAttribute('aria-busy');
+      }
     }
   }
   return { load };

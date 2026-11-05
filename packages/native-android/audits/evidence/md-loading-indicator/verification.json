@@ -1,0 +1,36 @@
+{
+  "completedAt": "2026-10-20T19:30:46.533984+00:00",
+  "workdir": "/Users/ionut-valentinmitrache/Documents/Codex/2026-10-07/p/work/awc-native/apps/native-android-playground",
+  "primaryCommand": "JAVA_HOME=/Users/ionut-valentinmitrache/Library/Java/JavaVirtualMachines/openjdk-23.0.1/Contents/Home ANDROID_HOME=/Users/ionut-valentinmitrache/Documents/Codex/2026-10-07/p/work/android-sdk ANDROID_SERIAL=emulator-5554 ./gradlew :native-ui:testDebugUnitTest :app:assembleDebug :app:connectedDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=dev.awc.playground.NativeLoadingIndicatorParityTest,dev.awc.playground.LivePreviewInspectionTest,dev.awc.playground.LivePreviewHostTest#loadingHooksAndShortComponentsStayCenteredInTheirActualCapturedSurface,dev.awc.playground.LivePreviewHostTest#segmentedContextUsesRealOrderedSelectionTypedSlotsAndCommittedFrameMeasurements' --console=plain",
+  "focusedCommand": "JAVA_HOME=/Users/ionut-valentinmitrache/Library/Java/JavaVirtualMachines/openjdk-23.0.1/Contents/Home ANDROID_HOME=/Users/ionut-valentinmitrache/Documents/Codex/2026-10-07/p/work/android-sdk ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=dev.awc.playground.NativeLoadingIndicatorParityTest#semanticLabelIsIndeterminatePoliteAndFocusIsExplicitWithActualPaint' --console=plain",
+  "nativeUnitTests": 103,
+  "nativeUnitFailures": 0,
+  "browserFixtureCases": 84,
+  "pausedBrowserAnimationSamples": 16,
+  "deviceAttempts": [
+    {
+      "name": "first",
+      "methods": 6,
+      "passed": 2,
+      "failed": 4
+    },
+    {
+      "name": "second",
+      "methods": 6,
+      "passed": 5,
+      "failed": 1
+    },
+    {
+      "name": "focus",
+      "methods": 1,
+      "passed": 1,
+      "failed": 0
+    }
+  ],
+  "finalFocusCorrection": "Test locator changed to the caller focusable host; no runtime changes or tolerance relaxation after second run.",
+  "productionSnippetCases": 15,
+  "apk": "apps/native-android-playground/app/build/outputs/apk/debug/app-debug.apk",
+  "apkSha256": "4a6d74b5c0162b57325c4655b7d50aa9adbd6cae7379a6dd98ebd96bd71c21b5",
+  "install": "adb -s emulator-5554 install -r app-debug.apk: Success",
+  "integratedLaboratoryAcceptance": "Pending parent review; not claimed by native test record."
+}

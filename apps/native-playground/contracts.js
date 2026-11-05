@@ -1,5 +1,10 @@
+import { nativeViewportCommand } from './native-viewport.js';
+import { segmentedContextOptions } from './segmented-context.js';
+import { nativeMethodCommand, nativeLifecycleMethod, nativeMethodResultsCommand, nativeMethodReply } from './native-methods.js';
+import { buttonGroupSelectionOptions } from './button-group-state.js';
 import { nativeContentSlots } from './content-slots.js';
 import { nativeThemeOptions } from './native-theme-options.js';
+import { nativePropertyUpdate, supportsRetainedUpdateTag } from './native-property-updates.js';
 
 // Browser-safe contract helpers. Literal parsing never evaluates source code.
 export function literalChoices(property) {
@@ -70,7 +75,7 @@ export function createLatestRequest() {
 }
 
 export function nativeRenderRequest(tag, properties, dark, options = {}) {
-  return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640, ...nativeThemeOptions(options), ...nativeContentSlots(options.slots), ...(tag === 'md-button' && typeof options.text === 'string' ? { text: options.text } : {}) };
+  return { tag, properties: JSON.parse(JSON.stringify(properties)), dark: Boolean(dark), width: 640, ...nativeThemeOptions(options), ...nativeContentSlots(options.slots, tag), ...buttonGroupSelectionOptions(options.buttonGroupSelection, tag), ...segmentedContextOptions(options.segmentedContext, tag), ...(tag === 'md-button' && typeof options.text === 'string' ? { text: options.text } : {}) };
 }
 
 /** A native request must remain valid before the preview's CSS/layout is ready. */
@@ -133,6 +138,10 @@ export function createNativeLiveClient({ send, subscribe, coordinator, onFrame, 
     previous.closed = true;
     endStream(previous);
     unschedule(previous.timer);
+    unschedule(previous.methodTimer);
+    const error = Object.assign(new Error('The native preview session changed before the operation completed.'), { code: 'SESSION_CLOSED' });
+    for (const pending of previous.methods) pending.reject(error);
+    previous.methods.clear();
     previous.queue.length = 0;
     return cleanup(previous);
   }
@@ -152,10 +161,54 @@ export function createNativeLiveClient({ send, subscribe, coordinator, onFrame, 
       onFrame(result);
     }
   }
+  function scheduleMethodResults(session, delay = 250) {
+    if (active !== session || session.closed || session.methodBusy) return;
+    unschedule(session.methodTimer);
+    const accepted = [...session.methods].some(method => method.callId && method.accepted);
+    if (accepted || session.methodAcknowledged.size) session.methodTimer = schedule(() => pollMethodResults(session), delay);
+  }
+  async function pollMethodResults(session) {
+    if (active !== session || session.closed || session.methodBusy) return;
+    const calls = [...session.methods].filter(method => method.callId && method.accepted);
+    const acknowledged = [...session.methodAcknowledged];
+    if (!calls.length && !acknowledged.length) return;
+    const command = nativeMethodResultsCommand(session.tag, calls.map(method => method.callId), acknowledged);
+    session.methodBusy = true;
+    let progressed = false;
+    try {
+      const result = await send(`${session.id}/input`, command);
+      if (active !== session || session.closed) return;
+      accept(session, result);
+      const reply = nativeMethodReply(result, command);
+      acknowledged.forEach(id => session.methodAcknowledged.delete(id));
+      for (const result of reply.methodResults) {
+        if (result.status === 'pending') continue;
+        const invocation = calls.find(method => method.callId === result.callId);
+        session.methods.delete(invocation);
+        session.methodAcknowledged.add(result.callId);
+        if (result.status === 'fulfilled') invocation.resolve(undefined);
+        else invocation.reject(Object.assign(new Error(result.error.message), { code: result.error.code }));
+        progressed = true;
+      }
+      session.methodFailures = 0;
+      session.methodDelay = progressed ? 250 : Math.min(2000, session.methodDelay * 2);
+    } catch (error) {
+      if (active === session && !session.closed) {
+        // Queries are idempotent; accepted lifecycle methods are never replayed.
+        if (error?.name === 'TypeError' && session.methodFailures++ < 2) session.methodDelay = Math.min(2000, session.methodDelay * 2);
+        else { stop(); onError(error); }
+      }
+    } finally {
+      session.methodBusy = false;
+      scheduleMethodResults(session, progressed ? 0 : session.methodDelay);
+    }
+  }
   async function pump(session) {
     if (active !== session || session.closed || session.busy || !session.id) return;
     unschedule(session.timer);
-    const input = session.queue.shift();
+    const queued = session.queue.shift();
+    const invocation = queued?.invocation;
+    const input = invocation ? queued.command : queued;
     if (!input && (!visible || subscribe)) return;
     session.busy = true;
     const requestStartedAt = now();
@@ -164,8 +217,20 @@ export function createNativeLiveClient({ send, subscribe, coordinator, onFrame, 
       const result = await send(`${session.id}/${input ? 'input' : 'frame'}`, input || {});
       received = true;
       accept(session, result);
+      if (invocation && active === session && !session.closed) {
+        if (invocation.callId) {
+          const { methodCall } = nativeMethodReply(result, input);
+          if (methodCall.status === 'rejected') invocation.reject(Object.assign(new Error(methodCall.error.message), { code: methodCall.error.code }));
+          else {
+            invocation.accepted = true;
+            session.methodDelay = 250;
+            scheduleMethodResults(session, 0);
+          }
+        } else invocation.resolve(result.methodResult);
+      }
       session.pollFailures = 0;
     } catch (error) {
+      invocation?.reject(error);
       if (active === session) {
         // Retrying an input could duplicate a native action. Only idempotent
         // frame reads recover from transient browser transport failures.
@@ -173,6 +238,7 @@ export function createNativeLiveClient({ send, subscribe, coordinator, onFrame, 
         else { stop(); onError(error); }
       }
     } finally {
+      if (invocation && (!invocation.callId || !invocation.accepted)) session.methods.delete(invocation);
       session.busy = false;
       if (active === session && !session.closed) {
         if (session.queue.length) void pump(session);
@@ -201,7 +267,7 @@ export function createNativeLiveClient({ send, subscribe, coordinator, onFrame, 
   }
   async function start(payload) {
     stop();
-    const session = { id: null, closed: false, busy: true, creating: false, lease: coordinator?.reserve(), queue: [], revision: -1, eventIDs: new Set(), timer: undefined, pollFailures: 0, pointerHeld: false, animateUntil: 0 };
+    const session = { id: null, tag: payload.tag, methods: new Set(), methodSequence: 0, methodAcknowledged: new Set(), methodBusy: false, methodDelay: 250, methodFailures: 0, closed: false, busy: true, creating: false, lease: coordinator?.reserve(), queue: [], revision: -1, eventIDs: new Set(), timer: undefined, pollFailures: 0, pointerHeld: false, animateUntil: 0 };
     active = session;
     try {
       if (session.lease) await session.lease.ready;
@@ -223,6 +289,57 @@ export function createNativeLiveClient({ send, subscribe, coordinator, onFrame, 
   }
   return {
     start, stop,
+    canUpdate(tag) {
+      return supportsRetainedUpdateTag(tag) && active?.tag === tag && Boolean(active.id) && !active.closed;
+    },
+    update(properties) {
+      const session = active;
+      if (!session?.id || session.closed) return Promise.reject(Object.assign(new Error('Connect the native preview before updating its properties.'), { code: 'SESSION_CLOSED' }));
+      let command;
+      try { command = nativePropertyUpdate(session.tag, properties); }
+      catch (error) { return Promise.reject(error); }
+      if (session.queue.length >= 100) return Promise.reject(new Error('The native input queue is full. Wait for the current operation.'));
+      return new Promise((resolve, reject) => {
+        const invocation = { resolve, reject };
+        session.methods.add(invocation);
+        session.queue.push({ command, invocation });
+        session.animateUntil = now() + animationTail;
+        void pump(session);
+      });
+    },
+    resize(width, height) {
+      const session = active;
+      if (!session?.id || session.closed) return Promise.reject(Object.assign(new Error('Connect the native preview before resizing its viewport.'), { code: 'SESSION_CLOSED' }));
+      let command;
+      try { command = nativeViewportCommand(session.tag, width, height); }
+      catch (error) { return Promise.reject(error); }
+      if (session.queue.length >= 100) return Promise.reject(new Error('The native input queue is full. Wait for the current operation.'));
+      return new Promise((resolve, reject) => {
+        const invocation = { resolve, reject };
+        session.methods.add(invocation);
+        session.queue.push({ command, invocation });
+        session.animateUntil = now() + animationTail;
+        void pump(session);
+      });
+    },
+    invoke(method, args) {
+      if (!active?.id || active.closed) return Promise.reject(new Error('Connect the native preview before running a method.'));
+      let command;
+      const session = active;
+      const lifecycle = nativeLifecycleMethod(session.tag, method);
+      if (lifecycle && [...session.methods].filter(method => method.callId).length + session.methodAcknowledged.size >= 32) return Promise.reject(Object.assign(new Error('Wait for pending native methods before starting another.'), { code: 'METHOD_CALLS_BUSY' }));
+      const callId = lifecycle ? `m-${++session.methodSequence}` : undefined;
+      try { command = nativeMethodCommand(session.tag, method, args, lifecycle ? { target: 'component', callId } : undefined); }
+      catch (error) { return Promise.reject(error); }
+      if (session.queue.length >= 100) return Promise.reject(new Error('The native input queue is full. Wait for the current operation.'));
+      return new Promise((resolve, reject) => {
+        const invocation = { resolve, reject, callId, accepted: false };
+        session.methods.add(invocation);
+        session.queue.push({ command, invocation });
+        session.animateUntil = now() + animationTail;
+        void pump(session);
+      });
+    },
     input(command) {
       if (!active?.id || active.closed) return false;
       // A stuck host must not accumulate unbounded text or key commands.

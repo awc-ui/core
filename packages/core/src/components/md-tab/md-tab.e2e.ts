@@ -116,3 +116,15 @@ describe('md-tab icon density', () => {
     expect(m.family).toContain('Material Symbols Outlined');
   });
 });
+
+describe('md-tab standalone reconfiguration', () => {
+  it('keyboard activation respects disabled state and updates standalone focusability on reconnect', async () => {
+    const page = await newE2EPage(); await page.setContent('<md-tab label="Reports" icon="description" badge="3" inline-icon></md-tab>');
+    const tab = await page.find('md-tab'); const clicked = await tab.spyOnEvent('mdTabClick');
+    await tab.focus(); await page.keyboard.press('Space'); await page.waitForChanges(); expect(clicked).toHaveReceivedEventTimes(1);
+    tab.setProperty('disabled', true); await page.waitForChanges(); await page.keyboard.press('Enter'); await page.waitForChanges(); expect(clicked).toHaveReceivedEventTimes(1);
+    tab.setProperty('disabled', false); await page.waitForChanges();
+    await page.$eval('md-tab', el => { el.remove(); document.body.append(el); }); await page.waitForChanges();
+    expect((await page.find('md-tab')).getAttribute('tabindex')).toBe('0');
+  });
+});

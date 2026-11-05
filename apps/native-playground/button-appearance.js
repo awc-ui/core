@@ -25,10 +25,19 @@ export const BUTTON_APPEARANCE_FIELDS = Object.freeze([
   number('hoverOpacity', 'Hover opacity', 'state-layer', '--md-button-hover-opacity', 0, 1, 0.01),
   number('focusOpacity', 'Focus opacity', 'state-layer', '--md-button-focus-opacity', 0, 1, 0.01),
   number('pressedOpacity', 'Pressed opacity', 'state-layer', '--md-button-pressed-opacity', 0, 1, 0.01),
+  // Not a CSS custom property: `md-button::part(state-layer) { opacity }`, which outranks the per-state opacities and so
+  // fixes the layer's opacity in every state (native: AWCButtonAppearance.stateLayerOpacity).
+  Object.assign(number('stateLayerOpacity', 'Fixed state layer opacity', 'state-layer', undefined, 0, 1, 0.01), { cssPart: Object.freeze({ part: 'state-layer', property: 'opacity' }) }),
+  color('focusRingColor', 'Focus ring color', 'container', '--md-button-focus-ring-color'),
+  number('width', 'Width', 'container', '--md-button-width', 0, 2400),
+  number('minWidth', 'Minimum width', 'container', '--md-button-min-width', 0, 2400),
+  number('maxWidth', 'Maximum width', 'container', '--md-button-max-width', 0, 2400),
+  number('height', 'Height', 'container', '--md-button-height', 0, 2400),
+  number('minHeight', 'Minimum height', 'container', '--md-button-min-height', 0, 2400),
 ].map(field => Object.freeze(field)));
 
 const fieldsByName = new Map(BUTTON_APPEARANCE_FIELDS.map(field => [field.name, field]));
-const unitlessFields = new Set(['fontWeight', 'hoverOpacity', 'focusOpacity', 'pressedOpacity']);
+const unitlessFields = new Set(['fontWeight', 'hoverOpacity', 'focusOpacity', 'pressedOpacity', 'stateLayerOpacity']);
 const invalid = message => Object.assign(new Error(message), { code: 'INVALID_BUTTON_APPEARANCE' });
 
 /** Omitted fields inherit defaults. Values are never coerced from UI strings. */
@@ -71,7 +80,7 @@ export function buttonAppearanceCSS(value, inherited = {}) {
   const normalized = normalizeButtonAppearance(value);
   const defaults = normalizeButtonAppearance(inherited);
   const css = Object.fromEntries(BUTTON_APPEARANCE_FIELDS
-    .filter(field => Object.hasOwn(normalized, field.name))
+    .filter(field => field.cssProperty && Object.hasOwn(normalized, field.name))
     .map(field => [field.cssProperty, field.kind === 'color' || unitlessFields.has(field.name)
       ? String(normalized[field.name]) : `${normalized[field.name]}px`]));
   // An explicit stroke remains visible in every variant and selected state.
@@ -80,4 +89,11 @@ export function buttonAppearanceCSS(value, inherited = {}) {
     css['--md-button-outline-color'] = defaults.outlineColor ?? 'var(--md-sys-color-outline)';
   }
   return css;
+}
+
+/** `::part()` declarations for fields that are not custom properties: [{ part, property, value }]. */
+export function buttonAppearancePartCSS(value) {
+  const normalized = normalizeButtonAppearance(value);
+  return BUTTON_APPEARANCE_FIELDS.filter(field => field.cssPart && Object.hasOwn(normalized, field.name))
+    .map(field => ({ ...field.cssPart, value: unitlessFields.has(field.name) ? String(normalized[field.name]) : `${normalized[field.name]}px` }));
 }

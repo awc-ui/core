@@ -177,6 +177,11 @@
       "initializer": "false"
     },
     {
+      "name": "hasSlottedHeadline",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
       "name": "hasActions",
       "type": "inferred",
       "initializer": "false"
@@ -413,7 +418,7 @@
           },
           {
             "name": "aria-labelledby",
-            "value": "hasHeadline ? this.headlineId : undefined"
+            "value": "hasHeadline && !this.sheetAriaLabel ? this.headlineId : undefined"
           },
           {
             "name": "aria-label",
@@ -459,7 +464,7 @@
               },
               {
                 "name": "onFocus",
-                "value": "this.handleEndGuardFocus"
+                "value": "this.handleStartGuardFocus"
               }
             ],
             "children": []
@@ -470,7 +475,7 @@
           },
           {
             "kind": "expression",
-            "source": "this.showDragHandle && (\n            <div\n              class={{\n                'md-bottom-sheet__drag-handle': true,\n                'md-bottom-sheet__drag-handle--dragging': this.dragging,\n              }}\n              part=\"drag-handle\"\n              aria-hidden=\"true\"\n              onPointerDown={this.handleDragStart}\n              onPointerMove={this.handleDragMove}\n              onPointerUp={this.handleDragEnd}\n              onPointerCancel={this.handleDragEnd}\n            >\n              <div\n                class=\"md-bottom-sheet__drag-handle-indicator\"\n                part=\"drag-handle-indicator\"\n              ></div>\n            </div>\n          )"
+            "source": "this.showDragHandle && (\n            <div\n              class={{\n                'md-bottom-sheet__drag-handle': true,\n                'md-bottom-sheet__drag-handle--dragging': this.dragging,\n              }}\n              part=\"drag-handle\"\n              aria-hidden=\"true\"\n              onPointerDown={this.handleDragStart}\n              onPointerMove={this.handleDragMove}\n              onPointerUp={this.handleDragEnd}\n              onPointerCancel={this.cancelDrag}\n              onLostPointerCapture={this.cancelDrag}\n            >\n              <div\n                class=\"md-bottom-sheet__drag-handle-indicator\"\n                part=\"drag-handle-indicator\"\n              ></div>\n            </div>\n          )"
           },
           {
             "kind": "text",
@@ -478,7 +483,7 @@
           },
           {
             "kind": "expression",
-            "source": "showHeader && (\n            <div class=\"md-bottom-sheet__header\" part=\"header\">\n              {hasHeadline && (\n                <span\n                  id={this.headlineId}\n                  class=\"md-bottom-sheet__headline\"\n                  part=\"headline\"\n                >\n                  <slot name=\"headline\">{this.headline}</slot>\n                </span>\n              )}\n\n              {(this.closeable || this.hasSlottedClose) && (\n                <div class=\"md-bottom-sheet__close\" part=\"close\">\n                  <slot name=\"close\">\n                    <md-icon-button\n                      variant=\"standard\"\n                      icon=\"close\"\n                      aria-label=\"Close bottom sheet\"\n                      onClick={this.handleCloseClick}\n                    ></md-icon-button>\n                  </slot>\n                </div>\n              )}\n            </div>\n          )"
+            "source": "showHeader && (\n            <div class=\"md-bottom-sheet__header\" part=\"header\">\n              {hasHeadline && (\n                <span\n                  id={this.headlineId}\n                  class=\"md-bottom-sheet__headline\"\n                  part=\"headline\"\n                >\n                  <slot name=\"headline\" onSlotchange={this.syncSlots}>{this.headline}</slot>\n                </span>\n              )}\n\n              {(this.closeable || this.hasSlottedClose) && (\n                <div class=\"md-bottom-sheet__close\" part=\"close\">\n                  <slot name=\"close\" onSlotchange={this.syncSlots}>\n                    <md-icon-button\n                      variant=\"standard\"\n                      icon=\"close\"\n                      aria-label=\"Close bottom sheet\"\n                      onClick={this.handleCloseClick}\n                    ></md-icon-button>\n                  </slot>\n                </div>\n              )}\n            </div>\n          )"
           },
           {
             "kind": "text",
@@ -536,7 +541,7 @@
           },
           {
             "kind": "expression",
-            "source": "this.hasActions && (\n            <div class=\"md-bottom-sheet__actions\" part=\"actions\">\n              <slot name=\"actions\"></slot>\n            </div>\n          )"
+            "source": "this.hasActions && (\n            <div class=\"md-bottom-sheet__actions\" part=\"actions\">\n              <slot name=\"actions\" onSlotchange={this.syncSlots}></slot>\n            </div>\n          )"
           },
           {
             "kind": "text",
@@ -560,7 +565,7 @@
               },
               {
                 "name": "onFocus",
-                "value": "this.handleStartGuardFocus"
+                "value": "this.handleEndGuardFocus"
               }
             ],
             "children": []
@@ -579,46 +584,52 @@
   },
   "diagnostics": [
     {
-      "code": "DOM_QUERY",
+      "code": "DOM_OBSERVER",
       "severity": "warning",
-      "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 156
-    },
-    {
-      "code": "SHADOW_DOM",
-      "severity": "warning",
-      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 170
-    },
-    {
-      "code": "SLOT_INTROSPECTION",
-      "severity": "warning",
-      "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 181
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 174
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Document access requires a native adapter.",
-      "line": 194
+      "line": 248
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 205
+      "line": 252
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 328
     },
     {
       "code": "DOM_MUTATION",
       "severity": "warning",
       "message": "classList depends on browser semantics and requires a native adapter.",
-      "line": 383
+      "line": 451
+    },
+    {
+      "code": "CSS_RUNTIME",
+      "severity": "warning",
+      "message": "Computed CSS must become native theme/layout values.",
+      "line": 452
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 455
     },
     {
       "code": "CANCELABLE_EVENT",
       "severity": "warning",
       "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
-      "line": 52
+      "line": 74
     }
   ],
   "source": {
@@ -626,7 +637,7 @@
     "styleUrl": "md-bottom-sheet.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "f1c1e6ef918e9490d407ebe9ae952653cba82d7703e79d0b1843516ab649c788"
+    "sha256": "6a24877c21705c8656c8cbb83aff499fe7802e6b1b5d5af6b7d1b9e1703eb5e3"
   },
   "styles": [
     {
@@ -1775,87 +1786,157 @@
       "status": "adapter-implemented",
       "properties": [
         "open",
+        "variant",
         "headline",
         "showDragHandle",
         "closeable",
         "scrimDismissible",
         "topDivider",
-        "bottomDivider"
+        "bottomDivider",
+        "sheetAriaLabel",
+        "scrollShadow",
+        "headlineAlign",
+        "contentAlign",
+        "density"
       ],
       "events": [
         "mdOpen",
         "mdClose",
         "mdCancel"
       ],
-      "methods": [],
-      "slots": [
-        "",
-        "headline",
-        "actions"
-      ],
-      "unsupportedProperties": [
-        "variant",
-        "sheetAriaLabel",
-        "scrollShadow",
-        "headlineAlign",
-        "contentAlign",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "show",
         "close"
       ],
-      "unsupportedSlots": [
-        "close"
+      "slots": [
+        "",
+        "headline",
+        "close",
+        "actions"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "System sheet detents replace detached/standard CSS layouts."
+        "Dedicated native bottom sheet hosted by AWCModalScope: standard (modal, edge-attached) and detached variants; all thirteen properties, mdOpen/mdClose/mdCancel with null payloads, show/close through AWCBottomSheetController (the source has no whenClosed), drag-handle dismissal with the source threshold, all four slots, sixteen appearance hooks and eleven typed part targets.",
+        "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
+        "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "scrim",
+        "container",
+        "drag-handle",
+        "drag-handle-indicator",
+        "header",
+        "headline",
+        "close",
+        "divider-top",
+        "divider-bottom",
+        "content",
+        "actions"
+      ],
+      "appearance": {
+        "api": ".awcBottomSheetAppearance(AWCBottomSheetAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "contentColor",
+          "headlineColor",
+          "scrimColor",
+          "dragHandleColor",
+          "dividerColor",
+          "iconColor",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight",
+          "detachedMargin",
+          "contentPaddingInline"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "bottomDivider",
-        "closeable",
-        "headline",
         "open",
-        "scrimDismissible",
-        "showDragHandle",
-        "topDivider"
-      ],
-      "events": [
-        "mdCancel",
-        "mdClose",
-        "mdOpen"
-      ],
-      "methods": [],
-      "slots": [
-        "",
-        "actions"
-      ],
-      "unsupportedProperties": [
         "variant",
+        "headline",
+        "showDragHandle",
+        "closeable",
+        "scrimDismissible",
+        "topDivider",
+        "bottomDivider",
         "sheetAriaLabel",
         "scrollShadow",
         "headlineAlign",
         "contentAlign",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdOpen",
+        "mdClose",
+        "mdCancel"
+      ],
+      "methods": [
         "show",
         "close"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "headline",
-        "close"
+        "close",
+        "actions"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native bottom sheet hosted by AWCModalScope: standard (modal, edge-attached) and detached variants; all thirteen properties, mdOpen/mdClose/mdCancel with null payloads, show/close through AWCBottomSheetController (the source has no whenClosed), drag-handle dismissal with the source threshold, all four slots, sixteen appearance hooks and eleven typed part targets.",
+        "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
+        "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "scrim",
+        "container",
+        "drag-handle",
+        "drag-handle-indicator",
+        "header",
+        "headline",
+        "close",
+        "divider-top",
+        "divider-bottom",
+        "content",
+        "actions"
+      ],
+      "appearance": {
+        "api": "AWCBottomSheetAppearanceScope(AWCBottomSheetAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "contentColor",
+          "headlineColor",
+          "scrimColor",
+          "dragHandleColor",
+          "dividerColor",
+          "iconColor",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight",
+          "detachedMargin",
+          "contentPaddingInline"
+        ]
+      }
     }
   }
 }

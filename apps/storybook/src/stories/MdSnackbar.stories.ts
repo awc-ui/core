@@ -1,7 +1,80 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { expect, waitFor } from 'storybook/test';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { html } from 'lit';
 import { t } from '../i18n';
+
+export const TimedLifecycle: Story = {
+  render: () => html`<md-snackbar message="Saved" auto-hide-duration="500"></md-snackbar>`,
+  play: async ({ canvasElement }) => {
+    const snack = await getSnackbar(canvasElement);
+    const closed: string[] = [];
+    snack.addEventListener('mdClose', event => closed.push((event as CustomEvent).detail.reason));
+    await snack.hide();
+    expect(closed).toEqual([]);
+    await snack.show();
+    await waitFor(() => expect(snack.classList.contains('md-snackbar--open')).toBe(true));
+    const surface = snack.shadowRoot!.querySelector('[part="surface"]') as HTMLElement;
+    await waitFor(() => expect(getComputedStyle(surface).pointerEvents).not.toBe('none'));
+    await userEvent.hover(surface);
+    await new Promise(resolve => setTimeout(resolve, 650));
+    expect(snack.open).toBe(true);
+    await userEvent.unhover(surface);
+    await waitFor(() => expect(snack.open).toBe(false), { timeout: 2000 });
+    expect(closed).toEqual(['auto']);
+    await snack.show();
+    await snack.hide('action');
+    expect(closed).toEqual(['auto', 'action']);
+    await snack.hide();
+    expect(closed).toHaveLength(2);
+  },
+};
+
+export const FocusPausesDismissal: Story = {
+  render: () => html`<button id="outside">Outside snackbar</button><md-snackbar message="Saved" action="Undo" closeable auto-hide-duration="500"></md-snackbar>`,
+  play: async ({ canvasElement }) => {
+    const snack = await getSnackbar(canvasElement);
+    const closed: string[] = [];
+    snack.addEventListener('mdClose', event => closed.push((event as CustomEvent).detail.reason));
+    await snack.show();
+    await waitFor(() => expect(snack.classList.contains('md-snackbar--open')).toBe(true));
+    await waitFor(() => expect(actionBtn(snack)?.classList.contains('hydrated')).toBe(true));
+    const action = actionBtn(snack)!;
+    const close = closeBtn(snack)!;
+    await waitFor(() => expect(close.classList.contains('hydrated')).toBe(true));
+    action.focus();
+    await waitFor(() => expect(snack.shadowRoot!.activeElement).toBe(action));
+    close.focus();
+    await waitFor(() => expect(snack.shadowRoot!.activeElement).toBe(close));
+    await new Promise(resolve => setTimeout(resolve, 650));
+    expect(snack.open).toBe(true);
+    canvasElement.querySelector<HTMLButtonElement>('#outside')!.focus();
+    await waitFor(() => expect(snack.open).toBe(false), { timeout: 2000 });
+    expect(closed).toEqual(['auto']);
+    snack.autoHide = false;
+    await snack.show();
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    await waitFor(() => expect(snack.open).toBe(false));
+    expect(closed).toEqual(['auto', 'close']);
+  },
+};
+
+export const DynamicSlotsAndStacking: Story = {
+  render: () => html`<md-snackbar id="first" message="First" action="Undo" closeable auto-hide="false"></md-snackbar><md-snackbar id="second" open message="Second" auto-hide="false" politeness="assertive"></md-snackbar>`,
+  play: async ({ canvasElement }) => {
+    const first = await getSnackbar(canvasElement);
+    const second = canvasElement.querySelector('#second') as SnackEl;
+    await waitFor(() => expect(second.classList.contains('hydrated')).toBe(true));
+    await first.show();
+    await waitFor(() => expect(Number(first.style.getPropertyValue('--_stack-order'))).toBeGreaterThan(Number(second.style.getPropertyValue('--_stack-order'))));
+    expect(second.getAttribute('role')).toBe('alert');
+    first.append(document.createTextNode('Custom content'));
+    for (const slot of ['action', 'close']) { const button = document.createElement('button'); button.slot = slot; button.textContent = slot; first.append(button); }
+    await waitFor(() => expect(first.querySelectorAll('button')).toHaveLength(2));
+    first.replaceChildren();
+    await first.hide();
+    await second.hide();
+  },
+};
 
 /** Shadow-piercing helpers for play(): testing-library queries can't cross
  *  shadow roots, so interactions address the real internals directly. */

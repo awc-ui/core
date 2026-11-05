@@ -1,0 +1,54 @@
+import { normalizeCornerShape, cornerShapeCSS, parseCornerShape, cornerShapeNativeValue } from './corner-shape.js';
+import { normalizeSkeletonLength, skeletonLengthCSS, parseSkeletonLength, skeletonLengthNativeValue } from './skeleton-length.js';
+
+const color = (name, label, suffix) => ({ name, label, cssProperty: `--md-snackbar-${suffix}`, kind: 'color', hint: '#RRGGBB or #RRGGBBAA; alpha preserves the underlying surface.' });
+const width = (name, label, suffix) => ({ name, label, cssProperty: `--md-snackbar-${suffix}`, kind: 'length', hint: 'px, %, em, rem or ch; additive calc(). Relative terms use the actual overlay and font context.' });
+export const SNACKBAR_APPEARANCE_FIELDS = Object.freeze([
+  color('containerColor', 'Container color', 'container-color'),
+  color('messageColor', 'Message color', 'message-color'),
+  color('actionColor', 'Action color', 'action-color'),
+  color('closeColor', 'Close color', 'close-color'),
+  { name: 'containerShape', label: 'Container corners', cssProperty: '--md-snackbar-container-shape', kind: 'corners', hint: 'Physical CSS radius shorthand, including asymmetric, elliptical and percentage corners.' },
+  width('minWidth', 'Minimum width', 'min-width'),
+  width('maxWidth', 'Maximum width', 'max-width'),
+].map(Object.freeze));
+const fields = new Map(SNACKBAR_APPEARANCE_FIELDS.map(field => [field.name, field]));
+const invalid = message => Object.assign(new Error(message), { code: 'INVALID_SNACKBAR_APPEARANCE' });
+const adapt = (operation, value) => { try { return operation(value); } catch (error) { throw invalid(error.message); } };
+
+export function normalizeSnackbarAppearance(value) {
+  if (value === undefined) return {};
+  if (!value || typeof value !== 'object' || Array.isArray(value)
+    || ![Object.prototype, null].includes(Object.getPrototypeOf(value))
+    || Reflect.ownKeys(value).some(key => !fields.has(key))) throw invalid('Use a plain object containing only the seven Snackbar appearance fields.');
+  for (const key of Reflect.ownKeys(value)) {
+    if (!Object.hasOwn(Object.getOwnPropertyDescriptor(value, key), 'value')) throw invalid('Appearance fields must contain data values.');
+  }
+  return Object.fromEntries(Object.entries(value).map(([name, item]) => {
+    const field = fields.get(name);
+    if (field.kind === 'corners') return [name, adapt(normalizeCornerShape, item)];
+    if (field.kind === 'length') return [name, adapt(normalizeSkeletonLength, item)];
+    if (typeof item !== 'string' || !/^#[\da-f]{6}(?:[\da-f]{2})?$/i.test(item)) throw invalid(`${field.label} must be #RRGGBB or #RRGGBBAA.`);
+    return [name, item.toUpperCase()];
+  }));
+}
+export function snackbarAppearanceCSS(value) {
+  const normalized = normalizeSnackbarAppearance(value);
+  return Object.fromEntries(SNACKBAR_APPEARANCE_FIELDS.filter(field => Object.hasOwn(normalized, field.name)).map(field => {
+    const item = normalized[field.name];
+    return [field.cssProperty, field.kind === 'corners' ? cornerShapeCSS(item) : field.kind === 'length' ? skeletonLengthCSS(item) : item];
+  }));
+}
+export function parseSnackbarAppearanceInput(name, raw) {
+  const field = fields.get(name);
+  return field?.kind === 'corners' ? adapt(parseCornerShape, raw) : field?.kind === 'length' ? adapt(parseSkeletonLength, raw) : raw;
+}
+export function formatSnackbarAppearanceInput(name, value) {
+  const field = fields.get(name);
+  return value === undefined ? '' : field?.kind === 'corners' ? cornerShapeCSS(adapt(normalizeCornerShape, value))
+    : field?.kind === 'length' ? skeletonLengthCSS(adapt(normalizeSkeletonLength, value)) : String(value);
+}
+export function snackbarAppearanceNativeValue(name, value, platform) {
+  return fields.get(name)?.kind === 'corners' ? cornerShapeNativeValue(value, platform)
+    : fields.get(name)?.kind === 'length' ? skeletonLengthNativeValue(value, platform).replace(/^AWCSkeletonLength\(/, 'AWCSnackbarLength(') : undefined;
+}

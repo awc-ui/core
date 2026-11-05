@@ -300,12 +300,39 @@
   --md-icon-button-state-layer-color: var(--md-sys-color-on-secondary-container, #1E192B);
 }
 
-::slotted([slot="leading"]) {
+/* Leading / trailing sections. A non-empty section is ONE flex group: its own
+   items keep the item gap between them, and only the group (not every item) takes
+   the auto margin that pushes it to the edge — per-item auto margins spread several
+   leading or trailing items across the bar. An empty section stays `display:
+   contents` (no box, no gap). */
+:host(.md-toolbar--has-leading) slot[name="leading"],
+:host(.md-toolbar--has-trailing) slot[name="trailing"] {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--_section-gap, var(--_gap));
+}
+
+:host(.md-toolbar--has-leading) slot[name="leading"] {
   margin-inline-end: auto;
 }
 
-::slotted([slot="trailing"]) {
+:host(.md-toolbar--has-trailing) slot[name="trailing"] {
   margin-inline-start: auto;
+}
+
+/* Docked space-between distributes the bar's items with no item gap; items inside a
+   section still need the docked item gap between them. */
+:host(.md-toolbar--docked.md-toolbar--align-space-between) {
+  --_section-gap: var(--md-toolbar-gap, max(4px, calc(32px + var(--md-sys-density-scale, 0) * 2px)));
+}
+
+/* Vertical strip: sections stack on the block axis, centred on the strip like every
+   other item (an inline auto margin would push them off the axis). */
+:host(.md-toolbar--vertical) slot[name="leading"],
+:host(.md-toolbar--vertical) slot[name="trailing"] {
+  flex-direction: column;
+  margin-inline: 0;
 }
 
 /* Docked: FAB sits on the same bar — flatten to match the toolbar surface.

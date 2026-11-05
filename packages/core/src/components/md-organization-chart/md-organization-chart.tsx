@@ -76,6 +76,11 @@ export interface OrgChartToggleDetail {
  *   }];
  * </script>
  * ```
+ *
+ * @csspart branch - A role="treeitem" list item (the node and its subtree)
+ * @csspart branch-on-path - A branch on the path from a selection up to its root
+ * @csspart node - A node card
+ * @csspart node-selected - A selected node card
  */
 @Component({
   tag: 'md-organization-chart',
@@ -155,6 +160,8 @@ export class MdOrganizationChart {
   @State() private activeId = '';
 
   private nodeMap = new Map<string, OrgChartNode>();
+  /** Child id → parent id, for keeping the roving owner visible when a branch folds. */
+  private parentMap = new Map<string, string>();
 
   componentWillLoad() {
     this.syncFromNodes(this.nodes);
@@ -163,7 +170,28 @@ export class MdOrganizationChart {
 
   @Watch('nodes')
   onNodesChange(next: NodeInput) {
+    this.refocus = this.focusInTree();
     this.syncFromNodes(next);
+  }
+
+  @Watch('collapsible')
+  onCollapsibleChange() {
+    // Re-enabling folds brings seeded `expanded: false` branches back; keep
+    // the roving owner on a row that is still rendered.
+    this.refocus = this.focusInTree();
+    this.activeId = this.visibleOwner(this.activeId);
+  }
+
+  /**
+   * Set when new data or a `collapsible` change may un-render the focused row.
+   * The re-render then hands focus to the roving owner, so a keyboard user is
+   * not dropped to `<body>` — only when focus was on a row to begin with.
+   */
+  private refocus = false;
+
+  private focusInTree(): boolean {
+    const active = this.el.shadowRoot?.activeElement as HTMLElement | null | undefined;
+    return !!active && active.getAttribute('role') === 'treeitem';
   }
 
   @Watch('selectedIds')
@@ -175,13 +203,15 @@ export class MdOrganizationChart {
   private syncFromNodes(input: NodeInput) {
     const roots = this.parseNodes(input);
     this.nodeMap = new Map();
+    this.parentMap = new Map();
     const collapsed = new Set<string>();
-    const walk = (list: OrgChartNode[]) => {
+    const walk = (list: OrgChartNode[], parent?: string) => {
       for (const n of list) {
         if (!n || n.id == null) continue;
         this.nodeMap.set(n.id, n);
+        if (parent !== undefined) this.parentMap.set(n.id, parent);
         if (n.expanded === false && n.children?.length) collapsed.add(n.id);
-        if (n.children?.length) walk(n.children);
+        if (n.children?.length) walk(n.children, n.id);
       }
     };
     walk(roots);
@@ -190,7 +220,24 @@ export class MdOrganizationChart {
     if (!this.activeId || !this.nodeMap.has(this.activeId)) {
       this.activeId = roots[0]?.id ?? '';
     }
+    // …and visible: a fold in the new data may hide it, which would leave the
+    // tree with no tab stop at all. The nearest visible ancestor takes it over.
+    this.activeId = this.visibleOwner(this.activeId);
     this.roots = roots;
+  }
+
+  /**
+   * The id that is actually rendered for `id`: itself, or — when a collapsed
+   * ancestor hides it — the outermost collapsed ancestor, which is the visible
+   * row closest to it.
+   */
+  private visibleOwner(id: string): string {
+    let owner = id;
+    for (let cur = this.parentMap.get(id); cur !== undefined; cur = this.parentMap.get(cur)) {
+      const parent = this.nodeMap.get(cur);
+      if (parent && !this.isExpanded(parent)) owner = cur;
+    }
+    return owner;
   }
 
   private roots: OrgChartNode[] = [];
@@ -209,7 +256,9 @@ export class MdOrganizationChart {
   }
 
   private isExpanded(node: OrgChartNode): boolean {
-    return !this.collapsed.has(node.id);
+    // `collapsible="false"` locks every branch open, including ones the data
+    // seeds as `expanded: false` (there is no toggler to open them).
+    return !this.collapsible || !this.collapsed.has(node.id);
   }
 
   private hasChildren(node: OrgChartNode): boolean {
@@ -221,12 +270,15 @@ export class MdOrganizationChart {
   }
 
   private toggle(node: OrgChartNode) {
-    if (!this.hasChildren(node)) return;
+    if (!this.collapsible || !this.hasChildren(node)) return;
     const next = new Set(this.collapsed);
     const willExpand = next.has(node.id);
     if (willExpand) next.delete(node.id);
     else next.add(node.id);
     this.collapsed = next;
+    // Folding a branch that holds the roving owner hands the tab stop to the
+    // branch itself; otherwise the owner un-renders and Tab skips the tree.
+    if (!willExpand) this.activeId = this.visibleOwner(this.activeId);
     this.mdNodeToggle.emit({ node, expanded: willExpand });
   }
 
@@ -315,7 +367,7 @@ export class MdOrganizationChart {
         }
         break;
       case backwardKey:
-        if (this.hasChildren(node) && this.isExpanded(node)) this.toggle(node);
+        if (this.collapsible && this.hasChildren(node) && this.isExpanded(node)) this.toggle(node);
         else this.focusItem(this.parentItem(current));
         break;
       case 'Home':
@@ -347,6 +399,12 @@ export class MdOrganizationChart {
   private handleTogglerClick = (node: OrgChartNode) => (e: MouseEvent) => {
     e.stopPropagation();
     this.toggle(node);
+    // The toggler is aria-hidden and out of the tab order, but a pointer press
+    // still focuses its inner button — focus that AT cannot see, and that a
+    // fold may have taken from a row inside the branch. Hand it to the row the
+    // toggler belongs to, which also becomes the roving owner.
+    this.activeId = node.id;
+    this.itemFor(node)?.focus();
   };
 
   private renderNode(node: OrgChartNode, level: number, posInSet: number, setSize: number) {
@@ -381,6 +439,7 @@ export class MdOrganizationChart {
             'md-org-chart__node': true,
             'md-org-chart__node--selectable': selectable,
             'md-org-chart__node--selected': selected,
+            'md-org-chart__node--accent': !!node.accent,
           }}
           part={`node${selected ? ' node-selected' : ''}`}
           style={node.accent ? { '--_accent': node.accent } : undefined}
@@ -466,7 +525,10 @@ export class MdOrganizationChart {
     if (this.selection.size === 0) return path;
     const walk = (node: OrgChartNode): boolean => {
       const below = (node.children ?? []).map(walk).some(Boolean);
-      const hit = below || this.selection.has(node.id);
+      // Only a node that can actually be selected draws a trail: ids in
+      // `selectedIds` that `selection-mode="none"` or `selectable: false`
+      // exempt are not shown as selected, so they must not be traced either.
+      const hit = below || (this.isSelectable(node) && this.selection.has(node.id));
       if (hit) path.add(node.id);
       return hit;
     };
@@ -475,215 +537,192 @@ export class MdOrganizationChart {
   }
 
   /**
-   * Draw the trail's HORIZONTAL run by measuring it.
+   * Draw the trail's RUN — the stretch of bus between the parent's drop and the
+   * selected child's riser — by measuring it.
    *
    * The bus is tiled from a half per child, and the parent's drop stands at the
    * group's 50% — which lands on a half boundary only when every sibling is the
-   * same width. They are not: a node is sized by its own name. Tinting whole
+   * same size. They are not: a node is sized by its own name. Tinting whole
    * halves therefore stopped at the boundary NEAREST the drop and left a visible
    * stub of grey between the two, which is the one thing a trail must not do.
    * Rounding the other way overshoots past the junction instead; there is no
    * arithmetic over shared halves that lands on an arbitrary percentage.
    *
-   * So the run is one element, positioned from real geometry: the group's centre
-   * is where the drop is, a branch's centre is where its riser is, and the
-   * segment spans from the outermost riser to the drop. PHYSICAL `left` / `width`
-   * on purpose — both ends come from `getBoundingClientRect()`, which is already
-   * physical, so re-expressing them logically would flip the segment under
-   * `dir="rtl"` after the numbers had accounted for it.
+   * So the run is one element, positioned from real geometry. Four other shapes
+   * were tried against this connector geometry and each broke somewhere:
    *
-   * Several selections in one group collapse into a single span: the union of
-   * runs that all end at the same drop is contiguous by construction, so min to
-   * max covers them with no gaps and no second element.
+   *   - Tinting a branch's own bus halves paints its FULL width, so the colour
+   *     ran past the riser and ended mid-air over the neighbour.
+   *   - Tinting only the halves the run covers whole leaves the piece containing
+   *     the drop untinted, because the drop lands at a percentage and a border
+   *     cannot stop partway — a grey stub short of the junction.
+   *   - Tinting the half the on-path branch owns overshoots the other way when
+   *     that branch is wider than its sibling.
+   *   - A straight overlay across the whole run cannot round the elbow where the
+   *     bus turns into a node, so the grey arc showed through.
+   *
+   * One L-shaped box solves all four, because it is drawn the way the connectors
+   * themselves are: a border along the bus, a border down the riser, and a
+   * corner radius joining them.
+   *
+   * EVERY END IS READ FROM THE BORDER IT MEETS, not derived from centres. The
+   * drop and each riser are borders of pseudo-elements, and which side of a
+   * branch's centre the riser's pixels sit on depends on which pseudo draws it
+   * (the last child's riser is on `::before`, everyone else's on `::after`), on
+   * the reading direction (the borders are logical) and on the orientation (the
+   * bus is horizontal in a vertical tree and vertical in a horizontal one).
+   * Chrome also draws a 1.5px border 1px wide at DPR 1. Reading each border's
+   * used box makes the run land on exactly the pixels the grey connector
+   * occupies, so selecting a node moves nothing and doubles no line — in every
+   * orientation and direction, where the old centre arithmetic was right only
+   * for a left-to-right, top-down tree.
+   *
+   * Several selections in one group still form one contiguous run: they all
+   * end at the same drop, so the hull of the drop and the outermost riser on
+   * each side covers every one of them, and the box draws the riser at each end
+   * it reaches. Risers in between keep their own tint (a square T, as the grey
+   * bus has there).
    */
   private measureTrail() {
     const root = this.el.shadowRoot;
     if (!root) return;
     const eps = 0.5;
+    const horizontal = this.orientation === 'horizontal';
+    const rtl = getComputedStyle(this.el).direction === 'rtl';
+
+    const clearRun = (el: HTMLElement) => {
+      el.removeAttribute('data-trail-run');
+      el.removeAttribute('data-trail-elbow');
+      for (const k of ['--_trail-x', '--_trail-w', '--_trail-y', '--_trail-h']) el.style.removeProperty(k);
+    };
+
+    /*
+     * The used border of a pseudo-element on the bus axis: the interval its
+     * pixels occupy, from the owner's box plus the pseudo's resolved offsets
+     * (an absolutely positioned pseudo reports used px for every inset).
+     * `sides` are the borders that can be the line there; the one with a width
+     * is it.
+     */
+    const line = (owner: Element, pseudo: string, sides: Array<'top' | 'right' | 'bottom' | 'left'>) => {
+      const r = owner.getBoundingClientRect();
+      const c = getComputedStyle(owner, pseudo);
+      const w = { top: parseFloat(c.borderTopWidth), right: parseFloat(c.borderRightWidth), bottom: parseFloat(c.borderBottomWidth), left: parseFloat(c.borderLeftWidth) };
+      const content = c.boxSizing !== 'border-box';
+      const x0 = r.left + parseFloat(c.left);
+      const y0 = r.top + parseFloat(c.top);
+      const x1 = x0 + parseFloat(c.width) + (content ? w.left + w.right : 0);
+      const y1 = y0 + parseFloat(c.height) + (content ? w.top + w.bottom : 0);
+      const side = sides.find((k) => w[k] > 0);
+      if (!side) return null;
+      const at: Record<string, [number, number]> = {
+        left: [x0, x0 + w.left], right: [x1 - w.right, x1], top: [y0, y0 + w.top], bottom: [y1 - w.bottom, y1],
+      };
+      return at[side];
+    };
+    const across: Array<'top' | 'right' | 'bottom' | 'left'> = horizontal ? ['top', 'bottom'] : ['left', 'right'];
 
     for (const group of Array.from(root.querySelectorAll('.md-org-chart__group'))) {
       const el = group as HTMLElement;
       const branches = Array.from(group.children).filter((li) =>
         li.classList.contains('md-org-chart__branch'),
-      );
+      ) as HTMLElement[];
 
-      /*
-       * BOTH marks are cleared for EVERY branch before anything is set, not just
-       * for the ones currently on the trail.
-       *
-       * Each one makes part of a branch's own connector invisible so the trail
-       * can draw it instead — `-drawn` its riser, `-hide` its bus half. Clearing
-       * them only for `risers` leaves them behind the moment the selection moves
-       * off a branch or is dropped entirely, and the branch they were left on
-       * goes on hiding a piece of the GREY connector: a riser that vanishes
-       * under an unselected node, or a gap in the middle of the bus.
-       */
-      // Nothing of the branches' own connectors is hidden any more — see the
-      // note on the run below. These are cleared for trees rendered before.
+      // Cleared for trees rendered by an earlier version that hid branch borders.
       for (const li of branches) {
         li.removeAttribute('data-trail-drawn');
         li.removeAttribute('data-trail-hide');
       }
 
-      const risers = branches.filter((li) =>
-        li.classList.contains('md-org-chart__branch--on-path'),
-      );
-      if (risers.length === 0) {
+      const onPath = branches.filter((li) => li.classList.contains('md-org-chart__branch--on-path'));
+      if (onPath.length === 0) {
         // No child of THIS group is on the trail, so its drop stays grey — the
         // trail climbs towards the root and must not run on down into the
         // selection's own children, which are not on it.
         el.removeAttribute('data-trail');
-        el.removeAttribute('data-trail-run');
-        el.style.removeProperty('--_trail-x');
-        el.style.removeProperty('--_trail-w');
+        clearRun(el);
         continue;
       }
 
       // The drop is tinted whenever something below is on the trail, INCLUDING
       // for an only child — which has no bus and no riser at all (both pseudos
-      // are `display: none`), so the drop is the entire connection and skipping
-      // this left the one segment that exists grey.
+      // are `display: none`), so the drop is the entire connection.
       el.setAttribute('data-trail', '');
-      if (branches.length < 2) {
-        el.removeAttribute('data-trail-run');
-        el.style.removeProperty('--_trail-x');
-        el.style.removeProperty('--_trail-w');
+      const drop = branches.length < 2 ? null : line(el, '::before', horizontal ? ['top'] : ['left', 'right']);
+      if (!drop) {
+        clearRun(el);
         continue;
       }
 
-      const box = group.getBoundingClientRect();
-      // The drop stands at the group's 50%; each riser at its own branch's 50%.
-      const dropX = box.left + box.width / 2;
+      const last = branches[branches.length - 1];
+      const riserOf = (li: HTMLElement) => line(li, li === last ? '::before' : '::after', across);
+      const dropMid = (drop[0] + drop[1]) / 2;
+      const mid = (at: [number, number]) => (at[0] + at[1]) / 2;
+      const risers = onPath
+        .map((li) => ({ li, at: riserOf(li) }))
+        .filter((r): r is { li: HTMLElement; at: [number, number] } => !!r.at);
+      const before = risers.filter((r) => mid(r.at) < dropMid - eps);
+      const after = risers.filter((r) => mid(r.at) > dropMid + eps);
+      if (before.length === 0 && after.length === 0) {
+        // The riser stands directly under the drop — no run exists, and the
+        // drop's and the branch's own tints are the whole trail at this level.
+        clearRun(el);
+        continue;
+      }
+
+      const from = Math.min(drop[0], ...before.map((r) => r.at[0]));
+      const to = Math.max(drop[1], ...after.map((r) => r.at[1]));
 
       /*
-       * THE RUN IS ONE L-SHAPED BOX, drawn from measurement.
-       *
-       * Four other shapes were tried against this connector geometry and each
-       * broke somewhere, so the reasoning is worth keeping:
-       *
-       *   - Tinting a branch's own bus halves paints its FULL width, so the
-       *     colour ran past the riser and ended mid-air over the neighbour.
-       *   - Tinting only the halves the run covers whole leaves the piece
-       *     containing the drop untinted, because the drop lands at a percentage
-       *     and a border cannot stop partway — a grey stub short of the junction.
-       *   - Tinting the half the on-path branch owns overshoots the other way
-       *     when that branch is wider than its sibling: on a two-child group the
-       *     group's centre falls INSIDE the selected branch's own half, and the
-       *     border ran 9px past the drop with nothing able to clip it.
-       *   - A straight overlay across the whole run cannot round the elbow where
-       *     the bus turns down into a node, so the grey arc showed through.
-       *
-       * One box solves all four, because it is drawn the way the connectors
-       * themselves are: a top border for the horizontal, a side border for the
-       * riser, and a corner radius joining them. It spans exactly riser to drop,
-       * so it cannot overshoot; it owns its own corner, so nothing shows through;
-       * and being one element there are no borders meeting at a miter.
+       * Physical sides and corners. The bus border is the box's top in a
+       * vertical tree, and its inline-start side in a horizontal one; a riser
+       * border is drawn at each end the run reaches. The grey connector rounds
+       * only at the outermost branch on each side, so the box does too.
        */
-      const centres = risers.map((li) => {
-        const r = li.getBoundingClientRect();
-        return r.left + r.width / 2;
-      });
-      // Several selections in one group still form a contiguous stretch: they
-      // all end at the same drop, so min..max covers every one of them.
-      let to = Math.max(dropX, ...centres);
-      let from = Math.min(dropX, ...centres);
+      const [lo, hi] = horizontal ? ['top', 'bottom'] : ['left', 'right'];
+      const bus = horizontal ? (rtl ? 'right' : 'left') : 'top';
+      const sides = [bus];
+      const corners: string[] = [];
+      const outermost = (side: 'lo' | 'hi') => {
+        if (horizontal) return side === 'hi' ? last : branches[0];
+        const xs = branches.map((li) => li.getBoundingClientRect().left);
+        return branches[xs.indexOf(side === 'hi' ? Math.max(...xs) : Math.min(...xs))];
+      };
+      const corner = (end: string) => (horizontal ? `${end}-${bus}` : `${bus}-${end}`);
+      if (before.length) {
+        sides.push(lo);
+        if (before.some((r) => r.li === outermost('lo'))) corners.push(corner(lo));
+      }
+      if (after.length) {
+        sides.push(hi);
+        if (after.some((r) => r.li === outermost('hi'))) corners.push(corner(hi));
+      }
 
-      const dirEnd = Math.max(...centres) > dropX;
-
-      /*
-       * Carry the run one connector width PAST the drop when it arrives from the
-       * other side.
-       *
-       * The drop's own border occupies `[dropX, dropX + cw]`. A run travelling
-       * rightward starts at `dropX` and already contains that square; a run
-       * travelling leftward stops at `dropX` and leaves it to neither, which
-       * notches the outside of the corner. Only the second case needs the lap —
-       * an earlier symmetric one pushed a visible stub past the junction on the
-       * other side.
-       */
-      const cw = parseFloat(getComputedStyle(el).getPropertyValue('--_connector-width')) || 1.5;
-      /*
-       * Extend to cover the RISER'S OWN BORDER, not just reach its centre.
-       *
-       * A branch draws its riser as a border on the inner edge of its pseudo,
-       * occupying `[centre, centre + cw]`, while this box reaching `centre`
-       * covers `[centre - cw, centre]` — adjacent, never overlapping. That left
-       * the branch's own border visible beside this one, and once it was made
-       * transparent to stop that, the corner it shares with the grey bus half
-       * mitered diagonally and cut a notch out of the grey instead.
-       *
-       * Landing the box's border exactly where the branch's own sits solves both:
-       * it covers the transparent corner, and the trail's vertical ends up on the
-       * same pixels an unselected riser would occupy, so selecting a node moves
-       * nothing.
-       */
-      /*
-       * LAND ON THE RISER'S ACTUAL PIXELS — which side of centre it occupies
-       * depends on which pseudo-element draws it.
-       *
-       *   ::after (first or middle child)  inset-inline-start: 50%
-       *                                    border-inline-start -> [centre, centre+cw]
-       *   ::before (last child)            spans [left, centre]
-       *                                    border-inline-end   -> [centre-cw, centre]
-       *
-       * The box covers the grey by overlapping it exactly, so being one width
-       * out does not hide anything — it paints a second line beside it, and at
-       * the elbow a second curve beside the first. Assuming `centre + cw` for
-       * every branch is right for the common case and wrong for the last child,
-       * which is why only that one doubled.
-       */
-      const landingBranch = dirEnd ? risers[risers.length - 1] : risers[0];
-      const landingIsLast = landingBranch === branches[branches.length - 1];
-      if (dirEnd) to += landingIsLast ? 0 : cw;
-      else from -= landingIsLast ? cw : 0;
-      // And past the drop when the run arrives from the far side — that corner
-      // belongs to neither border. A run starting at the drop already covers it.
-      if (!dirEnd) to += cw;
-
-      if (to - from > eps) {
-        el.setAttribute('data-trail-run', '');
-        /*
-         * THE CORNER IS ROUNDED ONLY WHERE THE REAL CONNECTOR ROUNDS.
-         *
-         * The bus ENDS at the outermost child, so that is the only place it
-         * curves down — `:first-child::after` and `:last-child::before` carry the
-         * radius, and every child in between meets the bus at a square T. This
-         * box has to match: rounded at a middle child, its curve pulls away from
-         * the straight grey bus underneath and leaves the grey showing through
-         * the corner, which is precisely the artefact a square junction has none
-         * of.
-         */
-        const outer = Math.max(...centres) > dropX ? branches[branches.length - 1] : branches[0];
-        const roundsHere = risers.includes(outer);
-        // set/remove rather than toggleAttribute: Stencil's mock-doc, which the
-        // spec suite renders in, does not implement it.
-        if (roundsHere) el.setAttribute('data-trail-elbow', '');
-        else el.removeAttribute('data-trail-elbow');
-
-        /*
-         * The box draws ONE riser — the far end it turns down into — so that
-         * branch must not tint its own as well, or the two borders sit side by
-         * side and the line reads twice as thick. Any OTHER selection in the
-         * same group is not reached by the box and keeps its own.
-         */
-        // Which end turns down into a node. The other end is the drop, whose own
-        // vertical already closes that corner.
-        el.setAttribute('data-trail-dir', dirEnd ? 'end' : 'start');
-        el.style.setProperty('--_trail-x', `${from - box.left}px`);
-        el.style.setProperty('--_trail-w', `${to - from}px`);
-      } else {
-        // The riser stands directly under the drop — no horizontal run exists,
-        // and the branch's own riser tint is the whole trail at this level.
-        el.removeAttribute('data-trail-run');
-        el.removeAttribute('data-trail-dir');
-        el.removeAttribute('data-trail-elbow');
+      const box = el.getBoundingClientRect();
+      el.setAttribute('data-trail-run', sides.join(' '));
+      if (corners.length) el.setAttribute('data-trail-elbow', corners.join(' '));
+      else el.removeAttribute('data-trail-elbow');
+      if (horizontal) {
+        el.style.setProperty('--_trail-y', `${from - box.top}px`);
+        el.style.setProperty('--_trail-h', `${to - from}px`);
         el.style.removeProperty('--_trail-x');
         el.style.removeProperty('--_trail-w');
+      } else {
+        el.style.setProperty('--_trail-x', `${from - box.left}px`);
+        el.style.setProperty('--_trail-w', `${to - from}px`);
+        el.style.removeProperty('--_trail-y');
+        el.style.removeProperty('--_trail-h');
       }
     }
   }
 
   componentDidRender() {
+    if (this.refocus) {
+      this.refocus = false;
+      const owner = this.el.shadowRoot?.querySelector(
+        `li[role="treeitem"][data-id="${cssEscape(this.activeId)}"]`,
+      ) as HTMLElement | null | undefined;
+      if (owner && this.el.shadowRoot?.activeElement !== owner) owner.focus();
+    }
     this.measureTrail();
   }
 

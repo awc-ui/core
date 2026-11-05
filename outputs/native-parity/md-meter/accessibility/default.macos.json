@@ -1,0 +1,226 @@
+{
+ "tag": "md-meter",
+ "case": "default",
+ "request": {
+  "tag": "md-meter",
+  "properties": {
+   "value": 72,
+   "label": "Storage used",
+   "showValue": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "description": "Storage used",
+         "focused": false,
+         "frame": [
+          170,
+          36,
+          300,
+          28
+         ],
+         "identifier": "example-md-meter",
+         "maxValue": 100,
+         "minValue": 0,
+         "role": "AXLevelIndicator",
+         "roleDescription": "level indicator",
+         "value": 72,
+         "valueDescription": "72%"
+        }
+       ],
+       "enabled": true,
+       "frame": [
+        170,
+        36,
+        300,
+        28
+       ],
+       "identifier": "example-md-meter",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      100
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    100
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-meter",
+  "properties": {
+   "color": "primary",
+   "density": 0,
+   "label": "Storage used",
+   "locale": "",
+   "max": 100,
+   "min": 0,
+   "showLabel": true,
+   "showValue": true,
+   "size": 48,
+   "thickness": 4,
+   "value": 72,
+   "valueText": "",
+   "variant": "linear"
+  },
+  "tag": "md-meter"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 28,
+     "width": 300,
+     "x": 170,
+     "y": 36
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI read-only meter",
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "name": "md-meter"
+   },
+   {
+    "bounds": {
+     "height": 4,
+     "width": 216,
+     "x": 170,
+     "y": 60
+    },
+    "id": "component.indicator",
+    "name": "md-meter ::part(indicator)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 20,
+     "width": 84.846679688,
+     "x": 170,
+     "y": 36
+    },
+    "id": "component.label",
+    "metrics": {
+     "direction": "ltr",
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 20,
+      "size": 14,
+      "spacing": 0.25,
+      "unit": "pt",
+      "weight": 400
+     }
+    },
+    "name": "md-meter ::part(label)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 4,
+     "width": 300,
+     "x": 170,
+     "y": 60
+    },
+    "id": "component.track",
+    "name": "md-meter ::part(track)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 16,
+     "width": 23.9765625,
+     "x": 446.0234375,
+     "y": 38.68359375
+    },
+    "id": "component.value",
+    "metrics": {
+     "direction": "ltr",
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 16,
+      "size": 12,
+      "spacing": 0.5,
+      "unit": "pt",
+      "weight": 500
+     }
+    },
+    "name": "md-meter ::part(value)",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

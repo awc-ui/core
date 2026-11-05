@@ -1,0 +1,153 @@
+{
+ "tag": "md-ripple",
+ "case": "default",
+ "request": {
+  "tag": "md-ripple",
+  "properties": {},
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "actions": [
+        "AXPress"
+       ],
+       "description": "Tap to see the ripple",
+       "enabled": true,
+       "expanded": false,
+       "focused": false,
+       "frame": [
+        231.5,
+        32,
+        177,
+        52
+       ],
+       "identifier": "example-md-ripple-surface",
+       "invalid": "false",
+       "required": false,
+       "role": "AXButton",
+       "roleDescription": "button",
+       "selected": false
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      116
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    116
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "782E0A85-3F4B-4CAB-8FFF-1503DD20B75E",
+    "properties": {
+     "text": "Tap to see native feedback"
+    },
+    "tag": "#text"
+   }
+  ],
+  "id": "example-md-ripple",
+  "properties": {
+   "disabled": false
+  },
+  "tag": "md-ripple"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Tap to see the ripple",
+    "frame": [
+     231.5,
+     32,
+     177,
+     52
+    ],
+    "identifier": "example-md-ripple-surface",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Tap to see the ripple",
+    "frame": [
+     231.5,
+     32,
+     177,
+     52
+    ],
+    "identifier": "example-md-ripple-surface",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 52,
+     "width": 177,
+     "x": 231.5,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "containerOpacity": 1,
+     "cornerRadius": 16,
+     "hidden": false,
+     "renderTime": 1031541322.0747919,
+     "waves": 0
+    },
+    "name": "md-ripple"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

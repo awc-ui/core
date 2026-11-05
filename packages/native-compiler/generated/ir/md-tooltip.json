@@ -378,43 +378,43 @@
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 142
+      "line": 143
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 145
+      "line": 146
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 164
+      "line": 168
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Document access requires a native adapter.",
-      "line": 401
+      "line": 423
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 439
+      "line": 461
     },
     {
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 486
+      "line": 509
     },
     {
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 695
+      "line": 517
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -428,7 +428,7 @@
     "styleUrl": "md-tooltip.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "658aaf0db3bb3fea386502560ebb04eb006e84f31dbb339d5f2f881cbb98b2f3"
+    "sha256": "3fe0faaad19fb96ed0e2dfd83399dd0e3e2f1ea5dc8a51890d3c77950d0c9d10"
   },
   "styles": [
     {
@@ -892,17 +892,6 @@
       ]
     },
     {
-      "selector": ":host-context([dir=\"rtl\"]) .md-tooltip__actions",
-      "context": null,
-      "declarations": [
-        {
-          "property": "justify-content",
-          "value": "flex-start",
-          "important": false
-        }
-      ]
-    },
-    {
       "selector": ".md-tooltip__popup",
       "context": "@media (forced-colors: active)",
       "declarations": [
@@ -1013,81 +1002,131 @@
         "text",
         "subhead",
         "variant",
+        "position",
+        "autoPosition",
+        "offset",
+        "crossOffset",
         "open",
-        "disabled"
+        "showDelay",
+        "hideDelay",
+        "disabled",
+        "density"
       ],
       "events": [
         "mdOpen",
         "mdClose"
       ],
-      "methods": [],
+      "methods": [
+        "show",
+        "hide"
+      ],
       "slots": [
         "",
         "subhead",
         "content",
         "actions"
       ],
-      "unsupportedProperties": [
-        "position",
-        "autoPosition",
-        "offset",
-        "crossOffset",
-        "showDelay",
-        "hideDelay",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "show",
-        "hide"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Tap toggles native details surface; hover delays and viewport anchor positioning not implemented."
+        "Dedicated native anchor and overlay scope retain all twelve properties, four content outlets, two lifecycle methods, eleven appearance hooks and five typed part targets.",
+        "Source mdOpen/mdClose events have null detail and are cancelable, non-bubbling and non-composed: same-tree capture and target listeners run; cancellation does not undo committed visibility.",
+        "Public typed slots, part styles and measured overlay coordinates replace DOM selectors, shadow slots and computed CSS. Arbitrary native content keeps its own handlers and explicitly authored layout.",
+        "The native overlay scope must cover the intended viewport. Hover/focus delays, grace periods, RTL placement, flipping, clamping, Escape ownership and retained updates are implemented.",
+        "macOS SwiftUI/AppKit renderer and live-host verification is recorded; iOS SDK, simulator/device and VoiceOver execution remain unavailable and unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "popup",
+        "subhead",
+        "supporting-text",
+        "actions",
+        "text"
+      ],
+      "appearance": {
+        "api": ".awcTooltipAppearance(AWCTooltipAppearance)",
+        "fields": [
+          "plainContainerColor",
+          "plainTextColor",
+          "richContainerColor",
+          "richSubheadColor",
+          "richTextColor",
+          "richActionColor",
+          "plainShape",
+          "plainMaxWidth",
+          "richShape",
+          "richMinWidth",
+          "richMaxWidth"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "disabled",
-        "open",
+        "text",
         "subhead",
-        "text"
-      ],
-      "events": [
-        "mdClose",
-        "mdOpen"
-      ],
-      "methods": [],
-      "slots": [
-        "",
-        "actions"
-      ],
-      "unsupportedProperties": [
         "variant",
         "position",
         "autoPosition",
         "offset",
         "crossOffset",
+        "open",
         "showDelay",
         "hideDelay",
+        "disabled",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdOpen",
+        "mdClose"
+      ],
+      "methods": [
         "show",
         "hide"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "subhead",
-        "content"
+        "content",
+        "actions"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native visible tooltip surface toggles on tap; platform hover/delay/anchor positioning is not ported."
+        "Dedicated native anchor and overlay scope retain all twelve properties, four content outlets, two lifecycle methods, eleven appearance hooks and five typed part targets.",
+        "Source mdOpen/mdClose events have null detail and are cancelable, non-bubbling and non-composed: same-tree capture and target listeners run; cancellation does not undo committed visibility.",
+        "Public typed slots, part styles and measured overlay coordinates replace DOM selectors, shadow slots and computed CSS. Arbitrary native content keeps its own handlers and explicitly authored layout.",
+        "The native overlay scope must cover the intended viewport. Hover/focus delays, grace periods, RTL placement, flipping, clamping, Escape ownership and retained updates are implemented.",
+        "Android Compose rendering, authored callbacks, focus/hover, event boundary and retained-host checks are recorded; TalkBack delivery and OS accessibility traversal remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "popup",
+        "subhead",
+        "supporting-text",
+        "actions",
+        "text"
+      ],
+      "appearance": {
+        "api": "AWCTooltipAppearanceScope(AWCTooltipAppearance)",
+        "fields": [
+          "plainContainerColor",
+          "plainTextColor",
+          "richContainerColor",
+          "richSubheadColor",
+          "richTextColor",
+          "richActionColor",
+          "plainShape",
+          "plainMaxWidth",
+          "richShape",
+          "richMinWidth",
+          "richMaxWidth"
+        ]
+      }
     }
   }
 }

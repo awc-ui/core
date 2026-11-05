@@ -1,0 +1,228 @@
+{
+ "tag": "md-divider",
+ "at": "2026-10-29T11:11:40.691Z",
+ "rows": [
+  {
+   "case": "horizontal",
+   "web": {
+    "elements": [
+     "separator:"
+    ],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 0,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "Separator"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "macos exposes text Web does not: \"Separator\"",
+       "status": "expected",
+       "reason": "Web role=separator (aria-orientation). SwiftUI has no separator role: the divider is a labelled element \"Separator\" with its orientation as value, which VoiceOver reads like Chrome's separator."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "Separator Horizontal"
+     ],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "ios exposes text Web does not: \"Separator Horizontal\"",
+       "status": "expected",
+       "reason": "Web role=separator. UIKit has no separator trait: label \"Separator\" + value orientation (VoiceOver: \"Separator, Horizontal\")."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "Separator"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Separator\"",
+       "status": "expected",
+       "reason": "Web role=separator. Android has no separator role: the divider is described \"Separator\", as on macOS and iOS."
+      }
+     ],
+     "contrastMeasured": 0,
+     "atf": {
+      "elements": 9,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "vertical",
+   "web": {
+    "elements": [
+     "separator:"
+    ],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 0,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "Separator"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "macos exposes text Web does not: \"Separator\"",
+       "status": "expected",
+       "reason": "Web role=separator (aria-orientation). SwiftUI has no separator role: the divider is a labelled element \"Separator\" with its orientation as value, which VoiceOver reads like Chrome's separator."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "Separator Vertical"
+     ],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "ios exposes text Web does not: \"Separator Vertical\"",
+       "status": "expected",
+       "reason": "Web role=separator. UIKit has no separator trait: label \"Separator\" + value orientation (VoiceOver: \"Separator, Horizontal\")."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "Separator"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Separator\"",
+       "status": "expected",
+       "reason": "Web role=separator. Android has no separator role: the divider is described \"Separator\", as on macOS and iOS."
+      }
+     ],
+     "contrastMeasured": 0,
+     "atf": {
+      "elements": 9,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -715,7 +715,13 @@
     "md-icon-button",
     "md-ripple"
   ],
-  "dataTypes": [],
+  "dataTypes": [
+    {
+      "name": "MdListItemType",
+      "kind": "type",
+      "body": "'text' | 'button' | 'link'"
+    }
+  ],
   "callableProps": [],
   "eventTypes": [
     {

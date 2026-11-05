@@ -204,6 +204,14 @@ export class MdChip {
     return this.label || this.el.textContent?.trim() || '';
   }
 
+  componentWillLoad() {
+    // Content slotted before the first render fires its slotchange before the listeners in
+    // componentDidLoad exist: read the initial assignment from the light DOM.
+    const slotted = (name: string) => Array.from(this.el.children).some(child => child.getAttribute('slot') === name);
+    this.hasSlottedLeadingIcon = slotted('leading-icon');
+    this.hasSlottedTrailingIcon = slotted('trailing-icon');
+  }
+
   componentDidLoad() {
     const shadow = this.el.shadowRoot;
     if (!shadow) return;
@@ -307,6 +315,9 @@ export class MdChip {
           [`md-chip--appearance-${this.effectiveAppearance}`]: true,
           'md-chip--elevated': this.effectiveAppearance === 'elevated',
           [`md-chip--color-${this.color}`]: !!this.color,
+          // Role rules key on this class, not the reflected attribute: a value that is not a
+          // role name (e.g. a hex) is rejected by `colorVars` and must render the neutral chip.
+          'md-chip--colored': !!this.colorVars,
           'md-chip--disabled': isEffectivelyDisabled,
           'md-chip--with-leading-icon': hasLeadingIcon || showCheckmark,
           'md-chip--with-trailing-icon': hasTrailingIcon || showRemove,

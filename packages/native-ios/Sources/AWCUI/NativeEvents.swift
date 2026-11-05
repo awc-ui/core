@@ -3,9 +3,11 @@ import Foundation
 /// Describes how our native action API was entered, not a browser or raw OS event.
 public struct AWCActivationMetadata: Equatable, Sendable {
     public enum Kind: String, Sendable { case nativeControl, programmatic, implicitSubmit }
+    public enum Source: String, Sendable { case pointer, keyboard, accessibility, unknown }
     public let id: UUID
     public let kind: Kind
-    public init(kind: Kind, id: UUID = UUID()) { self.id = id; self.kind = kind }
+    public let source: Source
+    public init(kind: Kind, id: UUID = UUID(), source: Source = .unknown) { self.id = id; self.kind = kind; self.source = source }
 }
 public enum AWCEventPhase: String, Sendable { case none, capture, target, bubble }
 public struct AWCEventListener {

@@ -41,7 +41,9 @@
  * equivalent (flex → block, inline-flex → inline-block): the floor only needs
  * the BOX, and the component's real display arrives with its styles.
  *
- * Consumption is OPT-IN, one import next to the token sheet:
+ * Additional consumption is OPT-IN, one import next to the token sheet.
+ * App-bar, breadcrumb and tab startup layout now lives in the core token sheet
+ * via packages/core/src/pre-hydration.css; do not duplicate those rules here.
  *
  *   import '@awc-ui/core/css/tokens.css';
  *   import '@awc-ui/core/css/pre-upgrade.css';
@@ -190,17 +192,6 @@ const CURATED = [
     decls: [
       'display: inline-block',
       'min-block-size: var(--md-toolbar-container-height, max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px)))',
-    ],
-  },
-  {
-    tag: 'md-app-bar',
-    why: 'host height is the sum of inner rows; --_row-height lives on .md-app-bar__row',
-    sourceFile: 'md-app-bar/md-app-bar.css',
-    sourceMustContain:
-      '--_row-height: var(--md-app-bar-row-height, max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px)))',
-    decls: [
-      'display: block',
-      'min-block-size: var(--md-app-bar-row-height, max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px)))',
     ],
   },
   {

@@ -10,7 +10,7 @@ android {
     sourceSets {
         getByName("main") { manifest.srcFile("../src/main/AndroidManifest.xml"); java.srcDir("../src/main/java") }
         getByName("debug") { manifest.srcFile("../src/debug/AndroidManifest.xml"); java.srcDir("../src/debug/java") }
-        getByName("androidTest") { java.srcDir("../src/androidTest/java") }
+        getByName("androidTest") { java.srcDir("../src/androidTest/java"); assets.srcDir("../src/androidTest/assets") }
     }
     buildFeatures { compose = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
@@ -26,5 +26,6 @@ dependencies {
     androidTestImplementation(platform("androidx.compose:compose-bom:2025.10.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:4.1.1")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

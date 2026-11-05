@@ -100,7 +100,13 @@
   "dependencies": [
     "md-navigation-tab"
   ],
-  "dataTypes": [],
+  "dataTypes": [
+    {
+      "name": "MdNavigationBarLabelBehavior",
+      "kind": "type",
+      "body": "'always' | 'selected' | 'none'"
+    }
+  ],
   "callableProps": [],
   "eventTypes": [],
   "eventPayloads": [

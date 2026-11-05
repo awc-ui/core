@@ -555,6 +555,18 @@ describe('md-snackbar', () => {
   // ─── Slots ────────────────────────────────────────────────
 
   describe('slots', () => {
+    it('renders authored named slots without requiring fallback properties', async () => {
+      const page = await create(`<md-snackbar message="Hello">
+        <button slot="action">Retry</button><button slot="close">Dismiss</button>
+      </md-snackbar>`);
+      expect(page.root?.shadowRoot?.querySelector('slot[name="action"]')).toBeTruthy();
+      expect(page.root?.shadowRoot?.querySelector('slot[name="close"]')).toBeTruthy();
+      expect(page.root).toHaveClass('md-snackbar--with-action');
+      expect(page.root).toHaveClass('md-snackbar--with-close');
+      expect(page.root?.shadowRoot?.querySelector('md-button')).toBeNull();
+      expect(page.root?.shadowRoot?.querySelector('md-icon-button')).toBeNull();
+    });
+
     it('renders default slot for supporting text', async () => {
       const page = await create('<md-snackbar>Custom message</md-snackbar>');
       const slot = page.root?.shadowRoot?.querySelector('.md-snackbar__message slot:not([name])');
@@ -572,6 +584,123 @@ describe('md-snackbar', () => {
       const slot = page.root?.shadowRoot?.querySelector('slot[name="close"]');
       expect(slot).toBeTruthy();
     });
+  });
+
+  describe('reconnection', () => {
+    it('does not carry a delayed close into a new opening', async () => {
+      const page = await create('<md-snackbar open auto-hide="false" closeable></md-snackbar>');
+      const closed = jest.fn();
+      page.root!.addEventListener('mdClose', closed);
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      await page.rootInstance.hide();
+      await page.waitForChanges();
+      await page.rootInstance.show();
+      await page.waitForChanges();
+      await delay(180);
+      await page.waitForChanges();
+      expect(page.rootInstance.open).toBe(true);
+      expect(closed).toHaveBeenCalledTimes(1);
+    });
+
+    it('cancels repeated close requests when detached during ripple feedback', async () => {
+      const page = await create('<md-snackbar open auto-hide="false" closeable></md-snackbar>');
+      const host = page.root!, closed = jest.fn();
+      host.addEventListener('mdClose', closed);
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      host.remove();
+      await page.waitForChanges();
+      await delay(180);
+      await page.waitForChanges();
+      expect(page.rootInstance.open).toBe(true);
+      expect(closed).not.toHaveBeenCalled();
+    });
+
+    it('defers an open request made while detached until the snackbar is connected', async () => {
+      const page = await create('<md-snackbar message="Hello" auto-hide-duration="60"></md-snackbar>');
+      const host = page.root!, opened = jest.fn(), closed = jest.fn();
+      host.addEventListener('mdOpen', opened);
+      host.addEventListener('mdClose', closed);
+      host.remove();
+      await page.waitForChanges();
+      await page.rootInstance.show();
+      await page.waitForChanges();
+      await delay(90);
+      expect(page.rootInstance.open).toBe(true);
+      expect(opened).not.toHaveBeenCalled();
+      expect(closed).not.toHaveBeenCalled();
+      page.body.appendChild(host);
+      await page.waitForChanges();
+      expect(opened).toHaveBeenCalledTimes(1);
+      await delay(90);
+      await page.waitForChanges();
+      expect(page.rootInstance.open).toBe(false);
+      expect(closed).toHaveBeenCalledTimes(1);
+    });
+
+    it('restores auto-hide without emitting a second open event', async () => {
+      const page = await create('<md-snackbar message="Hello" auto-hide-duration="60"></md-snackbar>');
+      const host = page.root!;
+      const opened = jest.fn(), closed = jest.fn();
+      host.addEventListener('mdOpen', opened);
+      host.addEventListener('mdClose', closed);
+      page.rootInstance.open = true;
+      await page.waitForChanges();
+      host.remove();
+      await page.waitForChanges();
+      await delay(90);
+      expect(page.rootInstance.open).toBe(true);
+      expect(closed).not.toHaveBeenCalled();
+      page.body.appendChild(host);
+      await page.waitForChanges();
+      await delay(90);
+      await page.waitForChanges();
+      expect(page.rootInstance.open).toBe(false);
+      expect(opened).toHaveBeenCalledTimes(1);
+      expect(closed).toHaveBeenCalledTimes(1);
+      expect(closed.mock.calls[0][0].detail).toEqual({ reason: 'auto' });
+    });
+
+    it('restores Escape after reconnecting an open closeable snackbar', async () => {
+      const page = await create('<md-snackbar open auto-hide="false" closeable></md-snackbar>');
+      const host = page.root!, closed = jest.fn();
+      host.addEventListener('mdClose', closed);
+      host.remove();
+      await page.waitForChanges();
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      await delay(180);
+      expect(page.rootInstance.open).toBe(true);
+      page.body.appendChild(host);
+      await page.waitForChanges();
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      await delay(180);
+      await page.waitForChanges();
+      expect(page.rootInstance.open).toBe(false);
+      expect(closed).toHaveBeenCalledTimes(1);
+      expect(closed.mock.calls[0][0].detail).toEqual({ reason: 'close' });
+    });
+  });
+
+  it('keeps newest-open stacking bounded by the open peer count', async () => {
+    const page = await create(`<div>
+      <md-snackbar auto-hide="false" message="First"></md-snackbar>
+      <md-snackbar auto-hide="false" message="Second"></md-snackbar>
+      <md-snackbar auto-hide="false" message="Third"></md-snackbar>
+    </div>`);
+    const hosts = Array.from(page.doc.querySelectorAll('md-snackbar')) as HTMLMdSnackbarElement[];
+    for (let i = 0; i < 12; i++) {
+      const current = hosts[i % hosts.length];
+      current.open = false;
+      await page.waitForChanges();
+      const peers = hosts.filter(host => host !== current && host.open);
+      const order = peers.slice().sort((a, b) =>
+        Number(a.style.getPropertyValue('--_stack-order')) - Number(b.style.getPropertyValue('--_stack-order')));
+      current.open = true;
+      await page.waitForChanges();
+      expect(Number(current.style.getPropertyValue('--_stack-order'))).toBe(peers.length + 1);
+      expect(order.map(host => Number(host.style.getPropertyValue('--_stack-order'))))
+        .toEqual(order.map((_host, index) => index + 1));
+    }
   });
 
   // ─── RTL ──────────────────────────────────────────────────

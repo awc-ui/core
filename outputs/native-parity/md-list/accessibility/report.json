@@ -1,0 +1,408 @@
+{
+ "tag": "md-list",
+ "at": "2026-10-29T11:11:41.543Z",
+ "rows": [
+  {
+   "case": "single-select",
+   "web": {
+    "elements": [
+     "listbox:",
+     "option:Design review Project milestone",
+     "option:Prototype Project milestone",
+     "option:Release Project milestone"
+    ],
+    "texts": [],
+    "focus": [
+     "option:Design review Project milestone"
+    ],
+    "contrast": {
+     "measured": 7,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "option:Design review Project milestone",
+      "option:Prototype Project milestone",
+      "option:Release Project milestone"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "option:Design review Project milestone",
+      "option:Design review Project milestone",
+      "option:Design review Project milestone",
+      "option:Design review Project milestone"
+     ],
+     "findings": [],
+     "contrastMeasured": 3
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "option:Design review Project milestone",
+      "option:Prototype Project milestone",
+      "option:Release Project milestone"
+     ],
+     "texts": [],
+     "focus": [
+      "option:Design review Project milestone",
+      "∅",
+      "option:Design review Project milestone",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "radio:Design review Project milestone {\"checked\":\"false\"}",
+      "radio:Prototype Project milestone {\"checked\":\"false\"}",
+      "radio:Release Project milestone {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "radio:Design review Project milestone",
+      "radio:Design review Project milestone",
+      "radio:Design review Project milestone",
+      "radio:Design review Project milestone"
+     ],
+     "findings": [],
+     "contrastMeasured": 7,
+     "atf": {
+      "elements": 23,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "multi-select",
+   "web": {
+    "elements": [
+     "listbox:",
+     "option:Design review Project milestone",
+     "option:Prototype Project milestone",
+     "option:Release Project milestone"
+    ],
+    "texts": [],
+    "focus": [
+     "option:Design review Project milestone"
+    ],
+    "contrast": {
+     "measured": 7,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "option:Design review Project milestone",
+      "option:Prototype Project milestone",
+      "option:Release Project milestone"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "option:Design review Project milestone",
+      "option:Design review Project milestone",
+      "option:Design review Project milestone",
+      "option:Design review Project milestone"
+     ],
+     "findings": [],
+     "contrastMeasured": 3
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "option:Design review Project milestone",
+      "option:Prototype Project milestone",
+      "option:Release Project milestone"
+     ],
+     "texts": [],
+     "focus": [
+      "option:Design review Project milestone",
+      "∅",
+      "option:Design review Project milestone",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "checkbox:Design review Project milestone {\"checked\":\"false\"}",
+      "checkbox:Prototype Project milestone {\"checked\":\"false\"}",
+      "checkbox:Release Project milestone {\"checked\":\"false\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "checkbox:Design review Project milestone",
+      "checkbox:Design review Project milestone",
+      "checkbox:Design review Project milestone",
+      "checkbox:Design review Project milestone"
+     ],
+     "findings": [],
+     "contrastMeasured": 7,
+     "atf": {
+      "elements": 23,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "none",
+   "web": {
+    "elements": [
+     "list:",
+     "listitem:",
+     "listitem:",
+     "listitem:"
+    ],
+    "texts": [
+     "Design review",
+     "Project milestone",
+     "Prototype",
+     "Project milestone",
+     "Release",
+     "Project milestone"
+    ],
+    "focus": [],
+    "contrast": {
+     "measured": 4,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "Design review",
+      "Project milestone",
+      "Prototype",
+      "Project milestone",
+      "Release",
+      "Project milestone"
+     ],
+     "announcements": [],
+     "focus": [
+      "∅",
+      "∅",
+      "∅",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 4
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "Design review",
+      "Project milestone",
+      "Prototype",
+      "Project milestone",
+      "Release",
+      "Project milestone"
+     ],
+     "focus": [
+      "∅",
+      "∅",
+      "∅",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 0,
+     "webElements": 0,
+     "nativeElements": 0,
+     "elements": [],
+     "texts": [
+      "Design review",
+      "Project milestone",
+      "Prototype",
+      "Project milestone",
+      "Release",
+      "Project milestone"
+     ],
+     "announcements": [],
+     "focus": [
+      "∅",
+      "∅",
+      "∅",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 4,
+     "atf": {
+      "elements": 20,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

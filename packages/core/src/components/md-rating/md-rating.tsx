@@ -419,7 +419,7 @@ export class MdRating {
         <span
           class="md-rating__icon md-rating__icon--fg material-symbols-outlined"
           part="icon-filled"
-          style={{ clipPath: `inset(0 ${(1 - filledPortion) * 100}% 0 0)` }}
+          style={{ '--_fill-clip': `${(1 - filledPortion) * 100}%` }}
         >
           {this.icon}
         </span>
@@ -473,6 +473,7 @@ export class MdRating {
           'md-rating--disabled': this.disabled,
           'md-rating--soft-disabled': this.softDisabled,
           'md-rating--focused': this.focused,
+          'md-rating--outline-empty': this.outlineEmpty,
         }}
       >
         <div

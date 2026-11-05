@@ -16,9 +16,9 @@ const deferred = () => { let resolve, reject; const promise = new Promise((a, b)
 
 function fixture(t, options = {}) {
   const adbCalls = [], requests = [], streams = [];
-  const mock = { devices: 'List of devices attached\nemulator-5554 device product:sdk\n', command: null, adb: null, closed: false };
+  const mock = { devices: 'List of devices attached\nemulator-5554 device product:sdk\n', command: null, adb: null, closed: false, closedTokens: new Map(), log: [] }; // R2-D9
   const runAdb = async args => {
-    adbCalls.push(args);
+    adbCalls.push(args); mock.log.push(['adb', ...args]);
     if (mock.adb) { const response = await mock.adb(args); if (response !== undefined) return response; }
     if (args[0] === 'devices') return mock.devices;
     if (args.includes('resolve-activity')) return 'dev.awc.playground/.LivePreviewActivity\n';
@@ -28,7 +28,12 @@ function fixture(t, options = {}) {
   const fetchDevice = async (url, init) => {
     const body = init.body && JSON.parse(init.body);
     const entry = { url, init, body }; requests.push(entry);
-    if (url.endsWith('/health')) return Response.json({ ok: true });
+    mock.log.push(['fetch', url.split('/').pop(), body?.command]);
+    if (url.endsWith('/health')) {
+      const linger = mock.closedTokens.get(init.headers.Authorization);
+      if (linger !== undefined) { if (linger <= 0) throw new TypeError('fetch failed'); mock.closedTokens.set(init.headers.Authorization, linger - 1); }
+      return Response.json({ ok: true });
+    }
     if (url.endsWith('/stream')) {
       let controller;
       const stream = new ReadableStream({ start(value) { controller = value; } });
@@ -37,7 +42,7 @@ function fixture(t, options = {}) {
       streams.push(item);
       return new Response(stream);
     }
-    if (body.command === 'close') { await mock.closeGate; mock.closed = true; return Response.json({ ack: true, events: [] }); }
+    if (body.command === 'close') { await mock.closeGate; mock.closed = true; mock.closedTokens.set(init.headers.Authorization, mock.linger ?? 0); return Response.json({ ack: true, events: [] }); }
     if (mock.command) { const value = await mock.command(body, entry); if (value !== undefined) return value instanceof Response ? value : Response.json(value); }
     return Response.json(image());
   };
@@ -61,6 +66,20 @@ test('Android configure forwards generated theme colors and direction outside co
   assert.deepEqual(configure.themeTokens, { '--md-sys-color-primary': '#007733' });
   assert.equal(configure.direction, 'rtl');
   assert.deepEqual(configure.properties, config.properties);
+});
+
+test('Android retained property updates use the original session and preserve explicit false', async t => {
+  const { renderer, requests, mock } = fixture(t);
+  const initial = await renderer.create({ ...config, tag: 'md-progress-indicator', properties: { value: 37, complete: false } });
+  mock.command = body => body.command === 'update' ? { ack: true, events: [] } : undefined;
+  const applied = await renderer.input(initial.sessionId, { command: 'update', properties: { complete: true } });
+  assert.equal(applied.sessionId, initial.sessionId);
+  assert.deepEqual(applied.events, []);
+  assert.equal(applied.imageUrl, undefined);
+  await renderer.input(initial.sessionId, { command: 'update', properties: { complete: false, value: 0 } });
+  assert.equal(requests.filter(request => request.body?.command === 'configure').length, 1);
+  assert.deepEqual(requests.filter(request => request.body?.command === 'update').map(request => request.body.properties), [{ complete: true }, { complete: false, value: 0 }]);
+  assert.throws(() => renderer.input(initial.sessionId, { command: 'update', properties: { complete: 1 } }), errorCode('INVALID_PROPERTY_UPDATE'));
 });
 
 for (const text of [undefined, '', 'Continuă 👋 <b>literal</b>']) test(`Android configure preserves ${text === undefined ? 'absent' : text === '' ? 'empty' : 'literal Unicode'} button text`, async t => {
@@ -121,6 +140,21 @@ test('Android configure and manual frames preserve only validated native capture
   assert.equal(next.imageUrl, initial.imageUrl, 'Capture freshness is metadata; unchanged pixels must not rewrite it');
 });
 
+test('Android forwards measured layout only with its corresponding capture', async t => {
+  const { renderer, mock } = fixture(t);
+  const inspection = { version: 1, unit: 'dp', source: 'Compose layout',
+    nodes: [{ id: 'component', name: 'md-button', bounds: { x: 262.25, y: 24, width: 115.5, height: 56 },
+      metrics: { padding: [0, 24, 0, 24], gap: { row: 0, column: 8 }, direction: 'rtl' } },
+    { id: 'component.label', parentId: 'component', name: 'Label', bounds: { x: 286.25, y: 40, width: 67.5, height: 24 },
+      metrics: { typography: { size: 16, lineHeight: 24, weight: 500, spacing: 0.15, family: 'Roboto', unit: 'sp' } } }] };
+  mock.command = () => image({ inspection });
+  const initial = await renderer.create(config);
+  assert.deepEqual(initial.inspection, inspection);
+  mock.command = () => image();
+  const next = await renderer.frame(initial.sessionId);
+  assert.equal(Object.hasOwn(next, 'inspection'), false, 'never keep stale geometry from a preceding capture');
+});
+
 test('Android stream preserves cached heartbeat sequence and fresh capture timing independently of revisions', async t => {
   const { renderer, streams } = fixture(t);
   const initial = await renderer.create(config), frames = [], errors = [];
@@ -162,6 +196,22 @@ test('malformed Android stream capture diagnostics never reach the browser', asy
   await nextTurn(); await nextTurn();
   assert.equal(errors[0]?.code, 'INVALID_LIVE_FRAME');
   assert.equal(streams[0].aborted, true);
+});
+
+test('Android close waits until the closed host stops answering before releasing the emulator (R2-D9)', async t => {
+  const { renderer, mock } = fixture(t);
+  const first = await renderer.create(config);
+  mock.linger = 3; // the closing Activity still answers its own token three times
+  await renderer.close(first.sessionId);
+  mock.linger = 0;
+  const second = await renderer.create({ ...config, tag: 'md-progress-indicator' });
+  assert.ok(second.sessionId && second.sessionId !== first.sessionId);
+  const closeAt = mock.log.findIndex(entry => entry[0] === 'fetch' && entry[2] === 'close');
+  const removeAt = mock.log.findIndex(entry => entry[0] === 'adb' && entry.includes('--remove'));
+  const restartAt = mock.log.findIndex((entry, index) => index > closeAt && entry[0] === 'adb' && entry.includes('start'));
+  const lingering = mock.log.slice(closeAt + 1, removeAt).filter(entry => entry[0] === 'fetch' && entry[1] === 'health').length;
+  assert.equal(lingering, 4, 'three lingering answers, then the failed probe that proves the listener is gone');
+  assert.ok(closeAt < removeAt && removeAt < restartAt, 'forward removal and the next Activity start wait for the closed host');
 });
 
 test('Android requests use one random bearer token and only the scoped emulator forward is removed', async t => {
@@ -344,7 +394,7 @@ test('disposing during am start waits for launch then closes the owned Activity 
   launched.resolve('Status: ok');
   await assert.rejects(creating, errorCode('SESSION_CLOSED'));
   await disposing;
-  assert.deepEqual(requests.map(request => request.body?.command), ['close']);
+  assert.deepEqual(requests.filter(request => !request.url.endsWith('/health')).map(request => request.body?.command), ['close']); // R2-D9: plus the post-close liveness probe
   assert.equal(mock.closed, true);
   assert.deepEqual(adbCalls.filter(args => args.includes('--remove')), [['-s', 'emulator-5554', 'forward', '--remove', 'tcp:42001']]);
 });
@@ -382,4 +432,119 @@ test('platform query routes status, creation, input, streams and cleanup to the 
   assert.equal((await request('session', '?platform=android', config, 'https://external.example')).status, 403);
   assert.equal((await request('status', '?platform=arbitrary')).status, 400);
   assert.equal(calls.length, before);
+});
+
+test('Android group frames preserve duplicate-value child states without altering source event detail', async t => {
+  const { renderer, mock, requests } = fixture(t);
+  const detail = { values: ['same'], added: ['same'], removed: [] };
+  mock.command = () => image({ buttonGroupSelection: [false, true, false], events: [{ id: 'selection-1', name: 'mdSelectionChange', tag: 'md-button-group', nodeID: 'component', detail }] });
+  const frame = await renderer.create({ ...config, tag: 'md-button-group', properties: { selectionMode: 'multi-select' }, buttonGroupSelection: [true, false, false], buttonGroupAppearance: { gap: 6 } });
+  const configure = requests.find(request => request.body?.command === 'configure').body;
+  assert.deepEqual(configure.buttonGroupSelection, [true, false, false]);
+  assert.deepEqual(configure.buttonGroupAppearance, { gap: 6 });
+  assert.deepEqual(frame.buttonGroupSelection, [false, true, false]);
+  assert.deepEqual(frame.events[0].detail, detail);
+  mock.command = () => image({ buttonGroupSelection: [1] });
+  await assert.rejects(renderer.input(frame.sessionId, { command: 'pointer', phase: 'down', x: 20, y: 20 }), { code: 'INVALID_LIVE_FRAME' });
+});
+
+test('Android segmented frames keep actual child identity and reject a vector from the wrong composition', async t => {
+  const { renderer, mock, requests } = fixture(t);
+  const segmentedContext = { mode: 'set', multiselect: true, density: -3, selection: [true, false, false] };
+  const detail = { value: 'same', selected: true };
+  mock.command = () => image({ segmentedSelection: [false, true, true], events: [{ id: 'segment-1', name: 'mdSegmentClick', tag: 'md-segmented-button', nodeID: 'component', detail }] });
+  const frame = await renderer.create({ ...config, tag: 'md-segmented-button', properties: { value: 'same' }, segmentedContext, segmentedButtonAppearance: { cornerRadius: 12 } });
+  const configure = requests.find(request => request.body?.command === 'configure').body;
+  assert.deepEqual(configure.segmentedContext, segmentedContext);
+  assert.deepEqual(configure.segmentedButtonAppearance, { cornerRadius: 12 });
+  assert.deepEqual(frame.segmentedSelection, [false, true, true]);
+  assert.deepEqual(frame.events[0].detail, detail);
+  mock.command = () => image({ segmentedSelection: [] });
+  await assert.rejects(renderer.input(frame.sessionId, { command: 'pointer', phase: 'down', x: 20, y: 20 }), { code: 'INVALID_LIVE_FRAME' });
+});
+
+test('Android split frames preserve root Boolean state and exact event detail', async t => {
+  const { renderer, mock, requests } = fixture(t);
+  mock.command = () => image({ splitButtonChecked: false, events: [{ id: 'split-1', name: 'mdTrailingClick', tag: 'md-split-button', nodeID: 'component', detail: { checked: false } }] });
+  const frame = await renderer.create({ ...config, tag: 'md-split-button', properties: { trailingChecked: true, label: 'Create' }, splitButtonAppearance: { iconSize: 20 }, slots: { '': ' project' } });
+  const configure = requests.find(request => request.body?.command === 'configure').body;
+  assert.deepEqual(configure.splitButtonAppearance, { iconSize: 20 });
+  assert.equal(configure.properties.label, 'Create');
+  assert.equal(frame.splitButtonChecked, false);
+  assert.deepEqual(frame.events[0].detail, { checked: false });
+  mock.command = () => image({ splitButtonChecked: 0 });
+  await assert.rejects(renderer.input(frame.sessionId, { command: 'pointer', phase: 'down', x: 20, y: 20 }), { code: 'INVALID_LIVE_FRAME' });
+});
+
+test('Android serializes FAB setters, preserves blank clearing arguments, and resolves only their acknowledgement', async t => {
+  const { renderer, mock, requests } = fixture(t);
+  const initial = await renderer.create({ ...config, tag: 'md-fab', properties: { icon: 'add' }, fabAppearance: { iconSize: 28 } });
+  const held = deferred(); let first = true;
+  mock.command = command => {
+    assert.equal(command.command, 'method');
+    if (first) { first = false; return held.promise; }
+    return { ack: true, events: [] };
+  };
+  const calls = ['close', '', ' ', null].map(value => renderer.input(initial.sessionId, { command: 'method', method: 'setMenuIcon', arguments: [value] }));
+  let completed = false; calls[0].then(() => { completed = true; });
+  await nextTurn();
+  assert.equal(completed, false);
+  assert.equal(requests.filter(request => request.body?.command === 'method').length, 1);
+  held.resolve({ ack: true, events: [] });
+  const results = await Promise.all(calls);
+  assert.deepEqual(requests.filter(request => request.body?.command === 'method').map(request => request.body), ['close', '', ' ', null].map(value => ({ command: 'method', method: 'setMenuIcon', arguments: [value] })));
+  assert.ok(results.every(result => result.sessionId === initial.sessionId && result.imageUrl === undefined && result.events.length === 0));
+  assert.equal(requests.filter(request => request.body?.command === 'configure').length, 1);
+  assert.deepEqual(requests.find(request => request.body?.command === 'configure').body.fabAppearance, { iconSize: 28 });
+  assert.throws(() => renderer.input(initial.sessionId, { command: 'method', method: 'whenClosed', arguments: [] }), { code: 'INVALID_METHOD' });
+});
+
+test('Android preserves correlated lifecycle acceptance and later results without awaiting close completion in its queue', async t => {
+  const {renderer,mock,requests}=fixture(t);
+  const initial=await renderer.create({...config,tag:'md-fab-menu'});
+  mock.command=command=>command.command==='method'
+    ? {ack:true,methodCall:{callId:command.callId,status:'accepted'}}
+    : {ack:true,methodResults:command.callIds.map(callId=>({callId,status:callId==='wait-1'?'pending':'fulfilled'}))};
+  for(const [callId,method] of [['wait-1','whenClosed'],['close-1','close']]) {
+    const result=await renderer.input(initial.sessionId,{command:'method',target:'component',callId,method,arguments:[]});
+    assert.deepEqual(result.methodCall,{callId,status:'accepted'});
+    assert.equal(result.imageUrl,undefined);
+  }
+  const result=await renderer.input(initial.sessionId,{command:'method-results',callIds:['wait-1','close-1'],acknowledged:[]});
+  assert.deepEqual(result.methodResults,[{callId:'wait-1',status:'pending'},{callId:'close-1',status:'fulfilled'}]);
+  assert.deepEqual(requests.filter(request=>request.body?.command==='method').map(request=>request.body.method),['whenClosed','close']);
+  mock.command=()=>({ack:true,methodCall:{callId:'wrong',status:'accepted'}});
+  await assert.rejects(renderer.input(initial.sessionId,{command:'method',target:'component',callId:'show-1',method:'show',arguments:[]}),{code:'INVALID_METHOD_RESULT'});
+});
+
+
+test('Android receives actual Snackbar viewport height outside component properties', async t => {
+  const { renderer, requests } = fixture(t);
+  await renderer.create({ ...config, tag: 'md-snackbar', width: 360, height: 480, properties: { position: 'top-end' } });
+  const command = requests.find(request => request.body?.command === 'configure').body;
+  assert.equal(command.width, 360);
+  assert.equal(command.height, 480);
+  assert.deepEqual(command.properties, { position: 'top-end' });
+});
+
+
+test('Android forwards a bounded retained Snackbar resize without reconfiguring', async t => {
+  const { renderer, requests, mock } = fixture(t);
+  const initial = await renderer.create({ ...config, tag: 'md-snackbar', height: 310 });
+  mock.command = body => body.command === 'resize' ? image({ ack: true, logicalWidth: body.width, logicalHeight: body.height }) : undefined;
+  const resized = await renderer.input(initial.sessionId, { command: 'resize', width: 2999, height: 5000 });
+  assert.equal(resized.logicalWidth, 1200); assert.equal(resized.logicalHeight, 1666);
+  assert.match(resized.imageUrl, /^data:image\/png;base64,/);
+  assert.ok(resized.revision > initial.revision);
+  await renderer.input(initial.sessionId, { command: 'click', x: 1100, y: 1500 });
+  assert.equal(requests.filter(request => request.body?.command === 'configure').length, 1);
+  const resize = requests.find(request => request.body?.command === 'resize').body;
+  assert.equal(resize.width, 1200); assert.equal(resize.height, 1666);
+});
+
+for (const invalid of [{ ack: false }, { logicalWidth: 640 }, { logicalHeight: 200 }, { png: undefined }]) test(`Android rejects an uncommitted resize reply ${JSON.stringify(invalid)}`, async t => {
+  const { renderer, mock } = fixture(t);
+  const initial = await renderer.create({ ...config, tag: 'md-snackbar' });
+  mock.command = body => image({ ack: true, logicalWidth: body.width, logicalHeight: body.height, ...invalid });
+  await assert.rejects(renderer.input(initial.sessionId, { command: 'resize', width: 360, height: 480 }), { code: 'png' in invalid ? 'INVALID_LIVE_FRAME' : 'INVALID_VIEWPORT_FRAME' });
 });

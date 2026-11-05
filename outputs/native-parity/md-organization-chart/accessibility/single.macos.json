@@ -1,0 +1,332 @@
+{
+ "tag": "md-organization-chart",
+ "case": "single",
+ "request": {
+  "tag": "md-organization-chart",
+  "properties": {
+   "nodes": [
+    {
+     "id": "lead",
+     "name": "Alex Morgan",
+     "title": "Product lead",
+     "children": [
+      {
+       "id": "design",
+       "name": "Sam Lee",
+       "title": "Design"
+      },
+      {
+       "id": "eng",
+       "name": "Robin Chen",
+       "title": "Engineering",
+       "children": [
+        {
+         "id": "dev",
+         "name": "Casey Diaz",
+         "title": "Developer"
+        }
+       ]
+      },
+      {
+       "id": "ops",
+       "name": "Finley Ross",
+       "title": "Operations",
+       "selectable": false
+      }
+     ]
+    }
+   ],
+   "label": "Product team",
+   "selectionMode": "single",
+   "selectedIds": [
+    "design"
+   ]
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Alex Morgan Product lead",
+         "disclosing": true,
+         "disclosureLevel": 0,
+         "enabled": true,
+         "expanded": true,
+         "focused": false,
+         "frame": [
+          246,
+          40,
+          176,
+          62
+         ],
+         "identifier": "example-md-organization-chart/lead",
+         "invalid": "false",
+         "required": false,
+         "role": "AXRow",
+         "roleDescription": "outline row",
+         "selected": false,
+         "subrole": "AXOutlineRow"
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Sam Lee Design",
+         "disclosing": false,
+         "disclosureLevel": 1,
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          52,
+          158,
+          176,
+          62
+         ],
+         "identifier": "example-md-organization-chart/design",
+         "invalid": "false",
+         "required": false,
+         "role": "AXRow",
+         "roleDescription": "outline row",
+         "selected": true,
+         "subrole": "AXOutlineRow"
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Robin Chen Engineering",
+         "disclosing": true,
+         "disclosureLevel": 1,
+         "enabled": true,
+         "expanded": true,
+         "focused": false,
+         "frame": [
+          246,
+          158,
+          176,
+          62
+         ],
+         "identifier": "example-md-organization-chart/eng",
+         "invalid": "false",
+         "required": false,
+         "role": "AXRow",
+         "roleDescription": "outline row",
+         "selected": false,
+         "subrole": "AXOutlineRow"
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Casey Diaz Developer",
+         "disclosing": false,
+         "disclosureLevel": 2,
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          246,
+          248,
+          176,
+          62
+         ],
+         "identifier": "example-md-organization-chart/dev",
+         "invalid": "false",
+         "required": false,
+         "role": "AXRow",
+         "roleDescription": "outline row",
+         "selected": false,
+         "subrole": "AXOutlineRow"
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Finley Ross Operations",
+         "disclosing": false,
+         "disclosureLevel": 1,
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          440,
+          158,
+          176,
+          62
+         ],
+         "identifier": "example-md-organization-chart/ops",
+         "invalid": "false",
+         "required": false,
+         "role": "AXRow",
+         "roleDescription": "outline row",
+         "selected": false,
+         "subrole": "AXOutlineRow"
+        }
+       ],
+       "description": "Product team",
+       "focused": false,
+       "frame": [
+        32,
+        32,
+        576,
+        300
+       ],
+       "identifier": "example-md-organization-chart",
+       "role": "AXOutline",
+       "roleDescription": "outline"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      364
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    364
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-organization-chart",
+  "properties": {
+   "collapseLabel": "Collapse",
+   "collapsible": true,
+   "density": 0,
+   "expandLabel": "Expand",
+   "label": "Product team",
+   "nodes": [
+    {
+     "children": [
+      {
+       "id": "design",
+       "name": "Sam Lee",
+       "title": "Design"
+      },
+      {
+       "children": [
+        {
+         "id": "dev",
+         "name": "Casey Diaz",
+         "title": "Developer"
+        }
+       ],
+       "id": "eng",
+       "name": "Robin Chen",
+       "title": "Engineering"
+      },
+      {
+       "id": "ops",
+       "name": "Finley Ross",
+       "selectable": false,
+       "title": "Operations"
+      }
+     ],
+     "id": "lead",
+     "name": "Alex Morgan",
+     "title": "Product lead"
+    }
+   ],
+   "orientation": "vertical",
+   "selectedIds": [
+    "design"
+   ],
+   "selectionMode": "single"
+  },
+  "tag": "md-organization-chart"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Alex Morgan Product lead",
+    "frame": [
+     246,
+     40,
+     176,
+     62
+    ],
+    "identifier": "example-md-organization-chart/lead",
+    "role": "AXRow",
+    "subrole": "AXOutlineRow"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Alex Morgan Product lead",
+    "frame": [
+     246,
+     40,
+     176,
+     62
+    ],
+    "identifier": "example-md-organization-chart/lead",
+    "role": "AXRow",
+    "subrole": "AXOutlineRow"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 300,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "name": "md-organization-chart"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

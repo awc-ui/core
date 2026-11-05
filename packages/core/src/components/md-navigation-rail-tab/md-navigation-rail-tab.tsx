@@ -632,11 +632,18 @@ export class MdNavigationRailTab {
     //    nameless. Carry the name on the host explicitly — matching the
     //    md-navigation-tab convention.
     const authorAriaLabel = this.el.getAttribute('aria-label') ?? undefined;
+    // label-visibility="none" and an expanded rail's inactive "selected" destinations do
+    // not render the label (display: none), which also removed it from the accessible
+    // name — the icon glyph is aria-hidden. Name them explicitly; an author aria-label wins.
+    const labelNotRendered = this.labelVisibility === 'none'
+      || (this.labelVisibility === 'selected' && this.expanded && !this.active);
     const hostAriaLabel = isLink
       ? this.label || authorAriaLabel
       : !this.label
         ? authorAriaLabel
-        : undefined;
+        : labelNotRendered
+          ? authorAriaLabel || this.label
+          : undefined;
 
     return (
       <Host

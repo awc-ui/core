@@ -402,7 +402,9 @@ export class MdTable {
     const progress = Math.min(1, Math.abs(sc.scrollLeft) / overflow);
     // In RTL the content start sits at the RIGHT, so the thumb starts at the
     // track's right end and travels left as the user scrolls toward the end.
-    const left = (this.isRtl ? 1 - progress : progress) * maxThumbLeft;
+    // The thumb has no inline offset: in RTL its static position already IS
+    // the track's right end, so it travels by a negative translation.
+    const left = (this.isRtl ? -progress : progress) * maxThumbLeft;
     thumb.style.inlineSize = `${thumbW}px`;
     thumb.style.transform = `translateX(${left}px)`;
   };
@@ -551,8 +553,35 @@ export class MdTable {
 
   @Watch('empty')
   onEmptyChange() {
-    // SRs don't announce a swapped-in empty state on their own.
-    this.srAnnouncement = this.empty ? 'No data' : '';
+    // SRs don't announce a swapped-in empty state on their own. Announce what
+    // sighted users read: the slotted (possibly localised) empty state, or the
+    // built-in "No data" when nothing is slotted.
+    this.srAnnouncement = this.empty ? this.emptyAnnouncementText() : '';
+  }
+
+  /** Readable text of the slotted empty state (aria-hidden / hidden subtrees skipped). */
+  private emptyAnnouncementText(): string {
+    const slotted = Array.from(this.el.children).filter((c) => c.getAttribute('slot') === 'empty');
+    const parts: string[] = [];
+    const walk = (n: Node) => {
+      if (n.nodeType === Node.TEXT_NODE) {
+        parts.push(n.textContent ?? '');
+        return;
+      }
+      if (n.nodeType !== Node.ELEMENT_NODE) return;
+      const e = n as Element;
+      if (e.getAttribute('aria-hidden') === 'true' || e.hasAttribute('hidden')) return;
+      const label = e.getAttribute('aria-label');
+      if (label) {
+        parts.push(` ${label} `);
+        return;
+      }
+      e.childNodes.forEach(walk);
+      parts.push(' ');
+    };
+    slotted.forEach(walk);
+    const text = parts.join('').replace(/\s+/g, ' ').trim();
+    return text || 'No data';
   }
 
   @State() private srAnnouncement = '';
@@ -811,6 +840,37 @@ export class MdTable {
     return out;
   }
 
+  /**
+   * One VALID track for `base` floored at `need` px. A plain breadth becomes
+   * `minmax(need, base)`; a `minmax(a, b)` base keeps its own minimum through
+   * `max()` (minmax() cannot nest — the nested form invalidated the whole
+   * template and collapsed the table into one column); `fit-content()` is not a
+   * valid minmax() maximum, so it stays unfloored.
+   */
+  private static floorTrack(base: string, need: number): string {
+    const t = base.trim();
+    if (/^fit-content\(/i.test(t)) return t;
+    const mm = /^minmax\((.*)\)$/i.exec(t);
+    if (!mm) return `minmax(${need}px, ${t})`;
+    const args: string[] = [];
+    let depth = 0;
+    let cur = '';
+    for (const ch of mm[1]) {
+      if (ch === '(') depth++;
+      else if (ch === ')') depth--;
+      if (ch === ',' && depth === 0) {
+        args.push(cur.trim());
+        cur = '';
+      } else cur += ch;
+    }
+    args.push(cur.trim());
+    if (args.length !== 2) return t;
+    const [min, max] = args;
+    // Keyword minimums can't enter max(); the content floor stands in for them.
+    const floor = /^(auto|min-content|max-content)$/i.test(min) ? `${need}px` : `max(${need}px, ${min})`;
+    return `minmax(${floor}, ${max})`;
+  }
+
   /** Stamp every cell with its original column index + parse the base tracks.
    *  Returns false when the table can't support pinning — warning unless
    *  `silent` (the mount-time header-floor pass probes speculatively; e.g. a
@@ -981,7 +1041,7 @@ export class MdTable {
         const pad = (parseFloat(cs.paddingInlineStart) || 0) + (parseFloat(cs.paddingInlineEnd) || 0);
         const pin =
           this.pinnedColumns.has(k) && !cell.hasAttribute('no-pin-indicator') ? 20 : 0;
-        return `minmax(${Math.ceil(span + pad + pin)}px, ${base})`;
+        return MdTable.floorTrack(base, Math.ceil(span + pad + pin));
       });
       this.el.setAttribute('column-template', tpl.join(' '));
     });
@@ -1149,8 +1209,9 @@ export class MdTable {
 
   /** Body rows only — header/footer rows must never join selection math. */
   private getSelectableRows(): SelectableRow[] {
+    // Body rows that take part in selection: `selectable="false"` rows are skipped by click, checkbox AND select-all.
     return (Array.from(this.el.querySelectorAll('md-table-row')) as unknown as SelectableRow[]).filter(
-      (r) => (r.closest('md-table-head') || r.closest('md-table-foot')) == null,
+      (r) => (r.closest('md-table-head') || r.closest('md-table-foot')) == null && r.selectable !== false,
     );
   }
 
@@ -1164,7 +1225,10 @@ export class MdTable {
     this.selectionCache = {
       count: selected.length,
       total: selectable.length,
-      values: selected.map((r, i) => r.value || String(i)),
+      // Unvalued rows are identified by their ROW index among the body rows
+      // (the documented default, same as md-table-row's events) — not by their
+      // position within the selected subset.
+      values: selected.map((r) => r.value || String(rows.indexOf(r))),
       all,
       indeterminate,
     };

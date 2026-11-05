@@ -1,0 +1,729 @@
+{
+ "tag": "md-organization-chart",
+ "case": "rtl",
+ "id": "md-organization-chart/rtl",
+ "platform": "android",
+ "sdk": 36,
+ "windows": [
+  {
+   "type": 1,
+   "display": 161,
+   "title": "",
+   "root": {
+    "class": "android.widget.FrameLayout",
+    "actions": [
+     {
+      "id": 16908342,
+      "name": "showOnScreen"
+     }
+    ],
+    "frame": [
+     0,
+     0,
+     1280,
+     728
+    ],
+    "children": [
+     {
+      "class": "android.widget.LinearLayout",
+      "important": false,
+      "actions": [
+       {
+        "id": 16908342,
+        "name": "showOnScreen"
+       }
+      ],
+      "frame": [
+       0,
+       0,
+       1280,
+       728
+      ],
+      "children": [
+       {
+        "class": "android.widget.FrameLayout",
+        "important": false,
+        "actions": [
+         {
+          "id": 16908342,
+          "name": "showOnScreen"
+         }
+        ],
+        "frame": [
+         0,
+         0,
+         1280,
+         728
+        ],
+        "children": [
+         {
+          "class": "android.widget.FrameLayout",
+          "important": false,
+          "actions": [
+           {
+            "id": 16908342,
+            "name": "showOnScreen"
+           }
+          ],
+          "frame": [
+           0,
+           0,
+           1280,
+           728
+          ],
+          "children": [
+           {
+            "class": "androidx.compose.ui.platform.ComposeView",
+            "actions": [
+             {
+              "id": 16908342,
+              "name": "showOnScreen"
+             }
+            ],
+            "frame": [
+             0,
+             0,
+             1280,
+             728
+            ],
+            "children": [
+             {
+              "class": "android.view.View",
+              "important": false,
+              "frame": [
+               0,
+               0,
+               1280,
+               728
+              ],
+              "children": [
+               {
+                "class": "android.view.View",
+                "important": false,
+                "frame": [
+                 0,
+                 0,
+                 1280,
+                 728
+                ],
+                "virtualId": 627,
+                "children": [
+                 {
+                  "class": "android.view.View",
+                  "contentDescription": "Product team",
+                  "scrollable": true,
+                  "collection": {
+                   "rows": 5,
+                   "columns": 1,
+                   "selectionMode": 0
+                  },
+                  "actions": [
+                   {
+                    "id": 131072,
+                    "name": "setSelection"
+                   },
+                   {
+                    "id": 256,
+                    "name": "nextGranularity"
+                   },
+                   {
+                    "id": 512,
+                    "name": "previousGranularity"
+                   },
+                   {
+                    "id": 4096,
+                    "name": "scrollForward"
+                   },
+                   {
+                    "id": 16908345,
+                    "name": "custom"
+                   }
+                  ],
+                  "frame": [
+                   64,
+                   64,
+                   1152,
+                   600
+                  ],
+                  "virtualId": 635,
+                  "children": [
+                   {
+                    "class": "android.view.View",
+                    "contentDescription": "Alex Morgan Product lead",
+                    "stateDescription": "Expanded",
+                    "checkable": true,
+                    "focusable": true,
+                    "clickable": true,
+                    "collectionItem": {
+                     "row": 0,
+                     "column": 0,
+                     "selected": false,
+                     "heading": false
+                    },
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     },
+                     {
+                      "id": 16,
+                      "name": "click"
+                     },
+                     {
+                      "id": 131072,
+                      "name": "setSelection"
+                     },
+                     {
+                      "id": 256,
+                      "name": "nextGranularity"
+                     },
+                     {
+                      "id": 512,
+                      "name": "previousGranularity"
+                     }
+                    ],
+                    "frame": [
+                     436,
+                     80,
+                     352,
+                     124
+                    ],
+                    "virtualId": 639,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       466,
+                       102,
+                       292,
+                       80
+                      ],
+                      "virtualId": 640
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       438,
+                       82,
+                       348,
+                       120
+                      ],
+                      "virtualId": 645
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       678,
+                       102,
+                       80,
+                       80
+                      ],
+                      "virtualId": 647
+                     }
+                    ]
+                   },
+                   {
+                    "class": "android.view.View",
+                    "important": false,
+                    "frame": [
+                     588,
+                     178,
+                     48,
+                     48
+                    ],
+                    "virtualId": 652
+                   },
+                   {
+                    "class": "android.view.View",
+                    "contentDescription": "Sam Lee Design",
+                    "stateDescription": "Selected",
+                    "checkable": true,
+                    "checked": true,
+                    "focusable": true,
+                    "clickable": true,
+                    "collectionItem": {
+                     "row": 1,
+                     "column": 0,
+                     "selected": true,
+                     "heading": false
+                    },
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     },
+                     {
+                      "id": 16,
+                      "name": "click"
+                     },
+                     {
+                      "id": 131072,
+                      "name": "setSelection"
+                     },
+                     {
+                      "id": 256,
+                      "name": "nextGranularity"
+                     },
+                     {
+                      "id": 512,
+                      "name": "previousGranularity"
+                     }
+                    ],
+                    "frame": [
+                     824,
+                     316,
+                     352,
+                     124
+                    ],
+                    "virtualId": 660,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       854,
+                       338,
+                       292,
+                       80
+                      ],
+                      "virtualId": 661
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       828,
+                       320,
+                       344,
+                       116
+                      ],
+                      "virtualId": 666
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       1066,
+                       338,
+                       80,
+                       80
+                      ],
+                      "virtualId": 668
+                     }
+                    ]
+                   },
+                   {
+                    "class": "android.view.View",
+                    "contentDescription": "Robin Chen Engineering",
+                    "stateDescription": "Expanded",
+                    "checkable": true,
+                    "focusable": true,
+                    "clickable": true,
+                    "collectionItem": {
+                     "row": 2,
+                     "column": 0,
+                     "selected": false,
+                     "heading": false
+                    },
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     },
+                     {
+                      "id": 16,
+                      "name": "click"
+                     },
+                     {
+                      "id": 131072,
+                      "name": "setSelection"
+                     },
+                     {
+                      "id": 256,
+                      "name": "nextGranularity"
+                     },
+                     {
+                      "id": 512,
+                      "name": "previousGranularity"
+                     }
+                    ],
+                    "frame": [
+                     436,
+                     316,
+                     352,
+                     124
+                    ],
+                    "virtualId": 674,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       466,
+                       338,
+                       292,
+                       80
+                      ],
+                      "virtualId": 675
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       438,
+                       318,
+                       348,
+                       120
+                      ],
+                      "virtualId": 680
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       678,
+                       338,
+                       80,
+                       80
+                      ],
+                      "virtualId": 682
+                     }
+                    ]
+                   },
+                   {
+                    "class": "android.view.View",
+                    "important": false,
+                    "frame": [
+                     588,
+                     414,
+                     48,
+                     48
+                    ],
+                    "virtualId": 687
+                   },
+                   {
+                    "class": "android.view.View",
+                    "contentDescription": "Casey Diaz Developer",
+                    "stateDescription": "Not selected",
+                    "checkable": true,
+                    "focusable": true,
+                    "clickable": true,
+                    "collectionItem": {
+                     "row": 3,
+                     "column": 0,
+                     "selected": false,
+                     "heading": false
+                    },
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     },
+                     {
+                      "id": 16,
+                      "name": "click"
+                     },
+                     {
+                      "id": 131072,
+                      "name": "setSelection"
+                     },
+                     {
+                      "id": 256,
+                      "name": "nextGranularity"
+                     },
+                     {
+                      "id": 512,
+                      "name": "previousGranularity"
+                     }
+                    ],
+                    "frame": [
+                     436,
+                     496,
+                     352,
+                     124
+                    ],
+                    "virtualId": 695,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       466,
+                       518,
+                       292,
+                       80
+                      ],
+                      "virtualId": 696
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       438,
+                       498,
+                       348,
+                       120
+                      ],
+                      "virtualId": 701
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       678,
+                       518,
+                       80,
+                       80
+                      ],
+                      "virtualId": 703
+                     }
+                    ]
+                   },
+                   {
+                    "class": "android.view.View",
+                    "contentDescription": "Finley Ross Operations",
+                    "focusable": true,
+                    "clickable": true,
+                    "collectionItem": {
+                     "row": 4,
+                     "column": 0,
+                     "selected": false,
+                     "heading": false
+                    },
+                    "actions": [
+                     {
+                      "id": 1,
+                      "name": "focus"
+                     },
+                     {
+                      "id": 16,
+                      "name": "click"
+                     },
+                     {
+                      "id": 131072,
+                      "name": "setSelection"
+                     },
+                     {
+                      "id": 256,
+                      "name": "nextGranularity"
+                     },
+                     {
+                      "id": 512,
+                      "name": "previousGranularity"
+                     }
+                    ],
+                    "frame": [
+                     48,
+                     316,
+                     352,
+                     124
+                    ],
+                    "virtualId": 709,
+                    "children": [
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       78,
+                       338,
+                       292,
+                       80
+                      ],
+                      "virtualId": 710
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       64,
+                       318,
+                       334,
+                       120
+                      ],
+                      "virtualId": 715
+                     },
+                     {
+                      "class": "android.view.View",
+                      "important": false,
+                      "frame": [
+                       290,
+                       338,
+                       80,
+                       80
+                      ],
+                      "virtualId": 717
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "childOrder": "semantics (replacedChildren)",
+ "source": "in-process AccessibilityNodeProvider",
+ "density": 2,
+ "image": {
+  "scale": 1,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 0.5,
+  "source": "frame"
+ },
+ "atf": {
+  "elements": 30,
+  "results": []
+ },
+ "focus": [
+  {
+   "class": "android.view.View",
+   "contentDescription": "Alex Morgan Product lead",
+   "stateDescription": "Expanded",
+   "checkable": true,
+   "focusable": true,
+   "focused": true,
+   "clickable": true,
+   "collectionItem": {
+    "row": 0,
+    "column": 0,
+    "selected": false,
+    "heading": false
+   },
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    },
+    {
+     "id": 16,
+     "name": "click"
+    },
+    {
+     "id": 131072,
+     "name": "setSelection"
+    },
+    {
+     "id": 256,
+     "name": "nextGranularity"
+    },
+    {
+     "id": 512,
+     "name": "previousGranularity"
+    }
+   ],
+   "frame": [
+    436,
+    80,
+    352,
+    124
+   ],
+   "virtualId": 639
+  },
+  {
+   "class": "android.view.View",
+   "contentDescription": "Alex Morgan Product lead",
+   "stateDescription": "Expanded",
+   "checkable": true,
+   "focusable": true,
+   "focused": true,
+   "clickable": true,
+   "collectionItem": {
+    "row": 0,
+    "column": 0,
+    "selected": false,
+    "heading": false
+   },
+   "actions": [
+    {
+     "id": 2,
+     "name": "clearFocus"
+    },
+    {
+     "id": 16,
+     "name": "click"
+    },
+    {
+     "id": 131072,
+     "name": "setSelection"
+    },
+    {
+     "id": 256,
+     "name": "nextGranularity"
+    },
+    {
+     "id": 512,
+     "name": "previousGranularity"
+    }
+   ],
+   "frame": [
+    436,
+    80,
+    352,
+    124
+   ],
+   "virtualId": 639
+  }
+ ],
+ "events": [
+  {
+   "type": "TYPE_WINDOW_STATE_CHANGED",
+   "via": "system",
+   "text": [],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "android.app.Presentation"
+  },
+  {
+   "type": "TYPE_WINDOW_CONTENT_CHANGED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 1,
+   "class": "android.view.ViewGroup"
+  },
+  {
+   "type": "TYPE_WINDOW_STATE_CHANGED",
+   "via": "system",
+   "text": [
+    "AWC Native"
+   ],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "dev.awc.playground.LivePreviewActivity"
+  },
+  {
+   "type": "TYPE_VIEW_FOCUSED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "android.view.ViewGroup"
+  },
+  {
+   "type": "TYPE_WINDOW_CONTENT_CHANGED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 1,
+   "class": "android.view.ViewGroup"
+  }
+ ]
+}

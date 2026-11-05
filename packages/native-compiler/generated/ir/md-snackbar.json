@@ -158,11 +158,6 @@
       "name": "hasSlottedClose",
       "type": "inferred",
       "initializer": "false"
-    },
-    {
-      "name": "hasSlottedDefault",
-      "type": "inferred",
-      "initializer": "false"
     }
   ],
   "events": [
@@ -394,28 +389,22 @@
   },
   "diagnostics": [
     {
-      "code": "SHADOW_DOM",
+      "code": "DOM_OBSERVER",
       "severity": "warning",
-      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 97
-    },
-    {
-      "code": "DOM_QUERY",
-      "severity": "warning",
-      "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 100
-    },
-    {
-      "code": "SLOT_INTROSPECTION",
-      "severity": "warning",
-      "message": "assignedNodes depends on browser semantics and requires a native adapter.",
-      "line": 105
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 87
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Window access requires a native adapter.",
-      "line": 127
+      "line": 117
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
+      "line": 156
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -429,7 +418,7 @@
     "styleUrl": "md-snackbar.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "7deadf06be4ad6942d048a6330b0a82396b0f4271dd3c3da1574bfdc6f49fb9d"
+    "sha256": "5e30b0edf12f539c0a08a93b35aae1192cb18d891aee3f2facc405c0f31096a6"
   },
   "styles": [
     {
@@ -1308,35 +1297,55 @@
         "closeable",
         "autoHide",
         "autoHideDuration",
-        "dismissLabel"
+        "position",
+        "stacked",
+        "politeness",
+        "dismissLabel",
+        "density"
       ],
       "events": [
         "mdOpen",
         "mdClose",
         "mdAction"
       ],
-      "methods": [],
+      "methods": [
+        "show",
+        "hide"
+      ],
       "slots": [
         "",
         "action",
         "close"
       ],
-      "unsupportedProperties": [
-        "position",
-        "stacked",
-        "politeness",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "show",
-        "hide"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native inline snackbar surface, not global window overlay stacking."
+        "Dedicated native root overlay implements all eleven source properties, three events, show/hide controller methods, three authored SwiftUI outlets, seven sparse appearance hooks and five typed part identities. AWCSnackbarScope provides real viewport geometry, peer ordering and Escape ownership; authored controls retain their own callbacks.",
+        "Actual macOS SwiftUI/AppKit verification passes 2987 renderer assertions across 122 unmodified-default-palette Web configurations plus 48 supplemental typed-part configurations plus 27 controller checks and 51 live-host checks. Retained updates and viewport resizing preserve the mounted controller, timing policy and event history. Thirty-eight exact generated public examples typecheck. See audits/md-snackbar.md.",
+        "Typed parts preserve RGB/RGBA, border/background/shape, inherited text weight, logical start padding and signed margin. Close-icon text weight is inapplicable to the fixed Material glyph; arbitrary CSS syntax remains a Web API. Native builders accept authored semantic labels. iOS SDK/device execution and actual OS announcement delivery remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "surface",
+        "message",
+        "actions",
+        "close",
+        "close-icon"
+      ],
+      "appearance": {
+        "api": "AWCSnackbarAppearance / View.awcSnackbarAppearance",
+        "fields": [
+          "containerColor",
+          "messageColor",
+          "actionColor",
+          "closeColor",
+          "containerShape",
+          "minWidth",
+          "maxWidth"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
@@ -1345,9 +1354,12 @@
         "autoHide",
         "autoHideDuration",
         "closeable",
+        "density",
         "dismissLabel",
         "message",
         "open",
+        "politeness",
+        "position",
         "stacked"
       ],
       "events": [
@@ -1355,28 +1367,42 @@
         "mdClose",
         "mdOpen"
       ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
-        "position",
-        "politeness",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "show",
         "hide"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "action",
         "close"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native Snackbar supports all eleven source properties, three lifecycle events, two retained controller methods and three actual authored slots. AWCSnackbarScope supplies the viewport and peer order; native timers, hover/focus, Escape and retained Laboratory resize follow source behavior. Seven typed appearance hooks and five part targets are implemented. Original and supplemental geometry/paint, default-palette, motion and lifecycle gates pass; final Laboratory acceptance remains separate in the audit. CSS syntax, native accessibility and rasterization boundaries remain documented."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "surface",
+        "message",
+        "actions",
+        "close",
+        "close-icon"
+      ],
+      "appearance": {
+        "api": "AWCSnackbarAppearance / AWCSnackbarAppearanceScope / AWCSnackbarLength / AWCCornerShape",
+        "fields": [
+          "containerColor",
+          "messageColor",
+          "actionColor",
+          "closeColor",
+          "containerShape",
+          "minWidth",
+          "maxWidth"
+        ]
+      }
     }
   }
 }

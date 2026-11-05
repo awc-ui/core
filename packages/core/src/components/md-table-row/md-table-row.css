@@ -267,11 +267,19 @@
   :host {
     border-block-end-color: CanvasText;
   }
+  /* The Highlight / HighlightText pair must survive as authored: under
+     forced-color-adjust:auto every text run gets a Canvas backplate
+     (HighlightText on Canvas = invisible) and a pinned cell's opaque background
+     is forced to Canvas. `none` is inherited by the slotted cells and their
+     content; the row and its cells only use system colours here. */
   :host(.md-table-row--selected) {
     background-color: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
   }
   :host(.md-table-row--selected) ::slotted(md-table-cell) {
     --_cell-color: HighlightText;
+    --md-table-cell-sticky-bg: Highlight;
   }
 }
 

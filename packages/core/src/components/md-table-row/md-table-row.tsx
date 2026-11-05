@@ -95,13 +95,34 @@ export class MdTableRow {
   @Watch('selected')
   onSelectedChange(newVal: boolean, oldVal: boolean) {
     if (newVal === oldVal) return;
-    this.mdRowSelectionChange.emit({ selected: newVal, value: this.value });
+    this.mdRowSelectionChange.emit({ selected: newVal, value: this.identity });
   }
 
   @Watch('expanded')
   onExpandedChange(newVal: boolean, oldVal: boolean) {
     if (newVal === oldVal) return;
     this.mdRowExpandedChange.emit({ expanded: newVal });
+  }
+
+  /**
+   * `value`, or — when unset — the row's index (the documented default): among
+   * its table's body rows (the same ordering `<md-table>` uses for selection
+   * values), among its own head/foot group's rows, or among its parent's rows
+   * outside a table.
+   */
+  private get identity(): string {
+    if (this.value) return this.value;
+    const group = this.el.closest('md-table-head, md-table-foot');
+    const table = this.el.closest('md-table');
+    let rows: Element[];
+    if (group) rows = Array.from(group.querySelectorAll('md-table-row'));
+    else if (table)
+      rows = Array.from(table.querySelectorAll('md-table-row')).filter(
+        (r) => (r.closest('md-table-head') || r.closest('md-table-foot')) == null,
+      );
+    else rows = Array.from(this.el.parentElement?.children ?? []).filter((r) => r.tagName === 'MD-TABLE-ROW');
+    const i = rows.indexOf(this.el);
+    return i < 0 ? '' : String(i);
   }
 
   /** Toggle the expanded zone. */
@@ -123,7 +144,7 @@ export class MdTableRow {
       return;
     }
     if (this.clickable) {
-      this.mdRowClick.emit({ value: this.value, row: this.el });
+      this.mdRowClick.emit({ value: this.identity, row: this.el });
     }
   };
 
@@ -136,7 +157,7 @@ export class MdTableRow {
     if (origin !== this.el) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      this.mdRowClick.emit({ value: this.value, row: this.el });
+      this.mdRowClick.emit({ value: this.identity, row: this.el });
     }
   };
 

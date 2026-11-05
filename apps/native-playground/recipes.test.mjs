@@ -94,5 +94,5 @@ test('content editors are offered only for declared text-bearing default slots',
     assert.equal(element.textContent, recipe.text, `${component.tagName} seeds its editor from the actual content`);
     assert.ok(recipe.textLabel && recipe.textDescription);
   }
-  assert.deepEqual(textTags.sort(), ['md-accordion-item', 'md-breadcrumb-item', 'md-button', 'md-step', 'md-tab-panel', 'md-table-sort-label']);
+  assert.deepEqual(textTags.sort(), ['md-accordion-item', 'md-breadcrumb-item', 'md-button', 'md-split-button', 'md-step', 'md-tab-panel', 'md-table-sort-label']);
 });

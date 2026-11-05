@@ -1,0 +1,971 @@
+{
+ "tag": "md-line-chart",
+ "case": "empty",
+ "html": "<md-line-chart data-ax-node=\"n0\" id=\"example-md-line-chart\"></md-line-chart>",
+ "props": {
+  "n0": {
+   "animation": "expressive",
+   "area": false,
+   "axisTicks": false,
+   "connectNulls": false,
+   "curve": "smooth",
+   "density": 0,
+   "grid": "horizontal",
+   "inverted": false,
+   "label": "Monthly revenue",
+   "labelEmpty": "No data to display",
+   "labelPlot": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+   "labelPoint": "%x%: %values%",
+   "labelZoomEnd": "Zoom range end",
+   "labelZoomStart": "Zoom range start",
+   "legend": "top-end",
+   "loading": false,
+   "loadingLabel": "Loading chart…",
+   "locale": "",
+   "noAnimation": true,
+   "series": [],
+   "seriesLabels": false,
+   "showLabels": false,
+   "showLine": true,
+   "showMarks": true,
+   "stack": "none",
+   "subtitle": "Native Canvas • tap to inspect",
+   "summary": "",
+   "titleAlign": "start",
+   "tooltip": "axis",
+   "xAxis": {
+    "data": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ]
+   },
+   "zoom": "none"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   374
+  ],
+  "children": [
+   {
+    "role": "figure",
+    "name": "Monthly revenue, Line chart, from Jan to Jun.",
+    "ignored": false,
+    "frame": [
+     16,
+     16,
+     608,
+     342
+    ],
+    "children": [
+     {
+      "role": "sectionheader",
+      "name": "",
+      "ignored": false
+     },
+     {
+      "role": "generic",
+      "name": "",
+      "ignored": false,
+      "frame": [
+       32,
+       32,
+       576,
+       310
+      ],
+      "children": [
+       {
+        "role": "Canvas",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         32,
+         32,
+         576,
+         310
+        ]
+       },
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         32,
+         32,
+         576,
+         310
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Monthly revenue",
+            "ignored": false,
+            "frame": [
+             61.125,
+             38,
+             112,
+             17
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Monthly revenue",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Native Canvas • tap to inspect",
+            "ignored": false,
+            "frame": [
+             61.125,
+             56,
+             146.9375,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Native Canvas • tap to inspect",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "0",
+            "ignored": false,
+            "frame": [
+             47,
+             310.5,
+             6.125,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "0",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "0.2",
+            "ignored": false,
+            "frame": [
+             37.828125,
+             262.890625,
+             15.296875,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "0.2",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "0.4",
+            "ignored": false,
+            "frame": [
+             37.828125,
+             215.296875,
+             15.296875,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "0.4",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "0.6",
+            "ignored": false,
+            "frame": [
+             37.828125,
+             167.6875,
+             15.296875,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "0.6",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "0.8",
+            "ignored": false,
+            "frame": [
+             37.828125,
+             120.09375,
+             15.296875,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "0.8",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "1",
+            "ignored": false,
+            "frame": [
+             47,
+             72.5,
+             6.125,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "1",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Jan",
+            "ignored": false,
+            "frame": [
+             96.5625,
+             323,
+             17.75,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Jan",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Feb",
+            "ignored": false,
+            "frame": [
+             184.5625,
+             323,
+             18.96875,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Feb",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Mar",
+            "ignored": false,
+            "frame": [
+             273.1796875,
+             323,
+             18.953125,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Mar",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Apr",
+            "ignored": false,
+            "frame": [
+             362.703125,
+             323,
+             17.125,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Apr",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "May",
+            "ignored": false,
+            "frame": [
+             449.5,
+             323,
+             20.78125,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "May",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Jun",
+            "ignored": false,
+            "frame": [
+             539.625,
+             323,
+             17.75,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Jun",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         32,
+         32,
+         576,
+         310
+        ]
+       },
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         32,
+         32,
+         576,
+         310
+        ]
+       },
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         32,
+         32,
+         576,
+         310
+        ]
+       },
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         32,
+         32,
+         576,
+         310
+        ]
+       }
+      ]
+     },
+     {
+      "role": "generic",
+      "name": "",
+      "ignored": false,
+      "frame": [
+       16,
+       16,
+       608,
+       342
+      ],
+      "children": [
+       {
+        "role": "StaticText",
+        "name": "No data to display",
+        "ignored": false,
+        "frame": [
+         263.953125,
+         179,
+         113,
+         17
+        ],
+        "children": [
+         {
+          "role": "InlineTextBox",
+          "name": "No data to display",
+          "ignored": false
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "role": "sectionfooter",
+      "name": "",
+      "ignored": false
+     },
+     {
+      "role": "generic",
+      "name": "",
+      "ignored": false,
+      "frame": [
+       31,
+       31,
+       1,
+       1
+      ],
+      "children": [
+       {
+        "role": "table",
+        "name": "Monthly revenue",
+        "ignored": false,
+        "frame": [
+         31,
+         31,
+         120.703125,
+         174
+        ],
+        "children": [
+         {
+          "role": "caption",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           31,
+           31,
+           120.703125,
+           18
+          ],
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Monthly revenue",
+            "ignored": false,
+            "frame": [
+             31,
+             31,
+             120.703125,
+             18
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Monthly revenue",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "rowgroup",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           33,
+           51,
+           116.703125,
+           20
+          ],
+          "children": [
+           {
+            "role": "row",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             33,
+             51,
+             116.703125,
+             20
+            ],
+            "children": [
+             {
+              "role": "columnheader",
+              "name": "X",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               33,
+               51,
+               116.703125,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "X",
+                "ignored": false,
+                "frame": [
+                 85.671875,
+                 52,
+                 11.359375,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "X",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "row",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             33,
+             73,
+             116.703125,
+             20
+            ],
+            "children": [
+             {
+              "role": "rowheader",
+              "name": "Jan",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               33,
+               73,
+               116.703125,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Jan",
+                "ignored": false,
+                "frame": [
+                 77.328125,
+                 74,
+                 28.046875,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Jan",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "row",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             33,
+             95,
+             116.703125,
+             20
+            ],
+            "children": [
+             {
+              "role": "rowheader",
+              "name": "Feb",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               33,
+               95,
+               116.703125,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Feb",
+                "ignored": false,
+                "frame": [
+                 77.015625,
+                 96,
+                 28.671875,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Feb",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "row",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             33,
+             117,
+             116.703125,
+             20
+            ],
+            "children": [
+             {
+              "role": "rowheader",
+              "name": "Mar",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               33,
+               117,
+               116.703125,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Mar",
+                "ignored": false,
+                "frame": [
+                 76.359375,
+                 118,
+                 29.96875,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Mar",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "row",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             33,
+             139,
+             116.703125,
+             20
+            ],
+            "children": [
+             {
+              "role": "rowheader",
+              "name": "Apr",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               33,
+               139,
+               116.703125,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Apr",
+                "ignored": false,
+                "frame": [
+                 77.296875,
+                 140,
+                 28.09375,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Apr",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "row",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             33,
+             161,
+             116.703125,
+             20
+            ],
+            "children": [
+             {
+              "role": "rowheader",
+              "name": "May",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               33,
+               161,
+               116.703125,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "May",
+                "ignored": false,
+                "frame": [
+                 75.1875,
+                 162,
+                 33,
+                 19
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "May",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "row",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             33,
+             183,
+             116.703125,
+             20
+            ],
+            "children": [
+             {
+              "role": "rowheader",
+              "name": "Jun",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               33,
+               183,
+               116.703125,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Jun",
+                "ignored": false,
+                "frame": [
+                 76.96875,
+                 184,
+                 28.765625,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Jun",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "role": "status",
+      "name": "",
+      "ignored": false,
+      "live": "polite",
+      "atomic": true,
+      "relevant": "additions text",
+      "frame": [
+       31,
+       31,
+       1,
+       1
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

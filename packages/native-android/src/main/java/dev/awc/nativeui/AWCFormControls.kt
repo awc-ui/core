@@ -130,7 +130,7 @@ internal class AWCAutomaticFormControl(val field: AWCFormField, val form: AWCFor
             when (tag) {
                 "md-checkbox", "md-radio" -> if (map?.containsKey("checked") == true) field.value = map["checked"]
                 "md-switch" -> if (map?.containsKey("selected") == true) field.value = map["selected"]
-                "md-number-field" -> if (map?.containsKey("value") == true) field.value = map["formattedValue"] ?: map["value"]
+                "md-number-field" -> if (map?.containsKey("value") == true) field.value = map["value"]
                 "md-slider" -> if (map != null) field.value = if (source.bool("range")) mapOf("start" to map["valueStart"], "end" to map["valueEnd"]) else map["value"]
                 "md-autocomplete", "md-select", "md-multi-select" -> if (name != "mdInput") field.value = detail
                 "md-date-picker", "md-time-picker" -> field.value = if (map?.containsKey("value") == true) map["value"] else detail

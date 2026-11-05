@@ -29,7 +29,11 @@ function parseHexOrRgb(s: string): Rgba | null {
   }
   const m = s.match(/^rgba?\(([^)]+)\)$/);
   if (m) {
-    const parts = m[1].split(/[,/]/).map((p) => p.trim());
+    // Both syntaxes: `rgb(1, 2, 3)` / `rgba(1, 2, 3, .5)` and CSS Color 4's
+    // `rgb(1 2 3)` / `rgb(1 2 3 / .5)`. Split on commas alone, the space form
+    // came through as ONE channel and the next lookup threw.
+    const parts = m[1].split(/[\s,/]+/).filter((p) => p !== '');
+    if (parts.length < 3) return null;
     const chan = (v: string) => (v.endsWith('%') ? (parseFloat(v) / 100) * 255 : parseFloat(v));
     const r = chan(parts[0]) / 255;
     const g = chan(parts[1]) / 255;

@@ -117,8 +117,12 @@
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
+      "notes": [
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). The head row group: sticky / frozen header, header row height and colours from the table.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": []
     },
     "android": {
       "status": "adapter-implemented",
@@ -133,9 +137,11 @@
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). The head row group: sticky / frozen header, header row height and colours from the table.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": []
     }
   }
 }

@@ -1,19 +1,172 @@
 /* Canvas aids are viewport measurements, never component style overrides. */
-.preview-stage>#preview-content:has(>.canvas-viewport-shell){min-width:0;justify-content:center;align-items:center}
-.canvas-viewport-shell{position:relative;flex:none;min-width:0;max-width:100%;overflow:hidden;border-radius:9px;outline:1px solid var(--border)}
-.canvas-viewport-scale{position:absolute;inset:0 auto auto 0;transform-origin:top left}
-.canvas-viewport-scale>#component-frame{min-width:0;max-width:none;margin:0;box-shadow:none;transition:none}
-.preview-stage>#preview-content:has(>.native-snapshot){min-width:0}
-.native-snapshot .snapshot-frame,.native-snapshot .native-live-surface{min-width:0;max-width:100%}
-.native-snapshot .native-live-image{min-width:0;max-width:100%;flex-shrink:1}
-.native-snapshot .snapshot-heading{flex-wrap:wrap}.native-snapshot .snapshot-heading>div:first-child{min-width:0;overflow-wrap:anywhere}
+.preview-panel > .studio-card { isolation: isolate; }
+.preview-panel > .studio-card::part(outline) { z-index: 2; }
+/* Lift the isolated card while a toolbar tooltip crosses the adjacent panel. */
+.preview-panel > .studio-card:has(.canvas-toggles md-tooltip[open]) { z-index: 1; }
+.preview-toolbar {
+  height: auto;
+  min-height: 64px;
+  padding: 8px 14px;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+}
+.preview-toolbar #preview-platform-buttons { padding-block: 0; }
+.preview-toolbar .canvas-toolbar {
+  margin-inline-start: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.preview-toolbar .viewport-controls { gap: 10px; }
+.preview-toolbar .canvas-dimensions {
+  display: inline;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.preview-toolbar .canvas-toggles md-icon-button {
+  --md-icon-button-container-width: 36px;
+  --md-icon-button-container-height: 36px;
+  --md-icon-button-icon-size: 20px;
+}
+.preview-runtime-caption { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; min-width: 0; }
+.preview-footer .runtime-badge { display: inline-flex; }
+.preview-stage:has(.canvas-viewport-shell, .native-snapshot) {
+  min-height: 0;
+  max-height: min(640px, 65vh);
+  padding: 32px;
+  place-items: start;
+  overflow: auto;
+  overflow-anchor: none;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--surface);
+}
+.preview-stage:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.preview-stage>#preview-content:has(>.canvas-viewport-shell, >.native-snapshot) {
+  width: max-content;
+  min-width: 100%;
+  min-height: 0;
+  justify-self: start;
+  justify-content: center;
+  align-items: flex-start;
+}
+.canvas-viewport-shell{position:relative;flex:none;min-width:0;max-width:none;overflow:visible;border-radius:9px;outline:1px solid var(--border)}
+.canvas-viewport-scale{position:absolute;inset:0 auto auto 0;transform-origin:top left;overflow:hidden;border-radius:inherit}
+.canvas-viewport-scale>#component-frame{min-width:0;max-width:none;margin:0;border:0;box-shadow:none;transition:none}
+.native-snapshot {
+  position: relative;
+  flex: none;
+  min-width: 0;
+  max-width: none;
+  border-radius: 9px;
+  outline: 1px solid var(--border);
+}
+.canvas-resize-handle {
+  position: absolute;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  touch-action: none;
+  user-select: none;
+}
+.canvas-resize-handle::before {
+  content: "";
+  display: block;
+  width: 5px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--muted);
+  box-shadow: 0 0 0 3px var(--surface);
+}
+.canvas-resize-handle:is([data-resize=e], [data-resize=w]) {
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+.canvas-resize-handle[data-resize=e] { right: -14px; }
+.canvas-resize-handle[data-resize=w] { left: -14px; }
+.canvas-resize-handle:is([data-resize=n], [data-resize=s]) {
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+.canvas-resize-handle[data-resize=n] { top: -14px; }
+.canvas-resize-handle[data-resize=s] { bottom: -14px; }
+.canvas-resize-handle:is([data-resize=n], [data-resize=s])::before { width: 28px; height: 5px; }
+.canvas-resize-handle[data-resize=nw] { left: -14px; top: -14px; cursor: nwse-resize; }
+.canvas-resize-handle[data-resize=ne] { right: -14px; top: -14px; cursor: nesw-resize; }
+.canvas-resize-handle[data-resize=sw] { left: -14px; bottom: -14px; cursor: nesw-resize; }
+.canvas-resize-handle[data-resize=se] { right: -14px; bottom: -14px; cursor: nwse-resize; }
+.canvas-resize-handle:is([data-resize=nw], [data-resize=ne], [data-resize=sw], [data-resize=se])::before {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.canvas-resize-handle:hover,
+.canvas-resize-handle:focus-visible,
+.preview-stage[data-resizing=true] .canvas-resize-handle { color: var(--primary); }
+.canvas-resize-handle:hover::before,
+.canvas-resize-handle:focus-visible::before,
+.preview-stage[data-resizing=true] .canvas-resize-handle::before {
+  border-color: var(--primary);
+  background: currentColor;
+}
+.canvas-resize-handle:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.preview-stage[data-resizing=true] { user-select: none; }
+.preview-stage[data-resizing=true] #component-frame,
+.preview-stage[data-resizing=true] .native-live-surface { pointer-events: none; }
+.native-snapshot > .snapshot-frame {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.native-snapshot > .snapshot-frame:has(.native-live-surface) {
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0;
+}
+/* Auto margins center a fitting capture, and become zero rather than creating
+   inaccessible negative overflow when the capture exceeds the viewing area. */
+.native-snapshot .native-live-surface { flex: none; width: max-content; min-width: 0; max-width: none; margin: auto; }
+.native-snapshot .native-live-image { flex: none; min-width: 0; max-width: none; height: auto; max-height: none; }
 .canvas-toggles{align-items:center;gap:2px}.canvas-toggles md-tooltip{display:inline-flex}
 #canvas-direction::part(label){font-family:ui-monospace,monospace}
 #canvas-help{margin:0;padding:9px 18px;color:var(--muted);background:var(--panel);border-bottom:1px solid var(--border);font-size:11px;line-height:1.5}
 #canvas-help[hidden],#canvas-expanded-label[hidden]{display:none}
 #canvas-expanded-label{font-size:11px;color:var(--muted);margin-inline:auto 8px;white-space:nowrap}
-.preview-stage[data-grid=true]{background-image:none}
-html[data-grid=true] .component-canvas{background-image:linear-gradient(color-mix(in srgb,var(--primary) 28%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--primary) 28%,transparent) 1px,transparent 1px),linear-gradient(color-mix(in srgb,var(--primary) 12%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--primary) 12%,transparent) 1px,transparent 1px);background-size:64px 64px,64px 64px,8px 8px,8px 8px;background-attachment:fixed}
+/* Decoration belongs behind the preview, never over its component pixels. */
+body.component-canvas,
+.native-snapshot > .snapshot-frame {
+  --canvas-dot-color: color-mix(in srgb, var(--md-sys-color-primary) 18%, transparent);
+  background-color: var(--md-sys-color-surface, var(--panel));
+  background-image: radial-gradient(circle, var(--canvas-dot-color) .8px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: center;
+}
+.preview-stage[data-grid=true],
+.preview-stage[data-grid=true] .native-snapshot > .snapshot-frame { background-image: none; }
+html[data-grid=true] .component-canvas{background-image:linear-gradient(color-mix(in srgb,var(--primary) 28%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--primary) 28%,transparent) 1px,transparent 1px),linear-gradient(color-mix(in srgb,var(--primary) 12%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--primary) 12%,transparent) 1px,transparent 1px);background-size:64px 64px,64px 64px,8px 8px,8px 8px;background-position:0 0;background-attachment:fixed}
 .canvas-rulers{position:fixed;inset:0;pointer-events:none;z-index:2147483600;font:9px/1 ui-monospace,monospace;color:var(--md-sys-color-on-surface-variant);direction:ltr}
 .canvas-ruler-x{position:absolute;inset:0 0 auto;height:18px;background:var(--md-sys-color-surface-container);border-bottom:1px solid var(--md-sys-color-outline-variant);background-image:repeating-linear-gradient(90deg,var(--md-sys-color-outline-variant) 0 1px,transparent 1px 8px);background-size:100% 4px;background-position:bottom;background-repeat:no-repeat}
 .canvas-ruler-y{position:absolute;inset:18px auto 0 0;width:18px;background:var(--md-sys-color-surface-container);border-right:1px solid var(--md-sys-color-outline-variant);background-image:repeating-linear-gradient(var(--md-sys-color-outline-variant) 0 1px,transparent 1px 8px);background-size:4px 100%;background-position:right -2px;background-repeat:no-repeat}
@@ -25,17 +178,28 @@ html[data-grid=true] .component-canvas{background-image:linear-gradient(color-mi
 .workspace-grid.is-expanded .studio-documentation,.workspace-grid.is-expanded .footnote{display:none}
 .workspace-grid.is-expanded .preview-panel{flex:1;min-height:0;display:flex;flex-direction:column}
 .workspace-grid.is-expanded .preview-panel>.studio-card{height:100%;min-height:0;flex:1}
-.workspace-grid.is-expanded .preview-stage{flex:1;min-height:240px;overflow:auto;padding:24px}
+.workspace-grid.is-expanded .preview-stage{flex:1;min-height:240px;max-height:none;overflow:auto;padding:24px}
 .workspace-grid.is-expanded #preview-content{height:100%;min-height:0;align-items:stretch}
-.workspace-grid.is-expanded #component-frame{height:100%!important;min-height:240px;max-height:none}
+.workspace-grid.is-expanded #preview-content:has(>.canvas-viewport-shell, >.native-snapshot){height:auto;min-height:0;align-items:flex-start}
+.workspace-grid.is-expanded #component-frame{min-height:0;max-height:none}
 .workspace-grid.is-expanded .props-panel{position:static;top:auto;max-height:100%;height:100%;grid-row:auto;min-height:0}
 .workspace-grid.is-expanded .props-card{height:100%;max-height:100%}
 .workspace-grid.is-expanded #props-controls{display:block}.workspace-grid.is-expanded .props-panel-footer{display:flex}
 .workspace-grid.is-expanded .preview-footer,.workspace-grid.is-expanded .preview-toolbar,.workspace-grid.is-expanded .canvas-toolbar{flex-shrink:0}
 .workspace-grid.is-expanded #canvas-inspector-panel{flex-shrink:0;max-height:36vh;overflow:auto}
-.workspace-grid.is-expanded .native-snapshot{height:100%;display:flex;flex-direction:column}.workspace-grid.is-expanded .snapshot-frame{flex:1;min-height:200px}.workspace-grid.is-expanded .snapshot-heading{flex-shrink:0}
 @media(max-width:800px){.workspace-grid.is-expanded{grid-template-columns:minmax(0,1fr);height:100dvh;grid-template-rows:minmax(520px,1fr) auto;padding:10px;overflow:auto}.workspace-grid.is-expanded .props-panel{height:340px;max-height:340px}.workspace-grid.is-expanded .preview-stage{padding:16px}.workspace-grid.is-expanded #canvas-expanded-label{display:none}}
 @media(max-width:640px){.viewport-controls{gap:6px}.canvas-toolbar{gap:6px}.canvas-toggles{margin-inline-start:auto}#canvas-help{padding:8px 12px;font-size:10px}#canvas-direction::part(label){font-size:9px}}
+@media(max-width:640px) {
+  .preview-toolbar { padding: 10px; gap: 10px; }
+  .preview-toolbar .canvas-toolbar { width: 100%; gap: 6px; justify-content: space-between; }
+  .preview-toolbar .viewport-controls { gap: 6px; }
+  .preview-toolbar .canvas-dimensions { font-size: 10px; }
+  .preview-toolbar .canvas-toggles md-icon-button {
+    --md-icon-button-container-width: 32px;
+    --md-icon-button-container-height: 32px;
+  }
+  .preview-stage:has(.canvas-viewport-shell, .native-snapshot) { padding: 20px; }
+}
 
 .canvas-rulers-native{position:absolute;z-index:4;overflow:hidden}
-.preview-stage[data-grid=true] .native-live-surface::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(color-mix(in srgb,var(--primary) 28%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--primary) 28%,transparent) 1px,transparent 1px),linear-gradient(color-mix(in srgb,var(--primary) 12%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--primary) 12%,transparent) 1px,transparent 1px);background-size:64px 64px,64px 64px,8px 8px,8px 8px}
+.preview-stage[data-grid=true] .native-snapshot::after{content:"";position:absolute;inset:0;z-index:3;border-radius:inherit;pointer-events:none;background-image:linear-gradient(color-mix(in srgb,var(--primary) 28%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--primary) 28%,transparent) 1px,transparent 1px),linear-gradient(color-mix(in srgb,var(--primary) 12%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--primary) 12%,transparent) 1px,transparent 1px);background-size:64px 64px,64px 64px,8px 8px,8px 8px}

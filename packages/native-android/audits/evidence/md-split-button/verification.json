@@ -1,0 +1,50 @@
+{
+  "unitTotals": {
+    "tests": 98,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "primaryDevice": {
+    "name": "dev.awc.playground.NativeSplitButtonParityTest",
+    "tests": "11",
+    "failures": "1",
+    "errors": "0",
+    "skipped": "0",
+    "time": "25.33",
+    "timestamp": "2026-10-20T19:12:17",
+    "hostname": "localhost"
+  },
+  "focusedStateLayer": {
+    "name": "dev.awc.playground.NativeSplitButtonParityTest",
+    "tests": "1",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "2.453",
+    "timestamp": "2026-10-20T19:12:44",
+    "hostname": "localhost"
+  },
+  "finalMenuHost": {
+    "name": "dev.awc.playground.LivePreviewHostTest",
+    "tests": "1",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "3.805",
+    "timestamp": "2026-10-20T19:14:44",
+    "hostname": "localhost"
+  },
+  "primaryInputCount": 120,
+  "primaryChangedInputs": [],
+  "primaryCommand": "JAVA_HOME=/Users/ionut-valentinmitrache/Library/Java/JavaVirtualMachines/openjdk-23.0.1/Contents/Home ANDROID_HOME=/Users/ionut-valentinmitrache/Documents/Codex/2026-10-07/p/work/android-sdk ANDROID_SERIAL=emulator-5554 ./gradlew :native-ui:testDebugUnitTest :app:compileDebugKotlin :app:connectedDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=dev.awc.playground.NativeSplitButtonParityTest,dev.awc.playground.LivePreviewHostTest#splitButtonCapturesIndependentNativeActionsAdditiveSlotsAndActualCheckedState,dev.awc.playground.LivePreviewHostTest#fabMenuMethodsStayIndependentOfStreamingAndCorrelateActualLifecycleAndItemEvents,dev.awc.playground.NativeSegmentedParityTest#all12NarrowWebGridsPreservePaddingFloorsOverflowAndRtlPositions,dev.awc.playground.NativeSegmentedParityTest#all35WebFixturesMatchMeasuredRootPartsGridAndDensity,dev.awc.playground.NativeBadgeParityTest#smallInspectionOmitsUnusedTypographyAndLargeRestoresActualLabelMetrics' --console=plain",
+  "stateLayerCommand": "JAVA_HOME=/Users/ionut-valentinmitrache/Library/Java/JavaVirtualMachines/openjdk-23.0.1/Contents/Home ANDROID_HOME=/Users/ionut-valentinmitrache/Documents/Codex/2026-10-07/p/work/android-sdk ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=dev.awc.playground.NativeSplitButtonParityTest#actualGeneratedStateOpacityPaintsIndependentSplitAndSegmentStates' --console=plain",
+  "finalBuildCommand": "JAVA_HOME=/Users/ionut-valentinmitrache/Library/Java/JavaVirtualMachines/openjdk-23.0.1/Contents/Home ANDROID_HOME=/Users/ionut-valentinmitrache/Documents/Codex/2026-10-07/p/work/android-sdk ANDROID_SERIAL=emulator-5554 ./gradlew :native-ui:testDebugUnitTest :app:assembleDebug :app:connectedDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=dev.awc.playground.LivePreviewHostTest#fabMenuMethodsStayIndependentOfStreamingAndCorrelateActualLifecycleAndItemEvents' --console=plain",
+  "workdir": "/Users/ionut-valentinmitrache/Documents/Codex/2026-10-07/p/work/awc-native/apps/native-android-playground",
+  "notes": [
+    "The primary run retained its one failure: a Segmented test locator did not target the actual click node. The focused corrected pixel test passed without runtime or tolerance changes.",
+    "The final Menu build renamed the measured surface to md-fab-menu overlay and verified that name plus no inspection when closed; bounds were unchanged.",
+    "Temporary generated snippets were removed before final build and installation."
+  ],
+  "apkSha256": "1ec7c7192d3389995c9c587304e6c906da0d86689006fb2d575f03ba9f7edfeb"
+}

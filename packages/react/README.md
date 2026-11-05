@@ -12,6 +12,17 @@ Requires React 18+.
 
 ## Usage
 
+Load Core's global stylesheet once in your root layout or app entry, before
+rendering components:
+
+```tsx
+import "@awc-ui/core/css/tokens.css";
+```
+
+It supplies design tokens and keeps unfinished component hosts hidden until
+their first render completes. Registering an element alone does not mean its
+styles and content are ready.
+
 ```tsx
 import { MdButton } from "@awc-ui/react";
 
@@ -34,6 +45,11 @@ For styled markup on first paint (Next.js App Router and other SSR setups), impo
 ```tsx
 import { MdButton } from "@awc-ui/react/server";
 ```
+
+Keep the same global stylesheet in the root layout. Fully rendered server
+components retain their hydration markers and remain visible before client
+JavaScript runs. Client-only components still need time to render; hiding their
+unfinished content does not reserve their final dimensions.
 
 ## Smaller bundles
 

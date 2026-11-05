@@ -80,11 +80,13 @@ export class MdSnackbar {
 
   @State() private hasSlottedAction = false;
   @State() private hasSlottedClose = false;
-  @State() private hasSlottedDefault = false;
 
   private autoHideTimer?: ReturnType<typeof setTimeout>;
   private rippleDismissTimer?: ReturnType<typeof setTimeout>;
   private timerPaused = false;
+  private slotObserver?: MutationObserver;
+  private loaded = false;
+  private pendingOpen = false;
 
   /** Coerce autoHide — HTML attribute `auto-hide="false"` arrives as string "false" */
   private get isAutoHide(): boolean {
@@ -93,39 +95,51 @@ export class MdSnackbar {
 
   // ─── Lifecycle ─────────────────────────────────────────────
 
+  connectedCallback() {
+    this.syncSlots();
+    // The named outlets are conditional, so slotchange cannot discover the
+    // first authored child. Observe the light DOM, including reassignment.
+    this.slotObserver?.disconnect();
+    if (typeof MutationObserver !== 'undefined') {
+      this.slotObserver = new MutationObserver(this.syncSlots);
+      this.slotObserver.observe(this.el, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['slot'],
+      });
+    }
+    if (this.loaded && this.open) {
+      if (this.pendingOpen) this.onOpenChange(true);
+      else {
+        this.raiseAboveOpenPeers();
+        if (this.isAutoHide) this.startAutoHide();
+        window.addEventListener('keydown', this.handleEscape);
+      }
+    }
+  }
+
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
-
-    const defaultSlot = shadow.querySelector('slot:not([name])') as HTMLSlotElement | null;
-    const actionSlot = shadow.querySelector('slot[name="action"]') as HTMLSlotElement | null;
-    const closeSlot = shadow.querySelector('slot[name="close"]') as HTMLSlotElement | null;
-
-    defaultSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedDefault = defaultSlot.assignedNodes().some(n =>
-        n.nodeType === Node.ELEMENT_NODE || (n.nodeType === Node.TEXT_NODE && n.textContent?.trim() !== ''),
-      );
-    });
-    actionSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedAction = actionSlot.assignedElements().length > 0;
-    });
-    closeSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedClose = closeSlot.assignedElements().length > 0;
-    });
-
+    this.loaded = true;
     if (this.open) {
       this.onOpenChange(true, false);
     }
   }
 
   disconnectedCallback() {
+    this.slotObserver?.disconnect();
+    this.slotObserver = undefined;
     this.clearAutoHide();
-    if (this.rippleDismissTimer != null) {
-      clearTimeout(this.rippleDismissTimer);
-      this.rippleDismissTimer = undefined;
-    }
+    this.timerPaused = false;
+    this.clearRippleDismiss();
     window.removeEventListener('keydown', this.handleEscape);
   }
+
+  private syncSlots = () => {
+    const children = Array.from(this.el.children);
+    this.hasSlottedAction = children.some(child => child.getAttribute('slot') === 'action');
+    this.hasSlottedClose = children.some(child => child.getAttribute('slot') === 'close');
+  };
 
   // ─── Watchers ──────────────────────────────────────────────
 
@@ -142,16 +156,25 @@ export class MdSnackbar {
     const peers = Array.from(document.querySelectorAll('md-snackbar')).filter(
       (s) => s !== this.el && (s as HTMLMdSnackbarElement).open,
     );
-    const highest = peers.reduce(
-      (max, s) => Math.max(max, Number((s as HTMLElement).style.getPropertyValue('--_stack-order')) || 0),
-      0,
-    );
-    this.el.style.setProperty('--_stack-order', String(highest + 1));
+    const rank = (element: Element) =>
+      Number((element as HTMLElement).style.getPropertyValue('--_stack-order')) || 0;
+    // Compact the live ranks before appending the newest one. Stable sorting
+    // retains DOM paint order for ties and prevents repeated reopens growing
+    // beyond the number of visible snackbars.
+    peers.sort((a, b) => rank(a) - rank(b)).forEach((peer, index) => {
+      (peer as HTMLElement).style.setProperty('--_stack-order', String(index + 1));
+    });
+    this.el.style.setProperty('--_stack-order', String(peers.length + 1));
   }
 
   @Watch('open')
   onOpenChange(newVal: boolean, _oldVal?: boolean) {
     if (newVal) {
+      if (!this.el.isConnected) {
+        this.pendingOpen = true;
+        return;
+      }
+      this.pendingOpen = false;
       this.raiseAboveOpenPeers();
       this.mdOpen.emit();
       if (this.isAutoHide) {
@@ -159,7 +182,9 @@ export class MdSnackbar {
       }
       window.addEventListener('keydown', this.handleEscape);
     } else {
+      this.pendingOpen = false;
       this.clearAutoHide();
+      this.clearRippleDismiss();
       this.timerPaused = false;
       window.removeEventListener('keydown', this.handleEscape);
     }
@@ -200,7 +225,17 @@ export class MdSnackbar {
     }
   }
 
+  private clearRippleDismiss() {
+    if (this.rippleDismissTimer != null) {
+      clearTimeout(this.rippleDismissTimer);
+      this.rippleDismissTimer = undefined;
+    }
+  }
+
   private dismissAfterRipple(reason: 'action' | 'close') {
+    // Repeated Escape/close presses share one dismissal so disconnect can
+    // cancel every pending effect.
+    if (this.rippleDismissTimer != null) return;
     this.rippleDismissTimer = setTimeout(() => {
       this.rippleDismissTimer = undefined;
       if (this.open) {

@@ -891,9 +891,12 @@
       "status": "adapter-implemented",
       "properties": [
         "variant",
+        "size",
+        "shape",
         "selectionMode",
         "required",
-        "fullWidth"
+        "fullWidth",
+        "density"
       ],
       "events": [
         "mdSelectionChange"
@@ -902,28 +905,44 @@
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "size",
-        "shape",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Coordinates selected child indices and values. Native selection payload omits DOM button references.",
-        "mdSelectionChange includes values, added and removed; originalEvent is omitted.",
-        "AWCButtonFocusGroup provides one native sequential entry and source-ordered Left/Right (RTL-aware), Home/End focus movement across button/icon-button descendants. Focus skips only hard-disabled controls and never activates or selects. Recent focus, single selected fallback and first eligible fallback recompute on membership/mode changes.",
-        "Nested native button groups own isolated focus scopes; this intentionally differs from the source broad descendant query. Dynamic native IDs must stay stable and unique within a scope. Native selection remains coordinated through the adapter child composition."
+        "Dedicated native group layout implements standard/connected source gap and density ladders, source child size/shape/toggle injection, mixed button/icon children, logical connected corners and minimum floors, nowrap overflow, explicit dimensions and min/max precedence. Full-width divides content-box flex basis then adds each child padding/border; text children stretch vertically while icon definite heights remain fixed. Seven public layout hooks map to inherited AWCButtonGroupAppearance points.",
+        "Child actions run before independent raw group reconciliation. Single/multi selection, required restoration, duplicate/empty values and previous-event value diffs preserve source ordering. Canceling a child mdClick blocks child actions but does not block the separate raw group click; soft-disabled/loading pointer clicks can still reconcile the group. Hard-disabled controls do not. Group notification cancellation cannot undo already committed child state.",
+        "mdSelectionChange carries values, added and removed only. Native activation metadata preserves the initiating pointer/keyboard/accessibility identity; DOM originalEvent objects are not fabricated. There are no source methods or CSS parts. Native named children replace the structural default slot.",
+        "Source-ordered roving focus supports RTL Left/Right, Home/End, selected/recent-focus fallback and hard-disabled skipping. Nested groups forward focus/key/raw-selection actions through their parent chain. Native accessibility exposes a containing group and each real child button selected/disabled state; DOM ARIA strings are not executed.",
+        "Standard neighbor motion uses the source per-side size ladder, 150ms peak and 400ms completion, while connected corners override child radius hooks. Required selected children suppress motion. Listener eligibility follows the initial source variant, including connected-to-standard no-motion behavior. Reduce Motion suppresses animation.",
+        "Live/Snapshot hosts accept buttonGroupAppearanceDefaults/buttonGroupAppearance and buttonGroupSelection in authored descendant order. Live captured frames return exact ordered child booleans independently of value strings, retaining duplicate/empty identities. Group pointer down/up/move/cancel and normal native keyboard input are supported.",
+        "Checked-in source-contract and actual SwiftUI geometry/event/focus/pointer/motion fixtures plus live JSON protocol verification cover this component. Only macOS SwiftUI/AppKit was compiled and executed here; iOS SDK/device/VoiceOver validation remains unavailable. See audits/md-button-group.md."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCButtonGroupAppearance / View.awcButtonGroupAppearance",
+        "fields": [
+          "gap",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "density",
         "fullWidth",
         "required",
-        "selectionMode"
+        "selectionMode",
+        "shape",
+        "size",
+        "variant"
       ],
       "events": [
         "mdSelectionChange"
@@ -932,20 +951,60 @@
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "variant",
-        "size",
-        "shape",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native single/multi selection and required coordination. A roving focus stop follows recent focus/activation, selected single-select child, then first enabled child. Real Left/Right wrap with RTL reversal; Home/End move to endpoints without selecting. Disabled children are skipped; soft-disabled/loading children remain keyboard focusable but inert. Native groups isolate nearest-group membership rather than traversing nested DOM descendants. Retained keyed child reordering requires re-registration to update traversal order. DOM originalEvent is omitted from payloads."
+        "Native nowrap layout with source density gaps, connected mixed-button corners, content-box flex sizing, seven typed layout hooks, standard neighbor press motion, ordered selection snapshots and roving focus. Raw click reconciliation runs after child behavior even when child action was canceled or soft-disabled/loading; required can reselect the clicked child. The group emits once per raw click, including unchanged deltas. Nested and wrapped descendants participate in every ancestor group, with shared selected state, inner-to-outer raw-click reconciliation and authored-tree focus order. DOM originalEvent is replaced by actual child activation metadata, not fabricated."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCButtonGroupAppearance / AWCButtonGroupAppearanceScope",
+        "fields": [
+          "gap",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight"
+        ]
+      },
+      "nativeEquivalents": {
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Compose layout, AWCButtonFocusScope, AWCButtonGroupStateScope",
+          "description": "Native authored layout-tree traversal includes nested and wrapped descendants; shared selection and inner-to-outer reconciliation preserve ancestor participation. Logical layout direction and roving keyboard focus replace DOM queries.",
+          "limitations": [
+            "Native layout-tree traversal replaces querySelectorAll; arbitrary CSS selector evaluation is not exposed."
+          ]
+        },
+        "DOM_OBSERVER": {
+          "status": "implemented",
+          "api": "Composable default slot",
+          "description": "Native button and icon-button children register in measured composition order and retain state across keyed reordering.",
+          "limitations": [
+            "DOM MutationObserver and CSS selectors are replaced by composition and layout lifecycle."
+          ]
+        },
+        "CSS_RUNTIME": {
+          "status": "implemented",
+          "api": "AWCButtonGroupAppearanceScope / native density and layout values",
+          "description": "Typed native appearance, density and child layout metrics provide the gap, geometry and neighbor-press motion inputs that the Web component reads from computed CSS.",
+          "limitations": [
+            "Arbitrary CSS rules are not evaluated by the native renderer."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionEvent",
+          "description": "mdSelectionChange is dispatched through native action scopes after selection is reconciled, with values, added and removed arrays and actual child activation metadata. Cancellation does not reverse the already committed selection, matching the Web event order.",
+          "limitations": [
+            "Native scope propagation replaces DOM bubbling and composed paths; a browser originalEvent object is not fabricated."
+          ]
+        }
+      }
     }
   }
 }

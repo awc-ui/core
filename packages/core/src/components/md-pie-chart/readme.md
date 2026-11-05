@@ -290,9 +290,19 @@ library's own.
   replaces it wholesale), and the chart is a focusable `role="application"`
   region named by `label-plot`. Arrow keys move a keyboard cursor between
   slices, Home/End jump to the ends, Escape leaves; each move is announced
-  through a polite live region built from `label-point`.
+  through a polite live region built from `label-point`. The cursor visits only
+  slices the ring draws: a hidden slice (by `hidden` or a legend toggle) and the
+  ring of children under it are skipped, and `%percent%` is the slice's share
+  of the visible slices on its own ring — the same figure the hover card shows.
+  If the slice under a resting cursor goes away (the data shrinks, it is
+  hidden), the cursor moves to the next drawn slice, else the one before, and
+  announces it. A zero slice is still reachable (it has no arc to highlight).
 - A screen-reader-only data table is rendered inside the component;
-  `tableLabels` translates its `category` / `value` / `share` headings.
+  `tableLabels` translates its `category` / `value` / `share` headings. It
+  lists every ring depth-first, a child named by its path
+  (`Hardware / Phones`); each share is against the slice's own siblings and
+  printed as a percentage in `locale` (`66,7%`), never through
+  `valueFormatter`. The table is the data, so hidden slices stay in it.
 - Pie charts are the hardest chart type to read non-visually **and** visually —
   **always** offer the numbers as a table or list.
 - The `center` slot is `aria-hidden="true"`; anything it says must be in the
@@ -321,7 +331,9 @@ of its own. To step *out* of an inherited `data-density` rung, set
 `style="--md-sys-density-scale: 0"` — `density="0"` will not do it.
 
 **i18n** — set `locale` for the default number formatting, or take it over with
-`valueFormatter`, which always wins. Translate `label`, `subtitle`, `summary`,
+`valueFormatter`, which always wins. Shares — on the hover card, in the
+announcement and in the table — are always printed in `locale` (one decimal on
+the card, up to one elsewhere); `valueFormatter` never sees them. Translate `label`, `subtitle`, `summary`,
 `label-empty`, `loading-label`, `label-plot`, `label-point` (keeping `%label%` /
 `%value%` / `%percent%`) and `tableLabels`.
 

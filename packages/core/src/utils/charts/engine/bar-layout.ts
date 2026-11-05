@@ -517,7 +517,7 @@ export function computeBarLayout(
   const { C, stacked, stackKeys, bands, onAxis2, hasAxis2, vDomain, vDomain2, vBreaks, vTickVals, vTickLabels, v2TickVals, v2TickLabels, maxV2LabelW, catLabels } =
     computeValueAxes(spec, theme);
 
-  if (spec.polar) return radialScene(spec, theme, width, height, bands, vDomain, catLabels, C);
+  if (spec.polar) return radialScene(spec, theme, width, height, bands, vDomain, catLabels, C, stacked, stackKeys);
 
   // Phase 2: reserve gutters for the chrome (title, legend, axis labels) and
   // derive the plot rect + the label metrics later phases still need.
@@ -971,6 +971,8 @@ function radialScene(
   vDomain: Domain,
   catLabels: string[],
   C: number,
+  stacked: boolean,
+  stackKeys: string[],
 ): RenderScene {
   const texts: TextItem[] = [];
   const subtitleH = spec.subtitle ? theme.labelSize + 4 : 0;
@@ -1009,6 +1011,20 @@ function radialScene(
   const hole = R * Math.max(0, Math.min(0.9, spec.polarHole ?? 0.22));
   const ring = C > 0 ? (R - hole) / C : R - hole;
   const thickness = Math.max(1, ring * (1 - spec.categoryGapRatio));
+  // The radial form of grouped bars: unstacked, every visible series takes its
+  // own sub-ring of the category's ring (stacked, every stack group does), with
+  // barGapRatio of a sub-ring between siblings — exactly how the cartesian
+  // layout slots a category band. On one shared radius every series would start
+  // at 12 o'clock on the same band, hiding each under any longer one drawn after
+  // it. One slot keeps the full ring, so single-series and single-stack charts
+  // are unchanged; an overlaid series is drawn on the full ring, outside the slots.
+  const visibleIdx = spec.series.map((_, i) => i).filter((i) => !spec.series[i].hidden && !spec.series[i].overlay);
+  const groupNames: string[] = [];
+  for (const i of visibleIdx) if (!groupNames.includes(stackKeys[i])) groupNames.push(stackKeys[i]);
+  const slotCount = stacked ? Math.max(1, groupNames.length) : Math.max(1, visibleIdx.length);
+  const subThickness = thickness / (slotCount + (slotCount - 1) * spec.barGapRatio);
+  const slotOf = (si: number): number =>
+    spec.series[si].overlay ? -1 : stacked ? Math.max(0, groupNames.indexOf(stackKeys[si])) : Math.max(0, visibleIdx.indexOf(si));
 
   const START = -Math.PI / 2; // 12 o'clock
   const sweep = 2 * Math.PI * Math.max(0.1, Math.min(1, spec.polarSweep ?? 0.75));
@@ -1032,8 +1048,9 @@ function radialScene(
     for (let i = 0; i < C; i++) {
       const band = bands[si][i];
       if (!band) continue;
-      const outerR = R - i * ring;
-      const innerR = outerR - thickness;
+      const slot = slotOf(si);
+      const outerR = R - i * ring - (slot < 0 ? 0 : slot * subThickness * (1 + spec.barGapRatio));
+      const innerR = outerR - (slot < 0 ? thickness : subThickness);
       const a0 = angleOf(band[0]);
       const a1 = angleOf(band[1]);
       if (Math.abs(a1 - a0) < 1e-6) continue;
@@ -1063,11 +1080,13 @@ function radialScene(
     hoverPoints.push({ seriesIndex: si, color: s.color, label: s.label, byIndex, values: s.data ?? [] });
   });
 
-  // Round only the OUTERMOST ends of each ring: the segment that opens the ring
-  // gets a round head, the one that closes it a round tail; every internal join
-  // stays flat so the colours blend into a single band.
-  for (let i = 0; i < C; i++) {
-    const ringSlices = slices.filter((s) => s.dataIndex === i);
+  // Round only the OUTERMOST ends of each ring (each sub-ring, when the series
+  // are slotted): the segment that opens it gets a round head, the one that
+  // closes it a round tail; every internal join stays flat so the colours blend
+  // into a single band.
+  const ringKeys = new Set(slices.map((s) => `${s.dataIndex}|${slotOf(s.seriesIndex ?? 0)}`));
+  for (const key of ringKeys) {
+    const ringSlices = slices.filter((s) => `${s.dataIndex}|${slotOf(s.seriesIndex ?? 0)}` === key);
     if (!ringSlices.length) continue;
     let first = ringSlices[0];
     let last = ringSlices[0];

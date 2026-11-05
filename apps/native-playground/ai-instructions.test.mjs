@@ -55,14 +55,18 @@ test('native support is per property/event/slot and does not promote generated A
   assert.match(button, /properties: \.init\(toggle: true, selected: selected\)/);
   assert.match(button, /event.detail\["selected"\].bool/);
   assert.match(button, /AWCFormState \/ AWCFormScope/);
+  // md-text-field is a full native adapter: every row is supported (the bar chart below keeps its one unsupported method).
   const field = nativeSection((await getAIInstructions(repository, 'md-text-field')).markdown);
-  assert.match(field, /\| `variant` \| `AWCTextFieldVariant` \| `'filled'` \| Unsupported \/ not listed in native policy \|/);
-  assert.match(field, /\| `mdSpeechResult` \| Unsupported \/ not listed in native policy \|/);
-  assert.match(field, /Unsupported source slots: .*`speech-icon`/);
-  assert.match(field, /Unsupported source methods: .*`setFocus`/);
+  assert.match(field, /\| `variant` \| `AWCTextFieldVariant` \| `'filled'` \| Supported by native adapter \|/);
+  assert.match(field, /\| `mdSpeechResult` \| Supported \|/);
+  assert.match(field, /Supported native slots: .*`speech-icon`/);
+  assert.match(field, /Unsupported source methods: None declared\./);
   const chart = nativeSection((await getAIInstructions(repository, 'md-bar-chart')).markdown);
-  assert.match(chart, /\| `zoom` .* Unsupported \/ not listed in native policy \|/);
-  assert.match(chart, /Stacking, polar, inverted\/horizontal layout, custom axes and zoom not implemented/);
+  // md-bar-chart is a dedicated native chart (n5-024): zoom and the slots are supported; getInstance() returns the Web
+  // engine object and stays unsupported.
+  assert.match(chart, /\| `zoom` \| `AWCBarChartZoom` \| `'none'` \| Supported by native adapter \|/);
+  assert.match(chart, /Supported native slots: `header`, `empty`, `loader`, `loading`, `footer`/);
+  assert.match(chart, /Unsupported source methods: `getInstance`$/m);
   const row = nativeSection((await getAIInstructions(repository, 'md-table-row')).markdown);
   assert.match(row, /Composition context:.*`md-table`/);
 });

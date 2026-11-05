@@ -1,0 +1,971 @@
+{
+ "tag": "md-pie-chart",
+ "case": "default",
+ "html": "<md-pie-chart data-ax-node=\"n0\" id=\"example-md-pie-chart\"></md-pie-chart>",
+ "props": {
+  "n0": {
+   "animation": "expressive",
+   "cornerRadius": 4,
+   "data": [
+    {
+     "label": "Search",
+     "value": 42
+    },
+    {
+     "label": "Direct",
+     "value": 26
+    },
+    {
+     "label": "Social",
+     "value": 18
+    }
+   ],
+   "density": 0,
+   "endAngle": -270,
+   "gradient": false,
+   "highlight": "slice",
+   "innerRadius": "45%",
+   "label": "Traffic sources",
+   "labelEmpty": "No data to display",
+   "labelPlot": "Chart data. Use the arrow keys to move between slices, Home and End for the first and last, Escape to leave.",
+   "labelPoint": "%label%: %value% (%percent%)",
+   "legend": "right",
+   "loading": false,
+   "loadingLabel": "Loading chart…",
+   "locale": "",
+   "noAnimation": true,
+   "outerRadius": "75%",
+   "paddingAngle": 0,
+   "showLabels": true,
+   "startAngle": 90,
+   "summary": "",
+   "titleAlign": "start",
+   "tooltip": "item"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   640
+  ],
+  "children": [
+   {
+    "role": "figure",
+    "name": "Traffic sources, Pie chart, with 3 slices.",
+    "ignored": false,
+    "frame": [
+     16,
+     16,
+     608,
+     608
+    ],
+    "children": [
+     {
+      "role": "sectionheader",
+      "name": "",
+      "ignored": false
+     },
+     {
+      "role": "application",
+      "name": "Chart data. Use the arrow keys to move between slices, Home and End for the first and last, Escape to leave.",
+      "ignored": false,
+      "focusable": true,
+      "frame": [
+       32,
+       32,
+       576,
+       576
+      ],
+      "children": [
+       {
+        "role": "Canvas",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         32,
+         32,
+         576,
+         576
+        ]
+       },
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         32,
+         32,
+         576,
+         576
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "42",
+            "ignored": false,
+            "frame": [
+             423.546875,
+             321.234375,
+             12.25,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "42",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "26",
+            "ignored": false,
+            "frame": [
+             169.109375,
+             418.546875,
+             12.25,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "26",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "18",
+            "ignored": false,
+            "frame": [
+             191.765625,
+             212.578125,
+             12.25,
+             13
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "18",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Traffic sources",
+            "ignored": false,
+            "frame": [
+             44,
+             38,
+             99.609375,
+             16
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Traffic sources",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         32,
+         32,
+         576,
+         576
+        ],
+        "children": [
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           525.140625,
+           282.5,
+           70.859375,
+           75
+          ],
+          "children": [
+           {
+            "role": "button",
+            "name": "Search",
+            "ignored": false,
+            "invalid": "false",
+            "focusable": true,
+            "pressed": "true",
+            "frame": [
+             531.140625,
+             288.5,
+             58.859375,
+             17
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Search",
+                "ignored": false,
+                "frame": [
+                 551.140625,
+                 290.5,
+                 34.859375,
+                 13
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Search",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "button",
+            "name": "Direct",
+            "ignored": false,
+            "invalid": "false",
+            "focusable": true,
+            "pressed": "true",
+            "frame": [
+             531.140625,
+             311.5,
+             52.734375,
+             17
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Direct",
+                "ignored": false,
+                "frame": [
+                 551.140625,
+                 313.5,
+                 28.734375,
+                 13
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Direct",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "button",
+            "name": "Social",
+            "ignored": false,
+            "invalid": "false",
+            "focusable": true,
+            "pressed": "true",
+            "frame": [
+             531.140625,
+             334.5,
+             53.96875,
+             17
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Social",
+                "ignored": false,
+                "frame": [
+                 551.140625,
+                 336.5,
+                 29.96875,
+                 13
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Social",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         32,
+         32,
+         576,
+         576
+        ]
+       }
+      ]
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "sectionfooter",
+      "name": "",
+      "ignored": false
+     },
+     {
+      "role": "generic",
+      "name": "",
+      "ignored": false,
+      "frame": [
+       31,
+       31,
+       1,
+       1
+      ],
+      "children": [
+       {
+        "role": "table",
+        "name": "Traffic sources",
+        "ignored": false,
+        "frame": [
+         31,
+         31,
+         176.328125,
+         108
+        ],
+        "children": [
+         {
+          "role": "caption",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           31,
+           31,
+           176.328125,
+           18
+          ],
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Traffic sources",
+            "ignored": false,
+            "frame": [
+             65.3125,
+             31,
+             107.6875,
+             18
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Traffic sources",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "rowgroup",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           33,
+           51,
+           172.328125,
+           20
+          ],
+          "children": [
+           {
+            "role": "row",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             33,
+             51,
+             172.328125,
+             20
+            ],
+            "children": [
+             {
+              "role": "columnheader",
+              "name": "Category",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               33,
+               51,
+               73.875,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Category",
+                "ignored": false,
+                "frame": [
+                 34,
+                 52,
+                 72,
+                 19
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Category",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "role": "columnheader",
+              "name": "Value",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               108.875,
+               51,
+               44.8125,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Value",
+                "ignored": false,
+                "frame": [
+                 109.875,
+                 52,
+                 42.8125,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Value",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "role": "columnheader",
+              "name": "Share",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               155.6875,
+               51,
+               49.640625,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Share",
+                "ignored": false,
+                "frame": [
+                 157.90625,
+                 52,
+                 45.1875,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Share",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "row",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             33,
+             73,
+             172.328125,
+             20
+            ],
+            "children": [
+             {
+              "role": "rowheader",
+              "name": "Search",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               33,
+               73,
+               73.875,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Search",
+                "ignored": false,
+                "frame": [
+                 42.796875,
+                 74,
+                 54.265625,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Search",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "role": "cell",
+              "name": "42",
+              "ignored": false,
+              "frame": [
+               108.875,
+               73,
+               44.8125,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "42",
+                "ignored": false,
+                "frame": [
+                 109.875,
+                 74,
+                 19.328125,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "42",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "role": "cell",
+              "name": "48.8%",
+              "ignored": false,
+              "frame": [
+               155.6875,
+               73,
+               49.640625,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "48.8%",
+                "ignored": false,
+                "frame": [
+                 156.6875,
+                 74,
+                 47.640625,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "48.8%",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "row",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             33,
+             95,
+             172.328125,
+             20
+            ],
+            "children": [
+             {
+              "role": "rowheader",
+              "name": "Direct",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               33,
+               95,
+               73.875,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Direct",
+                "ignored": false,
+                "frame": [
+                 46.359375,
+                 96,
+                 47.140625,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Direct",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "role": "cell",
+              "name": "26",
+              "ignored": false,
+              "frame": [
+               108.875,
+               95,
+               44.8125,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "26",
+                "ignored": false,
+                "frame": [
+                 109.875,
+                 96,
+                 19.21875,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "26",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "role": "cell",
+              "name": "30.2%",
+              "ignored": false,
+              "frame": [
+               155.6875,
+               95,
+               49.640625,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "30.2%",
+                "ignored": false,
+                "frame": [
+                 156.6875,
+                 96,
+                 46.828125,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "30.2%",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "row",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             33,
+             117,
+             172.328125,
+             20
+            ],
+            "children": [
+             {
+              "role": "rowheader",
+              "name": "Social",
+              "ignored": false,
+              "readonly": false,
+              "required": false,
+              "frame": [
+               33,
+               117,
+               73.875,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Social",
+                "ignored": false,
+                "frame": [
+                 46.4375,
+                 118,
+                 47,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Social",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "role": "cell",
+              "name": "18",
+              "ignored": false,
+              "frame": [
+               108.875,
+               117,
+               44.8125,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "18",
+                "ignored": false,
+                "frame": [
+                 109.875,
+                 118,
+                 17.015625,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "18",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "role": "cell",
+              "name": "20.9%",
+              "ignored": false,
+              "frame": [
+               155.6875,
+               117,
+               49.640625,
+               20
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "20.9%",
+                "ignored": false,
+                "frame": [
+                 156.6875,
+                 118,
+                 46.671875,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "20.9%",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "role": "status",
+      "name": "",
+      "ignored": false,
+      "live": "polite",
+      "atomic": true,
+      "relevant": "additions text",
+      "frame": [
+       31,
+       31,
+       1,
+       1
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "div",
+   "role": "application",
+   "name": "Chart data. Use the arrow keys to move between slices, Home and End for the first and last, Escape to leave.",
+   "frame": [
+    32,
+    32,
+    576,
+    576
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "dom": "button",
+   "role": "button",
+   "name": "Search",
+   "frame": [
+    531.140625,
+    288.5,
+    58.859375,
+    17
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true,
+    "pressed": "true"
+   }
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

@@ -568,7 +568,7 @@
     "styleUrl": "md-radio.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "7d212822a2e6bb94566aae406f5d64584245988197da93891167e82ae3ca337e"
+    "sha256": "3c6bedf25a511bed628ea24d2a4728b1e34a7f61e6c36d589172891241f65ba0"
   },
   "styles": [
     {
@@ -1190,7 +1190,7 @@
       ]
     },
     {
-      "selector": ".md-radio__container,\n  .md-radio__state-layer,\n  .md-radio__outer,\n  .md-radio__inner",
+      "selector": ".md-radio__container,\n  :host(.md-radio--pressed) .md-radio__container,\n  .md-radio__state-layer,\n  .md-radio__outer,\n  .md-radio__inner",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
         {
@@ -1507,69 +1507,22 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "checked",
-        "required",
-        "value",
         "valueMissingLabel",
+        "checked",
         "disabled",
         "softDisabled",
-        "name"
+        "required",
+        "name",
+        "value",
+        "density"
       ],
       "events": [
         "mdChange",
-        "mdValidityChange"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "density"
-      ],
-      "unsupportedEvents": [
-        "mdFocus",
-        "mdBlur"
-      ],
-      "unsupportedMethods": [
-        "syncValidityFromGroup",
-        "getValidity",
-        "checkValidity",
-        "reportValidity",
-        "setCustomValidity",
-        "setFocus",
-        "setBlur",
-        "select"
-      ],
-      "unsupportedSlots": [],
-      "notes": [
-        "Native name groups share selected values within a nested tree or an explicit AWCNativeScope. The host can also update checked declaratively.",
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
-      ],
-      "verification": "not-device-verified"
-    },
-    "android": {
-      "status": "adapter-implemented",
-      "properties": [
-        "checked",
-        "disabled",
-        "name",
-        "required",
-        "softDisabled",
-        "value"
-      ],
-      "events": [
-        "mdChange"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "valueMissingLabel",
-        "density"
-      ],
-      "unsupportedEvents": [
         "mdFocus",
         "mdBlur",
         "mdValidityChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "syncValidityFromGroup",
         "getValidity",
         "checkValidity",
@@ -1579,12 +1532,95 @@
         "setBlur",
         "select"
       ],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+        "Dedicated native radio with a name-scoped group: all eight properties, mdChange, mdFocus/mdBlur and mdValidityChange, seven appearance hooks and typed part targets for the state layer and the outer and inner circles (the container part paints nothing).",
+        "Methods through AWCSelectionControlController: setFocus() with the focus ring, setBlur(), select() (checks an enabled radio and emits mdChange), getValidity/checkValidity/reportValidity/setCustomValidity with the group's required rule, and syncValidityFromGroup() (validity and the roving tab stop are derived natively).",
+        "One tab stop per group, arrow keys move and check (wrapping), checking unchecks the siblings silently; document order is the rendered reading order.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS runs through the simulator harness; VoiceOver/TalkBack execution remains unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "container",
+        "outer-circle",
+        "inner-circle"
+      ],
+      "appearance": {
+        "api": ".awcRadioAppearance(AWCRadioAppearance)",
+        "fields": [
+          "iconColor",
+          "selectedIconColor",
+          "iconSize",
+          "innerCircleSize",
+          "stateLayerSize",
+          "stateLayerColor",
+          "selectedStateLayerColor"
+        ]
+      }
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "valueMissingLabel",
+        "checked",
+        "disabled",
+        "softDisabled",
+        "required",
+        "name",
+        "value",
+        "density"
+      ],
+      "events": [
+        "mdChange",
+        "mdFocus",
+        "mdBlur",
+        "mdValidityChange"
+      ],
+      "methods": [
+        "syncValidityFromGroup",
+        "getValidity",
+        "checkValidity",
+        "reportValidity",
+        "setCustomValidity",
+        "setFocus",
+        "setBlur",
+        "select"
+      ],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native radio with a name-scoped group: all eight properties, mdChange, mdFocus/mdBlur and mdValidityChange, seven appearance hooks and typed part targets for the state layer and the outer and inner circles (the container part paints nothing).",
+        "Methods through AWCSelectionControlController: setFocus() with the focus ring, setBlur(), select() (checks an enabled radio and emits mdChange), getValidity/checkValidity/reportValidity/setCustomValidity with the group's required rule, and syncValidityFromGroup() (validity and the roving tab stop are derived natively).",
+        "One tab stop per group, arrow keys move and check (wrapping), checking unchecks the siblings silently; document order is the rendered reading order.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS runs through the simulator harness; VoiceOver/TalkBack execution remains unverified."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "container",
+        "outer-circle",
+        "inner-circle"
+      ],
+      "appearance": {
+        "api": "AWCRadioAppearanceScope(AWCRadioAppearance)",
+        "fields": [
+          "iconColor",
+          "selectedIconColor",
+          "iconSize",
+          "innerCircleSize",
+          "stateLayerSize",
+          "stateLayerColor",
+          "selectedStateLayerColor"
+        ]
+      }
     }
   }
 }

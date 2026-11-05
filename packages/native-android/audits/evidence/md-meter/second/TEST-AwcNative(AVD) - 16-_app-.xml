@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="dev.awc.playground.LivePreviewHostTest" tests="6" failures="1" errors="0" skipped="0" time="29.72" timestamp="2026-10-20T19:49:44" hostname="localhost">
+  <properties>
+    <property name="device" value="AwcNative(AVD) - 16" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="meterUsesActual300DpParentAndTypedStylesWithCustomAlphaRoles" classname="dev.awc.playground.LivePreviewHostTest" time="2.572" />
+  <testcase name="recordNativeFontMetricsAndFallbackEvidence" classname="dev.awc.playground.NativeMeterFormatTest" time="0.001" />
+  <testcase name="nativeIcuCompatibilityBranchesMatch75IndependentIntlCases" classname="dev.awc.playground.NativeMeterFormatTest" time="0.095" />
+  <testcase name="all196BrowserFixturesMatchNativeRangeTextPartsGeometryAndPaint" classname="dev.awc.playground.NativeMeterParityTest" time="23.633">
+    <failure>java.lang.AssertionError: light/circular-density-2 track x native=2.5 Web=3.0442657470703125
+light/circular-density-2 indicator x native=2.5 Web=3.0442657470703125
+dark/circular-density-2 track x native=2.5 Web=3.0442657470703125
+dark/circular-density-2 indicator x native=2.5 Web=3.0442657470703125
+at org.junit.Assert.fail(Assert.java:89)
+at org.junit.Assert.assertTrue(Assert.java:42)
+at dev.awc.playground.NativeMeterParityTest.all196BrowserFixturesMatchNativeRangeTextPartsGeometryAndPaint(NativeMeterParityTest.kt:112)
+</failure>
+  </testcase>
+  <testcase name="realWidthAndArcMotionSettleAndReducedMotionAndForcedColorsApply" classname="dev.awc.playground.NativeMeterParityTest" time="1.027" />
+  <testcase name="circularUnbrokenTextOverflowsWithSourceCenterAndCaptionDirection" classname="dev.awc.playground.NativeMeterParityTest" time="2.01" />
+</testsuite>

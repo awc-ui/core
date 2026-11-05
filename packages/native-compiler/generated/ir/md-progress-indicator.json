@@ -331,25 +331,25 @@
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 248
+      "line": 249
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Window access requires a native adapter.",
-      "line": 319
+      "line": 320
     },
     {
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 388
+      "line": 398
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 457
+      "line": 462
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -363,7 +363,7 @@
     "styleUrl": "md-progress-indicator.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "f61e9dc0fb7d0e0a17965034b5a7f1579f6c03a34c96394cc256bb2bd221ead6"
+    "sha256": "46b1eec643ddc6d6212a536d7f9b78be2ac47ebf61963d5410ff6046452b5055"
   },
   "styles": [
     {
@@ -870,7 +870,7 @@
       "context": null,
       "declarations": [
         {
-          "property": "inset-inline-start",
+          "property": "left",
           "value": "-145%",
           "important": false
         },
@@ -907,7 +907,7 @@
       "context": null,
       "declarations": [
         {
-          "property": "inset-inline-start",
+          "property": "left",
           "value": "-55%",
           "important": false
         },
@@ -1236,7 +1236,7 @@
       ]
     },
     {
-      "selector": ":host-context([dir=\"rtl\"]).md-progress-indicator--indeterminate .md-progress-indicator__linear,\n:host([dir=\"rtl\"]).md-progress-indicator--indeterminate .md-progress-indicator__linear",
+      "selector": ":host(.md-progress-indicator--indeterminate:dir(rtl)) .md-progress-indicator__linear",
       "context": null,
       "declarations": [
         {
@@ -1859,63 +1859,109 @@
         "max",
         "indeterminate",
         "thickness",
+        "wave",
+        "waveAmplitude",
+        "waveLength",
+        "waveSpeed",
         "size",
+        "fourColor",
         "label",
-        "complete"
+        "complete",
+        "density"
       ],
       "events": [
         "mdComplete"
       ],
       "methods": [],
       "slots": [],
-      "unsupportedProperties": [
-        "wave",
-        "waveAmplitude",
-        "waveLength",
-        "waveSpeed",
-        "fourColor",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Uses native determinate/indeterminate progress. Expressive wave/four-color animations not implemented."
+        "Dedicated native Progress renderer implements all fourteen source properties, thirteen sparse appearance hooks, real exposed part geometry, linear/circular waves, source indeterminate choreography and four-color cycling. Structured physical corners, signed spaces, density, RTL, zero/negative thickness and finite extreme used lengths are retained.",
+        "The complete watcher is retained on the same mounted native root: initial true is inert, later true runs the source lifecycle and emits one null-detail mdComplete, false does not reset terminal state. Reduced motion keeps the source variant-specific behavior. Public awcProgressForcedColors is an explicit semantic-palette scope; native increased contrast alone preserves authored colors.",
+        "Actual SwiftUI/AppKit fixture passes 2808 checks across184 hydrated Web theme configurations,52numeric/direction edge cases and54timed animation cases, plus39real live-host checks and20compiled public examples. Inspection measures actual paint layers; rotated SVG counterparts retain transformed element boxes rather than tighter curve bounds. macOS semantics are verified; iOS SDK/device execution is unavailable. See audits/md-progress-indicator.md."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "track",
+        "active-indicator",
+        "stop-indicator"
+      ],
+      "appearance": {
+        "api": "AWCProgressIndicatorAppearance / View.awcProgressIndicatorAppearance",
+        "fields": [
+          "activeIndicatorColor",
+          "activeIndicatorShape",
+          "trackColor",
+          "trackShape",
+          "stopIndicatorColor",
+          "stopIndicatorShape",
+          "stopIndicatorSize",
+          "stopIndicatorTrailingSpace",
+          "trackActiveIndicatorSpace",
+          "fourColor1",
+          "fourColor2",
+          "fourColor3",
+          "fourColor4"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "complete",
+        "density",
+        "fourColor",
         "indeterminate",
         "label",
         "max",
+        "size",
+        "thickness",
         "value",
-        "variant"
+        "variant",
+        "wave",
+        "waveAmplitude",
+        "waveLength",
+        "waveSpeed"
       ],
       "events": [
         "mdComplete"
       ],
       "methods": [],
       "slots": [],
-      "unsupportedProperties": [
-        "thickness",
-        "wave",
-        "waveAmplitude",
-        "waveLength",
-        "waveSpeed",
-        "size",
-        "fourColor",
-        "complete",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native progress paths implement all fourteen source properties, thirteen typed appearance hooks and the mounted completion lifecycle. Initial complete=true is inert; later completion emits one void mdComplete after the actual visual sequence. Reduced-motion and native accessibility range behavior are provided without a default action or live region. Runtime verification and native coordinate limits are recorded separately in the parity audit."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "track",
+        "active-indicator",
+        "stop-indicator"
+      ],
+      "appearance": {
+        "api": "AWCProgressIndicatorAppearance / AWCProgressIndicatorAppearanceScope / AWCCornerShape",
+        "fields": [
+          "activeIndicatorColor",
+          "activeIndicatorShape",
+          "trackColor",
+          "trackShape",
+          "stopIndicatorColor",
+          "stopIndicatorShape",
+          "stopIndicatorSize",
+          "stopIndicatorTrailingSpace",
+          "trackActiveIndicatorSpace",
+          "fourColor1",
+          "fourColor2",
+          "fourColor3",
+          "fourColor4"
+        ]
+      }
     }
   }
 }

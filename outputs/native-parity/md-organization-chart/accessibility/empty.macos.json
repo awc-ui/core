@@ -1,0 +1,122 @@
+{
+ "tag": "md-organization-chart",
+ "case": "empty",
+ "request": {
+  "tag": "md-organization-chart",
+  "properties": {
+   "nodes": [],
+   "label": "Product team"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "enabled": true,
+         "frame": [
+          295.25,
+          72,
+          49.5,
+          16
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "No data"
+        }
+       ],
+       "enabled": true,
+       "frame": [
+        295.25,
+        72,
+        49.5,
+        16
+       ],
+       "identifier": "example-md-organization-chart",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      174
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    174
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-organization-chart",
+  "properties": {
+   "collapseLabel": "Collapse",
+   "collapsible": true,
+   "density": 0,
+   "expandLabel": "Expand",
+   "label": "Product team",
+   "nodes": [],
+   "orientation": "vertical",
+   "selectedIds": [],
+   "selectionMode": "multiple"
+  },
+  "tag": "md-organization-chart"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 110,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "name": "md-organization-chart"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

@@ -161,7 +161,9 @@ export class MdAvatar {
   }
 
   private computeInitials(): string {
-    if (this.initials) return this.truncate(this.initials.trim());
+    // A whitespace-only override counts as unset (documented: initials apply only when non-empty).
+    const explicit = (this.initials || '').trim();
+    if (explicit) return this.truncate(explicit);
 
     const name = (this.name || '').trim();
     if (!name) return '';
@@ -239,7 +241,7 @@ export class MdAvatar {
   /** 1-based palette index (1..7) matching the CSS palette variables. */
   private get paletteIndex(): number {
     if (!this.colorFromName) return 0;
-    const seed = (this.initials || this.name || this.label || '').trim();
+    const seed = (this.initials || '').trim() || (this.name || '').trim() || (this.label || '').trim();
     if (!seed) return 0;
     return (this.hashSeed(seed) % 7) + 1;
   }

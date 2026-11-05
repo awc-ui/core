@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { expect, waitFor } from 'storybook/test';
 import { html } from 'lit';
+import { exerciseServerValidation } from '../../../../packages/core/src/components/md-checkbox/test-utils/form-validation.browser';
 import { t } from '../i18n';
 import '@awc-ui/core/define';
 
@@ -763,5 +764,17 @@ export const Required: Story = {
       await waitFor(() => expect(sw.selected).toBe(true));
       await waitFor(() => expect(sw.getAttribute('aria-checked')).toBe('true'));
     });
+  },
+};
+
+/** Application/server validation must be queryable without stealing focus, and
+ * interactive reports must expose the same error through the field's own UI. */
+export const ServerValidation: Story = {
+  render: () => html`<form><fieldset style="border:0;padding:0">
+    <button type="button">Outside control</button>
+    <md-switch data-form-contract name="entry" label="Form value" aria-label="Form value"></md-switch>
+  </fieldset></form>`,
+  play: async ({ canvasElement }) => {
+    await exerciseServerValidation(canvasElement.querySelector('md-switch') as HTMLElement);
   },
 };

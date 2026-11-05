@@ -3,6 +3,7 @@ import { angularOutputTarget } from '@stencil/angular-output-target';
 import { reactOutputTarget } from '@stencil/react-output-target';
 import { vueOutputTarget } from '@stencil/vue-output-target';
 import { withVueRuntime } from '../vue/stencil-output-target';
+import { coreStylesOutputTarget } from '../../scripts/core-styles.cjs';
 
 export const config: Config = {
   namespace: 'md3',
@@ -16,8 +17,8 @@ export const config: Config = {
   // of pure waste per app). Tokens are CSS custom properties: they inherit
   // through shadow boundaries from the document, so per-shadow-root injection
   // was redundant. dist/md3/md3.css (the "./css/tokens.css" export target) is
-  // now produced by scripts/emit-tokens-css.mjs in the build chain, and the
-  // www dev server gets the sheet via the copy task on the www target below.
+  // now produced by the awc-core-styles output target on every build/watch,
+  // including the www dev server's stylesheet.
   /*
    * STENCIL DOES NOT INJECT THE PRE-HYDRATION STYLE; the token sheet carries it.
    *
@@ -29,14 +30,15 @@ export const config: Config = {
    * measured as a `style-src-elem` violation from the runtime chunk on all five
    * showcase builds.
    *
-   * The identical rule is emitted into `dist/md3/md3.css` by
-   * `scripts/emit-tokens-css.mjs`, which `@awc-ui/core/define` already imports.
+   * The gate and pre-hydration layout are emitted into `dist/md3/md3.css` by
+   * `scripts/core-styles.cjs`, which `@awc-ui/core/define` already imports.
    * Nothing changes for a consumer who does nothing: the rule arrives in a file
    * they were loading anyway, as a file, which CSP allows.
    */
   invisiblePrehydration: false,
 
   outputTargets: [
+    coreStylesOutputTarget(),
     reactOutputTarget({
       // react-output-target 1.x: SSR-capable wrappers. `hydrateModule` turns on
       // server rendering (generates components.server.ts alongside the client
@@ -161,9 +163,8 @@ export const config: Config = {
     {
       type: 'www',
       serviceWorker: null,
-      // index.html links /build/md3.css; with `globalStyle` gone (see above)
-      // the dev server gets the token sheet via a plain copy instead.
-      copy: [{ src: '../node_modules/@awc-ui/tokens/src/tokens.css', dest: 'build/md3.css' }],
+      // index.html links /build/md3.css; awc-core-styles writes the same
+      // tokens, layout and readiness rules as the published CSS export.
     },
   ],
   testing: {

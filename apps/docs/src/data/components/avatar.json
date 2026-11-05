@@ -173,7 +173,23 @@
     }
   ],
   "dependencies": [],
-  "dataTypes": [],
+  "dataTypes": [
+    {
+      "name": "MdAvatarSize",
+      "kind": "type",
+      "body": "MdAvatarPresetSize | (string & {})"
+    },
+    {
+      "name": "MdAvatarPresetSize",
+      "kind": "type",
+      "body": "'small' | 'medium' | 'large'"
+    },
+    {
+      "name": "MdAvatarShape",
+      "kind": "type",
+      "body": "'circle' | 'rounded' | 'square'"
+    }
+  ],
   "callableProps": [],
   "eventTypes": [],
   "eventPayloads": [

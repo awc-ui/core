@@ -275,3 +275,15 @@ describe('md-navigation-bar — e2e', () => {
     expect(await activeIndex(page)).toBe(1);
   });
 });
+
+describe('md-navigation-bar live composition', () => {
+  it('reconciles inserted and removed destinations, including an empty bar', async () => {
+    const page = await newE2EPage(); await page.setContent('<md-navigation-bar label-behavior="selected"><md-navigation-tab label="Home" icon="home"></md-navigation-tab><md-navigation-tab label="Mail" icon="mail"></md-navigation-tab></md-navigation-bar>');
+    const bar = await page.find('md-navigation-bar'); await bar.callMethod('select', 1); await page.waitForChanges();
+    await page.$eval('md-navigation-bar', el => { const tab = document.createElement('md-navigation-tab'); tab.setAttribute('label', 'Settings'); tab.setAttribute('icon', 'settings'); el.append(tab); }); await page.waitForChanges();
+    expect((await page.findAll('md-navigation-tab')).length).toBe(3);
+    await bar.callMethod('select', 2); await page.waitForChanges(); expect((await page.find('md-navigation-tab[active]')).getAttribute('label')).toBe('Settings');
+    await page.$eval('md-navigation-bar', el => el.replaceChildren()); await page.waitForChanges(); await bar.callMethod('select', 0); await page.waitForChanges();
+    expect((await page.findAll('md-navigation-tab[active]')).length).toBe(0);
+  });
+});

@@ -1,6 +1,69 @@
 import { newE2EPage } from '@stencil/core/testing';
 
 describe('md-card e2e', () => {
+  it('activates from the keyboard and updates semantics when nested controls are added or removed', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<md-card interactive variant="outlined"><div id="content">Open details</div></md-card>');
+    const card = await page.find('md-card');
+    const clicks = await card.spyOnEvent('mdClick');
+    expect(card.getAttribute('role')).toBe('button');
+    await card.focus();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Space');
+    await page.keyboard.press('Escape');
+    await page.waitForChanges();
+    expect(clicks).toHaveReceivedEventTimes(2);
+    await page.$eval('#content', el => { const button = document.createElement('button'); button.textContent = 'Child'; el.append(button); });
+    await page.waitForChanges();
+    expect(card.getAttribute('role')).toBeNull();
+    expect(card.getAttribute('tabindex')).toBeNull();
+    await page.$eval('#content button', el => el.remove());
+    await page.waitForChanges();
+    expect(card.getAttribute('role')).toBe('button');
+    for (const property of ['softDisabled', 'disabled']) {
+      card.setProperty(property, true);
+      await page.waitForChanges();
+      await card.click();
+      await page.keyboard.press('Enter');
+      await page.waitForChanges();
+      expect(clicks).toHaveReceivedEventTimes(2);
+      expect(card.getAttribute('aria-disabled')).toBe('true');
+      card.setProperty(property, false);
+      await page.waitForChanges();
+    }
+    await page.$eval('md-card', el => el.remove());
+    expect(await page.find('md-card')).toBeNull();
+  });
+
+  it('cancels an active drag when drag support is switched off and ignores secondary buttons', async () => {
+    const page = await newE2EPage();
+    await page.setContent('<md-card drag-enabled interactive style="position:fixed;left:40px;top:40px;width:200px;height:100px">Drag</md-card>');
+    const card = await page.find('md-card');
+    const starts = await card.spyOnEvent('mdDragStart');
+    await page.mouse.move(140, 90);
+    await page.mouse.down({ button: 'right' });
+    await page.mouse.move(160, 100);
+    await page.mouse.up({ button: 'right' });
+    expect(starts).toHaveReceivedEventTimes(0);
+    await page.mouse.move(140, 90);
+    await page.mouse.down();
+    await page.mouse.move(180, 120, { steps: 4 });
+    await page.waitForChanges();
+    expect(starts).toHaveReceivedEventTimes(1);
+    card.setProperty('dragEnabled', false);
+    await page.waitForChanges();
+    expect(card).not.toHaveClass('md-card--dragged');
+    expect(await page.$eval('md-card', el => (el as HTMLElement).style.transform)).toBe('');
+    await page.mouse.up();
+    card.setProperty('dragEnabled', true);
+    card.setProperty('disabled', true);
+    await page.waitForChanges();
+    await page.mouse.move(140, 90);
+    await page.mouse.down();
+    await page.mouse.move(180, 120);
+    await page.mouse.up();
+    expect(starts).toHaveReceivedEventTimes(1);
+  });
   it('drag-enabled reflects and exposes the draggable state (pointer contract)', async () => {
     const page = await newE2EPage();
     await page.setContent('<md-card drag-enabled>Drag me</md-card>');

@@ -1,0 +1,264 @@
+{
+ "tag": "md-pie-chart",
+ "case": "donut",
+ "request": {
+  "tag": "md-pie-chart",
+  "properties": {
+   "label": "Traffic sources",
+   "data": [
+    {
+     "label": "Search",
+     "value": 42
+    },
+    {
+     "label": "Direct",
+     "value": 26
+    },
+    {
+     "label": "Social",
+     "value": 18
+    }
+   ],
+   "innerRadius": "60%",
+   "noAnimation": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXIncrement",
+          "AXDecrement"
+         ],
+         "description": "Chart data. Use the arrow keys to move between slices, Home and End for the first and last, Escape to leave.",
+         "focused": false,
+         "frame": [
+          48,
+          48,
+          544,
+          544
+         ],
+         "role": "AXGroup",
+         "roleDescription": "group",
+         "value": ""
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Search",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          516,
+          288.5,
+          58,
+          17
+         ],
+         "identifier": "legend-0",
+         "invalid": "false",
+         "required": false,
+         "role": "AXCheckBox",
+         "roleDescription": "toggle button",
+         "selected": true,
+         "subrole": "AXToggle",
+         "value": true
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Direct",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          516,
+          311.5,
+          53,
+          17
+         ],
+         "identifier": "legend-1",
+         "invalid": "false",
+         "required": false,
+         "role": "AXCheckBox",
+         "roleDescription": "toggle button",
+         "selected": true,
+         "subrole": "AXToggle",
+         "value": true
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Social",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          516,
+          334.5,
+          54,
+          17
+         ],
+         "identifier": "legend-2",
+         "invalid": "false",
+         "required": false,
+         "role": "AXCheckBox",
+         "roleDescription": "toggle button",
+         "selected": true,
+         "subrole": "AXToggle",
+         "value": true
+        }
+       ],
+       "description": "Traffic sources, Pie chart, with 3 slices.",
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        32,
+        32,
+        576,
+        576
+       ],
+       "identifier": "example-md-pie-chart",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      640
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    640
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-pie-chart",
+  "properties": {
+   "animation": "expressive",
+   "cornerRadius": 4,
+   "data": [
+    {
+     "label": "Search",
+     "value": 42
+    },
+    {
+     "label": "Direct",
+     "value": 26
+    },
+    {
+     "label": "Social",
+     "value": 18
+    }
+   ],
+   "density": 0,
+   "endAngle": -270,
+   "gradient": false,
+   "highlight": "slice",
+   "innerRadius": "60%",
+   "label": "Traffic sources",
+   "labelEmpty": "No data to display",
+   "labelPlot": "Chart data. Use the arrow keys to move between slices, Home and End for the first and last, Escape to leave.",
+   "labelPoint": "%label%: %value% (%percent%)",
+   "legend": "right",
+   "loading": false,
+   "loadingLabel": "Loading chart…",
+   "locale": "",
+   "noAnimation": true,
+   "outerRadius": "75%",
+   "paddingAngle": 0,
+   "showLabels": true,
+   "startAngle": 90,
+   "summary": "",
+   "titleAlign": "start",
+   "tooltip": "item"
+  },
+  "tag": "md-pie-chart"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 576,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "announcement": "",
+     "areas": 0,
+     "background": "#F7F2FA",
+     "bars": 0,
+     "centerX": 253.86,
+     "centerY": 301,
+     "height": 576,
+     "legendHidden": [
+      false,
+      false,
+      false
+     ],
+     "lines": 0,
+     "padding": 16,
+     "plotHeight": 502,
+     "plotWidth": 459.72,
+     "plotX": 8,
+     "plotY": 34,
+     "shape": 16,
+     "slices": 3,
+     "width": 576
+    },
+    "name": "md-pie-chart"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

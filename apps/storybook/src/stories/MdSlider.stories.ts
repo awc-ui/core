@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { expect, waitFor } from 'storybook/test';
 import { html } from 'lit';
+import { exerciseSliderTransactions } from '../../../../packages/core/src/components/md-slider/test-utils/transactions.browser';
 import '@awc-ui/core/define';
 
 /** Shadow-piercing helpers for play(): testing-library queries can't cross
@@ -1601,4 +1602,20 @@ export const Forms: Story = {
     form.reset();
     await waitFor(() => expect(entries()).toEqual(['volume=60', 'price=20', 'price=80']));
   },
+};
+
+
+export const ControlledRangeTransactions: Story = {
+  render: () => html`<form><md-slider value="30" style="width:400px"></md-slider></form>`,
+  play: async ({ canvasElement }) => exerciseSliderTransactions(canvasElement.querySelector('md-slider')!, 'range'),
+};
+
+export const VerticalRangeTransactions: Story = {
+  render: () => html`<form><md-slider value="30" style="width:400px"></md-slider></form>`,
+  play: async ({ canvasElement }) => exerciseSliderTransactions(canvasElement.querySelector('md-slider')!, 'vertical'),
+};
+
+export const DynamicFormIdentity: Story = {
+  render: () => html`<form><md-slider value="30" style="width:400px"></md-slider></form>`,
+  play: async ({ canvasElement }) => exerciseSliderTransactions(canvasElement.querySelector('md-slider')!, 'form'),
 };

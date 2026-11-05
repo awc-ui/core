@@ -95,11 +95,10 @@ extension AWCNativeView {
         }
     }
     var slider: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if !s("sliderAriaLabel").isEmpty { Text(s("sliderAriaLabel")).font(.caption) }
-            nativeSlider(b("range") ? "valueStart" : "value", lower: n("min"), upper: b("range") ? n("valueEnd", n("max", 100)) : n("max", 100))
-            if b("range") { nativeSlider("valueEnd", lower: n("valueStart", n("min")), upper: n("max", 100)) }
-        }
+        // Dedicated renderer (Slider/NativeSliderView.swift): Web geometry, motion, events and per-thumb inputs.
+        // Host-authored properties (outside a form): the component's own writes live in its model until the host changes them.
+        AWCNativeSliderView(nodeID: node.id, properties: formState == nil ? (AWCComponentCatalog.defaults[node.tag] ?? [:]).merging(node.properties) { _, new in new } : local,
+                            set: { set($0, $1) }, emit: { emit($0, $1) })
     }
     func nativeSlider(_ key: String, lower: Double, upper: Double) -> some View {
         HStack {

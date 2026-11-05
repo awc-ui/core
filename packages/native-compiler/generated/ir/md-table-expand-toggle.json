@@ -41,7 +41,7 @@
   "cssProperties": [
     {
       "name": "--md-table-expand-toggle-rotation",
-      "description": "Expanded rotation (default 90deg)"
+      "description": "Expanded rotation (default 90deg;"
     }
   ],
   "render": {
@@ -97,7 +97,7 @@
     "styleUrl": "md-table-expand-toggle.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "7613cc7b6f52e4550fc8c10607be669a0cdd80b4ca4c802d41c76a9a670350bc"
+    "sha256": "579f95c15e1ddabb922aa897caa64e888eafe76ce5fff97847e489129e78a838"
   },
   "styles": [
     {
@@ -139,6 +139,28 @@
         {
           "property": "transform",
           "value": "rotate(var(--md-table-expand-toggle-rotation, 90deg))",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:dir(rtl)) md-icon-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleX(-1)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(:dir(rtl).md-table-expand-toggle--expanded) md-icon-button",
+      "context": null,
+      "declarations": [
+        {
+          "property": "transform",
+          "value": "scaleX(-1) rotate(var(--md-table-expand-toggle-rotation, 90deg))",
           "important": false
         }
       ]
@@ -202,29 +224,45 @@
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Routes native internal awcExpand to containing row."
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). The row's expand toggle (mirrored caret in right-to-left layouts); outside a row it does nothing, as in the source.",
+        "Hooks through AWCTableExpandToggleAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcTableExpandToggleAppearance(AWCTableExpandToggleAppearance)",
+        "fields": [
+          "rotation"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "buttonLabel"
+        "buttonLabel",
+        "icon"
       ],
       "events": [],
       "methods": [],
       "slots": [],
-      "unsupportedProperties": [
-        "icon"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Standalone visual toggle; nested table row has its own bound expansion control."
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). The row's expand toggle (mirrored caret in right-to-left layouts); outside a row it does nothing, as in the source.",
+        "Hooks through AWCTableExpandToggleAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCTableExpandToggleAppearanceScope(AWCTableExpandToggleAppearance)",
+        "fields": [
+          "rotation"
+        ]
+      }
     }
   }
 }

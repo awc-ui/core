@@ -1,0 +1,397 @@
+{
+ "tag": "md-side-sheet",
+ "case": "open",
+ "request": {
+  "tag": "md-side-sheet",
+  "properties": {
+   "open": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Open side sheet",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          24,
+          24,
+          134.5,
+          40
+         ],
+         "identifier": "modal-launcher",
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "button",
+         "selected": false
+        }
+       ],
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        0,
+        0,
+        182.5,
+        88
+       ],
+       "identifier": "modal-launcher",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      },
+      {
+       "children": [
+        {
+         "enabled": true,
+         "frame": [
+          25,
+          31.5,
+          140.5,
+          25
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Project details"
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Close side sheet",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            308,
+            24,
+            40,
+            40
+           ],
+           "identifier": "component.close-button",
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          308,
+          24,
+          40,
+          40
+         ],
+         "identifier": "component.close-button",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        },
+        {
+         "actions": [
+          "AXScrollLeftByPage",
+          "AXScrollRightByPage",
+          "AXScrollUpByPage",
+          "AXScrollDownByPage"
+         ],
+         "children": [
+          {
+           "enabled": true,
+           "frame": [
+            25,
+            88,
+            208.5,
+            36
+           ],
+           "identifier": "13C32651-407C-4DCD-AB6F-5BE97FF0D982",
+           "role": "AXStaticText",
+           "roleDescription": "text",
+           "value": "Every great project starts with a shared workspace."
+          }
+         ],
+         "focused": false,
+         "frame": [
+          1,
+          76,
+          359,
+          164
+         ],
+         "role": "AXScrollArea",
+         "roleDescription": "scroll area"
+        }
+       ],
+       "description": "Project details",
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        0,
+        0,
+        360,
+        240
+       ],
+       "identifier": "component",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      },
+      {
+       "enabled": true,
+       "frame": [
+        0,
+        0,
+        360,
+        240
+       ],
+       "identifier": "component",
+       "role": "AXUnknown"
+      },
+      {
+       "enabled": true,
+       "frame": [
+        0,
+        0,
+        360,
+        240
+       ],
+       "identifier": "component",
+       "role": "AXUnknown"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      240
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    240
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "13C32651-407C-4DCD-AB6F-5BE97FF0D982",
+    "properties": {
+     "text": "Every great project starts with a shared workspace."
+    },
+    "tag": "#text"
+   }
+  ],
+  "id": "component",
+  "properties": {
+   "bottomDivider": false,
+   "closeable": true,
+   "density": 0,
+   "detached": false,
+   "headline": "Project details",
+   "open": true,
+   "scrimDismissible": true,
+   "sheetAriaLabel": "",
+   "showBack": false,
+   "side": "end",
+   "topDivider": false,
+   "variant": "standard"
+  },
+  "tag": "md-side-sheet"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Open side sheet",
+    "frame": [
+     24,
+     24,
+     134.5,
+     40
+    ],
+    "identifier": "modal-launcher",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Close side sheet",
+    "frame": [
+     308,
+     24,
+     40,
+     40
+    ],
+    "identifier": "component.close-button",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Open side sheet",
+    "frame": [
+     24,
+     24,
+     134.5,
+     40
+    ],
+    "identifier": "modal-launcher",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Close side sheet",
+    "frame": [
+     308,
+     24,
+     40,
+     40
+    ],
+    "identifier": "component.close-button",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 240,
+     "width": 640,
+     "x": 0,
+     "y": 0
+    },
+    "id": "component",
+    "name": "md-side-sheet"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 40,
+     "x": 308,
+     "y": 24
+    },
+    "id": "component.close",
+    "name": "close",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 240,
+     "width": 360,
+     "x": 0,
+     "y": 0
+    },
+    "id": "component.container",
+    "metrics": {
+     "label": "Project details",
+     "radius": 0,
+     "role": "region"
+    },
+    "name": "container",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 164,
+     "width": 359,
+     "x": 1,
+     "y": 76
+    },
+    "id": "component.content",
+    "metrics": {
+     "fontSize": 14,
+     "lineHeight": 20
+    },
+    "name": "content",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 76,
+     "width": 359,
+     "x": 1,
+     "y": 0
+    },
+    "id": "component.header",
+    "name": "header",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 28,
+     "width": 271,
+     "x": 25,
+     "y": 30
+    },
+    "id": "component.headline",
+    "name": "headline",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 240,
+     "width": 360,
+     "x": 0,
+     "y": 0
+    },
+    "id": "component.host",
+    "name": "host",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

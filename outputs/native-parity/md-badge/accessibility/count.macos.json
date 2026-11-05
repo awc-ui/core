@@ -1,0 +1,212 @@
+{
+ "tag": "md-badge",
+ "case": "count",
+ "request": {
+  "tag": "md-badge",
+  "properties": {
+   "value": "12"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "description": "12",
+       "enabled": true,
+       "frame": [
+        333,
+        24,
+        22,
+        16
+       ],
+       "identifier": "example-md-badge",
+       "role": "AXUnknown"
+      },
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Notifications",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          296,
+          32,
+          48,
+          48
+         ],
+         "identifier": "demo-badge-anchor",
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "button",
+         "selected": false
+        }
+       ],
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        296,
+        32,
+        48,
+        48
+       ],
+       "identifier": "demo-badge-anchor",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      112
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    112
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-badge",
+  "properties": {
+   "density": 0,
+   "icon": "",
+   "max": 999,
+   "shape": "rect",
+   "value": "12",
+   "variant": "large"
+  },
+  "tag": "md-badge"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Notifications",
+    "frame": [
+     296,
+     32,
+     48,
+     48
+    ],
+    "identifier": "demo-badge-anchor",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Notifications",
+    "frame": [
+     296,
+     32,
+     48,
+     48
+    ],
+    "identifier": "demo-badge-anchor",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 16,
+     "width": 22,
+     "x": 333,
+     "y": 24
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI Layout",
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      4,
+      0,
+      4
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 11,
+      "size": 11,
+      "spacing": 0.5,
+      "unit": "pt",
+      "weight": 500
+     }
+    },
+    "name": "md-badge"
+   },
+   {
+    "bounds": {
+     "height": 11,
+     "width": 14,
+     "x": 337,
+     "y": 26.5
+    },
+    "id": "component.label",
+    "name": "md-badge ::part(label)",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

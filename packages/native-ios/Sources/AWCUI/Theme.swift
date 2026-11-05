@@ -30,8 +30,8 @@ public struct AWCTheme: Sendable {
     static func resolvedTokens(dark: Bool, overrides: [String: String]) -> [String: String] {
         var resolved = dark ? AWCGeneratedTokens.dark : AWCGeneratedTokens.light
         for (name, value) in overrides where name.hasPrefix("--md-sys-color-")
-            && name.range(of: "^--md-sys-color-[a-z0-9]+(?:-[a-z0-9]+)*$", options: .regularExpression) != nil
-            && value.range(of: "^#[0-9a-fA-F]{6}$", options: .regularExpression) != nil {
+            && name.count <= 96 && name.range(of: "^--md-sys-color-[A-Za-z][A-Za-z0-9-]*$", options: .regularExpression) != nil
+            && value.range(of: "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$", options: .regularExpression) != nil {
             resolved[name] = value.uppercased()
         }
         return resolved
@@ -59,7 +59,8 @@ extension Color {
     init(awcHex: String) {
         let hex = awcHex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
         let value = UInt64(hex, radix: 16) ?? 0x6750A4
-        self.init(.sRGB, red: Double((value >> 16) & 255) / 255, green: Double((value >> 8) & 255) / 255, blue: Double(value & 255) / 255, opacity: 1)
+        let rgba = hex.count == 8, rgb = rgba ? value >> 8 : value
+        self.init(.sRGB, red: Double((rgb >> 16) & 255) / 255, green: Double((rgb >> 8) & 255) / 255, blue: Double(rgb & 255) / 255, opacity: rgba ? Double(value & 255) / 255 : 1)
     }
 }
 
@@ -88,6 +89,10 @@ import Observation
 final class AWCInteractionStore {
     var radioValues: [String: String] = [:]
     var tabIndices: [String: Int] = [:]
+    /// The accessible names of each md-tabs' tabs (a panel is named by its tab).
+    var tabLabels: [String: [String]] = [:]
+    /// Authored text by node id (aria-labelledby resolution).
+    let labelTexts = AWCLabelTexts()
 }
 private struct AWCInteractionStoreKey: EnvironmentKey { static let defaultValue: AWCInteractionStore? = nil }
 extension EnvironmentValues {

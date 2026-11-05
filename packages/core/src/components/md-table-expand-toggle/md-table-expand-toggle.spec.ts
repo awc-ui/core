@@ -10,6 +10,26 @@ const create = (html: string) =>
   newSpecPage({ components: [MdTableExpandToggle, MdTableRow, MdIconButton], html });
 
 describe('md-table-expand-toggle', () => {
+  it('can be mounted before its row and binds when inserted into an expandable row', async () => {
+    const page = await create('<div><md-table-expand-toggle></md-table-expand-toggle><md-table-row expandable></md-table-row></div>');
+    const toggle = page.body.querySelector('md-table-expand-toggle')!;
+    const row = page.body.querySelector('md-table-row')!;
+    const button = toggle.shadowRoot!.querySelector('md-icon-button')!;
+    (button as HTMLElement).click();
+    await page.waitForChanges();
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    row.appendChild(toggle);
+    await page.waitForChanges();
+    (button as HTMLElement).click();
+    await page.waitForChanges();
+    await page.waitForChanges();
+    expect(row.expanded).toBe(true);
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    toggle.remove();
+    await page.waitForChanges();
+    await row.toggle();
+    expect(row.expanded).toBe(false);
+  });
   it('renders the standard xs caret with aria wiring', async () => {
     const page = await create(`
       <md-table-row expandable>

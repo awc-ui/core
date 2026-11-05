@@ -282,17 +282,17 @@
   min-block-size: 0;
 }
 
-/* The vertical native input is fixed at the (200px) track length and rotated,
-   which — even though it's invisible (opacity:0) and pointer-events:none here —
-   keeps a 200px box that drives scroll overflow and clips the thumb in a smaller
-   responsive container. Let it fill the rail instead (the rail owns pointer +
-   visuals in vertical, so dropping the rotation is purely a box-size change). */
+/* The vertical native input is fixed at the (200px) track length, which — even
+   though it's invisible (opacity:0) and pointer-events:none here — keeps a 200px
+   box that drives scroll overflow and clips the thumb in a smaller responsive
+   container. Let it fill the rail instead (the rail owns pointer + visuals in
+   vertical, so this is purely a box-size change; it keeps the vertical writing
+   mode). */
 :host([full-height].md-slider--vertical) .md-slider__input {
   position: absolute;
   inset: 0;
   inline-size: 100%;
   block-size: 100%;
-  transform: none;
 }
 
 /* ----- Track (container clips outer corners; segments handle gap + inside corners) ----- */
@@ -623,8 +623,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding-block: var(--md-slider-value-padding-block, var(--md-sys-spacing-inset-md, 12px));
-  padding-inline: var(--md-slider-value-padding-inline, var(--md-sys-spacing-inset-lg, 16px));
+  /* The padding tapers with density too (2px per step), so the content box fits
+     the tapered min sizes; a fixed 12px block padding kept the bubble 40px tall
+     at -2..-4, overflowing the head room reserved for it below by 4-12px. */
+  padding-block: var(
+    --md-slider-value-padding-block,
+    max(4px, calc(var(--md-sys-spacing-inset-md, 12px) + var(--md-sys-density-scale, 0) * 2px))
+  );
+  padding-inline: var(
+    --md-slider-value-padding-inline,
+    max(8px, calc(var(--md-sys-spacing-inset-lg, 16px) + var(--md-sys-density-scale, 0) * 2px))
+  );
   box-sizing: border-box;
   background-color: var(--md-slider-value-bg);
   color: var(--md-slider-value-color);
@@ -714,13 +723,19 @@
   justify-content: center;
 }
 
+/* A vertical writing mode (bottom = min), not a rotation: Chromium derives the
+   orientation it exposes to assistive tech, and the arrow-key mapping, from the
+   input's own writing mode and ignores aria-orientation on a native range. A
+   rotated horizontal input was announced as horizontal, and in an RTL page its
+   Right/Down arrows decreased. Logical sizes resolve against the input's own
+   writing mode, so the box keeps the same physical shape. */
 :host(.md-slider--vertical) .md-slider__input {
   position: relative;
   inset: auto;
   inline-size: var(--md-slider-track-length);
   block-size: max(44px, var(--_state-layer-size));
-  transform: rotate(-90deg);
-  transform-origin: center center;
+  writing-mode: vertical-lr;
+  direction: rtl;
 }
 
 .md-slider__input--start,
@@ -774,6 +789,17 @@
   transition:
     opacity var(--md-sys-motion-spring-effects-default-duration, 200ms) var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00)),
     background-color var(--md-sys-motion-spring-effects-default-duration, 200ms) var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00));
+}
+
+/* ----- Reduced motion -----
+   The knob's press morph, the stop spring and the tick fades are decorative;
+   under `prefers-reduced-motion: reduce` every value applies instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .md-slider__thumb-knob,
+  :host(.md-slider--stops) .md-slider__track-active,
+  :host(.md-slider--stops) .md-slider__tick {
+    transition: none;
+  }
 }
 
 /* ==========================================================

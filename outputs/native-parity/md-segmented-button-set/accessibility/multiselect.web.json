@@ -1,0 +1,329 @@
+{
+ "tag": "md-segmented-button-set",
+ "case": "multiselect",
+ "html": "<md-segmented-button-set data-ax-node=\"n0\" id=\"component\"><md-segmented-button data-ax-node=\"n1\" id=\"segment-0\"></md-segmented-button><md-segmented-button data-ax-node=\"n2\" id=\"segment-1\"></md-segmented-button><md-segmented-button data-ax-node=\"n3\" id=\"segment-2\"></md-segmented-button></md-segmented-button-set>",
+ "props": {
+  "n0": {
+   "density": 0,
+   "multiselect": true
+  },
+  "n1": {
+   "label": "Day",
+   "selected": true,
+   "value": "day"
+  },
+  "n2": {
+   "label": "Week",
+   "selected": false,
+   "value": "week"
+  },
+  "n3": {
+   "label": "Month",
+   "selected": false,
+   "value": "month"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "group",
+    "name": "",
+    "ignored": false,
+    "frame": [
+     16,
+     16,
+     343.265625,
+     40
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "checkbox",
+        "name": "Day",
+        "ignored": false,
+        "focusable": true,
+        "checked": "true",
+        "frame": [
+         16,
+         16,
+         114.421875,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Day",
+              "ignored": false,
+              "frame": [
+               60.609375,
+               28,
+               26,
+               17
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Day",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "checkbox",
+        "name": "Week",
+        "ignored": false,
+        "focusable": true,
+        "checked": "false",
+        "frame": [
+         130.421875,
+         16,
+         114.421875,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Week",
+              "ignored": false,
+              "frame": [
+               169.65625,
+               28,
+               35.953125,
+               16
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Week",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "checkbox",
+        "name": "Month",
+        "ignored": false,
+        "focusable": true,
+        "checked": "false",
+        "frame": [
+         243.84375,
+         16,
+         115.421875,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Month",
+              "ignored": false,
+              "frame": [
+               281.84375,
+               28,
+               39.421875,
+               16
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Month",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-segmented-button",
+   "role": "checkbox",
+   "name": "Day",
+   "frame": [
+    16,
+    16,
+    114.421875,
+    40
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true,
+    "checked": "true"
+   }
+  },
+  {
+   "dom": "md-segmented-button",
+   "role": "checkbox",
+   "name": "Week",
+   "frame": [
+    130.421875,
+    16,
+    114.421875,
+    40
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true,
+    "checked": "false"
+   }
+  },
+  {
+   "dom": "md-segmented-button",
+   "role": "checkbox",
+   "name": "Month",
+   "frame": [
+    243.84375,
+    16,
+    115.421875,
+    40
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true,
+    "checked": "false"
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

@@ -169,6 +169,10 @@
   ],
   "cssCustomProps": [
     {
+      "name": "--md-navigation-tab-active-indicator-color",
+      "description": "Active indicator (pill) colour"
+    },
+    {
       "name": "--md-navigation-tab-active-indicator-width",
       "description": "(default 56px)"
     },
@@ -179,6 +183,22 @@
     {
       "name": "--md-navigation-tab-active-indicator-shape",
       "description": "(default full-rounded)"
+    },
+    {
+      "name": "--md-navigation-tab-active-icon-color",
+      "description": "Icon colour of the active destination"
+    },
+    {
+      "name": "--md-navigation-tab-inactive-icon-color",
+      "description": "Icon colour of inactive destinations"
+    },
+    {
+      "name": "--md-navigation-tab-active-label-color",
+      "description": "Label colour of the active destination"
+    },
+    {
+      "name": "--md-navigation-tab-inactive-label-color",
+      "description": "Label colour of inactive destinations"
     },
     {
       "name": "--md-navigation-tab-label-font",
@@ -201,6 +221,26 @@
       "description": "(default 5px)"
     },
     {
+      "name": "--md-navigation-tab-hover-state-layer-color",
+      "description": "State-layer colour on hover"
+    },
+    {
+      "name": "--md-navigation-tab-focus-state-layer-color",
+      "description": "State-layer colour on keyboard focus"
+    },
+    {
+      "name": "--md-navigation-tab-pressed-state-layer-color",
+      "description": "State-layer colour while pressed"
+    },
+    {
+      "name": "--md-navigation-tab-badge-color",
+      "description": "Badge colour"
+    },
+    {
+      "name": "--md-navigation-tab-badge-on-color",
+      "description": "Badge text colour"
+    },
+    {
       "name": "--md-navigation-tab-disabled-opacity",
       "description": "(default 0.38)"
     },
@@ -220,7 +260,13 @@
   "dependencies": [
     "md-ripple"
   ],
-  "dataTypes": [],
+  "dataTypes": [
+    {
+      "name": "MdNavigationTabLabelBehavior",
+      "kind": "type",
+      "body": "'always' | 'selected' | 'none'"
+    }
+  ],
   "callableProps": [],
   "eventTypes": [],
   "eventPayloads": [

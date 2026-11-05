@@ -45,19 +45,10 @@ export class MdFabMenuItem {
   }
 
   componentWillLoad() {
+    this.hasSlottedIcon = Array.from(this.el.children).some(child => child.getAttribute('slot') === 'icon');
     if (!this.el.hasAttribute('tabindex')) {
       this.el.setAttribute('tabindex', '-1');
     }
-  }
-
-  componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
-
-    const iconSlot = shadow.querySelector('slot[name="icon"]') as HTMLSlotElement | null;
-    iconSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedIcon = iconSlot.assignedElements().length > 0;
-    });
   }
 
   private handleClick = (e: MouseEvent) => {
@@ -98,7 +89,9 @@ export class MdFabMenuItem {
       >
         <md-ripple disabled={effectivelyDisabled}></md-ripple>
         <span class="md-fab-menu-item__state-layer" part="state-layer" aria-hidden="true"></span>
-        <slot name="icon">
+        <slot name="icon" onSlotchange={event => {
+          this.hasSlottedIcon = (event.currentTarget as HTMLSlotElement).assignedElements().length > 0;
+        }}>
           {hasIcon && (
             <span class="md-fab-menu-item__icon material-symbols-outlined" part="icon" aria-hidden="true">
               {this.icon}

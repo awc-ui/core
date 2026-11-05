@@ -1,0 +1,196 @@
+{
+ "tag": "md-line-chart",
+ "case": "empty",
+ "request": {
+  "tag": "md-line-chart",
+  "properties": {
+   "label": "Monthly revenue",
+   "series": [],
+   "xAxis": {
+    "data": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ]
+   },
+   "noAnimation": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "enabled": true,
+         "frame": [
+          48,
+          48,
+          1,
+          1
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Native Canvas • tap to inspect"
+        },
+        {
+         "enabled": true,
+         "frame": [
+          263.75,
+          186,
+          112.5,
+          16
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "No data to display"
+        }
+       ],
+       "description": "Monthly revenue, Line chart, from Jan to Jun.",
+       "enabled": true,
+       "frame": [
+        32,
+        32,
+        576,
+        324
+       ],
+       "identifier": "example-md-line-chart",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      388
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    388
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-line-chart",
+  "properties": {
+   "animation": "expressive",
+   "area": false,
+   "axisTicks": false,
+   "connectNulls": false,
+   "curve": "smooth",
+   "density": 0,
+   "grid": "horizontal",
+   "inverted": false,
+   "label": "Monthly revenue",
+   "labelEmpty": "No data to display",
+   "labelPlot": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+   "labelPoint": "%x%: %values%",
+   "labelZoomEnd": "Zoom range end",
+   "labelZoomStart": "Zoom range start",
+   "legend": "top-end",
+   "loading": false,
+   "loadingLabel": "Loading chart…",
+   "locale": "",
+   "noAnimation": true,
+   "series": [],
+   "seriesLabels": false,
+   "showLabels": false,
+   "showLine": true,
+   "showMarks": true,
+   "stack": "none",
+   "subtitle": "Native Canvas • tap to inspect",
+   "summary": "",
+   "titleAlign": "start",
+   "tooltip": "axis",
+   "xAxis": {
+    "data": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ]
+   },
+   "zoom": "none"
+  },
+  "tag": "md-line-chart"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 324,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "announcement": "",
+     "areas": 0,
+     "background": "#F7F2FA",
+     "bars": 0,
+     "height": 324,
+     "legendHidden": [],
+     "lines": 0,
+     "padding": 16,
+     "plotHeight": 220,
+     "plotWidth": 499.67,
+     "plotX": 29.139999999999997,
+     "plotY": 47,
+     "shape": 16,
+     "slices": 0,
+     "width": 576,
+     "zoomEnd": 5,
+     "zoomStart": 0
+    },
+    "name": "md-line-chart"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

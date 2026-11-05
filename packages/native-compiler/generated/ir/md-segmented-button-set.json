@@ -192,7 +192,8 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "multiselect"
+        "multiselect",
+        "density"
       ],
       "events": [
         "mdChange"
@@ -201,20 +202,21 @@
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Coordinates selected children."
+        "Dedicated equal-column native layout preserves the source final-segment negative seam, clipping, logical corner placement and source-order RTL traversal. All descendant segment identities participate, including wrapped/nested sets; latest parent synchronization wins managed properties.",
+        "The nearest set consumes mdSegmentClick and commits identity-based state before emitting the exact ordered mdChange string array, retaining duplicate/empty values. preventDefault on the child event does not veto this source behavior; stopping propagation before the parent does.",
+        "Actual ordered selection is available through View.awcSegmentedSelection(rootID:onChange:); new/removed child state follows authored identity. Preview context uses real Day/Week/Month siblings and styles the selected first child without changing siblings. Validation and platform boundaries are recorded in audits/md-segmented-button.md."
       ],
       "verification": "not-device-verified"
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "density",
         "multiselect"
       ],
       "events": [
@@ -224,17 +226,32 @@
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native exclusive/multiple selection coordinated by child identity; supports duplicate child values."
+        "Dedicated native set uses equal grid tracks, joined segment outlines and authored descendant order. Single-select arrows activate the next hard-enabled child; multiselect arrows only move focus. onEvent mdChange detail is the exact ordered values array; scoped AWCActionEvent.rawDetail preserves the array and segmentedSelectionValues provides a typed accessor. AWCSegmentedButtonSetStateScope exposes ordered Boolean state without conflating duplicate values."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "nativeEquivalents": {
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Compose authored layout-tree traversal / AWCSegmentedButtonSetStateScope",
+          "description": "Native descendants retain authored identity and order for parent synchronization, exact selection and keyboard movement.",
+          "limitations": [
+            "Arbitrary DOM queries are replaced by native layout-tree registration."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionTargetScope / onEvent",
+          "description": "Synchronous native event phases preserve selection proposals, propagation stops and parent commit ordering. Cancellation does not undo the set commit.",
+          "limitations": [
+            "DOM events are not fabricated. Set onEvent detail is the source values array; scoped rawDetail preserves the same array; segmentedSelectionValues exposes typed values."
+          ]
+        }
+      }
     }
   }
 }

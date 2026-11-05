@@ -692,6 +692,7 @@ export const MdDialog: StencilReactComponent<MdDialogElement, MdDialogEvents, Co
     properties: {
         open: 'open',
         headline: 'headline',
+        dialogAriaLabel: 'aria-label',
         icon: 'icon',
         fullscreen: 'fullscreen',
         scrimDismissible: 'scrim-dismissible',
@@ -2085,6 +2086,7 @@ export const MdTablePagination: StencilReactComponent<MdTablePaginationElement, 
         labelNextPage: 'label-next-page',
         labelLastPage: 'label-last-page',
         labelAll: 'label-all',
+        label: 'label',
         compact: 'compact',
         disabled: 'disabled',
         density: 'density'
@@ -2368,7 +2370,8 @@ export const MdTransferList: StencilReactComponent<MdTransferListElement, MdTran
         moveRightLabel: 'move-right-label',
         moveLeftLabel: 'move-left-label',
         moveAllRightLabel: 'move-all-right-label',
-        moveAllLeftLabel: 'move-all-left-label'
+        moveAllLeftLabel: 'move-all-left-label',
+        selectAllLabel: 'select-all-label'
     },
     hydrateModule: typeof window === 'undefined' ? (import('@awc-ui/core/hydrate') as Promise<HydrateModule>) : undefined,
     clientModule: clientComponents.MdTransferList as StencilReactComponent<MdTransferListElement, MdTransferListEvents, Components.MdTransferList>,

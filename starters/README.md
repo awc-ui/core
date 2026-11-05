@@ -16,7 +16,13 @@ consumer would.
 | [`nuxt/`](./nuxt) | Nitro `render:html` hook + `@awc-ui/core/hydrate` for SSR DSD; client plugin registers the elements |
 | [`sveltekit/`](./sveltekit) | `hooks.server.ts` `transformPageChunk` + `@awc-ui/core/hydrate`; static adapter prerenders with DSD baked in |
 | [`astro/`](./astro) | Middleware post-processes pages with `@awc-ui/core/hydrate` at build time; inline script registers the elements |
-| [`html/`](./html) | No build step — `@awc-ui/core` loader from esm.sh, tokens CSS from jsDelivr |
+| [`html/`](./html) | No build step — version-matched `@awc-ui/core` JavaScript and CSS from jsDelivr |
+
+Each starter loads Core's complete stylesheet in its document head or root
+layout before client code. It includes tokens and hides unfinished components
+until `.hydrated` marks their first render; registration alone (`:defined`) is
+not enough. Fully rendered SSR output retains that marker and stays visible.
+This guard does not reserve final dimensions for client-only components.
 
 Every starter's README carries an **Open in StackBlitz** badge of the form
 `https://stackblitz.com/fork/github/awc-ui/core/tree/main/starters/<name>`

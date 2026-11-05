@@ -223,6 +223,9 @@
   ],
   "cssParts": [
     {
+      "name": "popover"
+    },
+    {
       "name": "plate"
     },
     {
@@ -278,9 +281,6 @@
     },
     {
       "name": "preview"
-    },
-    {
-      "name": "popover"
     }
   ],
   "cssProperties": [
@@ -365,37 +365,37 @@
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 142
+      "line": 144
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 142
+      "line": 144
     },
     {
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 199
+      "line": 207
     },
     {
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 254
+      "line": 262
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Document access requires a native adapter.",
-      "line": 576
+      "line": 601
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 580
+      "line": 605
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -409,7 +409,7 @@
     "styleUrl": "md-color-picker.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "9710f519791d0e981d721988253c41aa0643c04d82aa05bddc56716f17d756ed"
+    "sha256": "f9421037c2c210cdd5d937f1b4ff97e73714b906e4df74087e134c0e286083c9"
   },
   "styles": [
     {
@@ -1669,6 +1669,22 @@
       ]
     },
     {
+      "selector": ":host(.md-color-picker--disabled) .md-color-picker__preset",
+      "context": null,
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0.5",
+          "important": false
+        },
+        {
+          "property": "cursor",
+          "value": "default",
+          "important": false
+        }
+      ]
+    },
+    {
       "selector": ".md-color-picker__popover",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
@@ -1713,7 +1729,7 @@
       ]
     },
     {
-      "selector": ".md-color-picker__plate,\n  .md-color-picker__hue,\n  .md-color-picker__alpha",
+      "selector": ".md-color-picker__plate,\n  .md-color-picker__hue,\n  .md-color-picker__alpha,\n  .md-color-picker__preview,\n  .md-color-picker__preset",
       "context": "@media (forced-colors: active)",
       "declarations": [
         {

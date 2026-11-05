@@ -398,6 +398,11 @@
       "initializer": "false"
     },
     {
+      "name": "primaryFocusVisible",
+      "type": "inferred",
+      "initializer": "false"
+    },
+    {
       "name": "hostedByList",
       "type": "inferred",
       "initializer": "false"
@@ -906,7 +911,7 @@
     "attributes": [
       {
         "name": "class",
-        "value": "{\n          'md-list-item': true,\n          [`md-list-item--${lines}-line`]: true,\n          [`md-list-item--type-${this.type}`]: true,\n          'md-list-item--selection-mode': this.participatesInSelection,\n          'md-list-item--multi-action': this.isMultiAction,\n          'md-list-item--interactive': isInteractive,\n          'md-list-item--disabled': this.disabled || this.softDisabled,\n          'md-list-item--soft-disabled': this.softDisabled,\n          'md-list-item--selected': this.selected && !this.expandable,\n          'md-list-item--pressed': this.pressed,\n          'md-list-item--with-leading': this.hasLeadingContent,\n          'md-list-item--with-trailing': this.hasTrailingContent,\n          'md-list-item--with-avatar':\n            !!this.leadingAvatar || !!this.leadingAvatarLabel || !!this.leadingAvatarName,\n          'md-list-item--with-image': !!this.leadingImage,\n          'md-list-item--with-video': this.hasLeadingVideo,\n          'md-list-item--expandable': this.expandable,\n          'md-list-item--expanded': this.expandable && this.expanded,\n          'md-list-item--reorderable': this.reorderable,\n          'md-list-item--roving-focus-visible': this.rovingFocusVisible,\n        }"
+        "value": "{\n          'md-list-item': true,\n          [`md-list-item--${lines}-line`]: true,\n          [`md-list-item--type-${this.type}`]: true,\n          'md-list-item--selection-mode': this.participatesInSelection,\n          'md-list-item--multi-action': this.isMultiAction,\n          'md-list-item--interactive': isInteractive,\n          'md-list-item--disabled': this.disabled || this.softDisabled,\n          'md-list-item--soft-disabled': this.softDisabled,\n          'md-list-item--selected': this.selected && !this.expandable,\n          'md-list-item--pressed': this.pressed,\n          'md-list-item--with-leading': this.hasLeadingContent,\n          'md-list-item--with-trailing': this.hasTrailingContent,\n          'md-list-item--with-avatar':\n            !!this.leadingAvatar || !!this.leadingAvatarLabel || !!this.leadingAvatarName,\n          'md-list-item--with-image': !!this.leadingImage,\n          'md-list-item--with-video': this.hasLeadingVideo,\n          'md-list-item--expandable': this.expandable,\n          'md-list-item--expanded': this.expandable && this.expanded,\n          'md-list-item--reorderable': this.reorderable,\n          'md-list-item--roving-focus-visible': this.rovingFocusVisible,\n          'md-list-item--primary-focus-visible': hasPrimaryAction && this.primaryFocusVisible,\n        }"
       },
       {
         "name": "role",
@@ -1045,37 +1050,37 @@
       "code": "DOM_OBSERVER",
       "severity": "warning",
       "message": "DOM mutation observation has no direct native counterpart.",
-      "line": 251
+      "line": 255
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 460
+      "line": 464
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 464
+      "line": 468
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 468
+      "line": 472
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Window access requires a native adapter.",
-      "line": 877
+      "line": 881
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 1048
+      "line": 1081
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -1089,7 +1094,7 @@
     "styleUrl": "md-list-item.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "ecfb218a81ec9a93400e2abfdad0ad0c61d39bf31e79b3755e4492dce4dbdf43"
+    "sha256": "3bb69232ab61b1776b524d361d64cc50725f6f0aafb912b669b79ec49709ad81"
   },
   "styles": [
     {
@@ -2075,7 +2080,7 @@
       ]
     },
     {
-      "selector": ":host(.md-list-item--interactive:has(.md-list-item__primary:focus-visible)) .md-list-item__state-layer",
+      "selector": ":host(.md-list-item--interactive.md-list-item--primary-focus-visible) .md-list-item__state-layer",
       "context": null,
       "declarations": [
         {
@@ -2135,7 +2140,7 @@
       ]
     },
     {
-      "selector": ":host(.md-list-item--interactive:focus-visible),\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus))",
+      "selector": ":host(.md-list-item--interactive:focus-visible),\n:host(.md-list-item--interactive.md-list-item--primary-focus-visible),\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus))",
       "context": null,
       "declarations": [
         {
@@ -2156,7 +2161,7 @@
       ]
     },
     {
-      "selector": ":host(.md-list-item--interactive:has(.md-list-item__primary:focus-visible))",
+      "selector": ":host(.md-list-item--interactive.md-list-item--primary-focus-visible)",
       "context": null,
       "declarations": [
         {
@@ -2188,7 +2193,7 @@
       ]
     },
     {
-      "selector": ":host(.md-list-item--interactive:focus-visible),\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),\n:host(.md-list-item--selected),\n:host(.md-list-item--interactive:active),\n:host(.md-list-item--pressed),\n:host(.md-list-item--dragged)",
+      "selector": ":host(.md-list-item--interactive:focus-visible),\n:host(.md-list-item--interactive.md-list-item--primary-focus-visible),\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),\n:host(.md-list-item--selected),\n:host(.md-list-item--interactive:active),\n:host(.md-list-item--pressed),\n:host(.md-list-item--dragged)",
       "context": null,
       "declarations": [
         {
@@ -2199,7 +2204,7 @@
       ]
     },
     {
-      "selector": ":host(.md-list-item--interactive:focus-visible) .md-list-item__row,\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__row,\n:host(.md-list-item--selected) .md-list-item__row,\n:host(.md-list-item--interactive:active) .md-list-item__row,\n:host(.md-list-item--pressed) .md-list-item__row,\n:host(.md-list-item--dragged) .md-list-item__row",
+      "selector": ":host(.md-list-item--interactive:focus-visible) .md-list-item__row,\n:host(.md-list-item--interactive.md-list-item--primary-focus-visible) .md-list-item__row,\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__row,\n:host(.md-list-item--selected) .md-list-item__row,\n:host(.md-list-item--interactive:active) .md-list-item__row,\n:host(.md-list-item--pressed) .md-list-item__row,\n:host(.md-list-item--dragged) .md-list-item__row",
       "context": null,
       "declarations": [
         {
@@ -2210,7 +2215,7 @@
       ]
     },
     {
-      "selector": ":host(.md-list-item--interactive:focus-visible),\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),\n:host(.md-list-item--interactive:focus-visible) .md-list-item__row,\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__row",
+      "selector": ":host(.md-list-item--interactive:focus-visible),\n:host(.md-list-item--interactive.md-list-item--primary-focus-visible),\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),\n:host(.md-list-item--interactive:focus-visible) .md-list-item__row,\n:host(.md-list-item--interactive.md-list-item--primary-focus-visible) .md-list-item__row,\n:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__row",
       "context": null,
       "declarations": [
         {
@@ -2376,7 +2381,7 @@
       ]
     },
     {
-      "selector": ":host(.md-list-item--selected.md-list-item--interactive:hover),\n:host(.md-list-item--selected.md-list-item--interactive:focus-visible),\n:host(.md-list-item--selected.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),\n:host(.md-list-item--selected.md-list-item--interactive:active),\n:host(.md-list-item--selected.md-list-item--pressed),\n:host(.md-list-item--selected.md-list-item--dragged)",
+      "selector": ":host(.md-list-item--selected.md-list-item--interactive:hover),\n:host(.md-list-item--selected.md-list-item--interactive:focus-visible),\n:host(.md-list-item--selected.md-list-item--interactive.md-list-item--primary-focus-visible),\n:host(.md-list-item--selected.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),\n:host(.md-list-item--selected.md-list-item--interactive:active),\n:host(.md-list-item--selected.md-list-item--pressed),\n:host(.md-list-item--selected.md-list-item--dragged)",
       "context": null,
       "declarations": [
         {
@@ -2392,7 +2397,7 @@
       ]
     },
     {
-      "selector": ":host(.md-list-item--expandable),\n:host(.md-list-item--expandable[selected]),\n:host(.md-list-item--expandable.md-list-item--selected),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:hover),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:focus-visible),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:active),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--pressed),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--dragged)",
+      "selector": ":host(.md-list-item--expandable),\n:host(.md-list-item--expandable[selected]),\n:host(.md-list-item--expandable.md-list-item--selected),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:hover),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:focus-visible),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive.md-list-item--primary-focus-visible),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:active),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--pressed),\n:host(.md-list-item--expandable.md-list-item--selected.md-list-item--dragged)",
       "context": null,
       "declarations": [
         {
@@ -4109,6 +4114,28 @@
       ]
     },
     {
+      "selector": ":host(.md-list-item--interactive:focus-visible),\n  :host(.md-list-item--interactive.md-list-item--primary-focus-visible),\n  :host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),\n  :host(.md-list-item--selected),\n  :host(.md-list-item--interactive:active),\n  :host(.md-list-item--pressed),\n  :host(.md-list-item--dragged)",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-property",
+          "value": "box-shadow",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host(.md-list-item--interactive:focus-visible) .md-list-item__row,\n  :host(.md-list-item--interactive.md-list-item--primary-focus-visible) .md-list-item__row,\n  :host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__row,\n  :host(.md-list-item--selected) .md-list-item__row,\n  :host(.md-list-item--interactive:active) .md-list-item__row,\n  :host(.md-list-item--pressed) .md-list-item__row,\n  :host(.md-list-item--dragged) .md-list-item__row,\n  :host(.md-list-item--expanded) .md-list-item__expanded-panel,\n  :host(.md-list-item--expanded) .md-list-item__expanded-panel-inner,\n  .md-list-item__drag-handle.material-symbols-outlined,\n  :host(.md-list-item--shifting)",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
       "selector": ".material-symbols-outlined",
       "context": null,
       "declarations": [
@@ -4282,6 +4309,7 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
+        "type",
         "headline",
         "overline",
         "supportingText",
@@ -4291,22 +4319,36 @@
         "leadingAvatar",
         "leadingAvatarAlt",
         "leadingAvatarName",
+        "leadingAvatarLabel",
+        "leadingImage",
+        "leadingImageAlt",
+        "lines",
         "href",
+        "target",
+        "disabled",
+        "softDisabled",
         "selected",
         "expandable",
         "expanded",
+        "tabbable",
+        "rovingFocusVisible",
         "selectionMode",
-        "disabled",
-        "softDisabled",
-        "type"
+        "interactionMode",
+        "containerRole",
+        "reorderable",
+        "density"
       ],
       "events": [
         "mdClick",
-        "mdItemClick",
-        "mdItemSelect",
         "mdExpand"
       ],
-      "methods": [],
+      "methods": [
+        "setFocus",
+        "focusItem",
+        "toggle",
+        "expand",
+        "collapse"
+      ],
       "slots": [
         "",
         "leading",
@@ -4317,65 +4359,135 @@
         "trailing-supporting-text",
         "expanded-content"
       ],
-      "unsupportedProperties": [
-        "leadingAvatarLabel",
-        "leadingImage",
-        "leadingImageAlt",
-        "lines",
-        "target",
-        "tabbable",
-        "rovingFocusVisible",
-        "interactionMode",
-        "containerRole",
-        "reorderable",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [
+        "mdItemClick",
+        "mdItemSelect",
         "mdRequestActivation",
         "mdItemRequestReorder"
       ],
-      "unsupportedMethods": [
-        "setFocus",
-        "focusItem",
-        "toggle",
-        "expand",
-        "collapse"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Event item DOM references become stable native node IDs. Nested focus and keyboard reorder are not implemented."
+        "Dedicated native list item: all twenty-eight properties (the list-managed ones — tabbable, rovingFocusVisible, selectionMode, interactionMode, containerRole, reorderable — follow the parent list as in the source), mdClick and mdExpand with the source payloads and order, the five methods through AWCListItemController, all eight slots, sixty-eight appearance hooks and twenty-seven typed part targets.",
+        "mdItemClick, mdItemSelect, mdRequestActivation and mdItemRequestReorder are the source's internal item-to-list protocol; natively the list coordinates its rows directly and emits mdSelect, mdActivate and mdReorder instead.",
+        "Accessibility: a selection row is an option with its selected state (a radio button in a single-select listbox, a checkbox in a multi-select one), a menu row is a menu item (a button on Compose), the primary action is a button or link; the row's index is its set position. The headline and supporting text use the shared md-tooltip while clipped.",
+        "The headline-tooltip-popup and supporting-tooltip-popup parts are styled through the shared md-tooltip appearance, not the list item part API.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "leading",
+        "avatar",
+        "image-wrap",
+        "image",
+        "image-selection-indicator",
+        "image-selection-circle",
+        "image-selection-check",
+        "leading-icon",
+        "content",
+        "overline",
+        "headline",
+        "supporting-text",
+        "trailing",
+        "trailing-supporting-text",
+        "trailing-icon",
+        "expand-button",
+        "drag-handle",
+        "primary",
+        "row",
+        "state-layer",
+        "expanded-panel",
+        "expanded-panel-inner",
+        "avatar-image",
+        "avatar-initials",
+        "avatar-icon",
+        "expand-button-state-layer",
+        "expand-button-icon"
+      ],
+      "appearance": {
+        "api": ".awcListItemAppearance(AWCListItemAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "containerShapeStartStart",
+          "containerShapeStartEnd",
+          "containerShapeEndStart",
+          "containerShapeEndEnd",
+          "activeContainerShape",
+          "hoverContainerShape",
+          "focusContainerShape",
+          "pressedContainerShape",
+          "selectedContainerShape",
+          "draggedContainerShape",
+          "hoverStateLayerOpacity",
+          "focusStateLayerOpacity",
+          "pressedStateLayerOpacity",
+          "draggedStateLayerOpacity",
+          "disabledStateLayerOpacity",
+          "labelTextColor",
+          "labelTextFont",
+          "supportingTextColor",
+          "supportingTextFont",
+          "overlineColor",
+          "trailingSupportingTextColor",
+          "trailingSupportingTextFont",
+          "leadingIconColor",
+          "leadingIconSize",
+          "leadingIconExpressiveSize",
+          "trailingIconColor",
+          "unselectedTrailingIconColor",
+          "trailingIconSize",
+          "trailingIconExpressiveSize",
+          "leadingSpace",
+          "trailingSpace",
+          "topSpace",
+          "bottomSpace",
+          "betweenSpace",
+          "threeLineTopSpace",
+          "threeLineBottomSpace",
+          "draggedContainerElevation",
+          "leadingVideoWidth",
+          "leadingVideoHeight",
+          "leadingVideoShape",
+          "leadingVideoTopSpace",
+          "leadingAvatarColor",
+          "leadingAvatarLabelColor",
+          "leadingAvatarSize",
+          "leadingAvatarShape",
+          "leadingImageWidth",
+          "leadingImageHeight",
+          "leadingImageShape",
+          "leadingImageExpressiveShape",
+          "leadingImageSelectionScrimColor",
+          "leadingImageSelectionCircleColor",
+          "leadingImageSelectionIconColor",
+          "leadingImageSelectionIconSize",
+          "selectedContainerColor",
+          "selectedLabelTextColor",
+          "selectedActiveIconColor",
+          "selectedDisabledContainerColor",
+          "expandChevronColor",
+          "expandDuration",
+          "collapseDuration",
+          "expandedPanelPaddingBlock",
+          "expandedPanelPaddingInline",
+          "expandedPanelPaddingInlineStart",
+          "expandedPanelBackground",
+          "expandButtonSize",
+          "expandChevronSize"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "disabled",
-        "expandable",
-        "expanded",
-        "headline",
-        "leadingIcon",
-        "overline",
-        "selected",
-        "softDisabled",
-        "supportingText",
-        "trailingSupportingText"
-      ],
-      "events": [
-        "mdClick",
-        "mdExpand",
-        "mdItemClick",
-        "mdItemSelect"
-      ],
-      "methods": [],
-      "slots": [
-        "",
-        "expanded-content",
-        "leading",
-        "trailing"
-      ],
-      "unsupportedProperties": [
         "type",
+        "headline",
+        "overline",
+        "supportingText",
+        "trailingSupportingText",
+        "leadingIcon",
         "trailingIcon",
         "leadingAvatar",
         "leadingAvatarAlt",
@@ -4386,6 +4498,11 @@
         "lines",
         "href",
         "target",
+        "disabled",
+        "softDisabled",
+        "selected",
+        "expandable",
+        "expanded",
         "tabbable",
         "rovingFocusVisible",
         "selectionMode",
@@ -4394,27 +4511,146 @@
         "reorderable",
         "density"
       ],
-      "unsupportedEvents": [
-        "mdRequestActivation",
-        "mdItemRequestReorder"
+      "events": [
+        "mdClick",
+        "mdExpand"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "setFocus",
         "focusItem",
         "toggle",
         "expand",
         "collapse"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
+        "leading",
         "overline",
         "headline",
         "supporting-text",
-        "trailing-supporting-text"
+        "trailing",
+        "trailing-supporting-text",
+        "expanded-content"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [
+        "mdItemClick",
+        "mdItemSelect",
+        "mdRequestActivation",
+        "mdItemRequestReorder"
+      ],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native list item: all twenty-eight properties (the list-managed ones — tabbable, rovingFocusVisible, selectionMode, interactionMode, containerRole, reorderable — follow the parent list as in the source), mdClick and mdExpand with the source payloads and order, the five methods through AWCListItemController, all eight slots, sixty-eight appearance hooks and twenty-seven typed part targets.",
+        "mdItemClick, mdItemSelect, mdRequestActivation and mdItemRequestReorder are the source's internal item-to-list protocol; natively the list coordinates its rows directly and emits mdSelect, mdActivate and mdReorder instead.",
+        "Accessibility: a selection row is an option with its selected state (a radio button in a single-select listbox, a checkbox in a multi-select one), a menu row is a menu item (a button on Compose), the primary action is a button or link; the row's index is its set position. The headline and supporting text use the shared md-tooltip while clipped.",
+        "The headline-tooltip-popup and supporting-tooltip-popup parts are styled through the shared md-tooltip appearance, not the list item part API.",
+        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "leading",
+        "avatar",
+        "image-wrap",
+        "image",
+        "image-selection-indicator",
+        "image-selection-circle",
+        "image-selection-check",
+        "leading-icon",
+        "content",
+        "overline",
+        "headline",
+        "supporting-text",
+        "trailing",
+        "trailing-supporting-text",
+        "trailing-icon",
+        "expand-button",
+        "drag-handle",
+        "primary",
+        "row",
+        "state-layer",
+        "expanded-panel",
+        "expanded-panel-inner",
+        "avatar-image",
+        "avatar-initials",
+        "avatar-icon",
+        "expand-button-state-layer",
+        "expand-button-icon"
+      ],
+      "appearance": {
+        "api": "AWCListItemAppearanceScope(AWCListItemAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "containerShapeStartStart",
+          "containerShapeStartEnd",
+          "containerShapeEndStart",
+          "containerShapeEndEnd",
+          "activeContainerShape",
+          "hoverContainerShape",
+          "focusContainerShape",
+          "pressedContainerShape",
+          "selectedContainerShape",
+          "draggedContainerShape",
+          "hoverStateLayerOpacity",
+          "focusStateLayerOpacity",
+          "pressedStateLayerOpacity",
+          "draggedStateLayerOpacity",
+          "disabledStateLayerOpacity",
+          "labelTextColor",
+          "labelTextFont",
+          "supportingTextColor",
+          "supportingTextFont",
+          "overlineColor",
+          "trailingSupportingTextColor",
+          "trailingSupportingTextFont",
+          "leadingIconColor",
+          "leadingIconSize",
+          "leadingIconExpressiveSize",
+          "trailingIconColor",
+          "unselectedTrailingIconColor",
+          "trailingIconSize",
+          "trailingIconExpressiveSize",
+          "leadingSpace",
+          "trailingSpace",
+          "topSpace",
+          "bottomSpace",
+          "betweenSpace",
+          "threeLineTopSpace",
+          "threeLineBottomSpace",
+          "draggedContainerElevation",
+          "leadingVideoWidth",
+          "leadingVideoHeight",
+          "leadingVideoShape",
+          "leadingVideoTopSpace",
+          "leadingAvatarColor",
+          "leadingAvatarLabelColor",
+          "leadingAvatarSize",
+          "leadingAvatarShape",
+          "leadingImageWidth",
+          "leadingImageHeight",
+          "leadingImageShape",
+          "leadingImageExpressiveShape",
+          "leadingImageSelectionScrimColor",
+          "leadingImageSelectionCircleColor",
+          "leadingImageSelectionIconColor",
+          "leadingImageSelectionIconSize",
+          "selectedContainerColor",
+          "selectedLabelTextColor",
+          "selectedActiveIconColor",
+          "selectedDisabledContainerColor",
+          "expandChevronColor",
+          "expandDuration",
+          "collapseDuration",
+          "expandedPanelPaddingBlock",
+          "expandedPanelPaddingInline",
+          "expandedPanelPaddingInlineStart",
+          "expandedPanelBackground",
+          "expandButtonSize",
+          "expandChevronSize"
+        ]
+      }
     }
   }
 }

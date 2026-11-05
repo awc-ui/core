@@ -4,7 +4,7 @@
   "slug": "breadcrumbs",
   "category": "Navigation",
   "subComponentOf": null,
-  "storyId": "navigation-breadcrumbs--playground",
+  "storyId": "navigation-breadcrumbs--item-link-lifecycle",
   "props": [
     {
       "name": "label",
@@ -97,6 +97,10 @@
     {
       "name": "overflow-button",
       "description": "The button inside the overflow item."
+    },
+    {
+      "name": "separator",
+      "description": "Every separator glyph slot."
     }
   ],
   "cssCustomProps": [

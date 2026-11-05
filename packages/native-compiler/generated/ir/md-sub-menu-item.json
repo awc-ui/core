@@ -450,7 +450,7 @@
     "styleUrl": "md-sub-menu-item.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "7313f43531a2a7894dd06b8d97f975439048890f03d969e4bd63e1868ef0c3d7"
+    "sha256": "f253cb6bc73f3c2963befd55314e93712bb190731a4c5d5d84f09a6c92325346"
   },
   "styles": [
     {
@@ -504,7 +504,7 @@
         },
         {
           "property": "gap",
-          "value": "var(--md-sys-spacing-gap-sm, 8px)",
+          "value": "var(--md-sys-spacing-gap-md, 12px)",
           "important": false
         },
         {
@@ -1190,6 +1190,16 @@
           "property": "border-radius",
           "value": "var(--md-sys-shape-corner-small, 8px)",
           "important": false
+        },
+        {
+          "property": "gap",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
+          "important": false
         }
       ]
     },
@@ -1459,6 +1469,16 @@
         {
           "property": "border-radius",
           "value": "var(--md-sys-shape-corner-small, 8px)",
+          "important": false
+        },
+        {
+          "property": "gap",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "--_icon-size",
+          "value": "max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px))",
           "important": false
         }
       ]
@@ -1802,65 +1822,64 @@
       "properties": [
         "headline",
         "supportingText",
+        "disabled",
         "divider",
-        "badge",
-        "disabled"
-      ],
-      "events": [
-        "mdClick"
-      ],
-      "methods": [],
-      "slots": [
-        "leading-icon",
-        "submenu"
-      ],
-      "unsupportedProperties": [
         "gap",
+        "badge",
         "openDelay",
         "closeDelay",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdClick"
+      ],
+      "methods": [
         "collapse"
       ],
+      "slots": [
+        "leading-icon",
+        "submenu"
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Tap opens submenu. Browser pointer hover delays not implemented."
+        "Opens its slotted md-menu as a flyout beside the row: hover intent with openDelay / closeDelay, ArrowRight, Enter and Space open it with focus on its first row, ArrowLeft and Escape return to the row; the caret rotates as the source and mirrors in RTL.",
+        "collapse() closes the flyout at once (no exit motion) through AWCMenuScopeState.menu(id).collapse(row:) / collapse(rowID)."
       ],
       "verification": "not-device-verified"
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "headline",
+        "supportingText",
         "disabled",
         "divider",
-        "headline",
-        "supportingText"
-      ],
-      "events": [
-        "mdClick"
-      ],
-      "methods": [],
-      "slots": [
-        "submenu"
-      ],
-      "unsupportedProperties": [
         "gap",
         "badge",
         "openDelay",
         "closeDelay",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdClick"
+      ],
+      "methods": [
         "collapse"
       ],
-      "unsupportedSlots": [
-        "leading-icon"
+      "slots": [
+        "leading-icon",
+        "submenu"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Opens its slotted md-menu as a flyout beside the row: hover intent with openDelay / closeDelay, ArrowRight, Enter and Space open it with focus on its first row, ArrowLeft and Escape return to the row; the caret rotates as the source and mirrors in RTL.",
+        "collapse() closes the flyout at once (no exit motion) through AWCMenuScopeState.menu(id).collapse(row:) / collapse(rowID)."
       ],
       "verification": "not-device-verified"
     }

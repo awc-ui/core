@@ -27,7 +27,7 @@
       "reflect": true,
       "attribute": "density",
       "optional": false,
-      "description": "Density scale: `0` (default, 56 dp headers), `-1` (48 dp),\n`-2` (40 dp)."
+      "description": "Density scale from `0` (default, 64 px minimum header) through `-4`\n(48 px). Each rung reduces the minimum by 4 px; content may be taller."
     },
     {
       "name": "elevation",
@@ -181,7 +181,7 @@
       "reflect": true,
       "attribute": "transition",
       "optional": false,
-      "description": "Motion preset applied when items expand and collapse. The prop\nis reflected so the item CSS can pick it up via\n`:host-context(md-accordion[transition=\"…\"])`.\n\n- `expressive` (default) — full MD3 Expressive choreography:\n   asymmetric easing (decelerate-on-open, accelerate-on-close),\n   spring-spatial chevron rotation, container shape & elevation\n   morph, leading-icon FILL-axis swap. Use for hero surfaces,\n   settings shells, anything that wants to feel premium.\n- `standard` — MD3 standard easing (symmetric `emphasized`) with\n   no spring overshoot. Container morph still happens. The\n   \"neutral\" preset — good default for dense product UI.\n- `fade` — content fades in/out alongside the height animation\n   using shorter `standard` easing. Chevron rotates without a\n   spring. Best for content-heavy panels (forms, long copy)\n   where the motion should be unobtrusive.\n- `collapse` — pure height collapse with simple `ease-in-out`\n   timing — no spring, no morph, no fade. The classic\n   \"browser disclosure\" look.\n- `none` — disables every transition (instant snap). Useful for\n   automated tests, screenshot harnesses, or environments where\n   motion is undesirable."
+      "description": "Motion preset applied when items expand and collapse. The prop\nis reflected so the item CSS can pick it up via\ndirect-owner presentation attributes on each item.\n\n- `expressive` (default) — coordinated emphasized height and corner\n   motion (350ms open / 250ms close), with spring-spatial chevron\n   rotation and a leading-icon FILL-axis swap. Surface tone,\n   opacity and elevation use shorter, non-overshooting effects.\n   Content is revealed in place.\n- `standard` — MD3 standard easing (symmetric `emphasized`) with\n   no spring overshoot. Container morph still happens. The\n   \"neutral\" preset — good default for dense product UI.\n- `fade` — content fades in/out alongside the height animation\n   using shorter `standard` easing. Chevron rotates without a\n   spring. Best for content-heavy panels (forms, long copy)\n   where the motion should be unobtrusive.\n- `collapse` — height-led disclosure with `ease-out` on open and\n   `ease-in` on close. Corners follow the same timing; no spring\n   overshoot or content fade.\n- `none` — disables every transition (instant snap). Useful for\n   automated tests, screenshot harnesses, or environments where\n   motion is undesirable."
     },
     {
       "name": "defaultExpanded",
@@ -352,7 +352,12 @@
       {
         "kind": "element",
         "tag": "slot",
-        "attributes": [],
+        "attributes": [
+          {
+            "name": "onSlotchange",
+            "value": "this.syncItems"
+          }
+        ],
         "children": []
       },
       {
@@ -363,22 +368,22 @@
   },
   "diagnostics": [
     {
-      "code": "DOM_LAYOUT",
-      "severity": "warning",
-      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 438
-    },
-    {
       "code": "DOM_MUTATION",
       "severity": "warning",
       "message": "classList depends on browser semantics and requires a native adapter.",
-      "line": 482
+      "line": 416
+    },
+    {
+      "code": "DOM_LAYOUT",
+      "severity": "warning",
+      "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
+      "line": 551
     },
     {
       "code": "CANCELABLE_EVENT",
       "severity": "warning",
       "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
-      "line": 31
+      "line": 40
     }
   ],
   "source": {
@@ -386,7 +391,7 @@
     "styleUrl": "md-accordion.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "1b4899d45048b83448f2700cf883c4e200d0147d731ab5bbaf11cf847b93565b"
+    "sha256": "6452b27c47ff4dad481ec7bbf0de0099b4667a4eb8ee968471b5f8c715e7d45e"
   },
   "styles": [
     {
@@ -414,8 +419,23 @@
           "important": false
         },
         {
-          "property": "--_elevation-easing",
+          "property": "--_effects-easing",
+          "value": "var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.8, 0.34, 1))",
+          "important": false
+        },
+        {
+          "property": "--_effects-duration",
+          "value": "var(--md-sys-motion-spring-effects-default-duration, 200ms)",
+          "important": false
+        },
+        {
+          "property": "--_shape-easing",
           "value": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+          "important": false
+        },
+        {
+          "property": "--_shape-duration",
+          "value": "var(--md-sys-motion-duration-medium2, 300ms)",
           "important": false
         },
         {
@@ -441,11 +461,6 @@
         {
           "property": "--_drop-placeholder-opacity",
           "value": "var(--md-accordion-drop-placeholder-opacity, 1)",
-          "important": false
-        },
-        {
-          "property": "--_elevation-duration",
-          "value": "var(--md-sys-motion-duration-medium2, 300ms)",
           "important": false
         },
         {
@@ -715,7 +730,7 @@
         },
         {
           "property": "transition",
-          "value": "box-shadow var(--_elevation-duration) var(--_elevation-easing)",
+          "value": "border-color var(--_effects-duration) var(--_effects-easing),\n    box-shadow var(--_effects-duration) var(--_effects-easing)",
           "important": false
         }
       ]
@@ -849,7 +864,7 @@
         },
         {
           "property": "transition",
-          "value": "box-shadow var(--_elevation-duration) var(--_elevation-easing),\n    border-radius var(--_elevation-duration) var(--_elevation-easing)",
+          "value": "background-color var(--_effects-duration) var(--_effects-easing),\n    box-shadow var(--_effects-duration) var(--_effects-easing),\n    border-radius var(--_shape-duration) var(--_shape-easing)",
           "important": false
         }
       ]
@@ -945,7 +960,7 @@
       ]
     },
     {
-      "selector": ":host(.md-accordion--floating)",
+      "selector": ":host",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
         {
@@ -1003,59 +1018,6 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "exclusive",
-        "keepOneExpanded",
-        "defaultExpanded",
-        "density"
-      ],
-      "events": [
-        "mdToggle"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
-        "variant",
-        "elevation",
-        "reorderable",
-        "floating",
-        "initialX",
-        "initialY",
-        "bringToFront",
-        "headingLevel",
-        "region",
-        "regionThreshold",
-        "transition"
-      ],
-      "unsupportedEvents": [
-        "mdReorder",
-        "mdDragStart",
-        "mdDragMove",
-        "mdDragEnd"
-      ],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [],
-      "notes": [
-        "Coordinates child expansion, exclusive mode and keep-one-open. Dragging/reorder/floating/window positioning not implemented."
-      ],
-      "verification": "not-device-verified"
-    },
-    "android": {
-      "status": "adapter-implemented",
-      "properties": [
-        "defaultExpanded",
-        "exclusive",
-        "keepOneExpanded"
-      ],
-      "events": [
-        "mdToggle"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
         "variant",
         "density",
         "elevation",
@@ -1064,24 +1026,116 @@
         "initialX",
         "initialY",
         "bringToFront",
+        "exclusive",
+        "keepOneExpanded",
         "headingLevel",
         "region",
         "regionThreshold",
-        "transition"
+        "transition",
+        "defaultExpanded"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdToggle",
         "mdReorder",
         "mdDragStart",
         "mdDragMove",
         "mdDragEnd"
       ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native exclusive and keep-one-expanded coordination with comma-separated defaultExpanded indices. Reorder and floating drag remain unsupported."
+        "Dedicated native renderer: all fifteen properties, five events, the default slot and fourteen appearance hooks. Direct-child ownership, exclusive and keep-one coordination, heading/region presentation, pointer and keyboard reorder, lifted clipping, reorder motion, interaction states, drop-placeholder paint and the floating panel are checked against Chrome oracles.",
+        "Floating mode: the nearest awcAccordionViewport() or the window stands in for the CSS viewport. SwiftUI zIndex orders a panel only among siblings of its container, whereas CSS position: fixed stacks against the whole document.",
+        "drop-placeholder is rendered natively and styled through the five drop-placeholder appearance fields; native views accept no ::part declarations for it. The dash phase on sides after a rounded corner differs from Chrome by up to about one period (open).",
+        "macOS SwiftUI/AppKit renderer and live-host verification is recorded; iOS SDK, simulator/device and VoiceOver execution remain unavailable and unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": ".awcAccordionAppearance(AWCAccordionAppearance)",
+        "fields": [
+          "gap",
+          "outlineColor",
+          "containerShape",
+          "elevation",
+          "floatingWidth",
+          "floatingBackground",
+          "floatingElevation",
+          "floatingElevationActive",
+          "floatingRadius",
+          "dropPlaceholderColor",
+          "dropPlaceholderOutlineColor",
+          "dropPlaceholderOutlineWidth",
+          "dropPlaceholderShape",
+          "dropPlaceholderOpacity"
+        ]
+      }
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "variant",
+        "density",
+        "elevation",
+        "reorderable",
+        "floating",
+        "initialX",
+        "initialY",
+        "bringToFront",
+        "exclusive",
+        "keepOneExpanded",
+        "headingLevel",
+        "region",
+        "regionThreshold",
+        "transition",
+        "defaultExpanded"
+      ],
+      "events": [
+        "mdToggle",
+        "mdReorder",
+        "mdDragStart",
+        "mdDragMove",
+        "mdDragEnd"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native renderer: all fifteen properties, five events, the default slot and fourteen appearance hooks. Direct-child ownership, exclusive and keep-one coordination, heading/region presentation, pointer and keyboard reorder, lifted clipping, reorder motion, interaction states, drop-placeholder paint and the floating panel are checked against Chrome oracles.",
+        "Floating mode: the nearest AWCAccordionViewport or the window root (insets are not subtracted) stands in for the CSS viewport. Compose zIndex orders a panel only among siblings of its container, whereas CSS position: fixed stacks against the whole document.",
+        "drop-placeholder is rendered natively and styled through the five drop-placeholder appearance fields; native views accept no ::part declarations for it. Dash centres drift along the border path by up to 1.20 px (open).",
+        "Android Compose rendering, events, retained-host and device suites are recorded; TalkBack delivery and OS accessibility traversal remain unverified."
+      ],
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCAccordionAppearanceScope(AWCAccordionAppearance)",
+        "fields": [
+          "gap",
+          "outlineColor",
+          "containerShape",
+          "elevation",
+          "floatingWidth",
+          "floatingBackground",
+          "floatingElevation",
+          "floatingElevationActive",
+          "floatingRadius",
+          "dropPlaceholderColor",
+          "dropPlaceholderOutlineColor",
+          "dropPlaceholderOutlineWidth",
+          "dropPlaceholderShape",
+          "dropPlaceholderOpacity"
+        ]
+      }
     }
   }
 }

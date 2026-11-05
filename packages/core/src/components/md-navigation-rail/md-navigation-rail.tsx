@@ -309,6 +309,11 @@ export class MdNavigationRail {
     });
   }
 
+  /** The destination's own disabled state, ignoring overflow. */
+  private isDestinationDisabled(tab: HTMLElement): boolean {
+    return tab.hasAttribute('disabled') || tab.getAttribute('aria-disabled') === 'true';
+  }
+
   private isTabDisabled(tab: HTMLElement): boolean {
     // A destination collapsed into the overflow menu is no longer in the rail,
     // so arrow keys must skip it exactly as they skip a disabled one.
@@ -504,6 +509,9 @@ export class MdNavigationRail {
     // disabled tabs. Drive the selection directly instead.
     const index = this.getTabs().indexOf(tab);
     if (index < 0) return;
+    // Every overflowed destination reads as disabled for the strip (data-overflowed),
+    // so test the destination's own state: a disabled one stays unselectable here too.
+    if (this.isDestinationDisabled(tab)) return;
     const changed = index !== this.activeIndex;
     this.activeIndex = index;
     this.setRovingTabindex(index);
@@ -731,6 +739,7 @@ export class MdNavigationRail {
                   <md-menu-item
                     key={tab.getAttribute('value') || tab.getAttribute('label') || ''}
                     headline={tab.getAttribute('label') || ''}
+                    disabled={this.isDestinationDisabled(tab)}
                     onClick={() => this.selectOverflowed(tab)}
                   >
                     {tab.getAttribute('icon') && (

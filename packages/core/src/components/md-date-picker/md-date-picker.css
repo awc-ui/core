@@ -1454,10 +1454,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Each selector repeats its motion rule's selector exactly, so this block
+     wins on source order at equal specificity. A shorter selector here loses
+     to the more specific base rule and the motion keeps running. */
   .md-date-picker__scrim,
   .md-date-picker__modal--closing .md-date-picker__scrim,
-  .md-date-picker__panel:not(.md-date-picker__panel--docked),
-  .md-date-picker__panel--docked.md-date-picker__panel--bloom-in,
+  .md-date-picker__panel:not(.md-date-picker__panel--docked):not(.md-date-picker__panel--bloom-out),
+  .md-date-picker__panel--docked.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out),
   .md-date-picker__panel--bloom-out,
   .md-date-picker__body--docked-selection .md-date-picker__selection-divider,
   .md-date-picker__body--docked-selection
@@ -1466,8 +1469,8 @@
   .md-date-picker__panel:not(.md-date-picker__panel--docked)
     .md-date-picker__year-grid-wrap:not(.md-date-picker__year-grid-wrap--bloom-out),
   .md-date-picker__year-grid-wrap--bloom-out,
-  .md-date-picker__calendar--docked-bloom-in,
-  .md-date-picker__calendar--content-bloom-in,
+  .md-date-picker__body--docked .md-date-picker__calendar--docked-bloom-in,
+  .md-date-picker__panel:not(.md-date-picker__panel--docked) .md-date-picker__calendar--content-bloom-in,
   .md-date-picker__grid--slide-forward,
   .md-date-picker__grid--slide-backward {
     animation: none;
@@ -1475,7 +1478,10 @@
 
   .md-date-picker__nav-chevron-slot > md-tooltip,
   .md-date-picker__nav-chevron-slot > .md-date-picker__nav-chevron-spacer,
-  .md-date-picker__menu-caret-glyph {
+  .md-date-picker__nav-chevron-slot > md-tooltip.md-date-picker__nav-chevron--visible,
+  .md-date-picker__nav-chevron-slot > .md-date-picker__nav-chevron-spacer.md-date-picker__nav-chevron--visible,
+  .md-date-picker__menu-caret-glyph,
+  .md-date-picker__menu-caret-glyph--visible {
     transition: none;
   }
 }

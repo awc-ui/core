@@ -11,8 +11,8 @@ stat cards, a line chart, a small table, and a dark-mode switch.
 
 ## How it's wired
 
-- **Tokens** — `nuxt.config.ts` lists `@awc-ui/tokens/tokens.css` in `css` so
-  the `--md-sys-*` custom properties are available document-wide.
+- **Core CSS** — `nuxt.config.ts` lists `@awc-ui/core/css/tokens.css` in `css`
+  for document-wide tokens and the unfinished-component guard before client code.
 - **Custom elements** — `vue.compilerOptions.isCustomElement` accepts every
   `md-*` tag on both the server and client compilers.
 - **SSR** — `server/plugins/awc-ssr-dsd.ts` is a Nitro plugin that

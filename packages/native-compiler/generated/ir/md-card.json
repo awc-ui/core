@@ -223,10 +223,12 @@
       "description": "Maximum block-size"
     },
     {
-      "name": "--md-card-padding"
+      "name": "--md-card-padding",
+      "description": "Content padding"
     },
     {
-      "name": "--md-card-gap"
+      "name": "--md-card-gap",
+      "description": "Gap between authored content items"
     }
   ],
   "render": {
@@ -319,13 +321,19 @@
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 227
+      "line": 261
     },
     {
-      "code": "DOM_QUERY",
+      "code": "SHADOW_DOM",
       "severity": "warning",
-      "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
-      "line": 277
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 324
+    },
+    {
+      "code": "SLOT_INTROSPECTION",
+      "severity": "warning",
+      "message": "assignedElements depends on browser semantics and requires a native adapter.",
+      "line": 328
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -339,7 +347,7 @@
     "styleUrl": "md-card.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "311f4cc82e75a4f3d65d5e04366cc47685a5d750fd91e8aee1c9ee883298751f"
+    "sha256": "420f71e5ace9c728bfc315992d6c20eca834b58501e6795e0d438ba1f43f956b"
   },
   "styles": [
     {
@@ -1017,7 +1025,7 @@
       ]
     },
     {
-      "selector": ":host([soft-disabled])",
+      "selector": ":host(.md-card--interactive[soft-disabled])",
       "context": null,
       "declarations": [
         {
@@ -1048,7 +1056,7 @@
       ]
     },
     {
-      "selector": ":host([soft-disabled]) .md-card__state-layer",
+      "selector": ":host(.md-card--interactive[soft-disabled]) .md-card__state-layer",
       "context": null,
       "declarations": [
         {
@@ -1254,68 +1262,120 @@
       "properties": [
         "variant",
         "interactive",
-        "fullWidth",
-        "density",
+        "dragEnabled",
         "disabled",
-        "softDisabled"
+        "softDisabled",
+        "ripple",
+        "fullWidth",
+        "fullHeight",
+        "density"
       ],
       "events": [
-        "mdClick"
+        "mdClick",
+        "mdDragStart",
+        "mdDragMove",
+        "mdDragEnd"
       ],
       "methods": [],
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "dragEnabled",
-        "ripple",
-        "fullHeight"
-      ],
-      "unsupportedEvents": [
-        "mdDragStart",
-        "mdDragMove",
-        "mdDragEnd"
-      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native rounded surface; DOM MutationObserver role inference and draggable positioning are not implemented."
+        "Dedicated native card: all nine properties, mdClick and the three drag events with the source payloads, the default slot, fourteen appearance hooks and two typed part targets (state-layer, outline). The source cascade is followed rule by rule, including pressed styles outranking dragged styles under real pointer input.",
+        "The card is a button with a tab stop only when interactive and its content has no interactive controls. Native content cannot be introspected like the DOM: Swift derives this from authored AWC nodes and AWCCardInteractiveRegion, Compose content marks controls with Modifier.awcCardInteractiveContent().",
+        "SwiftUI has no CSS line-height: the half-leading above the first and below the last line of wrapped authored text is not reproduced (about 3.6pt per paragraph at 14/20).",
+        "While dragging, the raised stacking (z-index 1000) orders the card only among the siblings of its container; CSS z-index stacks against the document.",
+        "The grab/grabbing/pointer cursors and aria-grabbed are not mapped.",
+        "macOS SwiftUI/AppKit renderer and live-host verification is recorded; iOS SDK, simulator/device and VoiceOver execution remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "outline"
+      ],
+      "appearance": {
+        "api": ".awcCardAppearance(AWCCardAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "containerElevation",
+          "outlineColor",
+          "outlineWidth",
+          "stateLayerColor",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight",
+          "padding",
+          "gap"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "disabled",
-        "fullWidth",
+        "variant",
         "interactive",
+        "dragEnabled",
+        "disabled",
         "softDisabled",
-        "variant"
+        "ripple",
+        "fullWidth",
+        "fullHeight",
+        "density"
       ],
       "events": [
-        "mdClick"
+        "mdClick",
+        "mdDragStart",
+        "mdDragMove",
+        "mdDragEnd"
       ],
       "methods": [],
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "dragEnabled",
-        "ripple",
-        "fullHeight",
-        "density"
-      ],
-      "unsupportedEvents": [
-        "mdDragStart",
-        "mdDragMove",
-        "mdDragEnd"
-      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native card: all nine properties, mdClick and the three drag events with the source payloads, the default slot, fourteen appearance hooks and two typed part targets (state-layer, outline). The source cascade is followed rule by rule, including pressed styles outranking dragged styles under real pointer input.",
+        "The card is a button with a tab stop only when interactive and its content has no interactive controls. Native content cannot be introspected like the DOM: Swift derives this from authored AWC nodes and AWCCardInteractiveRegion, Compose content marks controls with Modifier.awcCardInteractiveContent().",
+        "Compose pointer input does not move focus to authored buttons (Chrome focuses a pressed <button>); Material buttons join Tab traversal only in keyboard input mode.",
+        "While dragging, the raised stacking (z-index 1000) orders the card only among the siblings of its container; CSS z-index stacks against the document.",
+        "The grab/grabbing/pointer cursors and aria-grabbed are not mapped.",
+        "Android Compose rendering, events, retained-host and device suites are recorded; TalkBack delivery and OS accessibility traversal remain unverified."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "outline"
+      ],
+      "appearance": {
+        "api": "AWCCardAppearanceScope(AWCCardAppearance)",
+        "fields": [
+          "containerColor",
+          "containerShape",
+          "containerElevation",
+          "outlineColor",
+          "outlineWidth",
+          "stateLayerColor",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight",
+          "padding",
+          "gap"
+        ]
+      }
     }
   }
 }

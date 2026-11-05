@@ -1,6 +1,7 @@
 // Browser-safe, non-evaluating property editors. JSON editing validates the
 // outer value shape; it does not pretend to implement the TypeScript checker.
 import { literalChoices } from './contracts.js';
+import { normalizeMeterFormatOptions } from './meter-format-options.js';
 
 const typeText = value => typeof value === 'string' ? value : value?.text || '';
 const domReference = /\b(?:HTMLElement|HTML\w+Element|SVG\w*Element|Element|Document|Window|Node|Event|EventTarget)\b/;
@@ -81,6 +82,11 @@ function resolve(type, definitions, visited = new Set()) {
 /** The choices of a literal editor are actual JS values, not their labels. */
 export function propertyEditor(component = {}, prop = {}, value) {
   const type = typeText(prop.type), definitions = component.dataTypes || [];
+  if (component.tag === 'md-meter' && prop.name === 'formatOptions') return {
+    kind: 'json', type, optional: true, schema: [{ kind: 'object' }],
+    validate: normalizeMeterFormatOptions,
+    note: 'Leave blank for a localized percentage of the range. {} formats the raw clamped number. Supports Intl number, currency and unit options; locale uses the separate locale property.',
+  };
   const callable = (component.callableProps || []).some(item => item.name === prop.name);
   const schema = resolve(type, definitions);
   const optional = prop.optional === true || schema.some(item => item.kind === 'undefined');
@@ -154,7 +160,7 @@ export function parsePropertyInput(editor, raw, checked) {
     try { value = JSON.parse(text); } catch { throw new Error('Enter valid JSON. Quote text values; use arrays or objects for structured data.'); }
     if (!finiteJSON(value)) throw new Error('JSON numbers must be finite.');
     if (editor.schema && !matches(value, editor.schema)) throw new Error(`The JSON value does not match ${editor.type || 'the declared property type'}.`);
-    return value;
+    return editor.validate ? editor.validate(value) : value;
   }
   throw new Error('Unsupported property editor.');
 }

@@ -196,6 +196,22 @@
       "description": "The role=\"tree\" root list"
     },
     {
+      "name": "branch",
+      "description": "A role=\"treeitem\" list item (the node and its subtree)"
+    },
+    {
+      "name": "branch-on-path",
+      "description": "A branch on the path from a selection up to its root"
+    },
+    {
+      "name": "node",
+      "description": "A node card"
+    },
+    {
+      "name": "node-selected",
+      "description": "A selected node card"
+    },
+    {
       "name": "avatar-image",
       "description": "The avatar's <img> (exported)"
     }
@@ -254,49 +270,49 @@
       "code": "DOM_OBSERVER",
       "severity": "warning",
       "message": "Native layout measurement must replace ResizeObserver.",
-      "line": 150
-    },
-    {
-      "code": "DOM_QUERY",
-      "severity": "warning",
-      "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
-      "line": 252
+      "line": 155
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 252
+      "line": 193
+    },
+    {
+      "code": "DOM_QUERY",
+      "severity": "warning",
+      "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
+      "line": 304
     },
     {
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 298
-    },
-    {
-      "code": "DOM_MUTATION",
-      "severity": "warning",
-      "message": "classList depends on browser semantics and requires a native adapter.",
-      "line": 507
+      "line": 350
     },
     {
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 554
+      "line": 607
+    },
+    {
+      "code": "DOM_MUTATION",
+      "severity": "warning",
+      "message": "classList depends on browser semantics and requires a native adapter.",
+      "line": 627
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Document access requires a native adapter.",
-      "line": 718
+      "line": 757
     },
     {
       "code": "CANCELABLE_EVENT",
       "severity": "warning",
       "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
-      "line": 80
+      "line": 85
     }
   ],
   "source": {
@@ -304,7 +320,7 @@
     "styleUrl": "md-organization-chart.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "10381b6fde6fec4a037fc0bf4f8d17f813ba11d94f1a5db87a67dd031bd3c62b"
+    "sha256": "476394d7af39add42cd6be8710b32cbcd91b1666e412cecdc4c062be34a54d14"
   },
   "styles": [
     {
@@ -758,7 +774,17 @@
           "important": false
         },
         {
+          "property": "box-sizing",
+          "value": "border-box",
+          "important": false
+        },
+        {
           "property": "top",
+          "value": "var(--_level-gap)",
+          "important": false
+        },
+        {
+          "property": "height",
           "value": "var(--_level-gap)",
           "important": false
         },
@@ -773,61 +799,131 @@
           "important": false
         },
         {
+          "property": "border",
+          "value": "0 solid var(--_selected-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__group[data-trail-run]::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "top",
+          "value": "var(--_trail-y)",
+          "important": false
+        },
+        {
           "property": "height",
+          "value": "var(--_trail-h)",
+          "important": false
+        },
+        {
+          "property": "left",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "width",
+          "value": "auto",
+          "important": false
+        },
+        {
+          "property": "inset-inline-start",
           "value": "var(--_level-gap)",
           "important": false
         },
         {
-          "property": "border-top",
-          "value": "var(--_connector-width) solid var(--_selected-color)",
-          "important": false
-        },
-        {
-          "property": "box-sizing",
-          "value": "border-box",
+          "property": "inline-size",
+          "value": "var(--_level-gap)",
           "important": false
         }
       ]
     },
     {
-      "selector": ".md-org-chart__group[data-trail-dir='end']::after",
+      "selector": ".md-org-chart__group[data-trail-run~='top']::after",
       "context": null,
       "declarations": [
         {
-          "property": "border-right",
-          "value": "var(--_connector-width) solid var(--_selected-color)",
+          "property": "border-top-width",
+          "value": "var(--_connector-width)",
           "important": false
         }
       ]
     },
     {
-      "selector": ".md-org-chart__group[data-trail-dir='start']::after",
+      "selector": ".md-org-chart__group[data-trail-run~='right']::after",
       "context": null,
       "declarations": [
         {
-          "property": "border-left",
-          "value": "var(--_connector-width) solid var(--_selected-color)",
+          "property": "border-right-width",
+          "value": "var(--_connector-width)",
           "important": false
         }
       ]
     },
     {
-      "selector": ".md-org-chart__group[data-trail-elbow][data-trail-dir='end']::after",
+      "selector": ".md-org-chart__group[data-trail-run~='bottom']::after",
       "context": null,
       "declarations": [
         {
-          "property": "border-start-end-radius",
+          "property": "border-bottom-width",
+          "value": "var(--_connector-width)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group[data-trail-run~='left']::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-left-width",
+          "value": "var(--_connector-width)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group[data-trail-elbow~='top-left']::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-top-left-radius",
           "value": "var(--_elbow)",
           "important": false
         }
       ]
     },
     {
-      "selector": ".md-org-chart__group[data-trail-elbow][data-trail-dir='start']::after",
+      "selector": ".md-org-chart__group[data-trail-elbow~='top-right']::after",
       "context": null,
       "declarations": [
         {
-          "property": "border-start-start-radius",
+          "property": "border-top-right-radius",
+          "value": "var(--_elbow)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group[data-trail-elbow~='bottom-left']::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-bottom-left-radius",
+          "value": "var(--_elbow)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__group[data-trail-elbow~='bottom-right']::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-bottom-right-radius",
           "value": "var(--_elbow)",
           "important": false
         }
@@ -1118,6 +1214,33 @@
         {
           "property": "background",
           "value": "var(--_selected-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__node--accent",
+      "context": null,
+      "declarations": [
+        {
+          "property": "--_selected-color",
+          "value": "var(--_accent)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-org-chart__node--accent > .md-org-chart__avatar",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-radius",
+          "value": "50%",
+          "important": false
+        },
+        {
+          "property": "box-shadow",
+          "value": "0 0 0 2px var(--_accent)",
           "important": false
         }
       ]
@@ -1583,6 +1706,44 @@
       ]
     },
     {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__group[data-trail]::before",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-block-start-color",
+          "value": "var(--_selected-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__branch--on-path::after",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-inline-start-color",
+          "value": "var(--_connector-color)",
+          "important": false
+        },
+        {
+          "property": "border-block-start-color",
+          "value": "var(--_selected-color)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']) .md-org-chart__branch--on-path:last-child::before",
+      "context": null,
+      "declarations": [
+        {
+          "property": "border-block-end-color",
+          "value": "var(--_selected-color)",
+          "important": false
+        }
+      ]
+    },
+    {
       "selector": ":host([orientation='horizontal']) .md-org-chart__toggle-tip",
       "context": null,
       "declarations": [
@@ -1613,8 +1774,13 @@
       "context": null,
       "declarations": [
         {
-          "property": "padding",
-          "value": "8px calc(var(--_toggle-size) / 2 + 10px) 8px 8px",
+          "property": "padding-block",
+          "value": "8px",
+          "important": false
+        },
+        {
+          "property": "padding-inline",
+          "value": "8px calc(var(--_toggle-size) / 2 + 10px)",
           "important": false
         }
       ]
@@ -1668,6 +1834,54 @@
       ]
     },
     {
+      "selector": "from",
+      "context": "@keyframes md-org-chart-grow-h-rtl",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "0",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "translateX(8px) scale(0.96)",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": "to",
+      "context": "@keyframes md-org-chart-grow-h-rtl",
+      "declarations": [
+        {
+          "property": "opacity",
+          "value": "1",
+          "important": false
+        },
+        {
+          "property": "transform",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ":host([orientation='horizontal']:dir(rtl)) .md-org-chart__group",
+      "context": null,
+      "declarations": [
+        {
+          "property": "animation-name",
+          "value": "md-org-chart-grow-h-rtl",
+          "important": false
+        },
+        {
+          "property": "transform-origin",
+          "value": "right center",
+          "important": false
+        }
+      ]
+    },
+    {
       "selector": ".md-org-chart__node,\n  .md-org-chart__toggle-icon,\n  .md-org-chart__state-layer",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
@@ -1679,7 +1893,7 @@
       ]
     },
     {
-      "selector": ".md-org-chart__group",
+      "selector": ".md-org-chart__group,\n  :host([orientation='horizontal']) .md-org-chart__group,\n  :host([orientation='horizontal']:dir(rtl)) .md-org-chart__group",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
         {
@@ -1774,9 +1988,11 @@
         "selectionMode",
         "selectedIds",
         "collapsible",
+        "orientation",
         "label",
         "expandLabel",
-        "collapseLabel"
+        "collapseLabel",
+        "density"
       ],
       "events": [
         "mdSelectionChange",
@@ -1786,50 +2002,94 @@
       "slots": [
         "empty"
       ],
-      "unsupportedProperties": [
-        "orientation",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native indented tree. Horizontal node layout and browser keyboard roving-focus scheme are not implemented."
+        "Dedicated native organization chart: all nine properties (nodes as an array, an object or a JSON string; selection none/single/multiple with selectedIds; collapsible; vertical and horizontal orientation; label, expandLabel, collapseLabel; density 0…−4), mdSelectionChange { node, selectedIds } and mdNodeToggle { node, expanded } with the full node object, the empty slot (default \"No data\" status) and the fifteen --md-org-chart-* appearance hooks.",
+        "Layout is the source's CSS model: centred flex tree in a scrolling viewport (RTL starts at the right edge), pseudo-element connectors with 12px elbows, the selection trail up to the root (also from folded-away selections), Roboto card text measured exactly, md-avatar (accent ring) and md-icon-button togglers in md-tooltip hung on the card edge; RTL mirrors both orientations.",
+        "Interaction as in the source: roving tree-item tab stop (first root, then the last focused), WAI-ARIA tree keys (ArrowUp/Down, forward/backward with RTL swap in both orientations, Home/End, Enter/Space select or toggle), a press focuses the item and a click selects it, a toggler click folds and focuses its row; folding or new data hands focus to the visible owner.",
+        "Motion: border, selection ring, hover elevation and state layer transition 300 ms emphasized (pseudo-class changes start at once, state changes a frame later like the source's async render); md-org-chart-grow on every inserted group and on keyframe changes; a 100 ms z-index hold; reduced motion removes them (md-ripple still runs).",
+        "::part() styling has no native equivalent yet: the parts are listed as unsupported visual parts (decision recorded in md-organization-chart-source-review.md)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcOrgChartAppearance(AWCOrgChartAppearance)",
+        "fields": [
+          "connectorColor",
+          "connectorWidth",
+          "nodeColor",
+          "nodeOutlineColor",
+          "nodeOutlineWidth",
+          "nodeShape",
+          "nodeMinWidth",
+          "nodeMaxWidth",
+          "selectedColor",
+          "focusRingColor",
+          "stateLayerColor",
+          "toggleSize",
+          "levelGap",
+          "siblingGap",
+          "duration"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "collapseLabel",
-        "collapsible",
-        "expandLabel",
-        "label",
         "nodes",
+        "selectionMode",
         "selectedIds",
-        "selectionMode"
-      ],
-      "events": [
-        "mdNodeToggle",
-        "mdSelectionChange"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
+        "collapsible",
         "orientation",
+        "label",
+        "expandLabel",
+        "collapseLabel",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "events": [
+        "mdSelectionChange",
+        "mdNodeToggle"
+      ],
+      "methods": [],
+      "slots": [
         "empty"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native indented tree with accessible cards; horizontal connector layout is not yet ported.",
-        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+        "Dedicated native organization chart: all nine properties (nodes as an array, an object or a JSON string; selection none/single/multiple with selectedIds; collapsible; vertical and horizontal orientation; label, expandLabel, collapseLabel; density 0…−4), mdSelectionChange { node, selectedIds } and mdNodeToggle { node, expanded } with the full node object, the empty slot (default \"No data\" status) and the fifteen --md-org-chart-* appearance hooks.",
+        "Layout is the source's CSS model: centred flex tree in a scrolling viewport (RTL starts at the right edge), pseudo-element connectors with 12px elbows, the selection trail up to the root (also from folded-away selections), Roboto card text measured exactly, md-avatar (accent ring) and md-icon-button togglers in md-tooltip hung on the card edge; RTL mirrors both orientations.",
+        "Interaction as in the source: roving tree-item tab stop (first root, then the last focused), WAI-ARIA tree keys (ArrowUp/Down, forward/backward with RTL swap in both orientations, Home/End, Enter/Space select or toggle), a press focuses the item and a click selects it, a toggler click folds and focuses its row; folding or new data hands focus to the visible owner.",
+        "Motion: border, selection ring, hover elevation and state layer transition 300 ms emphasized (pseudo-class changes start at once, state changes a frame later like the source's async render); md-org-chart-grow on every inserted group and on keyframe changes; a 100 ms z-index hold; reduced motion removes them (md-ripple still runs).",
+        "::part() styling has no native equivalent yet: the parts are listed as unsupported visual parts (decision recorded in md-organization-chart-source-review.md)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCOrgChartAppearanceScope(AWCOrgChartAppearance)",
+        "fields": [
+          "connectorColor",
+          "connectorWidth",
+          "nodeColor",
+          "nodeOutlineColor",
+          "nodeOutlineWidth",
+          "nodeShape",
+          "nodeMinWidth",
+          "nodeMaxWidth",
+          "selectedColor",
+          "focusRingColor",
+          "stateLayerColor",
+          "toggleSize",
+          "levelGap",
+          "siblingGap",
+          "duration"
+        ]
+      }
     }
   }
 }

@@ -1,6 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BUTTON_APPEARANCE_FIELDS, normalizeButtonAppearance, mergeButtonAppearance, buttonAppearanceCSS } from './button-appearance.js';
+import { readFileSync } from 'node:fs';
+import { BUTTON_APPEARANCE_FIELDS, normalizeButtonAppearance, mergeButtonAppearance, buttonAppearanceCSS, buttonAppearancePartCSS } from './button-appearance.js';
+import { usageSnippet } from './usage-snippets.js';
+import { partRulesCSS, applyAppearancePartRules } from './appearance-part-rules.js';
+
+test('every public button CSS hook has a shared appearance field including dimensions and focus ring', () => {
+  const css = readFileSync(new URL('../../packages/core/src/components/md-button/md-button.css', import.meta.url), 'utf8');
+  const hooks = [...new Set(css.match(/--md-button-[a-z-]+/g))].sort();
+  assert.deepEqual(BUTTON_APPEARANCE_FIELDS.filter(field => field.cssProperty).map(field => field.cssProperty).sort(), hooks);
+  assert.deepEqual(buttonAppearanceCSS({ width: 0, minWidth: 48, maxWidth: 2400, height: 56.5, minHeight: 0, focusRingColor: '#123abc' }), {
+    '--md-button-focus-ring-color': '#123ABC', '--md-button-width': '0px', '--md-button-min-width': '48px',
+    '--md-button-max-width': '2400px', '--md-button-height': '56.5px', '--md-button-min-height': '0px',
+  });
+});
 
 const rejects = value => assert.throws(() => normalizeButtonAppearance(value), { code: 'INVALID_BUTTON_APPEARANCE' });
 
@@ -58,7 +71,7 @@ test('browser mapping uses public button hooks, lengths in px, and unitless weig
   });
   assert.deepEqual(buttonAppearanceCSS(), {});
   assert.throws(() => buttonAppearanceCSS({ containerColor: 'url(https://example.test)' }), { code: 'INVALID_BUTTON_APPEARANCE' });
-  assert.equal(new Set(BUTTON_APPEARANCE_FIELDS.map(field => field.cssProperty)).size, BUTTON_APPEARANCE_FIELDS.length);
+  assert.equal(new Set(BUTTON_APPEARANCE_FIELDS.map(field => field.cssProperty ?? `part:${field.cssPart.part}:${field.cssPart.property}`)).size, BUTTON_APPEARANCE_FIELDS.length);
 });
 
 
@@ -88,4 +101,31 @@ test('local CSS stays sparse when stroke color is derived from inherited appeara
   });
   assert.throws(() => buttonAppearanceCSS({ outlineWidth: 2 }, { outlineColor: 'red' }), { code: 'INVALID_BUTTON_APPEARANCE' });
   assert.deepEqual(defaults, { outlineColor: '#123abc', containerColor: '#556677', fontSize: 20, outlineWidth: 4 });
+});
+
+test('the fixed state-layer opacity is the ::part(state-layer) opacity: a part rule, never a custom property', () => {
+  const field = BUTTON_APPEARANCE_FIELDS.find(item => item.name === 'stateLayerOpacity');
+  assert.deepEqual({ kind: field.kind, min: field.min, max: field.max, part: field.cssPart }, { kind: 'number', min: 0, max: 1, part: { part: 'state-layer', property: 'opacity' } });
+  assert.deepEqual(normalizeButtonAppearance({ stateLayerOpacity: 0.2 }), { stateLayerOpacity: 0.2 });
+  assert.throws(() => normalizeButtonAppearance({ stateLayerOpacity: 1.5 }), { code: 'INVALID_BUTTON_APPEARANCE' });
+  assert.deepEqual(buttonAppearanceCSS({ stateLayerOpacity: 0.2, hoverOpacity: 0.3 }), { '--md-button-hover-opacity': '0.3' });
+  assert.deepEqual(buttonAppearancePartCSS({ stateLayerOpacity: 0 }), [{ part: 'state-layer', property: 'opacity', value: '0' }]);
+  assert.deepEqual(buttonAppearancePartCSS({ hoverOpacity: 0.3 }), []);
+  assert.equal(partRulesCSS('md-button.x', buttonAppearancePartCSS({ stateLayerOpacity: 0.2 })), 'md-button.x::part(state-layer) { opacity: 0.2; }');
+});
+
+test('the Web preview keeps one part stylesheet per styled element and removes it when cleared', () => {
+  const head = { children: [], append(node) { this.children.push(node); node.remove = () => { this.children = this.children.filter(item => item !== node); }; } };
+  const doc = { nodeType: 9, head, createElement: localName => { const attrs = {}; return { localName, textContent: '', setAttribute: (k, v) => { attrs[k] = v; }, getAttribute: k => attrs[k] }; } };
+  const attrs = {};
+  const target = { ownerDocument: doc, getRootNode: () => doc, setAttribute: (k, v) => { attrs[k] = v; }, removeAttribute: k => { delete attrs[k]; } };
+  applyAppearancePartRules(target, buttonAppearancePartCSS({ stateLayerOpacity: 0.2 }));
+  assert.equal(head.children.length, 1);
+  assert.equal(head.children[0].textContent, `[data-awc-part-style="${attrs['data-awc-part-style']}"]::part(state-layer) { opacity: 0.2; }`);
+  applyAppearancePartRules(target, buttonAppearancePartCSS({ stateLayerOpacity: 0.5 }));
+  assert.equal(head.children.length, 1);
+  assert.match(head.children[0].textContent, /opacity: 0\.5;/);
+  applyAppearancePartRules(target, []);
+  assert.equal(head.children.length, 0);
+  assert.equal(attrs['data-awc-part-style'], undefined);
 });

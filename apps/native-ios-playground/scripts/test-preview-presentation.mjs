@@ -16,20 +16,31 @@ const names = frame => frame.events.map(event => event.name);
 const detail = (frame, name) => frame.events.find(event => event.name === name)?.detail;
 
 try {
+  // Dialogs and sheets present in the preview's configured viewport through AWCModalScope. The web recipe's tonal
+  // launcher sits under a closed modal and calls show(); it is inert while the modal is open.
   for (const tag of ['md-dialog', 'md-bottom-sheet', 'md-side-sheet']) {
-    const closed = await create(tag, { open: false });
-    const opened = await click(closed, 320, 50);
-    assert.deepEqual(names(opened), ['mdOpen'], `${tag}: real launcher emits mdOpen once`);
-    assert.ok(opened.logicalHeight >= 640, `${tag}: overlay participates in captured surface`);
-    assert.notEqual(opened.imageUrl, closed.imageUrl);
-    const dismissed = await click(opened, 30, 340);
-    assert.deepEqual(names(dismissed), ['mdCancel', 'mdClose'], `${tag}: captured scrim dismisses actual native state`);
-    assert.ok(dismissed.logicalHeight < opened.logicalHeight);
+    const closed = await create(tag, { open: false, ...(tag === 'md-side-sheet' ? { variant: 'modal' } : {}) }, { height: 480 });
+    assert.equal(closed.logicalHeight, 480, `${tag}: the configured viewport is the captured surface`);
+    const opened = await click(closed, 40, 44);
+    await delay(600);
+    const shown = await renderer.frame(closed.sessionId);
+    assert.deepEqual([...names(opened), ...names(shown)], ['mdOpen'], `${tag}: real launcher emits mdOpen once`);
+    assert.equal(shown.logicalHeight, 480, `${tag}: the modal presents inside the configured viewport`);
+    assert.notEqual(shown.imageUrl, closed.imageUrl);
+    const dismissed = await click(shown, 12, 340);
+    await delay(600);
+    const after = await renderer.frame(closed.sessionId);
+    assert.deepEqual([...names(dismissed), ...names(after)], ['mdCancel', 'mdClose'], `${tag}: captured scrim dismisses actual native state`);
+    assert.equal(after.logicalHeight, 480);
     await close(closed);
   }
   const persistent = await create('md-dialog', { open: true, scrimDismissible: false });
-  const ignored = await click(persistent, 30, 340);
-  assert.deepEqual(names(ignored), []);
+  await delay(500);
+  const settled = await renderer.frame(persistent.sessionId);
+  const ignored = await click(settled, 12, 200);
+  await delay(400);
+  const still = await renderer.frame(persistent.sessionId);
+  assert.deepEqual([...names(ignored), ...names(still)].filter(name => name !== 'mdOpen'), [], 'A protected scrim does not dismiss');
   assert.equal(ignored.logicalHeight, persistent.logicalHeight);
   await close(persistent);
 
@@ -57,9 +68,9 @@ try {
   await close(date);
 
   const time = await create('md-time-picker', { open: true, value: '10:30' });
-  const editedTime = await click(time, 139, 334);
+  const editedTime = await click(time, 139, 342);
   assert.equal(detail(editedTime, 'mdInput')?.value, '11:30');
-  const committedTime = await click(editedTime, 540, 426);
+  const committedTime = await click(editedTime, 540, 434);
   assert.equal(detail(committedTime, 'mdChange')?.hours, 11);
   assert.equal(detail(committedTime, 'mdChange')?.minutes, 30);
   await close(time);

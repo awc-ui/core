@@ -82,3 +82,41 @@ struct AWCNativeButtonLoading: View {
         .frame(width: size, height: size).clipped().accessibilityHidden(true)
     }
 }
+
+/// The flat circular progress slot uses the library's source arc keyframes,
+/// not an OS spinner whose fixed intrinsic size can ignore a requested 24pt box.
+struct AWCNativeCircularProgress: View {
+    let size: CGFloat
+    let thickness: CGFloat
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.awcTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var started = Date()
+
+    private func arc(start: Double, length: Double, radius: CGFloat) -> Path {
+        Path { path in
+            path.addArc(center: CGPoint(x: size / 2, y: size / 2), radius: radius,
+                        startAngle: .degrees(start * 360 - 90), endAngle: .degrees((start + length) * 360 - 90), clockwise: false)
+        }
+    }
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1 / 60)) { context in
+            let elapsed = max(0, context.date.timeIntervalSince(started))
+            let cycle = elapsed.truncatingRemainder(dividingBy: reduceMotion ? 3 : 1.333) / (reduceMotion ? 3 : 1.333)
+            let second = cycle >= 0.5
+            let amount = AWCNativeButtonTiming.cubic(second ? (cycle - 0.5) * 2 : cycle * 2, x1: 0.4, y1: 0, x2: 0.2, y2: 1)
+            let length = second ? 0.7 - 0.65 * amount : 0.05 + 0.65 * amount
+            let offset = second ? 0.18 + 0.74 * amount : 0.18 * amount
+            let spin = elapsed / (reduceMotion ? 4 : 1.568)
+            let radius = max(0.5, (size - thickness) / 2)
+            let gap = Double(4 + thickness) / (2 * .pi * Double(radius))
+            let tokens = theme?.tokens ?? (colorScheme == .dark ? AWCGeneratedTokens.dark : AWCGeneratedTokens.light)
+            ZStack {
+                arc(start: spin + offset + length + gap, length: max(0.0001, 1 - length - 2 * gap), radius: radius)
+                    .stroke(Color(awcHex: tokens["--md-sys-color-secondary-container"] ?? "#E8DEF8"), style: StrokeStyle(lineWidth: thickness, lineCap: .round))
+                arc(start: spin + offset, length: length, radius: radius)
+                    .stroke(.foreground, style: StrokeStyle(lineWidth: thickness, lineCap: .round))
+            }
+        }.frame(width: size, height: size).clipped().accessibilityHidden(true)
+    }
+}

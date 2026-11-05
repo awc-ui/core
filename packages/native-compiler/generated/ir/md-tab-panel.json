@@ -195,7 +195,10 @@
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
+      "notes": [
+        "role tabpanel named by its tab; an inactive panel keeps its box but is not painted, hit-tested or exposed to accessibility.",
+        "Natively the panel is not a keyboard Tab stop (focus moves to the controls inside it); Web gives the active panel tabindex 0."
+      ],
       "verification": "not-device-verified"
     },
     "android": {
@@ -213,7 +216,8 @@
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "role tabpanel named by its tab; an inactive panel keeps its box but is not painted, hit-tested or exposed to accessibility.",
+        "Natively the panel is not a keyboard Tab stop (focus moves to the controls inside it); Web gives the active panel tabindex 0."
       ],
       "verification": "not-device-verified"
     }

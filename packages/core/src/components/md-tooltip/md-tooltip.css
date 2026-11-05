@@ -230,9 +230,8 @@
    making the entrance scale grow from the edge facing AWAY from the trigger.
    ========================================================== */
 
-:host-context([dir="rtl"]) .md-tooltip__actions {
-  justify-content: flex-start;
-}
+/* flex-end already follows the popup's effective direction. An ancestor RTL
+   override would double-mirror actions and also break nested LTR tooltips. */
 
 /* ==========================================================
    7. FORCED COLORS (Windows High Contrast)

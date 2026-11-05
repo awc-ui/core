@@ -1,6 +1,7 @@
 import { createId } from '../../utils/id';
-import { Component, Host, h, Prop, Event, EventEmitter, Method, Watch, State, Element, Listen } from '@stencil/core';
+import { Component, Host, h, Prop, Event, EventEmitter, Method, Watch, State, Element } from '@stencil/core';
 import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
+import { ModalSession } from '../../utils/modal-session';
 import { resolveDialogLabel } from './dialog-utils';
 
 @Component({
@@ -12,12 +13,16 @@ export class MdDialog {
   @Element() el!: HTMLElement;
 
   private overlayLifecycle = new OverlayLifecycle(() => this.el, () => this.open);
+  private modalSession = new ModalSession(() => this.el);
 
   /** Whether the dialog is open */
   @Prop({ mutable: true, reflect: true }) open: boolean = false;
 
   /** Headline text (or use the headline slot) */
   @Prop() headline: string = '';
+
+  /** Explicit accessible name. Takes precedence over the visible headline. */
+  @Prop({ attribute: 'aria-label' }) dialogAriaLabel: string = '';
 
   /** Icon name (Material Symbols shorthand, or use the icon slot) */
   @Prop() icon: string = '';
@@ -79,42 +84,38 @@ export class MdDialog {
   private headlineId = createId('md-dialog-headline');
   private contentId = createId('md-dialog-content');
   private containerEl!: HTMLElement;
-  private previousFocus: HTMLElement | null = null;
   private openFocusFrame?: number;
+  private loaded = false;
+  private connected = false;
+  private animationTimer?: ReturnType<typeof setTimeout>;
+  private slotObserver?: MutationObserver;
+  private listenerDocument?: Document;
 
   @Watch('open')
   openChanged(newVal: boolean) {
     this.cancelOpenFocus();
+    if (!this.loaded || !this.connected) return;
     if (newVal) this.overlayLifecycle.opened();
     else this.overlayLifecycle.closed();
     this.animating = true;
-    setTimeout(() => { this.animating = false; }, 300);
+    clearTimeout(this.animationTimer);
+    this.animationTimer = setTimeout(() => { this.animating = false; this.animationTimer = undefined; }, 300);
 
     if (newVal) {
-      this.previousFocus = document.activeElement as HTMLElement;
-      document.body.style.overflow = 'hidden';
+      this.activateSession();
       this.mdOpen.emit();
-      this.openFocusFrame = requestAnimationFrame(() => {
-        this.openFocusFrame = undefined;
-        if (!this.open || !this.el.isConnected) return;
-        this.focusFirst();
-      });
     } else {
-      document.body.style.overflow = '';
+      this.deactivateSession();
       this.mdClose.emit();
-      // `preventScroll` because a bare focus() scrolls its target into view: an
-      // overlay opened programmatically (or whose opener has since scrolled out
-      // of sight) would yank the page on close.
-      this.previousFocus?.focus?.({ preventScroll: true });
-      this.previousFocus = null;
     }
   }
 
   connectedCallback() {
+    this.connected = true;
     this.overlayLifecycle.connected();
-    if (this.open) {
-      document.body.style.overflow = 'hidden';
-    }
+    this.syncSlots();
+    this.observeSlots();
+    if (this.loaded && this.open) this.activateSession();
   }
 
   componentWillLoad() {
@@ -132,9 +133,7 @@ export class MdDialog {
     // doesn't yet implement the `:scope` pseudo-class. Children-
     // walking is also fractionally cheaper for the small N of
     // direct dialog children.
-    this.hasSlottedHeadline = this.hasDirectSlottedChild('headline');
-    this.hasSlottedIcon = this.hasDirectSlottedChild('icon');
-    this.hasSlottedActions = this.hasDirectSlottedChild('actions');
+    this.syncSlots();
   }
 
   private hasDirectSlottedChild(slotName: string): boolean {
@@ -146,37 +145,74 @@ export class MdDialog {
   }
 
   componentDidLoad() {
+    this.loaded = true;
     this.overlayLifecycle.loaded();
-    // Once the slot wrappers exist (because the seed above made them
-    // render), register `slotchange` listeners so dynamic add/remove
-    // of slotted children at runtime keeps the host state in sync.
-    this.bindSlotListener('icon', (v) => { this.hasSlottedIcon = v; });
-    this.bindSlotListener('headline', (v) => {
-      this.hasSlottedHeadline = v;
-    });
-    this.bindSlotListener('actions', (v) => {
-      this.hasSlottedActions = v;
-    });
+    if (this.open) this.openChanged(true);
   }
 
-  private bindSlotListener(
-    name: string,
-    setter: (hasContent: boolean) => void,
-  ): void {
-    const slot = this.el.shadowRoot?.querySelector(
-      `slot[name="${name}"]`,
-    ) as HTMLSlotElement | null;
-    if (!slot) return;
-    slot.addEventListener('slotchange', () => {
-      setter(slot.assignedElements().length > 0);
+  private syncSlots = () => {
+    this.hasSlottedHeadline = this.hasDirectSlottedChild('headline');
+    this.hasSlottedIcon = this.hasDirectSlottedChild('icon');
+    this.hasSlottedActions = this.hasDirectSlottedChild('actions');
+  };
+
+  private observeSlots() {
+    if (this.slotObserver || typeof MutationObserver === 'undefined') return;
+    this.slotObserver = new MutationObserver(records => {
+      if (records.some(record => record.target === this.el ||
+        (record.type === 'attributes' && (record.target as Element).parentElement === this.el))) this.syncSlots();
     });
+    this.slotObserver.observe(this.el, { childList: true, subtree: true, attributes: true, attributeFilter: ['slot'] });
   }
 
   disconnectedCallback() {
-    this.cancelOpenFocus();
+    this.connected = false;
+    this.slotObserver?.disconnect();
+    this.slotObserver = undefined;
+    clearTimeout(this.animationTimer);
+    this.animationTimer = undefined;
+    this.animating = false;
+    this.deactivateSession();
     this.overlayLifecycle.disconnect();
-    document.body.style.overflow = '';
   }
+
+  private activateSession() {
+    this.removeGlobalListeners();
+    this.modalSession.acquire();
+    this.listenerDocument = this.modalSession.document;
+    // Authored editors and child overlays may consume Escape before the modal.
+    this.listenerDocument?.addEventListener('keydown', this.handleDocumentKeyDown);
+    this.listenerDocument?.addEventListener('focusin', this.handleDocumentFocusIn, true);
+    this.cancelOpenFocus();
+    this.openFocusFrame = requestAnimationFrame(() => {
+      this.openFocusFrame = undefined;
+      if (!this.connected || !this.open || !this.modalSession.isTop()) return;
+      this.focusFirst();
+    });
+  }
+
+  private deactivateSession() {
+    this.cancelOpenFocus();
+    this.removeGlobalListeners();
+    this.modalSession.release();
+  }
+
+  private removeGlobalListeners() {
+    this.listenerDocument?.removeEventListener('keydown', this.handleDocumentKeyDown);
+    this.listenerDocument?.removeEventListener('focusin', this.handleDocumentFocusIn, true);
+    this.listenerDocument = undefined;
+  }
+
+  private handleDocumentKeyDown = (event: KeyboardEvent) => this.handleKeyDown(event);
+  private handleDocumentFocusIn = () => {
+    if (!this.open || !this.modalSession.isTop()) return;
+    let active = getDeepActiveElement(this.el);
+    while (active) {
+      if (active === this.el || active === this.containerEl) return;
+      active = active.parentElement ?? (active.getRootNode() as ShadowRoot).host ?? null;
+    }
+    this.focusFirst();
+  };
 
   /** Open the dialog */
   @Method()
@@ -197,9 +233,8 @@ export class MdDialog {
     this.open = false;
   }
 
-  @Listen('keydown')
   handleKeyDown(e: KeyboardEvent) {
-    if (!this.open) return;
+    if (!this.open || !this.modalSession.isTop() || e.defaultPrevented) return;
 
     if (e.key === 'Escape') {
       e.preventDefault();
@@ -215,17 +250,19 @@ export class MdDialog {
   }
 
   private handleScrimClick = () => {
-    if (!this.scrimDismissible) return;
+    if (!this.open || !this.modalSession.isTop() || !this.scrimDismissible) return;
     this.mdCancel.emit();
     this.open = false;
   };
 
   private handleCloseClick = () => {
+    if (!this.open || !this.modalSession.isTop()) return;
     this.mdCancel.emit();
     this.open = false;
   };
 
   private handleDefaultOkClick = () => {
+    if (!this.open || !this.modalSession.isTop()) return;
     this.open = false;
   };
 
@@ -254,7 +291,11 @@ export class MdDialog {
 
   private trapFocus(e: KeyboardEvent) {
     const focusable = this.getFocusableElements();
-    if (focusable.length === 0) return;
+    if (focusable.length === 0) {
+      e.preventDefault();
+      this.containerEl?.focus();
+      return;
+    }
 
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
@@ -266,7 +307,7 @@ export class MdDialog {
     // contains the inner <input>. `getDeepActiveElement()` walks down
     // every open `shadowRoot.activeElement` link until it bottoms out
     // on the actual focused leaf, which is what `focusable[]` stores.
-    const deep = getDeepActiveElement();
+    const deep = getDeepActiveElement(this.el);
 
     if (e.shiftKey) {
       if (deep === first) {
@@ -339,6 +380,7 @@ export class MdDialog {
 
     return (
       <Host
+        onKeyDown={this.handleDocumentKeyDown}
         class={{
           'md-dialog': true,
           'md-dialog--open': this.open,
@@ -363,7 +405,10 @@ export class MdDialog {
           part="container"
           role={this.fullscreen ? 'dialog' : 'alertdialog'}
           aria-modal="true"
-          aria-labelledby={hasHeadline ? this.headlineId : undefined}
+          aria-hidden={this.open ? undefined : 'true'}
+          inert={!this.open}
+          aria-label={this.dialogAriaLabel || undefined}
+          aria-labelledby={hasHeadline && !this.dialogAriaLabel ? this.headlineId : undefined}
           aria-describedby={this.contentId}
           tabindex={-1}
           ref={(el) => (this.containerEl = el!)}
@@ -383,7 +428,7 @@ export class MdDialog {
               </button>
               {hasHeadline && (
                 <span id={this.headlineId} class="md-dialog__header-headline" part="headline">
-                  {this.headline}
+                  <slot name="headline">{this.headline}</slot>
                 </span>
               )}
               <slot name="header-action"></slot>
@@ -457,7 +502,10 @@ function collectTabbablesDeep(
   const visit = (element: Element): void => {
     if (seen.has(element)) return;
     seen.add(element);
-    if (element.hasAttribute('hidden') || element.hasAttribute('inert')) return;
+    if (element.hasAttribute('hidden') || element.hasAttribute('inert') ||
+      (element.localName === 'input' && element.getAttribute('type')?.toLowerCase() === 'hidden')) return;
+    const style = getComputedStyle(element);
+    if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return;
 
     if (element.localName === 'slot') {
       const assigned = (element as HTMLSlotElement).assignedElements({ flatten: true });
@@ -475,12 +523,24 @@ function collectTabbablesDeep(
     // delegatesFocus hosts focus their inner control, not a separate stop. Do
     // not discard a composite widget's inner fields just because its host is
     // also focusable: without delegation those are distinct browser tab stops.
-    if (!excluded && !shadow?.delegatesFocus && element.matches(selector)) {
+    if (!excluded && !shadow?.delegatesFocus && element.matches(selector) && !disabledFormControl(element)) {
       out.push(element as HTMLElement);
     }
     Array.from((shadow ?? element).children).forEach(visit);
   };
   Array.from(root.children).forEach(visit);
+}
+
+function disabledFormControl(element: Element): boolean {
+  if (element.hasAttribute('disabled')) return true;
+  if (!['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(element.localName)) return false;
+  for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+    if (ancestor.localName !== 'fieldset' || !ancestor.hasAttribute('disabled')) continue;
+    // Only the first legend is exempt from its fieldset's disabled state.
+    const legend = Array.from(ancestor.children).find(child => child.localName === 'legend');
+    if (!legend?.contains(element)) return true;
+  }
+  return false;
 }
 
 /** Find the actually-focused element, regardless of how many open
@@ -490,8 +550,9 @@ function collectTabbablesDeep(
  *  the input. We chase `shadowRoot.activeElement` until it bottoms
  *  out — the leaf is what `collectTabbablesDeep()` stored in the
  *  focusable list, so a `===` comparison against it works. */
-function getDeepActiveElement(): Element | null {
-  let active: Element | null = document.activeElement;
+function getDeepActiveElement(element: HTMLElement): Element | null {
+  const root = element.getRootNode() as Document | ShadowRoot;
+  let active: Element | null = root.activeElement ?? element.ownerDocument.activeElement;
   while (active) {
     const sr = (active as Element & { shadowRoot?: ShadowRoot | null })
       .shadowRoot;

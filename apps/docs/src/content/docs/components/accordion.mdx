@@ -271,18 +271,18 @@ host so item CSS can pick it up.
 
 | Preset | Motion |
 |---|---|
-| `expressive` | **Default.** Asymmetric easing, spring chevron, container shape and elevation morph |
+| `expressive` | **Default.** Coordinated emphasized height and corner motion, spring chevron, and shorter tone, opacity and elevation effects |
 | `standard` | Symmetric MD3 emphasized easing, no overshoot — the neutral choice for dense UI |
 | `fade` | Content cross-fades with the height change; unobtrusive for long copy and forms |
-| `collapse` | Plain height collapse with `ease-in-out` — the classic disclosure look |
+| `collapse` | Height and corners use `ease-out` on open and `ease-in` on close, without spring overshoot or content fade |
 | `none` | Instant snap; no transition at all |
 
 <ComponentDemo
   html={`<div style="display: grid; gap: 20px; max-inline-size: 520px;">
-  <md-accordion transition="expressive" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="expressive" supporting-text="Default — spring chevron, morphing container">Asymmetric easing with a shape and elevation morph.</md-accordion-item></md-accordion>
+  <md-accordion transition="expressive" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="expressive" supporting-text="Default — spring chevron, coordinated height and corners">350ms open / 250ms close, with shorter non-overshooting tone, opacity and elevation effects. Content is revealed in place.</md-accordion-item></md-accordion>
   <md-accordion transition="standard" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="standard" supporting-text="Symmetric emphasized easing">No overshoot — the neutral choice for dense UI.</md-accordion-item></md-accordion>
   <md-accordion transition="fade" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="fade" supporting-text="Cross-fade with the height change">Unobtrusive for long copy and forms.</md-accordion-item></md-accordion>
-  <md-accordion transition="collapse" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="collapse" supporting-text="Plain height, ease-in-out">The classic disclosure look.</md-accordion-item></md-accordion>
+  <md-accordion transition="collapse" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="collapse" supporting-text="Ease-out on open, ease-in on close">Height and corners move together, without spring overshoot or content fade.</md-accordion-item></md-accordion>
   <md-accordion transition="none" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="none" supporting-text="No transition at all">Instant snap.</md-accordion-item></md-accordion>
 </div>`}
   label="All five presets"
@@ -293,11 +293,13 @@ host so item CSS can pick it up.
 Each preset ships its own pair of durations, and
 `--md-accordion-item-expand-duration` / `--md-accordion-item-collapse-duration`
 override whichever preset is active — so you keep the preset's easing curve and
-change only the timing.
+change only the timing. Height and corners share those durations. Tone, opacity
+and elevation effects use the shorter of the disclosure duration and the
+effects-duration token (200ms by default).
 
 | `transition` | Expand | Collapse |
 |---|---|---|
-| `expressive` (default) | 350ms | 200ms |
+| `expressive` (default) | 350ms | 250ms |
 | `standard` | 300ms | 300ms |
 | `fade` | 300ms | 200ms |
 | `collapse` | 300ms | 300ms |

@@ -1,0 +1,73 @@
+{
+ "tag": "md-meter",
+ "case": "default",
+ "html": "<md-meter data-ax-node=\"n0\" id=\"example-md-meter\"></md-meter>",
+ "props": {
+  "n0": {
+   "color": "primary",
+   "density": 0,
+   "label": "Storage used",
+   "locale": "",
+   "max": 100,
+   "min": 0,
+   "showLabel": true,
+   "showValue": true,
+   "size": 48,
+   "thickness": 4,
+   "value": 72,
+   "valueText": "",
+   "variant": "linear"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "meter",
+    "name": "Storage used",
+    "ignored": false,
+    "value": 72,
+    "valuemin": 0,
+    "valuemax": 100,
+    "valuetext": "",
+    "frame": [
+     16,
+     16,
+     608,
+     28
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

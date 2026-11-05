@@ -864,3 +864,15 @@ describe('md-toolbar (e2e)', () => {
     });
   });
 });
+
+describe('md-toolbar focus ownership after content removal', () => {
+  it('setFocus selects a remaining eligible control and does nothing for an empty toolbar', async () => {
+    const page = await newE2EPage(); await page.setContent('<md-toolbar aria-label="Formatting"><button id="bold" tabindex="2">Bold</button><button id="italic">Italic</button></md-toolbar>');
+    const toolbar = await page.find('md-toolbar'); await page.click('#italic'); await toolbar.callMethod('setFocus');
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('italic');
+    await page.$eval('#italic', el => el.remove()); await page.waitForChanges(); await toolbar.callMethod('setFocus');
+    await page.waitForFunction(() => document.activeElement?.id === 'bold');
+    toolbar.setProperty('containerSemantics', 'generic'); await page.waitForChanges(); expect((await page.find('#bold')).getAttribute('tabindex')).toBe('2');
+    await page.$eval('md-toolbar', el => el.replaceChildren()); await page.waitForChanges(); await toolbar.callMethod('setFocus');
+  });
+});

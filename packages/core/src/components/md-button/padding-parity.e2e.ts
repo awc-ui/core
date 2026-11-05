@@ -9,9 +9,8 @@ import { newE2EPage } from '@stencil/core/testing';
  * next to a roomy one (14px), and the mismatch widened with density. It also
  * meant a button changed width if its variant changed to signal selection.
  *
- * Filled, tonal, elevated and text now all take the base size padding.
- * Outlined deliberately keeps a wider inset of its own (its border reads as
- * part of the shape), but must still decay at the same 25% rate.
+ * All variants share the same outer-edge content inset. Outlined subtracts
+ * its border from the padding so switching variants keeps the same width.
  */
 const SHARED = ['filled', 'tonal', 'elevated', 'text'];
 const DENSITIES = [0, -1, -2, -3, -4];
@@ -70,25 +69,49 @@ describe('md-button · padding parity across variants and density', () => {
     expect(asymmetric).toEqual([]);
   }, 60000);
 
-  it('outlined keeps its own inset but decays at the same 25% rate', async () => {
+  it('outlined includes its border in the shared inset at every density', async () => {
     const page = await newE2EPage();
     await page.setContent(
       DENSITIES.map(
-        d => `<md-button id="o${d}" variant="outlined" density="${d}">Add item</md-button>`,
+        // Supply the outline color normally provided by the theme token sheet.
+        d => `<div style="--md-button-outline-color:#67616f">
+          <md-button id="f${d}" variant="filled" density="${d}">Add item</md-button>
+          <md-button id="o${d}" variant="outlined" density="${d}">Add item</md-button>
+          <md-button id="w${d}" variant="outlined" density="${d}" style="--md-button-outline-width:3px">Add item</md-button>
+        </div>`,
       ).join(''),
     );
     await page.waitForChanges();
 
-    const pads = await page.evaluate(
-      (densities: number[]) =>
-        densities.map(d => parseFloat(getComputedStyle(document.getElementById(`o${d}`)!).paddingLeft)),
+    const measurements = await page.evaluate(
+      async (densities: number[]) => {
+        await document.fonts.ready;
+        return densities.map(d => {
+          const filled = document.getElementById(`f${d}`)!;
+          const outlined = ['o', 'w'].map(prefix => {
+            const element = document.getElementById(`${prefix}${d}`)!;
+            const style = getComputedStyle(element);
+            return {
+              left: parseFloat(style.paddingLeft) + parseFloat(style.borderLeftWidth),
+              right: parseFloat(style.paddingRight) + parseFloat(style.borderRightWidth),
+              width: element.getBoundingClientRect().width,
+              border: parseFloat(style.borderLeftWidth),
+              expectedBorder: prefix === 'w' ? 3 : 1,
+            };
+          });
+          return { density: d, filledWidth: filled.getBoundingClientRect().width, outlined };
+        });
+      },
       DENSITIES,
     );
 
-    // 25% total shrink across the four rungs, matching the base rules —
-    // previously outlined lost 70% and ended up NARROWER than filled.
-    expect(Math.round((pads[4] / pads[0]) * 100)).toBe(75);
-    // And it must stay the wider variant at every rung (no inversion).
-    expect(pads[4]).toBeGreaterThan(EXPECTED[-4]);
+    for (const measurement of measurements) for (const outlined of measurement.outlined) {
+      expect(outlined.border).toBe(outlined.expectedBorder);
+      expect(outlined.left).toBe(EXPECTED[measurement.density]);
+      expect(outlined.right).toBe(EXPECTED[measurement.density]);
+      expect(outlined.width).toBeCloseTo(measurement.filledWidth, 5);
+    }
+    // The outer inset shrinks by 25%, including the outline on both edges.
+    expect(measurements[4].outlined[0].left / measurements[0].outlined[0].left).toBe(0.75);
   }, 60000);
 });

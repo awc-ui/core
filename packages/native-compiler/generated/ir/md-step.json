@@ -345,9 +345,6 @@
       "description": "Vertical panel collapse duration"
     },
     {
-      "name": "--md-step-idx"
-    },
-    {
       "name": "--md-step-panel-padding-block-start"
     }
   ],
@@ -418,7 +415,7 @@
     "styleUrl": "md-step.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "e0927a8b2c558738afdb29dfc902882551cd0c2b6526bd09123bcb6f83a84602"
+    "sha256": "5a1f829cd1b09aafa09bb676355702776ce3bc9952e1f61fe081854f04e7a950"
   },
   "styles": [
     {
@@ -2457,17 +2454,8 @@
         "active",
         "error",
         "errorText",
+        "disabled",
         "optional",
-        "disabled"
-      ],
-      "events": [
-        "mdStepClick"
-      ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
         "editable",
         "icon",
         "completedIcon",
@@ -2476,52 +2464,120 @@
         "hideActions",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdStepClick",
         "mdStepNext",
         "mdStepBack"
       ],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
-    },
-    "android": {
-      "status": "adapter-implemented",
-      "properties": [
-        "active",
-        "completed",
-        "description",
-        "disabled",
-        "editable",
-        "error",
-        "errorText",
-        "hideActions",
-        "label"
-      ],
-      "events": [
-        "mdStepBack",
-        "mdStepClick",
-        "mdStepNext"
-      ],
       "methods": [],
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
-        "optional",
-        "icon",
-        "completedIcon",
-        "errorIcon",
-        "accessibleName",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Rendered by its stepper: the header control (a button named like the source, disabled when unreachable, expanded / collapsed with a panel), its panel and actions are the stepper's own layout, so the authored order is the keyboard order. A step's own style hooks apply to that step.",
+        "Standalone (no stepper) it renders like the source with its data-* defaults (first, horizontal, shared panel) and its own active.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint (142 cases + per-step hooks and step density), the state / motion replays per frame (20 runs, plain and reduced motion) with the md* events, the announcements and the keyframe animations each step starts."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcStepperAppearance(AWCStepperAppearance)",
+        "fields": [
+          "indicatorSize",
+          "indicatorRing",
+          "indicatorColor",
+          "indicatorText",
+          "activeColor",
+          "activeText",
+          "activeHaloColor",
+          "completedColor",
+          "completedText",
+          "errorColor",
+          "errorText",
+          "connectorColor",
+          "connectorFilledColor",
+          "connectorThickness",
+          "labelColor",
+          "labelActiveColor",
+          "descriptionColor",
+          "stateLayerColor",
+          "panelPaddingBlockStart",
+          "connectorDuration",
+          "expandDuration",
+          "collapseDuration"
+        ]
+      }
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "label",
+        "description",
+        "completed",
+        "active",
+        "error",
+        "errorText",
+        "disabled",
+        "optional",
+        "editable",
+        "icon",
+        "completedIcon",
+        "errorIcon",
+        "accessibleName",
+        "hideActions",
+        "density"
+      ],
+      "events": [
+        "mdStepClick",
+        "mdStepNext",
+        "mdStepBack"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Rendered by its stepper: the header control (a button named like the source, disabled when unreachable, expanded / collapsed with a panel), its panel and actions are the stepper's own layout, so the authored order is the keyboard order. A step's own style hooks apply to that step.",
+        "Standalone (no stepper) it renders like the source with its data-* defaults (first, horizontal, shared panel) and its own active.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint (142 cases + per-step hooks and step density), the state / motion replays per frame (20 runs, plain and reduced motion) with the md* events, the announcements and the keyframe animations each step starts."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCStepperAppearanceScope(AWCStepperAppearance)",
+        "fields": [
+          "indicatorSize",
+          "indicatorRing",
+          "indicatorColor",
+          "indicatorText",
+          "activeColor",
+          "activeText",
+          "activeHaloColor",
+          "completedColor",
+          "completedText",
+          "errorColor",
+          "errorText",
+          "connectorColor",
+          "connectorFilledColor",
+          "connectorThickness",
+          "labelColor",
+          "labelActiveColor",
+          "descriptionColor",
+          "stateLayerColor",
+          "panelPaddingBlockStart",
+          "connectorDuration",
+          "expandDuration",
+          "collapseDuration"
+        ]
+      }
     }
   }
 }

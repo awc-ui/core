@@ -84,9 +84,9 @@ struct BehaviorFixture: View {
             let up = NSEvent.mouseEvent(with: .leftMouseUp, location: point, modifierFlags: [], timestamp: time + 0.01, windowNumber: window2.windowNumber, context: nil, eventNumber: 2, clickCount: 1, pressure: 0)!
             app.postEvent(up, atStart: false); window2.sendEvent(down); pump()
         }
-        click(80, 112)
+        click(44, 112)   // centre of the md-checkbox host (48pt; the source has no label slot)
         check(extended.values["accept"] == "on" && events.contains { $0.nodeID == "check" && $0.name == "mdChange" }, "Real native checkbox pointer changes successful form value")
-        click(80, 200)
+        click(44, 200)   // centre of the md-radio host (48pt; the source has no label slot)
         check(extended.entries.filter { $0.name == "choice" }.count == 1 && events.contains { $0.nodeID == "radio-b" && $0.name == "mdChange" }, "Real radio click leaves one successful control even with equal values")
         check(nested.values["choice"] == "inner", "Real outer radio click does not alter nested same-name group")
         extended.reset(); pump()
@@ -168,7 +168,7 @@ struct ExtendedBehaviorFixture: View {
                         AWCNativeView(tag: "md-radio", properties: ["name": "choice", "value": "inner", "checked": true])
                         AWCNativeView(tag: "md-text-field", properties: ["name": "external", "value": "Owner"]).awcFormOwner("outer")
                     }
-                    AWCNativeView(tag: "md-text-field", properties: ["name": "step", "value": "1", "type": "number", "step": 2])
+                    AWCNativeView(tag: "md-text-field", properties: ["name": "step", "value": "1", "type": "number", "step": 2, "min": 1])
                     AWCNativeView(tag: "md-select", properties: ["name": "select", "value": "a"])
                     AWCNativeView(tag: "md-multi-select", properties: ["name": "multi", "value": ["a", "b"]])
                     AWCNativeView(tag: "md-autocomplete", properties: ["name": "auto", "value": "a"])

@@ -459,6 +459,11 @@
       "kind": "interface",
       "extends": "",
       "body": "  value: string;\n  label?: string;\n  disabled?: boolean;\n  icon?: string;\n  iconColor?: string;\n  supportingText?: string;\n  selected?: boolean;"
+    },
+    {
+      "name": "FilterMode",
+      "kind": "type",
+      "body": "'substring' | 'prefix' | 'fuzzy'"
     }
   ],
   "callableProps": [],

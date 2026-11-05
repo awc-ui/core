@@ -1153,3 +1153,33 @@ export const LegendPositions: Story = {
     },
   }),
 };
+
+export const NestedKeyboardReadings: Story = {
+  render: () => html`<md-pie-chart no-animation label="Regional revenue" inner-radius="35%" legend="right" style="width:620px;height:400px"
+    .data=${[{ id: 'hardware', label: 'Hardware', value: 40, children: [{ id: 'phones', label: 'Phones', value: 10 }, { id: 'laptops', label: 'Laptops', value: 30 }] }, { id: 'services', label: 'Services', value: 60 }]}
+    .valueFormatter=${(value: number) => `$${value}`}></md-pie-chart>`,
+  play: async ({ canvasElement, step }) => {
+    const chart = canvasElement.querySelector('md-pie-chart') as HTMLMdPieChartElement;
+    await waitFor(async () => expect(await chart.getInstance()).not.toBeNull());
+    const plot = chart.shadowRoot!.querySelector('[part="canvas"]') as HTMLElement;
+    const key = (key: string) => plot.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    const live = () => chart.shadowRoot!.querySelector('[aria-live]')!.textContent;
+    await step('Child announcements use sibling percentages and keyboard activation preserves child identity', async () => {
+      let selected: { seriesId: string; value: number } | undefined;
+      const click = (event: Event) => { selected = (event as CustomEvent).detail; };
+      chart.addEventListener('mdSliceClick', click);
+      plot.focus(); key('Enter'); expect(selected).toBeUndefined();
+      key('Home'); key('ArrowDown');
+      await waitFor(() => expect(live()).toBe('Phones: $10 (25%)'));
+      key(' '); expect(selected).toEqual(expect.objectContaining({ seriesId: 'phones', value: 10 }));
+      key('End'); key('ArrowUp');
+      await waitFor(() => expect(live()).toBe('Laptops: $30 (75%)'));
+      plot.blur(); await waitFor(() => expect(live()).toBe(''));
+      chart.removeEventListener('mdSliceClick', click);
+    });
+    await step('Localized table headers update after the chart has rendered', async () => {
+      chart.tableLabels = { category: 'Region', value: 'Revenue', share: 'Share of parent' };
+      await waitFor(() => expect(Array.from(chart.shadowRoot!.querySelectorAll('thead th'), th => th.textContent)).toEqual(['Region', 'Revenue', 'Share of parent']));
+    });
+  },
+};

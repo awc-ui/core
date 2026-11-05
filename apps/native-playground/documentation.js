@@ -66,6 +66,10 @@ export function mergeComponentDocumentation(manifestComponent = {}, catalogCompo
       return enriched;
     });
   }
+  // Stencil can index private fallback sentinels referenced by CSS. The group
+  // deliberately never defines this variable: exposing it as an override would
+  // turn an implementation detail into a false public styling contract.
+  if (result.tag === 'md-button-group') result.cssProperties = result.cssProperties.filter(member => member.name !== '--md-button-group-_unset');
   return result;
 }
 

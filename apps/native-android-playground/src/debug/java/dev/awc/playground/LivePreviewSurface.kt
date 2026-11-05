@@ -31,9 +31,11 @@ import kotlin.math.ceil
  */
 internal class LivePreviewSurface(activity: ComponentActivity, logicalWidth: Double) : AutoCloseable {
     val scale = 2f
-    val pixelWidth = ceil(logicalWidth * scale).toInt()
-    val pixelHeight = minOf(4000, MAX_PIXELS / pixelWidth)
-    val maxLogicalHeight = pixelHeight / scale
+    var pixelWidth = ceil(logicalWidth * scale).toInt()
+        private set
+    var pixelHeight = minOf(4000, MAX_PIXELS / pixelWidth)
+        private set
+    val maxLogicalHeight get() = pixelHeight / scale
     private val drainThread = HandlerThread("AWCPreviewDisplay")
     private var reader: ImageReader? = null
     private var display: VirtualDisplay? = null
@@ -55,7 +57,9 @@ internal class LivePreviewSurface(activity: ComponentActivity, logicalWidth: Dou
                 .createVirtualDisplay("AWC native preview", pixelWidth, pixelHeight, 320, sink.surface,
                     DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY or DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION)).also { display = it }
             val nativePresentation = Presentation(activity, nativeDisplay.display, android.R.style.Theme_Material_Light_NoActionBar).also { presentation = it }
-            container = FrameLayout(nativePresentation.context).apply { setBackgroundColor(Color.WHITE) }
+            container = object:FrameLayout(nativePresentation.context),androidx.compose.ui.window.DialogWindowProvider {
+                override val window:Window get()=checkNotNull(nativePresentation.window)
+            }.apply { setBackgroundColor(Color.WHITE) }
             preview = ComposeView(nativePresentation.context).apply {
                 layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             }
@@ -76,6 +80,20 @@ internal class LivePreviewSurface(activity: ComponentActivity, logicalWidth: Dou
             close()
             throw error
         }
+    }
+
+    /** Change the owned display without disposing its Compose root. Controllers,
+     * focus, timers and in-flight animations keep their original identity. */
+    fun resize(logicalWidth:Double) {
+        check(!closed)
+        val nextWidth=ceil(logicalWidth*scale).toInt()
+        if(nextWidth==pixelWidth) return
+        pixelWidth=nextWidth
+        pixelHeight=minOf(4000,MAX_PIXELS/pixelWidth)
+        display!!.resize(pixelWidth,pixelHeight,320)
+        window.setLayout(pixelWidth,ViewGroup.LayoutParams.WRAP_CONTENT)
+        preview.requestLayout()
+        container.requestLayout()
     }
 
     @Suppress("DEPRECATION")

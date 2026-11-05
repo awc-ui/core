@@ -554,6 +554,7 @@ export const MdDatePicker = /*@__PURE__*/ defineContainer<JSX.MdDatePicker, JSX.
 export const MdDialog = /*@__PURE__*/ defineContainer<JSX.MdDialog>('md-dialog', defineMdDialog, [
   'open',
   'headline',
+  'dialogAriaLabel',
   'icon',
   'fullscreen',
   'scrimDismissible',
@@ -1602,6 +1603,7 @@ export const MdTablePagination = /*@__PURE__*/ defineContainer<JSX.MdTablePagina
   'labelNextPage',
   'labelLastPage',
   'labelAll',
+  'label',
   'compact',
   'disabled',
   'density',
@@ -1825,6 +1827,7 @@ export const MdTransferList = /*@__PURE__*/ defineContainer<JSX.MdTransferList>(
   'moveLeftLabel',
   'moveAllRightLabel',
   'moveAllLeftLabel',
+  'selectAllLabel',
   'mdChange',
   'mdMove'
 ]);

@@ -5285,6 +5285,10 @@
             {
               "name": "overflow-button",
               "description": "The button inside the overflow item."
+            },
+            {
+              "name": "separator",
+              "description": "Every separator glyph slot."
             }
           ],
           "cssProperties": [
@@ -6023,23 +6027,83 @@
             },
             {
               "name": "--md-button-icon-color",
-              "description": "Icon-only color override"
+              "description": "Leading icon color (trailing fallback)"
             },
             {
               "name": "--md-button-icon-size",
-              "description": "Icon dimensions"
+              "description": "Leading icon dimensions (trailing fallback)"
+            },
+            {
+              "name": "--md-button-trailing-icon-size",
+              "description": "Trailing icon dimensions"
+            },
+            {
+              "name": "--md-button-loading-color",
+              "description": "Loading indicator color"
+            },
+            {
+              "name": "--md-button-loading-size",
+              "description": "Loading indicator dimensions"
+            },
+            {
+              "name": "--md-button-state-layer-color",
+              "description": "Hover/focus/press overlay color"
+            },
+            {
+              "name": "--md-button-hover-opacity",
+              "description": "Hover overlay opacity"
+            },
+            {
+              "name": "--md-button-focus-opacity",
+              "description": "Focus overlay opacity"
+            },
+            {
+              "name": "--md-button-pressed-opacity",
+              "description": "Press overlay opacity"
+            },
+            {
+              "name": "--md-button-font-size",
+              "description": "Label font size"
+            },
+            {
+              "name": "--md-button-font-weight",
+              "description": "Label font weight"
+            },
+            {
+              "name": "--md-button-line-height",
+              "description": "Label line height"
+            },
+            {
+              "name": "--md-button-letter-spacing",
+              "description": "Label letter spacing"
+            },
+            {
+              "name": "--md-button-padding-inline",
+              "description": "Content inset from the outer inline edges"
+            },
+            {
+              "name": "--md-button-padding-block",
+              "description": "Vertical content padding"
+            },
+            {
+              "name": "--md-button-gap",
+              "description": "Icon/label/loading gap"
             },
             {
               "name": "--md-button-container-shape",
-              "description": "Border-radius override"
+              "description": "Fixed border radius, including pressed/selected"
             },
             {
               "name": "--md-button-outline-color",
-              "description": "Outlined border color"
+              "description": "Border color"
             },
             {
               "name": "--md-button-outline-width",
-              "description": "Outlined border width"
+              "description": "Border width (enables a border on any variant)"
+            },
+            {
+              "name": "--md-button-focus-ring-color",
+              "description": "Keyboard focus ring color"
             },
             {
               "name": "--md-button-width",
@@ -6062,10 +6126,7 @@
               "description": "Minimum block-size (default: per-size touch target)"
             },
             {
-              "name": "--md-button-loading-size"
-            },
-            {
-              "name": "--md-button-focus-ring-color"
+              "name": "--md-button-trailing-icon-color"
             }
           ]
         }
@@ -6351,10 +6412,12 @@
               "description": "Maximum block-size"
             },
             {
-              "name": "--md-card-padding"
+              "name": "--md-card-padding",
+              "description": "Content padding"
             },
             {
-              "name": "--md-card-gap"
+              "name": "--md-card-gap",
+              "description": "Gap between authored content items"
             }
           ]
         }
@@ -7407,6 +7470,9 @@
           ],
           "cssParts": [
             {
+              "name": "popover"
+            },
+            {
               "name": "plate"
             },
             {
@@ -7462,9 +7528,6 @@
             },
             {
               "name": "preview"
-            },
-            {
-              "name": "popover"
             }
           ],
           "cssProperties": [
@@ -8825,6 +8888,15 @@
             },
             {
               "kind": "field",
+              "name": "dialogAriaLabel",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
               "name": "icon",
               "privacy": "public",
               "type": {
@@ -8950,6 +9022,14 @@
               "default": "''"
             },
             {
+              "name": "aria-label",
+              "fieldName": "dialogAriaLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
               "name": "icon",
               "fieldName": "icon",
               "type": {
@@ -9059,16 +9139,16 @@
               "description": "Action buttons"
             },
             {
+              "name": "headline",
+              "description": "Custom headline content"
+            },
+            {
               "name": "header-action",
               "description": "Full-screen header action (e.g. Save button)"
             },
             {
               "name": "icon",
               "description": "Custom icon (replaces icon prop)"
-            },
-            {
-              "name": "headline",
-              "description": "Custom headline content"
             }
           ],
           "cssParts": [
@@ -9271,7 +9351,7 @@
           "cssParts": [
             {
               "name": "divider",
-              "description": "The divider element itself (host)"
+              "description": "The inner painted line; inset margins do not affect the host"
             }
           ],
           "cssProperties": [
@@ -14927,6 +15007,12 @@
               "name": "--md-multi-select-chip-radius"
             },
             {
+              "name": "--md-multi-select-chip-height"
+            },
+            {
+              "name": "--md-multi-select-chip-outline"
+            },
+            {
               "name": "--md-multi-select-caret-color"
             },
             {
@@ -14946,12 +15032,6 @@
             },
             {
               "name": "--md-multi-select-inline-chips-block-start"
-            },
-            {
-              "name": "--md-multi-select-chip-height"
-            },
-            {
-              "name": "--md-multi-select-chip-outline"
             },
             {
               "name": "--md-multi-select-clear-size"
@@ -16392,6 +16472,10 @@
           ],
           "cssProperties": [
             {
+              "name": "--md-navigation-tab-active-indicator-color",
+              "description": "Active indicator (pill) colour"
+            },
+            {
               "name": "--md-navigation-tab-active-indicator-width",
               "description": "(default 56px)"
             },
@@ -16402,6 +16486,22 @@
             {
               "name": "--md-navigation-tab-active-indicator-shape",
               "description": "(default full-rounded)"
+            },
+            {
+              "name": "--md-navigation-tab-active-icon-color",
+              "description": "Icon colour of the active destination"
+            },
+            {
+              "name": "--md-navigation-tab-inactive-icon-color",
+              "description": "Icon colour of inactive destinations"
+            },
+            {
+              "name": "--md-navigation-tab-active-label-color",
+              "description": "Label colour of the active destination"
+            },
+            {
+              "name": "--md-navigation-tab-inactive-label-color",
+              "description": "Label colour of inactive destinations"
             },
             {
               "name": "--md-navigation-tab-label-font",
@@ -16422,6 +16522,26 @@
             {
               "name": "--md-navigation-tab-padding-block-end",
               "description": "(default 5px)"
+            },
+            {
+              "name": "--md-navigation-tab-hover-state-layer-color",
+              "description": "State-layer colour on hover"
+            },
+            {
+              "name": "--md-navigation-tab-focus-state-layer-color",
+              "description": "State-layer colour on keyboard focus"
+            },
+            {
+              "name": "--md-navigation-tab-pressed-state-layer-color",
+              "description": "State-layer colour while pressed"
+            },
+            {
+              "name": "--md-navigation-tab-badge-color",
+              "description": "Badge colour"
+            },
+            {
+              "name": "--md-navigation-tab-badge-on-color",
+              "description": "Badge text colour"
             },
             {
               "name": "--md-navigation-tab-disabled-opacity",
@@ -17291,6 +17411,22 @@
             {
               "name": "tree",
               "description": "The role=\"tree\" root list"
+            },
+            {
+              "name": "branch",
+              "description": "A role=\"treeitem\" list item (the node and its subtree)"
+            },
+            {
+              "name": "branch-on-path",
+              "description": "A branch on the path from a selection up to its root"
+            },
+            {
+              "name": "node",
+              "description": "A node card"
+            },
+            {
+              "name": "node-selected",
+              "description": "A selected node card"
             },
             {
               "name": "avatar-image",
@@ -21019,7 +21155,7 @@
             },
             {
               "name": "icon",
-              "description": "Custom icon (replaces icon prop)"
+              "description": "Additional icon content alongside the built-in icon or checkmark"
             }
           ],
           "cssParts": [
@@ -21030,6 +21166,14 @@
             {
               "name": "label",
               "description": "Label text"
+            },
+            {
+              "name": "checkmark",
+              "description": "Checkmark icon (selected)"
+            },
+            {
+              "name": "icon",
+              "description": "Icon element"
             }
           ],
           "cssProperties": [
@@ -22652,6 +22796,14 @@
             {
               "name": "shape",
               "description": "The rectangular / rounded / circular block."
+            },
+            {
+              "name": "line",
+              "description": "Every text line."
+            },
+            {
+              "name": "line-last",
+              "description": "The final tapered line in a multi-line block."
             }
           ],
           "cssProperties": [
@@ -25042,9 +25194,6 @@
               "description": "Vertical panel collapse duration"
             },
             {
-              "name": "--md-step-idx"
-            },
-            {
               "name": "--md-step-panel-padding-block-start"
             }
           ]
@@ -25542,9 +25691,6 @@
             {
               "name": "--md-stepper-gap",
               "description": "Spacing between steps (vertical orientation only)."
-            },
-            {
-              "name": "--md-stepper-step-count"
             }
           ]
         }
@@ -26572,12 +26718,6 @@
             },
             {
               "name": "--md-tab-glide-duration"
-            },
-            {
-              "name": "--md-tab-glide-x"
-            },
-            {
-              "name": "--md-tab-glide-scale"
             }
           ]
         }
@@ -27221,7 +27361,7 @@
           "cssProperties": [
             {
               "name": "--md-table-expand-toggle-rotation",
-              "description": "Expanded rotation (default 90deg)"
+              "description": "Expanded rotation (default 90deg;"
             }
           ]
         }
@@ -27479,6 +27619,15 @@
             },
             {
               "kind": "field",
+              "name": "label",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Pagination'"
+            },
+            {
+              "kind": "field",
               "name": "compact",
               "privacy": "public",
               "type": {
@@ -27627,6 +27776,14 @@
                 "text": "string"
               },
               "default": "'All'"
+            },
+            {
+              "name": "label",
+              "fieldName": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Pagination'"
             },
             {
               "name": "compact",
@@ -32404,6 +32561,15 @@
               "default": "'Move all to source'"
             },
             {
+              "kind": "field",
+              "name": "selectAllLabel",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Select all {title}'"
+            },
+            {
               "kind": "method",
               "name": "moveSelectedRight",
               "privacy": "public",
@@ -32592,6 +32758,14 @@
                 "text": "string"
               },
               "default": "'Move all to source'"
+            },
+            {
+              "name": "select-all-label",
+              "fieldName": "selectAllLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Select all {title}'"
             }
           ],
           "events": [

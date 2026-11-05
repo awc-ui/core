@@ -78,7 +78,7 @@ export namespace Components {
          */
         "defaultExpanded": string;
         /**
-          * Density scale: `0` (default, 56 dp headers), `-1` (48 dp), `-2` (40 dp).
+          * Density scale from `0` (default, 64 px minimum header) through `-4` (48 px). Each rung reduces the minimum by 4 px; content may be taller.
           * @default 0
          */
         "density": 0 | -1 | -2 | -3 | -4;
@@ -133,7 +133,7 @@ export namespace Components {
          */
         "reorderable": boolean;
         /**
-          * Motion preset applied when items expand and collapse. The prop is reflected so the item CSS can pick it up via `:host-context(md-accordion[transition="…"])`.  - `expressive` (default) — full MD3 Expressive choreography:    asymmetric easing (decelerate-on-open, accelerate-on-close),    spring-spatial chevron rotation, container shape & elevation    morph, leading-icon FILL-axis swap. Use for hero surfaces,    settings shells, anything that wants to feel premium. - `standard` — MD3 standard easing (symmetric `emphasized`) with    no spring overshoot. Container morph still happens. The    "neutral" preset — good default for dense product UI. - `fade` — content fades in/out alongside the height animation    using shorter `standard` easing. Chevron rotates without a    spring. Best for content-heavy panels (forms, long copy)    where the motion should be unobtrusive. - `collapse` — pure height collapse with simple `ease-in-out`    timing — no spring, no morph, no fade. The classic    "browser disclosure" look. - `none` — disables every transition (instant snap). Useful for    automated tests, screenshot harnesses, or environments where    motion is undesirable.
+          * Motion preset applied when items expand and collapse. The prop is reflected so the item CSS can pick it up via direct-owner presentation attributes on each item.  - `expressive` (default) — coordinated emphasized height and corner    motion (350ms open / 250ms close), with spring-spatial chevron    rotation and a leading-icon FILL-axis swap. Surface tone,    opacity and elevation use shorter, non-overshooting effects.    Content is revealed in place. - `standard` — MD3 standard easing (symmetric `emphasized`) with    no spring overshoot. Container morph still happens. The    "neutral" preset — good default for dense product UI. - `fade` — content fades in/out alongside the height animation    using shorter `standard` easing. Chevron rotates without a    spring. Best for content-heavy panels (forms, long copy)    where the motion should be unobtrusive. - `collapse` — height-led disclosure with `ease-out` on open and    `ease-in` on close. Corners follow the same timing; no spring    overshoot or content fade. - `none` — disables every transition (instant snap). Useful for    automated tests, screenshot harnesses, or environments where    motion is undesirable.
           * @default 'expressive'
          */
         "transition": 'expressive' | 'standard' | 'fade' | 'collapse' | 'none';
@@ -1175,9 +1175,12 @@ export namespace Components {
          */
         "target": string;
     }
+    /**
+     * @csspart separator - Separator glyph drawn before the overflow toggle (each crumb draws its own `separator` part)
+     */
     interface MdBreadcrumbs {
         /**
-          * Programmatically re-collapse the trail to the configured before/after window. Has no effect when collapsing is disabled or when the trail is already collapsed. Emits `mdExpand` when the state changes.
+          * Programmatically re-collapse the trail to the configured before/after window. No-op when the trail is already collapsed. When `maxItems` is `0` (collapsing disabled) nothing visible changes, but the state still flips and `mdExpand` still fires.
          */
         "collapse": () => Promise<void>;
         /**
@@ -1186,7 +1189,7 @@ export namespace Components {
          */
         "density": 0 | -1 | -2 | -3 | -4;
         /**
-          * Programmatically reveal the full breadcrumb trail. Has no effect when `maxItems` is `0` (collapsing disabled) or when the trail is already expanded. Emits `mdExpand` when the state changes.
+          * Programmatically reveal the full breadcrumb trail. No-op when the trail is already expanded. When `maxItems` is `0` (collapsing disabled) nothing visible changes, but the state still flips and `mdExpand` still fires.
          */
         "expand": () => Promise<void>;
         /**
@@ -1936,6 +1939,11 @@ export namespace Components {
           * @default 0
          */
         "density": 0 | -1 | -2 | -3 | -4;
+        /**
+          * Explicit accessible name. Takes precedence over the visible headline.
+          * @default ''
+         */
+        "dialogAriaLabel": string;
         /**
           * Show divider between content and actions
           * @default false
@@ -3773,6 +3781,10 @@ export namespace Components {
      *   }];
      * </script>
      * ```
+     * @csspart branch - A role="treeitem" list item (the node and its subtree)
+     * @csspart branch-on-path - A branch on the path from a selection up to its root
+     * @csspart node - A node card
+     * @csspart node-selected - A selected node card
      */
     interface MdOrganizationChart {
         /**
@@ -4256,8 +4268,8 @@ export namespace Components {
          */
         "softDisabled": boolean;
         /**
-          * Group-coordination hook. Sibling radios call this so the whole group agrees on validity; exposed as a
-          * @Method because a sibling can only reach this component through its public element interface.
+          * Group-coordination hook. Sibling radios call this so the whole group agrees on validity and on its single tab stop; exposed as a
+          * @Method because a sibling can only reach this component through its public element interface. Without the roving refresh, the first enabled radio of a group that started with nothing checked kept `tabindex="0"` after an arrow key checked another member — two tab stops in one group.
          */
         "syncValidityFromGroup": () => Promise<void>;
         /**
@@ -4382,7 +4394,7 @@ export namespace Components {
          */
         "trigger": () => Promise<void>;
         /**
-          * Resolves when the active press ripple has fully faded out.
+          * Waits for the current wave to settle, with a 200ms bound for held presses.
          */
         "whenSettled": () => Promise<void>;
     }
@@ -4576,6 +4588,10 @@ export namespace Components {
          */
         "whenClosed": () => Promise<void>;
     }
+    /**
+     * @csspart checkmark - Built-in checkmark graphic when selected and noCheckmark is false.
+     * @csspart icon - Built-in icon-property graphic when it is not replaced by the checkmark.
+     */
     interface MdSegmentedButton {
         /**
           * Local density rung. Drives the same `--md-sys-density-scale` signal that a global `data-density` ancestor sets, so a local value simply overrides the inherited one. 0 = default, -4 = ultra-compact.
@@ -5008,6 +5024,22 @@ export namespace Components {
          */
         "whenClosed": () => Promise<void>;
     }
+    /**
+     * @csspart shape - The rectangular, rounded or circular painted block.
+     * @csspart line - Every painted text row, including the final tapered row.
+     * @csspart line-last - The tapered final row when multiple text rows are rendered.
+     * @cssprop --md-skeleton-color - Base placeholder color.
+     * @cssprop --md-skeleton-highlight - Wave shimmer highlight color.
+     * @cssprop --md-skeleton-radius - Text and rectangular corner shape.
+     * @cssprop --md-skeleton-rounded-radius - Rounded variant corner shape.
+     * @cssprop --md-skeleton-width - Default inline size.
+     * @cssprop --md-skeleton-height - Block size or text row height.
+     * @cssprop --md-skeleton-size - Default circular size.
+     * @cssprop --md-skeleton-line-gap - Gap between text rows.
+     * @cssprop --md-skeleton-pulse-duration - Recurring pulse duration.
+     * @cssprop --md-skeleton-wave-duration - Recurring wave duration.
+     * @cssprop --md-skeleton-bloom-duration - Entrance animation duration.
+     */
     interface MdSkeleton {
         /**
           * Animation style: - `pulse` (default) — gentle opacity fade in and out. - `wave` — shimmer gradient sweeps across the surface. - `none` — static block; useful in `prefers-reduced-motion` opt-outs   or when the skeleton is purely decorative.
@@ -5020,7 +5052,7 @@ export namespace Components {
          */
         "announce": boolean;
         /**
-          * Accessible label. Defaults to "Loading…". Pass a more specific label when the skeleton represents a recognisable region ("Loading article") for better screen-reader context.
+          * Accessible label. Defaults to "Loading". Pass a more specific label when the skeleton represents a recognisable region ("Loading article") for better screen-reader context.
           * @default 'Loading'
          */
         "ariaLabelProp": string;
@@ -5050,7 +5082,7 @@ export namespace Components {
          */
         "lines": number;
         /**
-          * Shape of the skeleton placeholder. - `text` — single short rectangle the height of a body line. With   `lines > 1` the last line gets a tapered width so it reads as a   "last line of a paragraph". - `rectangular` — fills the inline + block sizes you give it; no   border-radius unless you set `--md-skeleton-radius`. - `rounded` — same as `rectangular` but with the MD3 medium corner   radius (or your override). Good for cards / images. - `circular` — perfect circle (1:1 aspect). Use for avatar / icon   placeholders; set `--md-skeleton-size` or `width`+`height`.
+          * Shape of the skeleton placeholder. - `text` — single short rectangle the height of a body line. With   `lines > 1` the last line gets a tapered width so it reads as a   "last line of a paragraph". - `rectangular` — fills the inline + block sizes you give it, with   the extra-small corner token or `--md-skeleton-radius`. - `rounded` — same as `rectangular` but with the MD3 medium corner   radius (or your override). Good for cards / images. - `circular` — perfect circle (1:1 aspect). Use for avatar / icon   placeholders; set `--md-skeleton-size` or `width`+`height`.
           * @default 'text'
          */
         "variant": 'text' | 'rectangular' | 'rounded' | 'circular';
@@ -6375,6 +6407,11 @@ export namespace Components {
          */
         "goToPage": (page: number) => Promise<void>;
         /**
+          * Accessible name of the navigation landmark (localise with the other `label-*` props).
+          * @default 'Pagination'
+         */
+        "label": string;
+        /**
           * Label of the "All" rows-per-page option.
           * @default 'All'
          */
@@ -6696,7 +6733,7 @@ export namespace Components {
          */
         "debounce": number;
         /**
-          * Density scale: 0 (default 56px), -1 (52px), -2 (48px), -3 (44px).
+          * Density scale: 0 (default 56px), -1 (52px), -2 (48px), -3 (44px), -4 (40px).
           * @default 0
          */
         "density": 0 | -1 | -2 | -3 | -4;
@@ -7324,6 +7361,11 @@ export namespace Components {
          */
         "searchable": boolean;
         /**
+          * Accessible label for each header's select-all checkbox (localisable). `{title}` is replaced with that column's title.
+          * @default 'Select all {title}'
+         */
+        "selectAllLabel": string;
+        /**
           * Show the "select all" select-all checkbox in each header.
           * @default true
          */
@@ -7907,6 +7949,9 @@ declare global {
     interface HTMLMdBreadcrumbsElementEventMap {
         "mdExpand": MdBreadcrumbsExpandDetail;
     }
+    /**
+     * @csspart separator - Separator glyph drawn before the overflow toggle (each crumb draws its own `separator` part)
+     */
     interface HTMLMdBreadcrumbsElement extends Components.MdBreadcrumbs, HTMLStencilElement {
         addEventListener<K extends keyof HTMLMdBreadcrumbsElementEventMap>(type: K, listener: (this: HTMLMdBreadcrumbsElement, ev: MdBreadcrumbsCustomEvent<HTMLMdBreadcrumbsElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
         addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
@@ -8563,6 +8608,10 @@ declare global {
      *   }];
      * </script>
      * ```
+     * @csspart branch - A role="treeitem" list item (the node and its subtree)
+     * @csspart branch-on-path - A branch on the path from a selection up to its root
+     * @csspart node - A node card
+     * @csspart node-selected - A selected node card
      */
     interface HTMLMdOrganizationChartElement extends Components.MdOrganizationChart, HTMLStencilElement {
         addEventListener<K extends keyof HTMLMdOrganizationChartElementEventMap>(type: K, listener: (this: HTMLMdOrganizationChartElement, ev: MdOrganizationChartCustomEvent<HTMLMdOrganizationChartElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -8751,6 +8800,10 @@ declare global {
     interface HTMLMdSegmentedButtonElementEventMap {
         "mdSegmentClick": { value: string; selected: boolean };
     }
+    /**
+     * @csspart checkmark - Built-in checkmark graphic when selected and noCheckmark is false.
+     * @csspart icon - Built-in icon-property graphic when it is not replaced by the checkmark.
+     */
     interface HTMLMdSegmentedButtonElement extends Components.MdSegmentedButton, HTMLStencilElement {
         addEventListener<K extends keyof HTMLMdSegmentedButtonElementEventMap>(type: K, listener: (this: HTMLMdSegmentedButtonElement, ev: MdSegmentedButtonCustomEvent<HTMLMdSegmentedButtonElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
         addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
@@ -8877,6 +8930,22 @@ declare global {
         prototype: HTMLMdSideSheetElement;
         new (): HTMLMdSideSheetElement;
     };
+    /**
+     * @csspart shape - The rectangular, rounded or circular painted block.
+     * @csspart line - Every painted text row, including the final tapered row.
+     * @csspart line-last - The tapered final row when multiple text rows are rendered.
+     * @cssprop --md-skeleton-color - Base placeholder color.
+     * @cssprop --md-skeleton-highlight - Wave shimmer highlight color.
+     * @cssprop --md-skeleton-radius - Text and rectangular corner shape.
+     * @cssprop --md-skeleton-rounded-radius - Rounded variant corner shape.
+     * @cssprop --md-skeleton-width - Default inline size.
+     * @cssprop --md-skeleton-height - Block size or text row height.
+     * @cssprop --md-skeleton-size - Default circular size.
+     * @cssprop --md-skeleton-line-gap - Gap between text rows.
+     * @cssprop --md-skeleton-pulse-duration - Recurring pulse duration.
+     * @cssprop --md-skeleton-wave-duration - Recurring wave duration.
+     * @cssprop --md-skeleton-bloom-duration - Entrance animation duration.
+     */
     interface HTMLMdSkeletonElement extends Components.MdSkeleton, HTMLStencilElement {
     }
     var HTMLMdSkeletonElement: {
@@ -9678,7 +9747,7 @@ declare namespace LocalJSX {
          */
         "defaultExpanded"?: string;
         /**
-          * Density scale: `0` (default, 56 dp headers), `-1` (48 dp), `-2` (40 dp).
+          * Density scale from `0` (default, 64 px minimum header) through `-4` (48 px). Each rung reduces the minimum by 4 px; content may be taller.
           * @default 0
          */
         "density"?: 0 | -1 | -2 | -3 | -4;
@@ -9761,7 +9830,7 @@ declare namespace LocalJSX {
          */
         "reorderable"?: boolean;
         /**
-          * Motion preset applied when items expand and collapse. The prop is reflected so the item CSS can pick it up via `:host-context(md-accordion[transition="…"])`.  - `expressive` (default) — full MD3 Expressive choreography:    asymmetric easing (decelerate-on-open, accelerate-on-close),    spring-spatial chevron rotation, container shape & elevation    morph, leading-icon FILL-axis swap. Use for hero surfaces,    settings shells, anything that wants to feel premium. - `standard` — MD3 standard easing (symmetric `emphasized`) with    no spring overshoot. Container morph still happens. The    "neutral" preset — good default for dense product UI. - `fade` — content fades in/out alongside the height animation    using shorter `standard` easing. Chevron rotates without a    spring. Best for content-heavy panels (forms, long copy)    where the motion should be unobtrusive. - `collapse` — pure height collapse with simple `ease-in-out`    timing — no spring, no morph, no fade. The classic    "browser disclosure" look. - `none` — disables every transition (instant snap). Useful for    automated tests, screenshot harnesses, or environments where    motion is undesirable.
+          * Motion preset applied when items expand and collapse. The prop is reflected so the item CSS can pick it up via direct-owner presentation attributes on each item.  - `expressive` (default) — coordinated emphasized height and corner    motion (350ms open / 250ms close), with spring-spatial chevron    rotation and a leading-icon FILL-axis swap. Surface tone,    opacity and elevation use shorter, non-overshooting effects.    Content is revealed in place. - `standard` — MD3 standard easing (symmetric `emphasized`) with    no spring overshoot. Container morph still happens. The    "neutral" preset — good default for dense product UI. - `fade` — content fades in/out alongside the height animation    using shorter `standard` easing. Chevron rotates without a    spring. Best for content-heavy panels (forms, long copy)    where the motion should be unobtrusive. - `collapse` — height-led disclosure with `ease-out` on open and    `ease-in` on close. Corners follow the same timing; no spring    overshoot or content fade. - `none` — disables every transition (instant snap). Useful for    automated tests, screenshot harnesses, or environments where    motion is undesirable.
           * @default 'expressive'
          */
         "transition"?: 'expressive' | 'standard' | 'fade' | 'collapse' | 'none';
@@ -10835,6 +10904,9 @@ declare namespace LocalJSX {
          */
         "target"?: string;
     }
+    /**
+     * @csspart separator - Separator glyph drawn before the overflow toggle (each crumb draws its own `separator` part)
+     */
     interface MdBreadcrumbs {
         /**
           * Local density rung. Drives the same `--md-sys-density-scale` signal that a global `data-density` ancestor sets, so a local value simply overrides the inherited one. 0 = default, -4 = ultra-compact.
@@ -11667,6 +11739,11 @@ declare namespace LocalJSX {
           * @default 0
          */
         "density"?: 0 | -1 | -2 | -3 | -4;
+        /**
+          * Explicit accessible name. Takes precedence over the visible headline.
+          * @default ''
+         */
+        "dialogAriaLabel"?: string;
         /**
           * Show divider between content and actions
           * @default false
@@ -13495,6 +13572,10 @@ declare namespace LocalJSX {
      *   }];
      * </script>
      * ```
+     * @csspart branch - A role="treeitem" list item (the node and its subtree)
+     * @csspart branch-on-path - A branch on the path from a selection up to its root
+     * @csspart node - A node card
+     * @csspart node-selected - A selected node card
      */
     interface MdOrganizationChart {
         /**
@@ -14307,6 +14388,10 @@ declare namespace LocalJSX {
          */
         "voiceSearch"?: boolean;
     }
+    /**
+     * @csspart checkmark - Built-in checkmark graphic when selected and noCheckmark is false.
+     * @csspart icon - Built-in icon-property graphic when it is not replaced by the checkmark.
+     */
     interface MdSegmentedButton {
         /**
           * Local density rung. Drives the same `--md-sys-density-scale` signal that a global `data-density` ancestor sets, so a local value simply overrides the inherited one. 0 = default, -4 = ultra-compact.
@@ -14741,6 +14826,22 @@ declare namespace LocalJSX {
          */
         "variant"?: 'standard' | 'modal';
     }
+    /**
+     * @csspart shape - The rectangular, rounded or circular painted block.
+     * @csspart line - Every painted text row, including the final tapered row.
+     * @csspart line-last - The tapered final row when multiple text rows are rendered.
+     * @cssprop --md-skeleton-color - Base placeholder color.
+     * @cssprop --md-skeleton-highlight - Wave shimmer highlight color.
+     * @cssprop --md-skeleton-radius - Text and rectangular corner shape.
+     * @cssprop --md-skeleton-rounded-radius - Rounded variant corner shape.
+     * @cssprop --md-skeleton-width - Default inline size.
+     * @cssprop --md-skeleton-height - Block size or text row height.
+     * @cssprop --md-skeleton-size - Default circular size.
+     * @cssprop --md-skeleton-line-gap - Gap between text rows.
+     * @cssprop --md-skeleton-pulse-duration - Recurring pulse duration.
+     * @cssprop --md-skeleton-wave-duration - Recurring wave duration.
+     * @cssprop --md-skeleton-bloom-duration - Entrance animation duration.
+     */
     interface MdSkeleton {
         /**
           * Animation style: - `pulse` (default) — gentle opacity fade in and out. - `wave` — shimmer gradient sweeps across the surface. - `none` — static block; useful in `prefers-reduced-motion` opt-outs   or when the skeleton is purely decorative.
@@ -14753,7 +14854,7 @@ declare namespace LocalJSX {
          */
         "announce"?: boolean;
         /**
-          * Accessible label. Defaults to "Loading…". Pass a more specific label when the skeleton represents a recognisable region ("Loading article") for better screen-reader context.
+          * Accessible label. Defaults to "Loading". Pass a more specific label when the skeleton represents a recognisable region ("Loading article") for better screen-reader context.
           * @default 'Loading'
          */
         "ariaLabelProp"?: string;
@@ -14783,7 +14884,7 @@ declare namespace LocalJSX {
          */
         "lines"?: number;
         /**
-          * Shape of the skeleton placeholder. - `text` — single short rectangle the height of a body line. With   `lines > 1` the last line gets a tapered width so it reads as a   "last line of a paragraph". - `rectangular` — fills the inline + block sizes you give it; no   border-radius unless you set `--md-skeleton-radius`. - `rounded` — same as `rectangular` but with the MD3 medium corner   radius (or your override). Good for cards / images. - `circular` — perfect circle (1:1 aspect). Use for avatar / icon   placeholders; set `--md-skeleton-size` or `width`+`height`.
+          * Shape of the skeleton placeholder. - `text` — single short rectangle the height of a body line. With   `lines > 1` the last line gets a tapered width so it reads as a   "last line of a paragraph". - `rectangular` — fills the inline + block sizes you give it, with   the extra-small corner token or `--md-skeleton-radius`. - `rounded` — same as `rectangular` but with the MD3 medium corner   radius (or your override). Good for cards / images. - `circular` — perfect circle (1:1 aspect). Use for avatar / icon   placeholders; set `--md-skeleton-size` or `width`+`height`.
           * @default 'text'
          */
         "variant"?: 'text' | 'rectangular' | 'rounded' | 'circular';
@@ -16140,6 +16241,11 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
+          * Accessible name of the navigation landmark (localise with the other `label-*` props).
+          * @default 'Pagination'
+         */
+        "label"?: string;
+        /**
           * Label of the "All" rows-per-page option.
           * @default 'All'
          */
@@ -16473,7 +16579,7 @@ declare namespace LocalJSX {
          */
         "debounce"?: number;
         /**
-          * Density scale: 0 (default 56px), -1 (52px), -2 (48px), -3 (44px).
+          * Density scale: 0 (default 56px), -1 (52px), -2 (48px), -3 (44px), -4 (40px).
           * @default 0
          */
         "density"?: 0 | -1 | -2 | -3 | -4;
@@ -17120,6 +17226,11 @@ declare namespace LocalJSX {
          */
         "searchable"?: boolean;
         /**
+          * Accessible label for each header's select-all checkbox (localisable). `{title}` is replaced with that column's title.
+          * @default 'Select all {title}'
+         */
+        "selectAllLabel"?: string;
+        /**
           * Show the "select all" select-all checkbox in each header.
           * @default true
          */
@@ -17519,6 +17630,7 @@ declare namespace LocalJSX {
     interface MdDialogAttributes {
         "open": boolean;
         "headline": string;
+        "dialogAriaLabel": string;
         "icon": string;
         "fullscreen": boolean;
         "scrimDismissible": boolean;
@@ -18327,6 +18439,7 @@ declare namespace LocalJSX {
         "labelNextPage": string;
         "labelLastPage": string;
         "labelAll": string;
+        "label": string;
         "compact": boolean;
         "disabled": boolean;
         "density": 0 | -1 | -2 | -3 | -4;
@@ -18504,6 +18617,7 @@ declare namespace LocalJSX {
         "moveLeftLabel": string;
         "moveAllRightLabel": string;
         "moveAllLeftLabel": string;
+        "selectAllLabel": string;
     }
 
     interface IntrinsicElements {
@@ -18691,6 +18805,9 @@ declare module "@stencil/core" {
              */
             "md-bottom-sheet": LocalJSX.IntrinsicElements["md-bottom-sheet"] & JSXBase.HTMLAttributes<HTMLMdBottomSheetElement>;
             "md-breadcrumb-item": LocalJSX.IntrinsicElements["md-breadcrumb-item"] & JSXBase.HTMLAttributes<HTMLMdBreadcrumbItemElement>;
+            /**
+             * @csspart separator - Separator glyph drawn before the overflow toggle (each crumb draws its own `separator` part)
+             */
             "md-breadcrumbs": LocalJSX.IntrinsicElements["md-breadcrumbs"] & JSXBase.HTMLAttributes<HTMLMdBreadcrumbsElement>;
             "md-button": LocalJSX.IntrinsicElements["md-button"] & JSXBase.HTMLAttributes<HTMLMdButtonElement>;
             "md-button-group": LocalJSX.IntrinsicElements["md-button-group"] & JSXBase.HTMLAttributes<HTMLMdButtonGroupElement>;
@@ -18871,6 +18988,10 @@ declare module "@stencil/core" {
              *   }];
              * </script>
              * ```
+             * @csspart branch - A role="treeitem" list item (the node and its subtree)
+             * @csspart branch-on-path - A branch on the path from a selection up to its root
+             * @csspart node - A node card
+             * @csspart node-selected - A selected node card
              */
             "md-organization-chart": LocalJSX.IntrinsicElements["md-organization-chart"] & JSXBase.HTMLAttributes<HTMLMdOrganizationChartElement>;
             /**
@@ -18919,6 +19040,10 @@ declare module "@stencil/core" {
              * lifecycle.
              */
             "md-search": LocalJSX.IntrinsicElements["md-search"] & JSXBase.HTMLAttributes<HTMLMdSearchElement>;
+            /**
+             * @csspart checkmark - Built-in checkmark graphic when selected and noCheckmark is false.
+             * @csspart icon - Built-in icon-property graphic when it is not replaced by the checkmark.
+             */
             "md-segmented-button": LocalJSX.IntrinsicElements["md-segmented-button"] & JSXBase.HTMLAttributes<HTMLMdSegmentedButtonElement>;
             "md-segmented-button-set": LocalJSX.IntrinsicElements["md-segmented-button-set"] & JSXBase.HTMLAttributes<HTMLMdSegmentedButtonSetElement>;
             /**
@@ -18958,6 +19083,22 @@ declare module "@stencil/core" {
              * MD3 Side sheet — anchored panel for secondary content and actions.
              */
             "md-side-sheet": LocalJSX.IntrinsicElements["md-side-sheet"] & JSXBase.HTMLAttributes<HTMLMdSideSheetElement>;
+            /**
+             * @csspart shape - The rectangular, rounded or circular painted block.
+             * @csspart line - Every painted text row, including the final tapered row.
+             * @csspart line-last - The tapered final row when multiple text rows are rendered.
+             * @cssprop --md-skeleton-color - Base placeholder color.
+             * @cssprop --md-skeleton-highlight - Wave shimmer highlight color.
+             * @cssprop --md-skeleton-radius - Text and rectangular corner shape.
+             * @cssprop --md-skeleton-rounded-radius - Rounded variant corner shape.
+             * @cssprop --md-skeleton-width - Default inline size.
+             * @cssprop --md-skeleton-height - Block size or text row height.
+             * @cssprop --md-skeleton-size - Default circular size.
+             * @cssprop --md-skeleton-line-gap - Gap between text rows.
+             * @cssprop --md-skeleton-pulse-duration - Recurring pulse duration.
+             * @cssprop --md-skeleton-wave-duration - Recurring wave duration.
+             * @cssprop --md-skeleton-bloom-duration - Entrance animation duration.
+             */
             "md-skeleton": LocalJSX.IntrinsicElements["md-skeleton"] & JSXBase.HTMLAttributes<HTMLMdSkeletonElement>;
             /**
              * MD3 Expressive slider: standard (from edge), centered (from midpoint), or range (dual thumb).

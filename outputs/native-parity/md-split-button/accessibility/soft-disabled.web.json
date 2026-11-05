@@ -1,0 +1,167 @@
+{
+ "tag": "md-split-button",
+ "case": "soft-disabled",
+ "html": "<md-split-button data-ax-node=\"n0\" id=\"example-md-split-button\"></md-split-button>",
+ "props": {
+  "n0": {
+   "controls": "",
+   "density": 0,
+   "disabled": false,
+   "fullWidth": false,
+   "haspopup": "menu",
+   "icon": "check",
+   "label": "Publish",
+   "menuLabel": "More actions",
+   "ripple": true,
+   "size": "sm",
+   "softDisabled": true,
+   "trailingChecked": false,
+   "trailingIcon": "keyboard_arrow_down",
+   "variant": "filled"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "generic",
+    "name": "",
+    "ignored": false,
+    "frame": [
+     16,
+     16,
+     148.625,
+     40
+    ],
+    "children": [
+     {
+      "role": "button",
+      "name": "Publish",
+      "ignored": false,
+      "disabled": true,
+      "invalid": "false",
+      "focusable": true,
+      "frame": [
+       16,
+       16,
+       98.625,
+       40
+      ],
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       },
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "StaticText",
+          "name": "Publish",
+          "ignored": false,
+          "frame": [
+           54,
+           28,
+           46.625,
+           16
+          ],
+          "children": [
+           {
+            "role": "InlineTextBox",
+            "name": "Publish",
+            "ignored": false
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "role": "button",
+      "name": "More actions",
+      "ignored": false,
+      "disabled": true,
+      "invalid": "false",
+      "focusable": true,
+      "expanded": false,
+      "frame": [
+       116.625,
+       16,
+       48,
+       40
+      ],
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "button",
+   "role": "button",
+   "name": "Publish",
+   "frame": [
+    16,
+    16,
+    98.625,
+    40
+   ],
+   "props": {
+    "disabled": true,
+    "invalid": "false",
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "dom": "button",
+   "role": "button",
+   "name": "More actions",
+   "frame": [
+    116.625,
+    16,
+    48,
+    40
+   ],
+   "props": {
+    "disabled": true,
+    "invalid": "false",
+    "focusable": true,
+    "focused": true,
+    "expanded": false
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

@@ -371,8 +371,8 @@ button's `"{n} more selected — open to manage"`, and each chip's
 | `--md-multi-select-frame-gap` | Gap between the trigger and the chips row | density-scaled: 8px at rung 0 (default `chip-position`), 16px at rung 0 with `chip-position="top"`; floor 6px either way |
 | `--md-multi-select-chip-gap` | Gap between chips | `--md-sys-spacing-gap-xs` (4px) |
 | `--md-multi-select-chip-radius` | Chip corner radius | `8px` |
-| `--md-multi-select-chip-height` | Chip height | `32px` |
-| `--md-multi-select-chip-outline` | Chip outline colour | `--md-sys-color-outline-variant` |
+| `--md-multi-select-chip-height` | Height of the value chips and the "+N" counter | `32px` |
+| `--md-multi-select-chip-outline` | Outline colour of the value chips and the "+N" counter | `--md-sys-color-outline-variant` |
 | `--md-multi-select-inline-chips-block-start` | Top offset of the in-field chips row | `--md-sys-spacing-gap-xs` (4px) |
 | `--md-multi-select-caret-color` | Caret colour | `--md-sys-color-on-surface-variant` |
 | `--md-multi-select-caret-size` | Caret glyph size | `24px` |

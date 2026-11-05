@@ -1,0 +1,829 @@
+{
+ "tag": "md-chip",
+ "at": "2026-10-29T11:11:42.801Z",
+ "rows": [
+  {
+   "case": "filter",
+   "web": {
+    "elements": [
+     "group:Design system",
+     "togglebutton:Design system",
+     "button:Remove Design system"
+    ],
+    "texts": [],
+    "focus": [
+     "togglebutton:Design system",
+     "button:Remove Design system"
+    ],
+    "contrast": {
+     "measured": 4,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "group:Design system",
+      "togglebutton:Design system {\"pressed\":\"false\"}",
+      "button:Remove Design system"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "togglebutton:Design system",
+      "button:Remove Design system",
+      "togglebutton:Design system"
+     ],
+     "findings": [],
+     "contrastMeasured": 4
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "switch:Design system {\"checked\":\"false\"}",
+      "button:Remove Design system"
+     ],
+     "texts": [],
+     "focus": [
+      "switch:Design system",
+      "button:Remove Design system",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Design system\" target 162×32 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Remove Design system\" target 18×18 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "togglebutton:Design system {\"pressed\":\"false\"}",
+      "button:Remove Design system"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "togglebutton:Design system",
+      "button:Remove Design system",
+      "togglebutton:Design system"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "android: togglebutton \"Design system\" target 323×64 below 48dp",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "android: button \"Remove Design system\" target 36×36 below 48dp",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 4,
+     "atf": {
+      "elements": 12,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "filter-selected",
+   "web": {
+    "elements": [
+     "group:Design system",
+     "togglebutton:Design system",
+     "button:Remove Design system"
+    ],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 4,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "group:Design system",
+      "togglebutton:Design system {\"selected\":\"true\",\"pressed\":\"true\"}",
+      "button:Remove Design system"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 4
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "switch:Design system {\"checked\":\"true\"}",
+      "button:Remove Design system"
+     ],
+     "texts": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Design system\" target 162×32 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Remove Design system\" target 18×18 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "togglebutton:Design system {\"pressed\":\"true\"}",
+      "button:Remove Design system"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "android: togglebutton \"Design system\" target 323×64 below 48dp",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "android: button \"Remove Design system\" target 36×36 below 48dp",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 4,
+     "atf": {
+      "elements": 12,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "assist",
+   "web": {
+    "elements": [
+     "button:Add to calendar"
+    ],
+    "texts": [],
+    "focus": [
+     "button:Add to calendar"
+    ],
+    "contrast": {
+     "measured": 2,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Add to calendar"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Add to calendar",
+      "button:Add to calendar"
+     ],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Add to calendar"
+     ],
+     "texts": [],
+     "focus": [
+      "button:Add to calendar",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: button \"Add to calendar\" target 150×32 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Add to calendar"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Add to calendar",
+      "button:Add to calendar"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "android: button \"Add to calendar\" target 300×64 below 48dp",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 11,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "input",
+   "web": {
+    "elements": [
+     "group:Alex Morgan",
+     "togglebutton:Alex Morgan",
+     "button:Remove Alex Morgan"
+    ],
+    "texts": [],
+    "focus": [
+     "togglebutton:Alex Morgan",
+     "button:Remove Alex Morgan"
+    ],
+    "contrast": {
+     "measured": 4,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "group:Alex Morgan",
+      "togglebutton:Alex Morgan {\"pressed\":\"false\"}",
+      "button:Remove Alex Morgan"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "togglebutton:Alex Morgan",
+      "button:Remove Alex Morgan",
+      "togglebutton:Alex Morgan"
+     ],
+     "findings": [],
+     "contrastMeasured": 4
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "switch:Alex Morgan {\"checked\":\"false\"}",
+      "button:Remove Alex Morgan"
+     ],
+     "texts": [],
+     "focus": [
+      "switch:Alex Morgan",
+      "button:Remove Alex Morgan",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: switch \"Alex Morgan\" target 148×32 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Remove Alex Morgan\" target 18×18 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "togglebutton:Alex Morgan {\"pressed\":\"false\"}",
+      "button:Remove Alex Morgan"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "togglebutton:Alex Morgan",
+      "button:Remove Alex Morgan",
+      "togglebutton:Alex Morgan"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "android: togglebutton \"Alex Morgan\" target 297×64 below 48dp",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "android: button \"Remove Alex Morgan\" target 36×36 below 48dp",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 4,
+     "atf": {
+      "elements": 12,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "disabled",
+   "web": {
+    "elements": [
+     "group:Design system",
+     "togglebutton:Design system",
+     "button:Remove Design system"
+    ],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 0,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "group:Design system",
+      "togglebutton:Design system {\"disabled\":\"true\",\"pressed\":\"false\"}",
+      "button:Remove Design system {\"disabled\":\"true\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "∅",
+      "∅",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "state",
+       "web": {
+        "role": "group",
+        "name": "Design system",
+        "states": {
+         "disabled": "true"
+        }
+       },
+       "native": {
+        "role": "group",
+        "name": "Design system"
+       },
+       "detail": "group \"Design system\" disabled: true → ∅",
+       "status": "expected",
+       "reason": "Web reports the chip wrapper group as disabled. AppKit groups carry no enabled state; the chip control inside reports AXEnabled false."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "switch:Design system {\"disabled\":\"true\",\"checked\":\"false\"}",
+      "button:Remove Design system {\"disabled\":\"true\"}"
+     ],
+     "texts": [],
+     "focus": [
+      "∅",
+      "∅",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "togglebutton:Design system {\"disabled\":\"true\",\"pressed\":\"false\"}",
+      "button:Remove Design system {\"disabled\":\"true\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "∅",
+      "∅",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0,
+     "atf": {
+      "elements": 12,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "soft-disabled",
+   "web": {
+    "elements": [
+     "group:Design system",
+     "togglebutton:Design system",
+     "button:Remove Design system"
+    ],
+    "texts": [],
+    "focus": [
+     "togglebutton:Design system"
+    ],
+    "contrast": {
+     "measured": 0,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 3,
+     "nativeElements": 3,
+     "elements": [
+      "group:Design system",
+      "togglebutton:Design system {\"disabled\":\"true\",\"pressed\":\"false\"}",
+      "button:Remove Design system {\"disabled\":\"true\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "togglebutton:Design system",
+      "togglebutton:Design system",
+      "togglebutton:Design system"
+     ],
+     "findings": [
+      {
+       "kind": "state",
+       "web": {
+        "role": "group",
+        "name": "Design system",
+        "states": {
+         "disabled": "true"
+        }
+       },
+       "native": {
+        "role": "group",
+        "name": "Design system"
+       },
+       "detail": "group \"Design system\" disabled: true → ∅",
+       "status": "expected",
+       "reason": "Web reports the chip wrapper group as disabled. AppKit groups carry no enabled state; the chip control inside reports AXEnabled false."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "switch:Design system {\"disabled\":\"true\",\"checked\":\"false\"}",
+      "button:Remove Design system {\"disabled\":\"true\"}"
+     ],
+     "texts": [],
+     "focus": [
+      "switch:Design system",
+      "∅",
+      "switch:Design system"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "togglebutton:Design system {\"disabled\":\"true\",\"pressed\":\"false\"}",
+      "button:Remove Design system {\"disabled\":\"true\"}"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "togglebutton:Design system",
+      "togglebutton:Design system",
+      "togglebutton:Design system"
+     ],
+     "findings": [],
+     "contrastMeasured": 0,
+     "atf": {
+      "elements": 12,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
-// Global MD3 design tokens (--md-sys-*) that the components' shadow styles
-// reference via var(). Must live in the document, not per shadow root.
-import '@awc-ui/tokens/tokens.css';
+// Core's global tokens and unfinished-component guard load in the root layout.
+import '@awc-ui/core/css/tokens.css';
 
 export const metadata = {
   title: 'AWC UI Starter — Next.js',

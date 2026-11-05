@@ -112,7 +112,8 @@ All three are default Stencil events (`bubbles: true`, `composed: true`).
 - `presets` takes **either form**: the comma-separated attribute
   (`presets="#f00,#0f0"`) or an array property
   (`el.presets = ['#f00', '#0f0']`). Whitespace and empty entries are ignored in
-  both.
+  both. A preset shows as selected whenever it parses to the current colour, in
+  any accepted notation (`#f00` matches `#FF0000`).
 - **`mdInput` fires continuously** while dragging the plate or sliders and on
   every keystroke. Preview on `mdInput`, persist on `mdChange`.
 - **`variant="popover"` has NO built-in trigger.** Slot your own into
@@ -125,7 +126,11 @@ All three are default Stencil events (`bubbles: true`, `composed: true`).
 - `open`, `show()` and `close()` all control the panel, and every transition
   emits `mdOpenChange`. **`dismiss-on-outside-click` is off by default**, so a
   popover stays open until dismissed explicitly. `Escape` always closes an open
-  popover, regardless of that prop.
+  popover, regardless of that prop. An `Escape` pressed inside the picker (its
+  panel or its trigger) is consumed by the popover, so a picker inside
+  `md-dialog` or a sheet closes only itself. Closing while focus is inside the
+  panel (`Escape`, `close()`, `open = false`) returns focus to the slotted
+  trigger; an outside click leaves focus where the user clicked.
 - Three separate drag surfaces (plate, hue, alpha) each need a real pointer
   drag — synthetic clicks alone will not move them in tests.
 
@@ -262,7 +267,12 @@ component does not.
 **RTL** — the panel mirrors under `dir="rtl"`, and the plate, hue and alpha
 tracks invert their pointer mapping, their gradients and their arrow-key
 directions together, so hue 0 and saturation 0 stay at the inline-start edge in
-both directions and an ArrowRight always moves the same logical way.
+both directions and an arrow key always moves the thumb the way it points:
+ArrowRight raises the value in LTR and lowers it in RTL.
+
+**Forced colours** — the plate, the hue and alpha tracks, the preview and the
+preset swatches keep their own colours (`forced-color-adjust: none`), because
+the colour is the information; fields and swatches get a `CanvasText` border.
 
 **Density** — `density="-1…-4"` locally overrides the inherited `data-density`
 rung; only those four rungs exist, and omitting the attribute is the uncompacted

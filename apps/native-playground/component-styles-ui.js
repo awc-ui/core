@@ -1,4 +1,5 @@
 import { groupedStyleFields, parseStyleValue } from './component-styles.js';
+import { componentAppearance } from './component-appearance.js';
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 
@@ -35,7 +36,7 @@ export function createComponentStylesUI({ getState, infoButton, onChange }) {
     if (empty) empty.hidden = matches > 0;
   }
   function render(members) {
-    const state = getState(), host = root(), button = state.selected.tag === 'md-button';
+    const state = getState(), host = root(), button = !!componentAppearance(state.selected.tag);
     const key = JSON.stringify([state.selected.tag, state.platform, members]);
     if (key !== renderedKey) {
       const sameTag = renderedTag === state.selected.tag;

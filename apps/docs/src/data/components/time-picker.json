@@ -4,7 +4,7 @@
   "slug": "time-picker",
   "category": "Selection",
   "subComponentOf": null,
-  "storyId": "selection-time-picker--playground",
+  "storyId": "selection-time-picker--editing-and-overnight-bounds",
   "props": [
     {
       "name": "variant",
@@ -774,7 +774,28 @@
     "md-icon-button",
     "md-button"
   ],
-  "dataTypes": [],
+  "dataTypes": [
+    {
+      "name": "MdTimePickerMode",
+      "kind": "type",
+      "body": "'dial' | 'input'"
+    },
+    {
+      "name": "MdTimePickerFormat",
+      "kind": "type",
+      "body": "'12h' | '24h'"
+    },
+    {
+      "name": "MdTimePickerPeriodLayout",
+      "kind": "type",
+      "body": "'vertical' | 'horizontal'"
+    },
+    {
+      "name": "MdTimePickerOrientation",
+      "kind": "type",
+      "body": "'vertical' | 'horizontal'"
+    }
+  ],
   "callableProps": [],
   "eventTypes": [
     {
@@ -793,11 +814,6 @@
       "kind": "interface",
       "extends": "",
       "body": "  /** Active mode after the toggle. */\n  mode: MdTimePickerMode;\n  /** Mode the picker was in before the toggle. */\n  previousMode: MdTimePickerMode;"
-    },
-    {
-      "name": "MdTimePickerMode",
-      "kind": "type",
-      "body": "'dial' | 'input'"
     }
   ],
   "eventPayloads": [

@@ -1,0 +1,402 @@
+{
+ "tag": "md-split-button",
+ "case": "default",
+ "request": {
+  "tag": "md-split-button",
+  "properties": {
+   "menuLabel": "More actions"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Publish",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            245.5,
+            32,
+            99.5,
+            40
+           ],
+           "identifier": "example-md-split-button.leading",
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          244.5,
+          32,
+          101.5,
+          42
+         ],
+         "role": "AXGroup",
+         "roleDescription": "group"
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "More actions",
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            347,
+            32,
+            48,
+            40
+           ],
+           "identifier": "example-md-split-button.trailing",
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "Menu button",
+           "selected": false
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          346,
+          32,
+          50,
+          42
+         ],
+         "role": "AXGroup",
+         "roleDescription": "group"
+        }
+       ],
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        244.5,
+        32,
+        151.5,
+        42
+       ],
+       "identifier": "example-md-split-button",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      104
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    104
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-split-button",
+  "properties": {
+   "controls": "",
+   "density": 0,
+   "disabled": false,
+   "fullWidth": false,
+   "haspopup": "menu",
+   "icon": "check",
+   "label": "Publish",
+   "menuLabel": "More actions",
+   "ripple": true,
+   "size": "sm",
+   "softDisabled": false,
+   "trailingChecked": false,
+   "trailingIcon": "keyboard_arrow_down",
+   "variant": "filled"
+  },
+  "tag": "md-split-button"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Publish",
+    "frame": [
+     245.5,
+     32,
+     99.5,
+     40
+    ],
+    "identifier": "example-md-split-button.leading",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "More actions",
+    "frame": [
+     347,
+     32,
+     48,
+     40
+    ],
+    "identifier": "example-md-split-button.trailing",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Publish",
+    "frame": [
+     245.5,
+     32,
+     99.5,
+     40
+    ],
+    "identifier": "example-md-split-button.leading",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 40,
+     "width": 149.5,
+     "x": 245.25,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI split control",
+     "gap": {
+      "column": 2,
+      "row": 0
+     },
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "name": "md-split-button"
+   },
+   {
+    "bounds": {
+     "height": 18,
+     "width": 18,
+     "x": 257.25,
+     "y": 43
+    },
+    "id": "component.icon",
+    "name": "md-split-button ::part(icon)",
+    "parentId": "component.leading"
+   },
+   {
+    "bounds": {
+     "height": 20,
+     "width": 47.5,
+     "x": 283.25,
+     "y": 42
+    },
+    "id": "component.label",
+    "name": "md-split-button ::part(label)",
+    "parentId": "component.leading"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 99.5,
+     "x": 245.25,
+     "y": 32
+    },
+    "id": "component.leading",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI Button",
+     "gap": {
+      "column": 8,
+      "row": 0
+     },
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      14,
+      0,
+      12
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 20,
+      "size": 14,
+      "spacing": 0.1,
+      "unit": "pt",
+      "weight": 500
+     }
+    },
+    "name": "md-split-button ::part(leading)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 99.5,
+     "x": 245.25,
+     "y": 32
+    },
+    "id": "component.leading-state-layer",
+    "name": "md-split-button ::part(leading-state-layer)",
+    "parentId": "component.leading"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 48,
+     "x": 346.75,
+     "y": 32
+    },
+    "id": "component.trailing",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI Button",
+     "gap": {
+      "column": 0,
+      "row": 0
+     },
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      14,
+      0,
+      12
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 20,
+      "size": 14,
+      "spacing": 0.1,
+      "unit": "pt",
+      "weight": 500
+     }
+    },
+    "name": "md-split-button ::part(trailing)",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 22,
+     "width": 22,
+     "x": 358.75,
+     "y": 41
+    },
+    "id": "component.trailing-icon",
+    "name": "md-split-button ::part(trailing-icon)",
+    "parentId": "component.trailing"
+   },
+   {
+    "bounds": {
+     "height": 40,
+     "width": 48,
+     "x": 346.75,
+     "y": 32
+    },
+    "id": "component.trailing-state-layer",
+    "name": "md-split-button ::part(trailing-state-layer)",
+    "parentId": "component.trailing"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

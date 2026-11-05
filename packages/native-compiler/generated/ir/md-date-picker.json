@@ -681,6 +681,11 @@
       "name": "dockedPanelMaxBlockSize",
       "type": "string | null",
       "initializer": "null"
+    },
+    {
+      "name": "yearFocus",
+      "type": "number | null",
+      "initializer": "null"
     }
   ],
   "events": [
@@ -1184,43 +1189,43 @@
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 481
+      "line": 485
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 496
+      "line": 500
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedElements depends on browser semantics and requires a native adapter.",
-      "line": 503
+      "line": 507
     },
     {
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 551
+      "line": 555
     },
     {
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Window access requires a native adapter.",
-      "line": 561
+      "line": 565
     },
     {
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 562
+      "line": 566
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 602
+      "line": 606
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -1234,7 +1239,7 @@
     "styleUrl": "md-date-picker.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "83b689bc00c65a53cc203b05fd1e9e469fd5971486be49d63ba94a5a63511854"
+    "sha256": "56807908a1c4640f944193f30b634b67da51ee67f3316bd204fa5cf633ca5a34"
   },
   "styles": [
     {
@@ -4950,7 +4955,7 @@
       ]
     },
     {
-      "selector": ".md-date-picker__scrim,\n  .md-date-picker__modal--closing .md-date-picker__scrim,\n  .md-date-picker__panel:not(.md-date-picker__panel--docked),\n  .md-date-picker__panel--docked.md-date-picker__panel--bloom-in,\n  .md-date-picker__panel--bloom-out,\n  .md-date-picker__body--docked-selection .md-date-picker__selection-divider,\n  .md-date-picker__body--docked-selection\n    > .md-date-picker__selection-menu-wrap:not(.md-date-picker__selection-menu-wrap--bloom-out),\n  .md-date-picker__selection-menu-wrap--bloom-out,\n  .md-date-picker__panel:not(.md-date-picker__panel--docked)\n    .md-date-picker__year-grid-wrap:not(.md-date-picker__year-grid-wrap--bloom-out),\n  .md-date-picker__year-grid-wrap--bloom-out,\n  .md-date-picker__calendar--docked-bloom-in,\n  .md-date-picker__calendar--content-bloom-in,\n  .md-date-picker__grid--slide-forward,\n  .md-date-picker__grid--slide-backward",
+      "selector": ".md-date-picker__scrim,\n  .md-date-picker__modal--closing .md-date-picker__scrim,\n  .md-date-picker__panel:not(.md-date-picker__panel--docked):not(.md-date-picker__panel--bloom-out),\n  .md-date-picker__panel--docked.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out),\n  .md-date-picker__panel--bloom-out,\n  .md-date-picker__body--docked-selection .md-date-picker__selection-divider,\n  .md-date-picker__body--docked-selection\n    > .md-date-picker__selection-menu-wrap:not(.md-date-picker__selection-menu-wrap--bloom-out),\n  .md-date-picker__selection-menu-wrap--bloom-out,\n  .md-date-picker__panel:not(.md-date-picker__panel--docked)\n    .md-date-picker__year-grid-wrap:not(.md-date-picker__year-grid-wrap--bloom-out),\n  .md-date-picker__year-grid-wrap--bloom-out,\n  .md-date-picker__body--docked .md-date-picker__calendar--docked-bloom-in,\n  .md-date-picker__panel:not(.md-date-picker__panel--docked) .md-date-picker__calendar--content-bloom-in,\n  .md-date-picker__grid--slide-forward,\n  .md-date-picker__grid--slide-backward",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
         {
@@ -4961,7 +4966,7 @@
       ]
     },
     {
-      "selector": ".md-date-picker__nav-chevron-slot > md-tooltip,\n  .md-date-picker__nav-chevron-slot > .md-date-picker__nav-chevron-spacer,\n  .md-date-picker__menu-caret-glyph",
+      "selector": ".md-date-picker__nav-chevron-slot > md-tooltip,\n  .md-date-picker__nav-chevron-slot > .md-date-picker__nav-chevron-spacer,\n  .md-date-picker__nav-chevron-slot > md-tooltip.md-date-picker__nav-chevron--visible,\n  .md-date-picker__nav-chevron-slot > .md-date-picker__nav-chevron-spacer.md-date-picker__nav-chevron--visible,\n  .md-date-picker__menu-caret-glyph,\n  .md-date-picker__menu-caret-glyph--visible",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
         {

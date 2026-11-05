@@ -926,6 +926,11 @@ export class MdNumberField {
     e.stopPropagation();
   };
 
+  /** The inner field raises mdSearch on every keystroke; it is not part of this component's API. */
+  private containFieldEvent = (e: Event) => {
+    e.stopPropagation();
+  };
+
   private handleFieldKeyDown = (e: KeyboardEvent) => {
     if (this.isDisabled) return;
     // IME composition passes through untouched.
@@ -983,8 +988,14 @@ export class MdNumberField {
     // Opt-in, and only while the inner input is the focused element.
     if (!this.allowWheelScrub || this.isDisabled || this.readOnly || !this.focused) return;
     if (e.ctrlKey) return; // pinch-zoom gesture — never hijack it
+    // Read the scroll axis. A vertical delta is a step. A horizontal-only delta
+    // is a step only with Shift (Chromium and WebKit deliver Shift+wheel as
+    // deltaX); otherwise it is a trackpad pan or tilt wheel and belongs to the
+    // page, so it is not consumed. A zero delta carries no direction.
+    const delta = e.deltaY !== 0 ? e.deltaY : e.shiftKey ? e.deltaX : 0;
+    if (delta === 0) return;
     e.preventDefault();
-    const dir: 1 | -1 = e.deltaY > 0 ? -1 : 1;
+    const dir: 1 | -1 = delta > 0 ? -1 : 1;
     const amount = e.shiftKey ? this.largeStep : e.altKey ? this.smallStep : this.stepAmount;
     this.doStep(dir, amount, e.altKey, 'wheel');
   };
@@ -1060,6 +1071,7 @@ export class MdNumberField {
           spellcheck={false}
           onMdInput={this.handleFieldInput}
           onMdChange={this.handleFieldChange}
+          onMdSearch={this.containFieldEvent}
           onKeyDown={this.handleFieldKeyDown}
           onFocus={this.handleFieldFocus}
           onBlur={this.handleFieldBlur}

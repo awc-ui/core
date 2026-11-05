@@ -137,3 +137,16 @@ describe('md-navigation-tab — e2e', () => {
     expect(focused).toBe('MD-NAVIGATION-TAB');
   });
 });
+
+describe('md-navigation-tab live disabled and badge state', () => {
+  it('updates accessible disabled state, caps numeric badges, and restores programmatic focus', async () => {
+    const page = await newE2EPage(); await page.setContent('<button id="other">Other</button><md-navigation-tab label="Inbox" badge badge-value="1200" badge-max="99" icon="mail" active-icon="drafts"></md-navigation-tab>');
+    const tab = await page.find('md-navigation-tab');
+    expect((await page.find('md-navigation-tab >>> [part="badge"]')).textContent.trim()).toBe('99+');
+    tab.setProperty('disabled', true); await page.waitForChanges(); await page.click('#other'); await tab.callMethod('focusEl');
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('other');
+    tab.setProperty('disabled', false); tab.setProperty('active', true); await page.waitForChanges(); await tab.callMethod('focusEl');
+    expect(await page.evaluate(() => document.activeElement?.tagName)).toBe('MD-NAVIGATION-TAB');
+    expect(tab.getAttribute('aria-selected')).toBe('true'); expect(tab.getAttribute('aria-disabled')).toBe('false');
+  });
+});

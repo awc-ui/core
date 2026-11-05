@@ -2,6 +2,7 @@ import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen,
 import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
 import {
   collectOptions,
+  hiddenOptionLabel,
   labelFor,
   normalizeInits,
   OptionRowSource,
@@ -585,6 +586,10 @@ export class MdSelect {
   @Listen('keydown')
   handleKeyDown(e: KeyboardEvent) {
     if (this.disabled) return;
+    // Keys pressed inside the menu belong to the menu. Enter / Space on a row
+    // pick it and close the menu before this listener runs; treating the same
+    // keydown as a trigger key would reopen the menu at once.
+    if (this.menuEl && e.composedPath().includes(this.menuEl)) return;
     if (!this.open && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
       this.open = true;
@@ -619,7 +624,18 @@ export class MdSelect {
     if (this.disabled || !this.value) return;
     this.value = '';
     this.mdChange.emit('');
+    this.refocusAfterClear();
   };
+
+  /** Put focus back in the trigger input after the clear button, which holds
+   *  focus and unmounts once the value is empty. `host.focus()` cannot do it:
+   *  with delegatesFocus it is a no-op while focus is already inside the field
+   *  (the button is slotted into it), so focus fell to <body>. */
+  private refocusAfterClear() {
+    const field = this.fieldEl as (HTMLElement & { setFocus?: () => Promise<void> }) | undefined;
+    if (field?.setFocus) void field.setFocus();
+    else field?.focus?.();
+  }
 
   /** True once the vc is wired to the menu's live scroll viewport. */
   private vpWired = false;
@@ -757,7 +773,7 @@ export class MdSelect {
   private renderTrigger() {
     const display = this.vc.active
       ? this.selectedLabel
-      : labelFor(this.optionsData, this.value);
+      : labelFor(this.optionsData, this.value) || hiddenOptionLabel(this.el, this.value);
     const hasValue = !!this.value && !!display;
     const showClear = this.clearable && hasValue && !this.disabled;
     // When there's no visible `label`, forward the host's accessible name

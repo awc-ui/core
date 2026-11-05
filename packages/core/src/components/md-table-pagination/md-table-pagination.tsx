@@ -80,6 +80,9 @@ export class MdTablePagination {
   /** Label of the "All" rows-per-page option. */
   @Prop({ attribute: 'label-all' }) labelAll: string = 'All';
 
+  /** Accessible name of the navigation landmark (localise with the other `label-*` props). */
+  @Prop() label: string = 'Pagination';
+
   /** Compact pagination layout (good for embedding inside cards). */
   @Prop({ reflect: true }) compact: boolean = false;
 
@@ -209,7 +212,7 @@ export class MdTablePagination {
           'md-table-pagination--disabled': this.disabled,
         }}
         role="navigation"
-        aria-label="Pagination"
+        aria-label={this.label || 'Pagination'}
       >
         {/* Range display LEADS the bar (far left; customize the string via
             label-displayed-rows, e.g. "Showing %from%–%to% of %count% cases"),

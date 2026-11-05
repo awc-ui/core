@@ -95,7 +95,7 @@ describe('md-button', () => {
     });
     const shadow = page.root?.shadowRoot;
     expect(shadow?.querySelector('[part="state-layer"]')).toBeTruthy();
-    expect(shadow?.querySelector('[part="icon"]')).toBeTruthy();
+    expect(shadow?.querySelector('[part="icon"]')?.getAttribute('aria-hidden')).toBe('true');
     expect(shadow?.querySelector('[part="label"]')).toBeTruthy();
     expect(shadow?.querySelector('[part="loading"]')).toBeTruthy();
   });
@@ -105,7 +105,7 @@ describe('md-button', () => {
       components: [MdButton],
       html: `<md-button trailing-icon="arrow_forward">Next</md-button>`,
     });
-    expect(page.root?.shadowRoot?.querySelector('[part="trailing-icon"]')).toBeTruthy();
+    expect(page.root?.shadowRoot?.querySelector('[part="trailing-icon"]')?.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('renders named leading-icon slot', async () => {
@@ -305,6 +305,23 @@ describe('md-button', () => {
       page.root?.click();
       await page.waitForChanges();
       expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('reports committed selection and cannot be canceled after the change', async () => {
+      const page = await create('<md-button toggle>Toggle</md-button>');
+      let change: Event | undefined;
+      page.root?.addEventListener('mdChange', event => {
+        change = event;
+        expect(page.rootInstance.selected).toBe(true);
+        event.preventDefault();
+      });
+      page.root?.click();
+      await page.waitForChanges();
+      expect(change).toBeDefined();
+      expect(change?.cancelable).toBe(false);
+      expect(change?.bubbles).toBe(true);
+      expect(change?.composed).toBe(true);
+      expect(page.rootInstance.selected).toBe(true);
     });
 
     it('does not emit when mdClick is cancelled', async () => {

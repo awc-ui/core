@@ -712,13 +712,13 @@
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 495
+      "line": 497
     },
     {
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 506
+      "line": 508
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -732,7 +732,7 @@
     "styleUrl": "md-table.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "93fb1aa2cf284f04ca27ad416d7917647686485c2febbb447d10a3a27831f747"
+    "sha256": "fcf76594356afa5ab9579d6613a6a895bfae07bb1d4a2e82a2ac066c9bc01323"
   },
   "styles": [
     {
@@ -1791,6 +1791,22 @@
       ]
     },
     {
+      "selector": ".md-table__hscroll-thumb,\n  .md-table__vscroll-thumb",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-duration",
+          "value": "0.01ms",
+          "important": true
+        },
+        {
+          "property": "transition-delay",
+          "value": "0s",
+          "important": true
+        }
+      ]
+    },
+    {
       "selector": ".md-table__vscroll-thumb,\n  .md-table__hscroll-thumb",
       "context": "@media (forced-colors: active)",
       "declarations": [
@@ -1939,83 +1955,6 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "caption",
-        "loading",
-        "empty",
-        "label",
-        "selection",
-        "sortBy",
-        "sortOrder"
-      ],
-      "events": [
-        "mdSortChange",
-        "mdSelectionChange"
-      ],
-      "methods": [],
-      "slots": [
-        "",
-        "empty"
-      ],
-      "unsupportedProperties": [
-        "density",
-        "columnTemplate",
-        "columns",
-        "minWidth",
-        "stickyHeader",
-        "frozenHeader",
-        "keepHeight",
-        "scrollbar",
-        "pinMode",
-        "pinIcon",
-        "stickyFooter",
-        "striped",
-        "noDividers",
-        "hoverable",
-        "motion",
-        "loadingMode",
-        "loadingRows",
-        "summary",
-        "rowOffset",
-        "rowCount"
-      ],
-      "unsupportedEvents": [
-        "mdPinChange",
-        "mdColumnVisibilityChange",
-        "mdScroll"
-      ],
-      "unsupportedMethods": [
-        "getSelection",
-        "selectAll",
-        "deselectAll",
-        "toggleSelectAll",
-        "setSort",
-        "pinColumn",
-        "setColumnVisibility",
-        "animateNextChange"
-      ],
-      "unsupportedSlots": [
-        "head",
-        "loader",
-        "loading"
-      ],
-      "notes": [
-        "Native composed rows; sorts source row cell text/numbers by column and coordinates row selection. Event DOM references become IDs. Column pinning, spans, visibility and sticky headers remain unsupported.",
-        "mdSelectionChange includes count, total, values, all and indeterminate; header checkbox selects all eligible rows."
-      ],
-      "verification": "not-device-verified"
-    },
-    "android": {
-      "status": "adapter-implemented",
-      "properties": [
-        "caption",
-        "loading"
-      ],
-      "events": [],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
         "density",
         "columnTemplate",
         "columns",
@@ -2034,22 +1973,24 @@
         "selection",
         "sortBy",
         "sortOrder",
+        "loading",
         "loadingMode",
         "loadingRows",
         "empty",
         "label",
+        "caption",
         "summary",
         "rowOffset",
         "rowCount"
       ],
-      "unsupportedEvents": [
+      "events": [
         "mdSortChange",
         "mdSelectionChange",
         "mdPinChange",
         "mdColumnVisibilityChange",
         "mdScroll"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "getSelection",
         "selectAll",
         "deselectAll",
@@ -2059,16 +2000,141 @@
         "setColumnVisibility",
         "animateNextChange"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "empty",
         "head",
         "loader",
         "loading"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Every property, event, method and slot of the source.",
+        "Methods through AWCTableController (.awcTableController(_, for: id) / AWCTableControllerScope): getSelection returns { count, total, values, all, indeterminate }; pinColumn returns the effective side or nil/null; setColumnVisibility returns the effective visibility. Sorting follows the source contract: mdSortChange, the application reorders its rows.",
+        "Typed hooks through AWCTableAppearance (or the raw --md-table-* declarations with .awcTableHooks / AWCTableHooksScope); they inherit down the family like CSS custom properties.",
+        "rowOffset / rowCount drive the row index semantics on Android (CollectionInfo / CollectionItemInfo); SwiftUI has no row-index accessibility API (AUDIT exception, decision log).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcTableAppearance(AWCTableAppearance)",
+        "fields": [
+          "rowHeightCompact",
+          "rowHeightStandard",
+          "rowHeightComfortable",
+          "headerHeight",
+          "cellPaddingInline",
+          "cellPaddingBlock",
+          "dividerColor",
+          "stripeColor",
+          "headBackground",
+          "headColor",
+          "footBackground",
+          "rowHoverColor",
+          "rowSelectedBackground",
+          "rowSelectedColor",
+          "columnsTemplate",
+          "minWidth",
+          "bodyMaxHeight",
+          "emptyMinHeight"
+        ]
+      }
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "density",
+        "columnTemplate",
+        "columns",
+        "minWidth",
+        "stickyHeader",
+        "frozenHeader",
+        "keepHeight",
+        "scrollbar",
+        "pinMode",
+        "pinIcon",
+        "stickyFooter",
+        "striped",
+        "noDividers",
+        "hoverable",
+        "motion",
+        "selection",
+        "sortBy",
+        "sortOrder",
+        "loading",
+        "loadingMode",
+        "loadingRows",
+        "empty",
+        "label",
+        "caption",
+        "summary",
+        "rowOffset",
+        "rowCount"
+      ],
+      "events": [
+        "mdSortChange",
+        "mdSelectionChange",
+        "mdPinChange",
+        "mdColumnVisibilityChange",
+        "mdScroll"
+      ],
+      "methods": [
+        "getSelection",
+        "selectAll",
+        "deselectAll",
+        "toggleSelectAll",
+        "setSort",
+        "pinColumn",
+        "setColumnVisibility",
+        "animateNextChange"
+      ],
+      "slots": [
+        "",
+        "empty",
+        "head",
+        "loader",
+        "loading"
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Every property, event, method and slot of the source.",
+        "Methods through AWCTableController (.awcTableController(_, for: id) / AWCTableControllerScope): getSelection returns { count, total, values, all, indeterminate }; pinColumn returns the effective side or nil/null; setColumnVisibility returns the effective visibility. Sorting follows the source contract: mdSortChange, the application reorders its rows.",
+        "Typed hooks through AWCTableAppearance (or the raw --md-table-* declarations with .awcTableHooks / AWCTableHooksScope); they inherit down the family like CSS custom properties.",
+        "rowOffset / rowCount drive the row index semantics on Android (CollectionInfo / CollectionItemInfo); SwiftUI has no row-index accessibility API (AUDIT exception, decision log).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCTableAppearanceScope(AWCTableAppearance)",
+        "fields": [
+          "rowHeightCompact",
+          "rowHeightStandard",
+          "rowHeightComfortable",
+          "headerHeight",
+          "cellPaddingInline",
+          "cellPaddingBlock",
+          "dividerColor",
+          "stripeColor",
+          "headBackground",
+          "headColor",
+          "footBackground",
+          "rowHoverColor",
+          "rowSelectedBackground",
+          "rowSelectedColor",
+          "columnsTemplate",
+          "minWidth",
+          "bodyMaxHeight",
+          "emptyMinHeight"
+        ]
+      }
     }
   }
 }

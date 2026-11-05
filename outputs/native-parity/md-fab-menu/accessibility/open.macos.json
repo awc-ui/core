@@ -1,0 +1,534 @@
+{
+ "tag": "md-fab-menu",
+ "case": "open",
+ "request": {
+  "tag": "md-fab-menu",
+  "properties": {
+   "open": true
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Create",
+         "enabled": true,
+         "expanded": true,
+         "focused": false,
+         "frame": [
+          263,
+          244,
+          114,
+          56
+         ],
+         "identifier": "demo-fab-anchor",
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "Menu button",
+         "selected": false
+        }
+       ],
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        238,
+        219,
+        164,
+        106
+       ],
+       "identifier": "demo-fab-anchor",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      },
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "New document",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          213,
+          308,
+          164,
+          48
+         ],
+         "identifier": "demo-fab-item-0",
+         "invalid": "false",
+         "required": false,
+         "role": "AXMenuItem",
+         "roleDescription": "menu item",
+         "selected": false
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "New folder",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          239.5,
+          360,
+          137.5,
+          48
+         ],
+         "identifier": "demo-fab-item-1",
+         "invalid": "false",
+         "required": false,
+         "role": "AXMenuItem",
+         "roleDescription": "menu item",
+         "selected": false
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Upload image",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          221.5,
+          412,
+          155.5,
+          48
+         ],
+         "identifier": "demo-fab-item-2",
+         "invalid": "false",
+         "required": false,
+         "role": "AXMenuItem",
+         "roleDescription": "menu item",
+         "selected": false
+        }
+       ],
+       "description": "Actions",
+       "focused": false,
+       "frame": [
+        213,
+        308,
+        164,
+        152
+       ],
+       "identifier": "component",
+       "role": "AXMenu",
+       "roleDescription": "menu"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      544
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    544
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "demo-fab-item-0",
+    "properties": {
+     "icon": "edit",
+     "label": "New document"
+    },
+    "tag": "md-fab-menu-item"
+   },
+   {
+    "children": [],
+    "id": "demo-fab-item-1",
+    "properties": {
+     "icon": "folder",
+     "label": "New folder"
+    },
+    "tag": "md-fab-menu-item"
+   },
+   {
+    "children": [],
+    "id": "demo-fab-item-2",
+    "properties": {
+     "icon": "photo",
+     "label": "Upload image"
+    },
+    "tag": "md-fab-menu-item"
+   }
+  ],
+  "id": "component",
+  "properties": {
+   "anchor": "demo-fab-anchor",
+   "density": 0,
+   "menuLabel": "Actions",
+   "open": true,
+   "placement": "down",
+   "quick": false,
+   "variant": "primary"
+  },
+  "tag": "md-fab-menu"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Create",
+    "frame": [
+     263,
+     244,
+     114,
+     56
+    ],
+    "identifier": "demo-fab-anchor",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "New document",
+    "frame": [
+     213,
+     308,
+     164,
+     48
+    ],
+    "identifier": "demo-fab-item-0",
+    "role": "AXMenuItem"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "New folder",
+    "frame": [
+     239.5,
+     360,
+     137.5,
+     48
+    ],
+    "identifier": "demo-fab-item-1",
+    "role": "AXMenuItem"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Upload image",
+    "frame": [
+     221.5,
+     412,
+     155.5,
+     48
+    ],
+    "identifier": "demo-fab-item-2",
+    "role": "AXMenuItem"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 480,
+     "width": 360,
+     "x": 140,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "direction": "ltr",
+     "display": "SwiftUI overlay"
+    },
+    "name": "md-fab-menu overlay"
+   },
+   {
+    "bounds": {
+     "height": 47.242474365,
+     "width": 164,
+     "x": 213,
+     "y": 308
+    },
+    "id": "component.item-1",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI menu item",
+     "gap": {
+      "column": 8,
+      "row": 0
+     },
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      24,
+      0,
+      16
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 20,
+      "size": 14,
+      "spacing": 0.1,
+      "unit": "pt",
+      "weight": 500
+     }
+    },
+    "name": "md-fab-menu-item",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 19.684364319,
+     "width": 20,
+     "x": 229,
+     "y": 321.77905502319334
+    },
+    "id": "component.item-1.icon",
+    "name": "md-fab-menu-item ::part(icon)",
+    "parentId": "component.item-1"
+   },
+   {
+    "bounds": {
+     "height": 19.684364319,
+     "width": 96,
+     "x": 257,
+     "y": 321.77905502319334
+    },
+    "id": "component.item-1.label",
+    "name": "md-fab-menu-item ::part(label)",
+    "parentId": "component.item-1"
+   },
+   {
+    "bounds": {
+     "height": 47.242474365,
+     "width": 164,
+     "x": 213,
+     "y": 308
+    },
+    "id": "component.item-1.state-layer",
+    "name": "md-fab-menu-item ::part(state-layer)",
+    "parentId": "component.item-1"
+   },
+   {
+    "bounds": {
+     "height": 47.242474365,
+     "width": 137.5,
+     "x": 239.5,
+     "y": 359.1793472290039
+    },
+    "id": "component.item-2",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI menu item",
+     "gap": {
+      "column": 8,
+      "row": 0
+     },
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      24,
+      0,
+      16
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 20,
+      "size": 14,
+      "spacing": 0.1,
+      "unit": "pt",
+      "weight": 500
+     }
+    },
+    "name": "md-fab-menu-item",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 19.684364319,
+     "width": 20,
+     "x": 255.5,
+     "y": 372.9584022521973
+    },
+    "id": "component.item-2.icon",
+    "name": "md-fab-menu-item ::part(icon)",
+    "parentId": "component.item-2"
+   },
+   {
+    "bounds": {
+     "height": 19.684364319,
+     "width": 69.5,
+     "x": 283.5,
+     "y": 372.9584022521973
+    },
+    "id": "component.item-2.label",
+    "name": "md-fab-menu-item ::part(label)",
+    "parentId": "component.item-2"
+   },
+   {
+    "bounds": {
+     "height": 47.242474365,
+     "width": 137.5,
+     "x": 239.5,
+     "y": 359.1793472290039
+    },
+    "id": "component.item-2.state-layer",
+    "name": "md-fab-menu-item ::part(state-layer)",
+    "parentId": "component.item-2"
+   },
+   {
+    "bounds": {
+     "height": 47.242474365,
+     "width": 155.5,
+     "x": 221.5,
+     "y": 410.3586944580078
+    },
+    "id": "component.item-3",
+    "metrics": {
+     "border": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "direction": "ltr",
+     "display": "SwiftUI menu item",
+     "gap": {
+      "column": 8,
+      "row": 0
+     },
+     "margin": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "padding": [
+      0,
+      24,
+      0,
+      16
+     ],
+     "typography": {
+      "family": "Roboto",
+      "lineHeight": 20,
+      "size": 14,
+      "spacing": 0.1,
+      "unit": "pt",
+      "weight": 500
+     }
+    },
+    "name": "md-fab-menu-item",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 19.684364319,
+     "width": 20,
+     "x": 237.5,
+     "y": 424.1377494812012
+    },
+    "id": "component.item-3.icon",
+    "name": "md-fab-menu-item ::part(icon)",
+    "parentId": "component.item-3"
+   },
+   {
+    "bounds": {
+     "height": 19.684364319,
+     "width": 87.5,
+     "x": 265.5,
+     "y": 424.1377494812012
+    },
+    "id": "component.item-3.label",
+    "name": "md-fab-menu-item ::part(label)",
+    "parentId": "component.item-3"
+   },
+   {
+    "bounds": {
+     "height": 47.242474365,
+     "width": 155.5,
+     "x": 221.5,
+     "y": 410.3586944580078
+    },
+    "id": "component.item-3.state-layer",
+    "name": "md-fab-menu-item ::part(state-layer)",
+    "parentId": "component.item-3"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

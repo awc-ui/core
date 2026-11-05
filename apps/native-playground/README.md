@@ -30,8 +30,8 @@ The generated native catalog supplies adapter support metadata. If that artifact
 is missing, the studio falls back to the core custom elements manifest.
 Refresh after regeneration.
 Native previews additionally require the platform hosts described below. The
-header uses the library’s inline `md-status-dot`: a live pulse indicates the Web
-runtime and native catalog are connected; reduced-motion preferences are respected.
+header links to the GitHub repository and npm package, with the local library
+version beside the npm link.
 
 ## Explore components
 
@@ -57,20 +57,51 @@ Studio panels use AWC cards; API groups use AWC accordions. Event handler exampl
 and payload type definitions appear in compact cards with titles and descriptions.
 Coverage source links use AWC lists.
 
-The web preview runs in a dedicated same-origin iframe. Responsive, 360 px,
-768 px and 1024 px widths change its actual viewport, so media queries respond
-to the preview width. Canvas controls offer RTL, an 8 px grid with 64 px rulers,
-and a live measurement inspector. The inspector reads rendered web geometry,
+The web preview runs in a dedicated same-origin iframe. Its width and height
+appear beside the canvas controls in the platform header. Drag any edge or corner
+to resize the actual viewport, so media queries respond to its dimensions without
+reloading the component. Larger viewports remain at 1:1 scale and scroll inside
+the preview card on both axes. Focus a resize handle and use
+arrow keys for 10 px steps or Shift + arrows for 50 px. The header's **Reset preview
+size** button (or Home on a handle) restores automatic sizing and clears canvas
+scroll without changing the component's properties. SwiftUI and Android use the
+same eight handles to resize their viewing area. Native frames retain their
+logical size, with scrolling when they exceed that area. Width changes request
+a new native frame within the host's 320–1200 pt/dp bounds; height changes resize
+the viewing area while the renderer keeps its intrinsic content height.
+The canvas has a subtle 24-unit dot pattern derived from the active primary
+theme color. Native live hosts draw the same centered pattern behind their
+content so opaque captures do not leave a blank band. This preview decoration
+does not change component rendering in applications or exported snapshots.
+Canvas controls offer RTL, an 8 px grid with 64 px rulers,
+and a live measurement inspector. On Web, the inspector reads rendered geometry,
 computed padding/margins/gaps, font size, line height, weight and direction;
 hover inspection can select internal shadow parts without blocking clicks.
+SwiftUI and Android report actual layout measurements with each native capture,
+in points and density-independent pixels respectively (Android typography uses
+sp). The inspector shares Web's size, padding, margin, gap and typography layout,
+with a size label, spacing guides and hover selection of reported native parts.
+The native button renderer reports its resolved styling and measured content,
+label and icon bounds through an opt-in inspection scope. Other components
+retain root bounds; unreported styling is shown as unavailable. Native values
+come from the renderers, not the surrounding browser image. Overlays follow
+viewport scrolling without blocking native interaction. Older hosts without
+measurements show an unavailable state; rebuild and reconnect to enable them.
 RTL changes start/end layout and icon order; centered text-only controls can
 look identical in both directions.
+
+The page background uses a small static architectural SVG with rounded, layered
+surfaces and subtle tonal fills, tinted by the current theme. Preview and documentation surfaces stay opaque; the decoration never
+changes the component viewport or intercepts input.
 
 Expanded studio keeps the canvas and editable Properties panel together, with
 an explicit exit control and Escape support. When browser fullscreen is
 unavailable, the same workspace expands inside the page. Native previews support
-RTL; grid and measurement controls are enabled only in Web mode. Native pt/dp
-dimensions and source resolution remain available in the preview diagnostics.
+RTL, the viewing-area grid and the native layout inspector. Root bounds come from
+SwiftUI layout or Compose layout, not browser CSS. Native pt/dp dimensions and
+source resolution remain available in the preview diagnostics.
+The lower preview bar contains the live status, native renderer details and
+**Reconnect** for both SwiftUI and Android.
 
 **Usage & API**, below the preview, has copyable HTML, React, Angular, Vue, Svelte,
 SwiftUI and Android examples. Selecting a code language is independent of the
@@ -80,8 +111,9 @@ edit supplies them. Web framework examples use the repository's public AWC
 packages; native examples use `AWCNativeView`/`AWCNode` and `AWCComponent`.
 Generated examples use inert recipe markup, never hydrated preview markup.
 Menu, dialog, sheet and snackbar launch/close handlers are included in copied Web
-examples. Opening a picker or overlay expands the Web canvas and closing it
-restores the compact preview. Native framework tabs also provide complete content,
+examples. In automatic sizing, opening a picker or overlay expands the Web canvas
+and closing it restores the compact preview. A manually chosen height is preserved.
+Native framework tabs also provide complete content,
 state and theme examples for each component, using its actual adapter policy.
 
 Code examples, payload types, theme code, Markdown instructions and test commands use local Shiki syntax
@@ -92,7 +124,7 @@ existing workspace dependencies with `node apps/native-playground/build-syntax-h
 API sections document events and payloads, slots, methods, CSS parts, and
 data/callback types. CSS variables are editable in their own tab in the right
 configuration panel. `md-button` also has a shared appearance
-editor with 22 color, typography, spacing, icon, loader and interaction fields.
+editor with 28 color, typography, spacing, icon, loader, dimension and interaction fields.
 Edits apply to the current button; blank fields use component defaults.
 Reset style clears these local overrides. The former Studio-wide appearance
 defaults are retired, including their saved browser values. Web CSS overrides remain in a separate accordion.
@@ -104,7 +136,12 @@ scalable sp; the Swift adapter uses fixed point sizes.
 Slot text and Web CSS edits update the relevant
 examples and the live Web preview. Public web methods accept JSON argument
 arrays with source-backed sample arguments. Text editors are offered only for
-plain-content slots; structural, icon and action slots keep their child components.
+plain-content slots; structural and action slots keep their child components.
+The button additionally exposes leading-icon, trailing-icon and loader slot
+editors with default, text and Material Symbol content; the loader also supports
+a circular progress component. The same composition reaches Web, SwiftUI and
+Android and their copyable examples. Its `aria-expanded` control preserves
+unset/false/true states and drives the trailing-icon rotation on each platform.
 Supported text edits also update the native previews, including empty content.
 The transport bounds each slot to 4096 UTF-8 bytes and preserves literal markup
 as text. Native snippets preserve AWC children and supported slot text,
@@ -121,6 +158,9 @@ their content, so longer explanations can be read and scrolled.
 **Events** displays recorded Web and native events. Member help and property
 controls show per-platform support, including unsupported native members.
 SwiftUI and Android examples remain available under **Usage & API**.
+Committed button `mdChange` events synchronize the `selected` control and generated
+code across subsequent platform switches. Veto activation through `mdClick`;
+the committed change notification is noncancelable.
 
 **AI instructions** provides a Markdown guide for every component. It preserves
 the component's original Web README and appends separate iOS/SwiftUI and
@@ -315,7 +355,8 @@ keyboard activation. The Events inspector receives native adapter events;
 JavaScript does not simulate component selection or text state. Focus the preview
 to send keys; Escape returns keyboard control to the browser.
 
-Changing initial props, theme, direction or viewport width starts a new native session. Grid and bounds inspection are available in Web mode. Navigation
+Changing initial props, theme, direction or viewport width starts a new native session.
+Resizing only the viewing area's height or toggling its grid preserves the session. Navigation
 closes the previous session, hidden tabs close their frame stream, and idle
 sessions expire after 60 seconds. SwiftUI allows at most two sessions; Android
 uses one per emulator. Reconnect creates a fresh view after expiry or an error.

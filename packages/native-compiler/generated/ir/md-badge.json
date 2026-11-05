@@ -669,46 +669,84 @@
         "value",
         "max",
         "icon",
-        "shape"
+        "shape",
+        "density"
       ],
       "events": [],
       "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "slots": [
         "icon"
       ],
-      "notes": [],
-      "verification": "not-device-verified"
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated SwiftUI badge implements all six source properties, the authored icon slot and ten typed appearance hooks. awcBadgeOverlay uses the actual parent size for physical top-right rect/circle anchors; offsets combine native lengths with fractions of badge size. Explicit empty icon elements suppress fallback. Native layout and font rasterization replace CSS/browser rendering; runtime acceptance is recorded separately in the parity audit."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "label",
+        "icon"
+      ],
+      "appearance": {
+        "api": "AWCBadgeAppearance / awcBadgeAppearance / AWCBadgeOffset / AWCBadgePadding",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "cornerRadius",
+          "iconColor",
+          "iconSize",
+          "offsetX",
+          "offsetY",
+          "largeHeight",
+          "largePadding",
+          "smallSize"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
+        "density",
+        "icon",
         "max",
+        "shape",
         "value",
         "variant"
       ],
       "events": [],
       "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "icon",
-        "shape",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "slots": [
         "icon"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native badge implements all six source properties, the authored icon slot and ten typed appearance hooks. AWCBadgeHost uses the actual parent size for physical top-right rect/circle anchors; offsets combine native lengths with fractions of badge size. Explicit empty icon content suppresses fallback. Native layout and font rasterization replace CSS/browser rendering; runtime acceptance is recorded separately in the parity audit."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "label",
+        "icon"
+      ],
+      "appearance": {
+        "api": "AWCBadgeAppearance / AWCBadgeAppearanceScope / AWCBadgeOffset / AWCBadgePadding",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "cornerRadius",
+          "iconColor",
+          "iconSize",
+          "offsetX",
+          "offsetY",
+          "largeHeight",
+          "largePadding",
+          "smallSize"
+        ]
+      }
     }
   }
 }

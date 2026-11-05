@@ -1,0 +1,2406 @@
+{
+  "platform": "android",
+  "components": {
+    "md-accordion": {
+      "properties": [
+        "defaultExpanded",
+        "exclusive",
+        "keepOneExpanded"
+      ],
+      "events": [
+        "mdToggle"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native exclusive and keep-one-expanded coordination with comma-separated defaultExpanded indices. Reorder and floating drag remain unsupported."
+      ]
+    },
+    "md-accordion-item": {
+      "properties": [
+        "collapsible",
+        "disabled",
+        "expanded",
+        "headline",
+        "icon",
+        "supportingText"
+      ],
+      "events": [
+        "mdItemToggle"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-app-bar": {
+      "properties": [
+        "density",
+        "headline",
+        "leadingIcon",
+        "leadingIconLabel",
+        "subtitle"
+      ],
+      "events": [
+        "mdLeadingClick"
+      ],
+      "methods": [],
+      "slots": [
+        "leading",
+        "trailing"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-area-chart": {
+      "properties": [
+        "connectNulls",
+        "fillOpacity",
+        "grid",
+        "heightProp",
+        "label",
+        "labelEmpty",
+        "legend",
+        "lineWidth",
+        "loading",
+        "loadingLabel",
+        "markSize",
+        "series",
+        "showMarks",
+        "subtitle",
+        "summary",
+        "xAxis"
+      ],
+      "events": [
+        "mdAreaClick",
+        "mdLegendClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ]
+    },
+    "md-autocomplete": {
+      "properties": [
+        "clearable",
+        "disabled",
+        "error",
+        "errorText",
+        "freeSolo",
+        "inputValue",
+        "label",
+        "limitResults",
+        "loading",
+        "maxHeight",
+        "maxSelected",
+        "multiple",
+        "name",
+        "noOptionsText",
+        "noResultsText",
+        "open",
+        "options",
+        "placeholder",
+        "required",
+        "softDisabled",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdClear",
+        "mdClose",
+        "mdInput",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+      ]
+    },
+    "md-avatar": {
+      "properties": [
+        "alt",
+        "initials",
+        "label",
+        "name",
+        "shape",
+        "size",
+        "src"
+      ],
+      "events": [
+        "mdError",
+        "mdLoad"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native asynchronous HTTP(S) bitmap loading with initials/name fallback. CSS loading/crossorigin policies do not map to Android."
+      ]
+    },
+    "md-badge": {
+      "properties": [
+        "density",
+        "icon",
+        "max",
+        "shape",
+        "value",
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        "icon"
+      ],
+      "notes": [
+        "Dedicated native badge implements all six source properties, the authored icon slot and ten typed appearance hooks. AWCBadgeHost uses the actual parent size for physical top-right rect/circle anchors; offsets combine native lengths with fractions of badge size. Explicit empty icon content suppresses fallback. Native layout and font rasterization replace CSS/browser rendering; runtime acceptance is recorded separately in the parity audit."
+      ],
+      "appearance": {
+        "api": "AWCBadgeAppearance / AWCBadgeAppearanceScope / AWCBadgeOffset / AWCBadgePadding",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "cornerRadius",
+          "iconColor",
+          "iconSize",
+          "offsetX",
+          "offsetY",
+          "largeHeight",
+          "largePadding",
+          "smallSize"
+        ]
+      },
+      "visualParts": [
+        "label",
+        "icon"
+      ]
+    },
+    "md-bar-chart": {
+      "properties": [
+        "cornerRadius",
+        "heightProp",
+        "label",
+        "legend",
+        "loading",
+        "loadingLabel",
+        "series",
+        "subtitle",
+        "xAxis"
+      ],
+      "events": [
+        "mdBarClick",
+        "mdLegendClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ]
+    },
+    "md-bottom-sheet": {
+      "properties": [
+        "bottomDivider",
+        "closeable",
+        "headline",
+        "open",
+        "scrimDismissible",
+        "showDragHandle",
+        "topDivider"
+      ],
+      "events": [
+        "mdCancel",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-breadcrumb-item": {
+      "properties": [
+        "collapsed",
+        "current",
+        "disabled",
+        "href",
+        "icon"
+      ],
+      "events": [
+        "mdSelect"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-breadcrumbs": {
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Composition row. Automatic collapse/maxItems and generated separators are not yet implemented."
+      ]
+    },
+    "md-button": {
+      "properties": [
+        "connectedLeft",
+        "connectedRight",
+        "density",
+        "disabled",
+        "fullWidth",
+        "groupTabindex",
+        "href",
+        "icon",
+        "loading",
+        "mirrorIcon",
+        "ripple",
+        "roleOverride",
+        "selected",
+        "shape",
+        "shapeMorph",
+        "size",
+        "softDisabled",
+        "suppressExpandIconFlip",
+        "target",
+        "toggle",
+        "trailingIcon",
+        "type",
+        "value",
+        "variant"
+      ],
+      "events": [
+        "mdChange",
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "leading-icon",
+        "loader",
+        "trailing-icon"
+      ],
+      "notes": [
+        "Native Compose button with explicit forms, cancelable action scopes, safe routing and named content; browser-specific gaps are described in nativeEquivalents.",
+        "Dedicated Compose button matches source size/density rules, all five palette/toggle variants, bundled source Roboto and Material Symbols fonts, 200ms press/400ms release corner morph, source pointer-origin ripple timing and polygon loading animation. Real Compose PressInteraction owns press state. Source slots replace icon/label/loader fallbacks. Native form scopes automatically register source field adapters, collect ordered successful entries, apply declarative rules and support vetoable submit/reset and Enter; native action scopes can synchronously cancel defaults or stop scoped propagation; safe application routing carries target metadata. Literal browser form APIs, browser documents/origins, DOM nodes, platform elevation shadows, antialiasing and unrestricted browser ARIA roles remain different. Native groupTabindex supports null/0 sequential entry and -1 omission while preserving native programmatic focus, touch and accessibility actions. Hard-disabled controls are excluded; soft-disabled/loading controls remain focusable and block activation. roleOverride supports button and gridcell; unknown values safely retain Button semantics. Grid cells expose selected state independent of toggle plus explicit AWCGridScope/AWCGridCellScope collection metadata. mdClick reports proposed selected state before commit; mdChange follows commit. DOM originalEvent is omitted. RTL mirroring/expanded rotation currently applies to icon string fallbacks; custom icon slots retain their own transforms. Per-instance CSS custom properties are not evaluated."
+      ],
+      "nativeEquivalents": {
+        "HTML_FORM": {
+          "status": "implemented",
+          "api": "AWCFormScope / AWCFormRules / AWCFormRegistryScope / AWCFormSubmission.entries / encodeAWCForm",
+          "description": "AWC source field adapters register automatically with native form scopes. Shared declarative rules, ordered successful-control entries, duplicate names, multi-values, native Enter/default submission, vetoable submit/reset, initial-state restoration and explicit owner IDs replace the button form contract.",
+          "limitations": [
+            "Native scope ownership replaces ElementInternals; no DOM nodes, browser validation popup or browser network submission is created.",
+            "Pattern validation uses Kotlin/Java full-match regular expressions, not the HTML JavaScript v-flag grammar. Native declarative text types cover text, email, URL and number.",
+            "Entry order follows native registration order. Applications that reorder retained keyed controls must re-register them when a new data order is required."
+          ]
+        },
+        "SHADOW_DOM": {
+          "status": "implemented",
+          "api": "AWCSlotsScope / AWCSlotRegistry",
+          "description": "Scoped Compose content supplies the button label, leading/trailing icons and loader without a shadow root.",
+          "limitations": [
+            "This is native composition; browser style encapsulation and DOM node access are not exposed."
+          ]
+        },
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry / AWCNavigationScope",
+          "description": "Explicit named-content lookup and injected navigation replace the button-specific anchor and slot queries.",
+          "limitations": [
+            "Arbitrary CSS selectors and DOM traversal are not provided."
+          ]
+        },
+        "SLOT_INTROSPECTION": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry.contains / AWCSlotsScope",
+          "description": "Observable composition replaces slot assignment inspection; adding/removing registered content updates the button and restores absent-slot fallbacks. Legacy content lambdas remain supported.",
+          "limitations": [
+            "Slots contain composables rather than HTMLElement collections. Custom icon content retains its own transforms."
+          ]
+        },
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "AWCNavigationCoordinator / AWCNavigationContext / AWCNavigationScope / AWCURLRouter",
+          "description": "Safe relative links resolve against the source native context current URL. Observable native contexts implement self, blank, parent, top and reusable named destinations, independent history, back and subtree close. A host can reject navigation before commit and present accepted destinations after commit. Unsafe raw links never fall through to form actions.",
+          "limitations": [
+            "Contexts are native application state, not browser windows, documents, origins or opener relationships; no page is fetched by the coordinator.",
+            "Named native destinations are deliberately reusable; source window.open with noopener/noreferrer may instead create fresh browser contexts. Browser modifier/middle-click navigation and window APIs are not reproduced.",
+            "URLs must parse as native URIs. Applications supply presentation for coordinator destinations; the legacy default router still opens absolute Android URIs."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionEvent / AWCActionScope / AWCActionTargetScope / AWCActionListener",
+          "description": "Synchronous native capture, target and bubble dispatch uses stable target/path/scope IDs and ordered listeners. Cancelable mdClick runs before defaults, with separate stopPropagation and stopImmediatePropagation controls; committed mdChange is noncancelable. Explicit boundaries and nonbubbling events are supported; legacy callbacks still observe actions after dispatch.",
+          "limitations": [
+            "The event path contains explicit native scopes, not DOM nodes or browser shadow-tree retargeting.",
+            "Activation metadata defaults to unknown when the host cannot identify the source; DOM originalEvent, isTrusted, browser modifiers and cancellation of native OS input are not claimed."
+          ]
+        }
+      },
+      "appearance": {
+        "api": "AWCButtonAppearance / AWCButtonAppearanceScope",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "trailingIconColor",
+          "loadingColor",
+          "stateLayerColor",
+          "outlineColor",
+          "iconSize",
+          "trailingIconSize",
+          "loadingSize",
+          "fontSize",
+          "fontWeight",
+          "lineHeight",
+          "letterSpacing",
+          "cornerRadius",
+          "outlineWidth",
+          "paddingInline",
+          "paddingBlock",
+          "gap",
+          "hoverOpacity",
+          "focusOpacity",
+          "pressedOpacity",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "focusRingColor"
+        ]
+      },
+      "visualParts": [
+        "anchor",
+        "state-layer",
+        "icon",
+        "label",
+        "trailing-icon",
+        "loading"
+      ]
+    },
+    "md-button-group": {
+      "properties": [
+        "density",
+        "fullWidth",
+        "required",
+        "selectionMode",
+        "shape",
+        "size",
+        "variant"
+      ],
+      "events": [
+        "mdSelectionChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native nowrap layout with source density gaps, connected mixed-button corners, content-box flex sizing, seven typed layout hooks, standard neighbor press motion, ordered selection snapshots and roving focus. Raw click reconciliation runs after child behavior even when child action was canceled or soft-disabled/loading; required can reselect the clicked child. The group emits once per raw click, including unchanged deltas. Nested and wrapped descendants participate in every ancestor group, with shared selected state, inner-to-outer raw-click reconciliation and authored-tree focus order. DOM originalEvent is replaced by actual child activation metadata, not fabricated."
+      ],
+      "appearance": {
+        "api": "AWCButtonGroupAppearance / AWCButtonGroupAppearanceScope",
+        "fields": [
+          "gap",
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight"
+        ]
+      },
+      "nativeEquivalents": {
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Compose layout, AWCButtonFocusScope, AWCButtonGroupStateScope",
+          "description": "Native authored layout-tree traversal includes nested and wrapped descendants; shared selection and inner-to-outer reconciliation preserve ancestor participation. Logical layout direction and roving keyboard focus replace DOM queries.",
+          "limitations": [
+            "Native layout-tree traversal replaces querySelectorAll; arbitrary CSS selector evaluation is not exposed."
+          ]
+        },
+        "DOM_OBSERVER": {
+          "status": "implemented",
+          "api": "Composable default slot",
+          "description": "Native button and icon-button children register in measured composition order and retain state across keyed reordering.",
+          "limitations": [
+            "DOM MutationObserver and CSS selectors are replaced by composition and layout lifecycle."
+          ]
+        },
+        "CSS_RUNTIME": {
+          "status": "implemented",
+          "api": "AWCButtonGroupAppearanceScope / native density and layout values",
+          "description": "Typed native appearance, density and child layout metrics provide the gap, geometry and neighbor-press motion inputs that the Web component reads from computed CSS.",
+          "limitations": [
+            "Arbitrary CSS rules are not evaluated by the native renderer."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionEvent",
+          "description": "mdSelectionChange is dispatched through native action scopes after selection is reconciled, with values, added and removed arrays and actual child activation metadata. Cancellation does not reverse the already committed selection, matching the Web event order.",
+          "limitations": [
+            "Native scope propagation replaces DOM bubbling and composed paths; a browser originalEvent object is not fabricated."
+          ]
+        }
+      }
+    },
+    "md-card": {
+      "properties": [
+        "disabled",
+        "fullWidth",
+        "interactive",
+        "softDisabled",
+        "variant"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-checkbox": {
+      "properties": [
+        "checked",
+        "disabled",
+        "error",
+        "errorText",
+        "indeterminate",
+        "name",
+        "required",
+        "softDisabled",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+      ]
+    },
+    "md-chip": {
+      "properties": [
+        "disabled",
+        "icon",
+        "label",
+        "removable",
+        "selectable",
+        "selected",
+        "softDisabled",
+        "variant"
+      ],
+      "events": [
+        "mdClick",
+        "mdRemove",
+        "mdSelect"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-color-picker": {
+      "properties": [
+        "alpha",
+        "ariaLabelProp",
+        "disabled",
+        "dismissOnOutsideClick",
+        "open",
+        "presets",
+        "showHex",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdInput",
+        "mdOpenChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native RGB sliders, alpha and presets; HEX/RGB output implemented. HSL output and complete source color parsing remain unsupported."
+      ]
+    },
+    "md-date-picker": {
+      "properties": [
+        "cancelLabel",
+        "disabled",
+        "error",
+        "errorText",
+        "label",
+        "max",
+        "min",
+        "name",
+        "okLabel",
+        "open",
+        "required",
+        "scrimDismissible",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdCancel",
+        "mdChange",
+        "mdClose",
+        "mdOpen",
+        "mdSelected"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
+        "Uses Material DatePicker; ISO date strings replace JavaScript Date objects in event details."
+      ]
+    },
+    "md-dialog": {
+      "properties": [
+        "cancelLabel",
+        "fullscreen",
+        "headline",
+        "icon",
+        "okLabel",
+        "open",
+        "scrimDismissible"
+      ],
+      "events": [
+        "mdCancel",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-divider": {
+      "properties": [
+        "inset",
+        "insetEnd",
+        "insetStart",
+        "vertical"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Dedicated native divider uses a measured inner painted line, signed logical inset margins and nonnegative thickness. Inset-start overrides both-side inset; inset-end takes precedence when multiple flags are true. Vertical insets apply at the top and bottom. Native drawing replaces CSS; runtime verification is recorded separately in the parity audit."
+      ],
+      "appearance": {
+        "api": "AWCDividerAppearance / AWCDividerAppearanceScope",
+        "fields": [
+          "color",
+          "thickness",
+          "insetStart",
+          "insetEnd"
+        ]
+      },
+      "visualParts": [
+        "divider"
+      ]
+    },
+    "md-fab": {
+      "properties": [
+        "density",
+        "disabled",
+        "extended",
+        "icon",
+        "label",
+        "lowered",
+        "ripple",
+        "size",
+        "softDisabled",
+        "variant"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [
+        "setMenuIcon"
+      ],
+      "slots": [
+        "icon"
+      ],
+      "notes": [
+        "Dedicated Compose FAB preserves source sizes, density, seven palettes, labelled extended/collapsed geometry and motion, lowered elevation, disabled state, pointer ripple, keyboard focus and activation. The icon slot retains authored content during controller overrides. mdClick callback detail is null in place of a DOM MouseEvent; scoped AWCActionEvent detail is an empty map and truthful input metadata is available through activation. Android elevation rasterization and native text shaping remain platform-specific. Menu-owned shape/icon-morph choreography is verified with the menu component separately."
+      ],
+      "appearance": {
+        "api": "AWCFabAppearance / AWCFabAppearanceScope",
+        "fields": [
+          "containerColor",
+          "iconColor",
+          "iconSize",
+          "cornerRadius",
+          "labelColor"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "label"
+      ],
+      "nativeEquivalents": {
+        "SHADOW_DOM": {
+          "status": "implemented",
+          "api": "AWCComponent content / AWCSlotsScope",
+          "description": "Retained named icon composition replaces shadow content. Public typed appearance and measured visual parts replace the five source hooks.",
+          "limitations": [
+            "No DOM nodes or CSS selector engine are exposed."
+          ]
+        },
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Compose label measurement and named icon composition",
+          "description": "The actual native text layout supplies label width; retained slot composition supplies current icon content.",
+          "limitations": [
+            "Arbitrary DOM traversal is not reproduced."
+          ]
+        },
+        "SLOT_INTROSPECTION": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry / native subcomposition",
+          "description": "Actual authored slot layout determines fallback presence, including explicit empty Text elements. Temporary menu icons hide rather than discard authored content.",
+          "limitations": [
+            "Native composables replace HTMLElement assignments."
+          ]
+        },
+        "ANIMATION_FRAME": {
+          "status": "implemented",
+          "api": "Compose animation frame clock",
+          "description": "The initial target is applied without mount animation. Subsequent extent and label changes use the source spatial and effects curves; native reduced-motion settings disable motion.",
+          "limitations": [
+            "Native frame timing replaces requestAnimationFrame."
+          ]
+        },
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "Bundled Roboto and Compose TextMeasurer",
+          "description": "Native layout and font resolution remeasure label width when content, typography or density changes, without document.fonts.",
+          "limitations": [
+            "Native glyph shaping and physical-pixel rounding can differ from browser text rendering."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionEvent",
+          "description": "Cancelable native capture/target/bubble delivery provides actual input metadata; no default action is attached to FAB notification. Callback detail is null; the scoped map is empty.",
+          "limitations": [
+            "DOM MouseEvent and browser propagation objects are not fabricated."
+          ]
+        }
+      }
+    },
+    "md-fab-menu": {
+      "properties": [
+        "anchor",
+        "density",
+        "menuLabel",
+        "open",
+        "placement",
+        "quick",
+        "variant"
+      ],
+      "events": [
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [
+        "show",
+        "close",
+        "whenClosed"
+      ],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native nonmodal FAB menu uses AWCFabMenuScope with separately authored ID anchors, actual native bounds, a retained item tree and scoped controller show/close/whenClosed lifecycle. Source input ordering, roving focus, typeahead and typed appearance are implemented; runtime acceptance is recorded separately in audits/md-fab-menu.md. AWCSlotText or AWCSearchableLabelScope supplies actual searchable names for arbitrary native label content. Native scoped appearance restores authored FAB colors on close rather than deleting immutable authored appearance as Web inline-style cleanup does."
+      ],
+      "appearance": {
+        "api": "AWCFabMenuAppearance / AWCFabMenuAppearanceScope",
+        "fields": [
+          "itemContainerColor",
+          "itemLabelColor",
+          "itemGap"
+        ]
+      },
+      "nativeEquivalents": {
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "AWCFabMenuScope / authored id and anchor properties",
+          "description": "A scoped native registry resolves authored anchor identity, pointer modality, focus and nonmodal outside activation.",
+          "limitations": [
+            "The scope is the native viewport; global document lookup is not exposed."
+          ]
+        },
+        "DOM_LAYOUT": {
+          "status": "implemented",
+          "api": "Compose LayoutCoordinates",
+          "description": "Actual transformed anchor bounds are tracked while open and drive logical-edge positioning and auto placement.",
+          "limitations": [
+            "Native dp replaces browser CSS pixels."
+          ]
+        },
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Native authored layout-tree traversal / AWCSlotText / AWCSearchableLabelScope",
+          "description": "Registered item descendants retain authored order for roving focus and typeahead. Explicit native text registration replaces DOM textContent.",
+          "limitations": [
+            "An arbitrary Compose content lambda cannot be introspected for text; use the supplied native searchable-label equivalent."
+          ]
+        },
+        "SHADOW_DOM": {
+          "status": "implemented",
+          "api": "Composable default slot and nonmodal overlay layer",
+          "description": "The retained native layer separates menu flow layout from authored items and anchor.",
+          "limitations": [
+            "No DOM shadow root is created."
+          ]
+        },
+        "CSS_RUNTIME": {
+          "status": "implemented",
+          "api": "AWCFabMenuAppearanceScope / native layout direction and density",
+          "description": "Typed appearance and applied native geometry replace runtime computed CSS values.",
+          "limitations": [
+            "Arbitrary CSS selectors are not evaluated."
+          ]
+        },
+        "ANIMATION_FRAME": {
+          "status": "implemented",
+          "api": "AWCFabMenuController / Compose frame clock",
+          "description": "Initial paint readiness, cancelable pending opens, delayed close commit and retained cycle completion follow native frame lifecycle.",
+          "limitations": [
+            "Native frame scheduling replaces requestAnimationFrame."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionEvent",
+          "description": "Void lifecycle callbacks and synchronous scoped capture/target/bubble events preserve committed-state ordering.",
+          "limitations": [
+            "DOM event objects are not fabricated."
+          ]
+        }
+      }
+    },
+    "md-fab-menu-item": {
+      "properties": [
+        "density",
+        "disabled",
+        "icon",
+        "label",
+        "rovingFocusVisible",
+        "softDisabled"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "icon"
+      ],
+      "notes": [
+        "Dedicated native menu item supports all six properties, icon and fallback label slots, actual density geometry, native ripple and roving focus. Void mdClick callbacks use null; scoped event detail is an empty map with truthful activation metadata. Native text shaping remains platform-specific; runtime acceptance is recorded separately in the menu audit."
+      ],
+      "appearance": {
+        "api": "AWCFabMenuItemAppearance / AWCFabMenuItemAppearanceScope",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "iconSize",
+          "cornerRadius"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "label"
+      ],
+      "nativeEquivalents": {
+        "SLOT_INTROSPECTION": {
+          "status": "implemented",
+          "api": "AWCSlotsScope / native subcomposition",
+          "description": "Actual authored icon content, including explicit empty Text, controls icon fallback and padding.",
+          "limitations": [
+            "Native composition replaces assignedElements."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionEvent",
+          "description": "Cancelable synchronous native delivery preserves pointer and keyboard metadata and allows propagation to the parent menu to be stopped.",
+          "limitations": [
+            "DOM MouseEvent and KeyboardEvent are not fabricated."
+          ]
+        }
+      }
+    },
+    "md-icon-button": {
+      "properties": [
+        "buttonWidth",
+        "connectedLeft",
+        "connectedRight",
+        "density",
+        "disabled",
+        "groupTabindex",
+        "href",
+        "icon",
+        "ripple",
+        "selected",
+        "selectedIcon",
+        "shape",
+        "shapeMorph",
+        "size",
+        "softDisabled",
+        "target",
+        "toggle",
+        "value",
+        "variant"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "selected"
+      ],
+      "notes": [
+        "Dedicated Compose renderer implements all 19 source properties, all five size and density rungs, narrow/default/wide widths, four source palettes, selected/pressed/resting morph precedence, connected logical corners, pointer-origin ripple, keyboard focus and native group coordination. Default/selected slots replace glyph fallbacks; direct native badges adorn without suppressing the icon and avatars retain their own dimensions. Navigation and toggle commit before cancelable mdClick notification, exactly as the source does; no mdChange is emitted. The nine public CSS hooks map to AWCIconButtonAppearance. Native layout evidence covers the visual root, state-layer and active icon part. Source DOM objects, CSS selector evaluation, browser windows and forced-colors media queries remain platform-specific."
+      ],
+      "nativeEquivalents": {
+        "SHADOW_DOM": {
+          "status": "implemented",
+          "api": "AWCSlotsScope / AWCSlotRegistry / AWCComponent content",
+          "description": "Default and selected composable slots replace source glyphs. Direct native badges and avatars preserve their source slot sizing roles.",
+          "limitations": [
+            "Native composition replaces shadow DOM; arbitrary DOM inspection is not exposed."
+          ]
+        },
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry / AWCNavigationScope",
+          "description": "Native slot lookup and injected application routing replace the component-specific DOM queries.",
+          "limitations": [
+            "No arbitrary CSS selector engine or browser window is created."
+          ]
+        },
+        "SLOT_INTROSPECTION": {
+          "status": "implemented",
+          "api": "AWCSlotRegistry / native subcomposition",
+          "description": "Subcomposition detects actual child layout and selects the default or selected icon layer; badges do not count as replacement icons. Explicit Text composables, including empty editor text, represent authored replacement elements.",
+          "limitations": [
+            "Compose children replace DOM nodes; omission restores fallback while an authored empty element suppresses it."
+          ]
+        },
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "AWCNavigationCoordinator / AWCNavigationContext / AWCNavigationScope / AWCURLRouter",
+          "description": "Safe relative links resolve against the source native context current URL. Observable native contexts implement self, blank, parent, top and reusable named destinations, independent history, back and subtree close. A host can reject navigation before commit and present accepted destinations after commit. Unsafe raw links never fall through to form actions.",
+          "limitations": [
+            "Contexts are native application state, not browser windows, documents, origins or opener relationships; no page is fetched by the coordinator.",
+            "Named native destinations are deliberately reusable; source window.open with noopener/noreferrer may instead create fresh browser contexts. Browser modifier/middle-click navigation and window APIs are not reproduced.",
+            "URLs must parse as native URIs. Applications supply presentation for coordinator destinations; the legacy default router still opens absolute Android URIs."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionTargetScope / AWCActionEvent",
+          "description": "Scoped native capture/target/bubble delivery exposes cancelable mdClick after safe navigation and selection have already committed, matching the source icon-button ordering.",
+          "limitations": [
+            "Calling preventDefault marks the notification but cannot undo effects that preceded it. OS input and DOM propagation are not fabricated."
+          ]
+        }
+      },
+      "appearance": {
+        "api": "AWCIconButtonAppearance / AWCIconButtonAppearanceScope",
+        "fields": [
+          "containerColor",
+          "iconColor",
+          "stateLayerColor",
+          "iconSize",
+          "cornerRadius",
+          "outlineColor",
+          "outlineWidth",
+          "width",
+          "height"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "icon",
+        "selected-icon"
+      ]
+    },
+    "md-line-chart": {
+      "properties": [
+        "area",
+        "connectNulls",
+        "grid",
+        "heightProp",
+        "label",
+        "labelEmpty",
+        "legend",
+        "lineWidth",
+        "loading",
+        "loadingLabel",
+        "markSize",
+        "series",
+        "showMarks",
+        "subtitle",
+        "summary",
+        "xAxis"
+      ],
+      "events": [
+        "mdLegendClick",
+        "mdMarkerClick",
+        "mdReady"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ]
+    },
+    "md-list": {
+      "properties": [
+        "label",
+        "listStyle",
+        "selectionMode"
+      ],
+      "events": [
+        "mdSelect"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native single/multi selection; native events omit DOM item references. Reordering remains unsupported."
+      ]
+    },
+    "md-list-item": {
+      "properties": [
+        "disabled",
+        "expandable",
+        "expanded",
+        "headline",
+        "leadingIcon",
+        "overline",
+        "selected",
+        "softDisabled",
+        "supportingText",
+        "trailingSupportingText"
+      ],
+      "events": [
+        "mdClick",
+        "mdExpand",
+        "mdItemClick",
+        "mdItemSelect"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "expanded-content",
+        "leading",
+        "trailing"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-loading-indicator": {
+      "properties": [
+        "density",
+        "label",
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Dedicated native polygon animation preserves source geometry, colors, density, clipping, exact keyframes and typed corner radii. AWCLoadingIndicatorShapeAppearanceScope styles the measured shape part. Android animation preference supplies reduced motion; explicit AWCAccessibilityAppearanceScope forcedColors is a native environment override, not inferred from system contrast. No default tabstop is added; caller focus modifiers opt into native focus. Runtime verification is recorded separately."
+      ],
+      "appearance": {
+        "api": "AWCLoadingIndicatorAppearance / AWCLoadingIndicatorAppearanceScope / AWCCornerShape",
+        "fields": [
+          "color",
+          "size",
+          "shapeSize",
+          "containerColor",
+          "containerShape"
+        ]
+      },
+      "visualParts": [
+        "shape"
+      ]
+    },
+    "md-menu": {
+      "properties": [
+        "open"
+      ],
+      "events": [
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-menu-item": {
+      "properties": [
+        "disabled",
+        "divider",
+        "headline",
+        "selected",
+        "supportingText",
+        "trailingText",
+        "type"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-menu-item-group": {
+      "properties": [
+        "label"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-meter": {
+      "properties": [
+        "color",
+        "density",
+        "formatOptions",
+        "label",
+        "locale",
+        "max",
+        "min",
+        "showLabel",
+        "showValue",
+        "size",
+        "thickness",
+        "value",
+        "valueText",
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Dedicated read-only Compose meter supports the fourteen source properties, native ICU locale formatting and seven typed appearance hooks. AWCMeterRangeKey retains the exact Double range alongside Android accessibility range data. Native paths, shaped text and measured visual parts replace SVG and CSS. Runtime verification is recorded separately in the parity audit."
+      ],
+      "appearance": {
+        "api": "AWCMeterAppearance / AWCMeterAppearanceScope / AWCCornerShape",
+        "fields": [
+          "indicatorColor",
+          "trackColor",
+          "trackShape",
+          "height",
+          "labelColor",
+          "valueColor",
+          "size"
+        ]
+      },
+      "visualParts": [
+        "track",
+        "indicator",
+        "label",
+        "value",
+        "circular"
+      ]
+    },
+    "md-multi-select": {
+      "properties": [
+        "clearLabel",
+        "clearable",
+        "disabled",
+        "error",
+        "errorText",
+        "filterable",
+        "label",
+        "loading",
+        "maxHeight",
+        "maxSelected",
+        "name",
+        "noOptionsText",
+        "noResultsText",
+        "open",
+        "options",
+        "placeholder",
+        "required",
+        "searchPlaceholder",
+        "selectAllLabel",
+        "showSelectAll",
+        "softDisabled",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdClear",
+        "mdClose",
+        "mdOpen",
+        "mdRemove"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+      ]
+    },
+    "md-navigation-bar": {
+      "properties": [
+        "activeIndex"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-navigation-rail": {
+      "properties": [
+        "activeIndex"
+      ],
+      "events": [
+        "mdTabChange"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "footer",
+        "header"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-navigation-rail-tab": {
+      "properties": [
+        "active",
+        "badge",
+        "badgeValue",
+        "disabled",
+        "icon",
+        "label",
+        "labelVisibility"
+      ],
+      "events": [
+        "mdTabClick"
+      ],
+      "methods": [],
+      "slots": [
+        "submenu"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-navigation-tab": {
+      "properties": [
+        "active",
+        "activeIcon",
+        "badge",
+        "badgeValue",
+        "disabled",
+        "icon",
+        "label",
+        "labelBehavior",
+        "softDisabled"
+      ],
+      "events": [
+        "mdTabClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-number-field": {
+      "properties": [
+        "allowOutOfRange",
+        "decrementLabel",
+        "disabled",
+        "error",
+        "errorText",
+        "incrementLabel",
+        "label",
+        "max",
+        "min",
+        "name",
+        "placeholder",
+        "readOnly",
+        "required",
+        "step",
+        "steppers",
+        "supportingText",
+        "value",
+        "variant"
+      ],
+      "events": [
+        "mdChange",
+        "mdInput"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+      ]
+    },
+    "md-organization-chart": {
+      "properties": [
+        "collapseLabel",
+        "collapsible",
+        "expandLabel",
+        "label",
+        "nodes",
+        "selectedIds",
+        "selectionMode"
+      ],
+      "events": [
+        "mdNodeToggle",
+        "mdSelectionChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native indented tree with accessible cards; horizontal connector layout is not yet ported.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ]
+    },
+    "md-otp-field": {
+      "properties": [
+        "disabled",
+        "error",
+        "errorText",
+        "label",
+        "length",
+        "mask",
+        "name",
+        "readOnly",
+        "required",
+        "supportingText",
+        "transform",
+        "validationType",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdComplete",
+        "mdInput",
+        "mdInvalidInput"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
+        "Uses a native constrained text entry; separated cells, grouping and automatic form submission are not yet ported."
+      ]
+    },
+    "md-pie-chart": {
+      "properties": [
+        "data",
+        "endAngle",
+        "heightProp",
+        "innerRadius",
+        "label",
+        "labelEmpty",
+        "legend",
+        "loading",
+        "loadingLabel",
+        "startAngle",
+        "subtitle",
+        "summary"
+      ],
+      "events": [
+        "mdLegendClick",
+        "mdReady",
+        "mdSliceClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ]
+    },
+    "md-progress-indicator": {
+      "properties": [
+        "complete",
+        "density",
+        "fourColor",
+        "indeterminate",
+        "label",
+        "max",
+        "size",
+        "thickness",
+        "value",
+        "variant",
+        "wave",
+        "waveAmplitude",
+        "waveLength",
+        "waveSpeed"
+      ],
+      "events": [
+        "mdComplete"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Dedicated native progress paths implement all fourteen source properties, thirteen typed appearance hooks and the mounted completion lifecycle. Initial complete=true is inert; later completion emits one void mdComplete after the actual visual sequence. Reduced-motion and native accessibility range behavior are provided without a default action or live region. Runtime verification and native coordinate limits are recorded separately in the parity audit."
+      ],
+      "appearance": {
+        "api": "AWCProgressIndicatorAppearance / AWCProgressIndicatorAppearanceScope / AWCCornerShape",
+        "fields": [
+          "activeIndicatorColor",
+          "activeIndicatorShape",
+          "trackColor",
+          "trackShape",
+          "stopIndicatorColor",
+          "stopIndicatorShape",
+          "stopIndicatorSize",
+          "stopIndicatorTrailingSpace",
+          "trackActiveIndicatorSpace",
+          "fourColor1",
+          "fourColor2",
+          "fourColor3",
+          "fourColor4"
+        ]
+      },
+      "visualParts": [
+        "track",
+        "active-indicator",
+        "stop-indicator"
+      ]
+    },
+    "md-radio": {
+      "properties": [
+        "checked",
+        "disabled",
+        "name",
+        "required",
+        "softDisabled",
+        "value"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+      ]
+    },
+    "md-rating": {
+      "properties": [
+        "defaultValue",
+        "disabled",
+        "max",
+        "name",
+        "readonly",
+        "showValueLabel",
+        "softDisabled",
+        "value"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
+        "Native whole-star rating; fractional precision, hover and custom icon rendering remain unsupported."
+      ]
+    },
+    "md-ripple": {
+      "properties": [
+        "disabled"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Uses the Compose ripple on a tappable native surface; standalone DOM ripple attachment has no native counterpart."
+      ]
+    },
+    "md-search": {
+      "properties": [
+        "disabled",
+        "placeholder",
+        "showClearButton",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdClear",
+        "mdInput",
+        "mdSearch",
+        "mdSubmit"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-segmented-button": {
+      "properties": [
+        "density",
+        "disabled",
+        "icon",
+        "label",
+        "noCheckmark",
+        "ripple",
+        "segmentDensity",
+        "segmentIndex",
+        "segmentMultiselect",
+        "segmentTotal",
+        "selected",
+        "softDisabled",
+        "value"
+      ],
+      "events": [
+        "mdSegmentClick"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "icon"
+      ],
+      "notes": [
+        "Dedicated native segment preserves controlled standalone proposals, retained checkmark space, additive named icon content and all seven typed appearance hooks. The supporting set commits selection by child identity, synchronizes parent-owned properties and exposes actual ordered state. Native font shaping and physical-pixel rounding replace browser rendering; runtime acceptance is recorded separately."
+      ],
+      "appearance": {
+        "api": "AWCSegmentedButtonAppearance / AWCSegmentedButtonAppearanceScope",
+        "fields": [
+          "containerColor",
+          "selectedContainerColor",
+          "labelColor",
+          "selectedLabelColor",
+          "outlineColor",
+          "cornerRadius",
+          "iconSize"
+        ]
+      },
+      "visualParts": [
+        "state-layer",
+        "checkmark",
+        "icon",
+        "label"
+      ],
+      "nativeEquivalents": {
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Compose authored layout-tree traversal / AWCSegmentedButtonSetStateScope",
+          "description": "Native descendants retain authored identity and order for parent synchronization, exact selection and keyboard movement.",
+          "limitations": [
+            "Arbitrary DOM queries are replaced by native layout-tree registration."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionTargetScope / onEvent",
+          "description": "Synchronous native event phases preserve selection proposals, propagation stops and parent commit ordering. Cancellation does not undo the set commit.",
+          "limitations": [
+            "DOM events are not fabricated. Set onEvent detail is the source values array; scoped rawDetail preserves the same array; segmentedSelectionValues exposes typed values."
+          ]
+        },
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "AWCSlotText / AWCSearchableLabelScope / native content composition",
+          "description": "Native authored labels and explicit accessible names replace document text and development-time name validation.",
+          "limitations": [
+            "Compose content is not a DOM and cannot expose arbitrary textContent. Authored native content retains its own accessibility semantics."
+          ]
+        }
+      }
+    },
+    "md-segmented-button-set": {
+      "properties": [
+        "density",
+        "multiselect"
+      ],
+      "events": [
+        "mdChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Dedicated native set uses equal grid tracks, joined segment outlines and authored descendant order. Single-select arrows activate the next hard-enabled child; multiselect arrows only move focus. onEvent mdChange detail is the exact ordered values array; scoped AWCActionEvent.rawDetail preserves the array and segmentedSelectionValues provides a typed accessor. AWCSegmentedButtonSetStateScope exposes ordered Boolean state without conflating duplicate values."
+      ],
+      "nativeEquivalents": {
+        "DOM_QUERY": {
+          "status": "implemented",
+          "api": "Compose authored layout-tree traversal / AWCSegmentedButtonSetStateScope",
+          "description": "Native descendants retain authored identity and order for parent synchronization, exact selection and keyboard movement.",
+          "limitations": [
+            "Arbitrary DOM queries are replaced by native layout-tree registration."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionTargetScope / onEvent",
+          "description": "Synchronous native event phases preserve selection proposals, propagation stops and parent commit ordering. Cancellation does not undo the set commit.",
+          "limitations": [
+            "DOM events are not fabricated. Set onEvent detail is the source values array; scoped rawDetail preserves the same array; segmentedSelectionValues exposes typed values."
+          ]
+        }
+      }
+    },
+    "md-select": {
+      "properties": [
+        "clearLabel",
+        "clearable",
+        "disabled",
+        "error",
+        "errorText",
+        "filterable",
+        "label",
+        "loading",
+        "maxHeight",
+        "name",
+        "noOptionsText",
+        "noResultsText",
+        "open",
+        "options",
+        "placeholder",
+        "required",
+        "searchPlaceholder",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+      ]
+    },
+    "md-select-option": {
+      "properties": [
+        "disabled",
+        "label",
+        "selected",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdSelectOptionChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-side-sheet": {
+      "properties": [
+        "closeable",
+        "headline",
+        "open",
+        "scrimDismissible",
+        "showBack",
+        "side"
+      ],
+      "events": [
+        "mdBack",
+        "mdCancel",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-skeleton": {
+      "properties": [
+        "animation",
+        "announce",
+        "ariaLabelProp",
+        "density",
+        "fullHeight",
+        "fullWidth",
+        "height",
+        "lines",
+        "variant",
+        "width"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Dedicated native Skeleton implements all ten source properties and eleven typed appearance hooks. Affine native lengths retain parent-relative and font-relative sizing; AWCSkeletonSizingContext supplies definite containing-block height and actual font context. AWCSkeletonPartAppearanceScope targets actual shape, line and final-line paint. Entrance, pulse and RTL-aware clipped shimmer use the source timing curves. Announced native semantics provide a polite accessible name and explicit busy metadata; decorative output is hidden. Native coordinate limits, unsupported CSS grammar, platform accessibility differences and actual runtime verification remain explicit in the component audit."
+      ],
+      "appearance": {
+        "api": "AWCSkeletonAppearance / AWCSkeletonAppearanceScope / AWCSkeletonLength / AWCCornerShape",
+        "fields": [
+          "color",
+          "highlight",
+          "radius",
+          "roundedRadius",
+          "width",
+          "height",
+          "size",
+          "lineGap",
+          "pulseDuration",
+          "waveDuration",
+          "bloomDuration"
+        ]
+      },
+      "visualParts": [
+        "shape",
+        "line",
+        "line-last"
+      ]
+    },
+    "md-slider": {
+      "properties": [
+        "disabled",
+        "labeled",
+        "max",
+        "min",
+        "name",
+        "nameEnd",
+        "nameStart",
+        "range",
+        "sliderAriaLabel",
+        "step",
+        "value",
+        "valueEnd",
+        "valueIndicator",
+        "valueStart",
+        "valueText"
+      ],
+      "events": [
+        "mdChange",
+        "mdInput"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
+        "Horizontal Compose slider/range slider; vertical, custom icons and drag event parity remain unsupported."
+      ]
+    },
+    "md-snackbar": {
+      "properties": [
+        "action",
+        "autoHide",
+        "autoHideDuration",
+        "closeable",
+        "density",
+        "dismissLabel",
+        "message",
+        "open",
+        "politeness",
+        "position",
+        "stacked"
+      ],
+      "events": [
+        "mdAction",
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [
+        "show",
+        "hide"
+      ],
+      "slots": [
+        "",
+        "action",
+        "close"
+      ],
+      "appearance": {
+        "api": "AWCSnackbarAppearance / AWCSnackbarAppearanceScope / AWCSnackbarLength / AWCCornerShape",
+        "fields": [
+          "containerColor",
+          "messageColor",
+          "actionColor",
+          "closeColor",
+          "containerShape",
+          "minWidth",
+          "maxWidth"
+        ]
+      },
+      "visualParts": [
+        "surface",
+        "message",
+        "actions",
+        "close",
+        "close-icon"
+      ],
+      "notes": [
+        "Dedicated native Snackbar supports all eleven source properties, three lifecycle events, two retained controller methods and three actual authored slots. AWCSnackbarScope supplies the viewport and peer order; native timers, hover/focus, Escape and retained Laboratory resize follow source behavior. Seven typed appearance hooks and five part targets are implemented. Original and supplemental geometry/paint, default-palette, motion and lifecycle gates pass; final Laboratory acceptance remains separate in the audit. CSS syntax, native accessibility and rasterization boundaries remain documented."
+      ]
+    },
+    "md-sparkline": {
+      "properties": [
+        "cornerRadius",
+        "data",
+        "heightProp",
+        "lineWidth",
+        "markSize",
+        "max",
+        "min",
+        "showMarks",
+        "variant"
+      ],
+      "events": [
+        "mdReady",
+        "mdSparkClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native Canvas baseline: index-based linear plotting and simple hit selection. Advanced scales, curves, stacking, zoom, exact source tooltip/hit-test/event payload parity remain incomplete."
+      ]
+    },
+    "md-split-button": {
+      "properties": [
+        "controls",
+        "density",
+        "disabled",
+        "fullWidth",
+        "haspopup",
+        "icon",
+        "label",
+        "menuLabel",
+        "ripple",
+        "size",
+        "softDisabled",
+        "trailingChecked",
+        "trailingIcon",
+        "variant"
+      ],
+      "events": [
+        "mdLeadingClick",
+        "mdTrailingClick"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Dedicated native Split Button has independent focus/action targets, source size and density geometry, additive default content, six typed appearance hooks and committed trailing state. AWCPopupScope/AWCPopupTargetScope connect controls IDs to mounted native popup focus without opening or closing it. Runtime acceptance is recorded separately in the parity audit."
+      ],
+      "appearance": {
+        "api": "AWCSplitButtonAppearance / AWCSplitButtonAppearanceScope",
+        "fields": [
+          "containerColor",
+          "labelColor",
+          "iconColor",
+          "outlineColor",
+          "cornerRadius",
+          "iconSize"
+        ]
+      },
+      "visualParts": [
+        "leading",
+        "trailing",
+        "leading-state-layer",
+        "trailing-state-layer",
+        "icon",
+        "label",
+        "trailing-icon"
+      ],
+      "nativeEquivalents": {
+        "DOM_GLOBAL": {
+          "status": "implemented",
+          "api": "Compose semantics / AWCPopupScope / AWCPopupTargetScope",
+          "description": "Real native names, expanded state and popup target focus replace browser accessibility relationships and development-time name validation.",
+          "limitations": [
+            "Android has no DOM aria-controls graph; a mounted target is connected by a real native accessibility focus action and typed relationship metadata."
+          ]
+        },
+        "CANCELABLE_EVENT": {
+          "status": "implemented",
+          "api": "AWCActionScope / AWCActionTargetScope / onEvent",
+          "description": "Synchronous native phases preserve null leading detail and post-commit trailing checked detail; cancellation does not roll back source state.",
+          "limitations": [
+            "DOM events are not fabricated. Scoped rawDetail preserves the null leading payload; native activation records actual source input."
+          ]
+        }
+      }
+    },
+    "md-status-dot": {
+      "properties": [
+        "density",
+        "inline",
+        "label",
+        "live",
+        "shape",
+        "size",
+        "state"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Dedicated Compose status dot implements all seven source properties and eight typed appearance hooks. AWCStatusDotHost uses the measured parent for logical RTL-aware rect/circle anchoring; inline uses ordinary flow. Insets combine dp with fractions of parent dimensions, colors support RGB/RGBA, and pulse duration uses seconds. Native layout rounds outlines to physical pixels. Source and Android runtime evidence are tracked separately; integrated Laboratory and final accessibility review remain pending."
+      ],
+      "appearance": {
+        "api": "AWCStatusDotAppearance / AWCStatusDotAppearanceScope / AWCStatusDotInset / AWCStatusDotHost",
+        "fields": [
+          "size",
+          "color",
+          "pulseColor",
+          "outlineColor",
+          "outlineWidth",
+          "insetEnd",
+          "insetBlockEnd",
+          "pulseDuration"
+        ]
+      },
+      "visualParts": []
+    },
+    "md-step": {
+      "properties": [
+        "active",
+        "completed",
+        "description",
+        "disabled",
+        "editable",
+        "error",
+        "errorText",
+        "hideActions",
+        "label"
+      ],
+      "events": [
+        "mdStepBack",
+        "mdStepClick",
+        "mdStepNext"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-stepper": {
+      "properties": [
+        "active",
+        "backLabel",
+        "finishLabel",
+        "loading",
+        "nextDisabled",
+        "nextLabel",
+        "readonly"
+      ],
+      "events": [
+        "mdBeforeChange",
+        "mdComplete",
+        "mdStepChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-sub-menu-item": {
+      "properties": [
+        "disabled",
+        "divider",
+        "headline",
+        "supportingText"
+      ],
+      "events": [
+        "mdClick"
+      ],
+      "methods": [],
+      "slots": [
+        "submenu"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-switch": {
+      "properties": [
+        "disabled",
+        "name",
+        "required",
+        "selected",
+        "softDisabled",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdInput"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+      ]
+    },
+    "md-tab": {
+      "properties": [
+        "active",
+        "disabled",
+        "icon",
+        "label"
+      ],
+      "events": [
+        "mdTabClick"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-tab-panel": {
+      "properties": [
+        "active"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-tab-panels": {
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Composition container. Pass active on child panels; HTML for/id linkage is not available."
+      ]
+    },
+    "md-table": {
+      "properties": [
+        "caption",
+        "loading"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-body": {
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-cell": {
+      "properties": [
+        "align",
+        "head",
+        "numeric",
+        "padding"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-container": {
+      "properties": [
+        "variant"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-expand-toggle": {
+      "properties": [
+        "buttonLabel"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Standalone visual toggle; nested table row has its own bound expansion control."
+      ]
+    },
+    "md-table-foot": {
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-head": {
+      "properties": [],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-pagination": {
+      "properties": [
+        "count",
+        "disabled",
+        "labelNextPage",
+        "labelPreviousPage",
+        "page",
+        "rowsPerPage",
+        "rowsPerPageOptions",
+        "showFirstLast"
+      ],
+      "events": [
+        "mdPageChange",
+        "mdRowsPerPageChange"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-row": {
+      "properties": [
+        "clickable",
+        "disabled",
+        "expandable",
+        "expanded",
+        "selectable",
+        "selected",
+        "value"
+      ],
+      "events": [
+        "mdRowClick",
+        "mdRowExpandedChange",
+        "mdRowSelectionChange"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "expanded"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-sort-label": {
+      "properties": [
+        "column",
+        "defaultOrder",
+        "disabled",
+        "order"
+      ],
+      "events": [
+        "mdSortRequest"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-table-toolbar": {
+      "properties": [
+        "headline",
+        "labelSelected",
+        "numSelected",
+        "supportingText"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        "actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-tabs": {
+      "properties": [
+        "activeTabIndex",
+        "divider"
+      ],
+      "events": [
+        "mdTabChange"
+      ],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-text-field": {
+      "properties": [
+        "clearable",
+        "disabled",
+        "error",
+        "errorText",
+        "hidePasswordLabel",
+        "label",
+        "max",
+        "maxLength",
+        "min",
+        "minLength",
+        "multiline",
+        "name",
+        "passwordToggle",
+        "pattern",
+        "placeholder",
+        "prefixText",
+        "readOnly",
+        "required",
+        "rows",
+        "showPasswordLabel",
+        "step",
+        "suffixText",
+        "supportingText",
+        "type",
+        "value",
+        "variant"
+      ],
+      "events": [
+        "mdChange",
+        "mdClear",
+        "mdInput",
+        "mdPasswordToggle",
+        "mdSearch"
+      ],
+      "methods": [],
+      "slots": [
+        "trailing-icon"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+      ]
+    },
+    "md-time-picker": {
+      "properties": [
+        "cancelLabel",
+        "disabled",
+        "error",
+        "errorText",
+        "format",
+        "headline",
+        "hideTrigger",
+        "label",
+        "max",
+        "min",
+        "minuteStep",
+        "name",
+        "okLabel",
+        "open",
+        "required",
+        "supportingText",
+        "value"
+      ],
+      "events": [
+        "mdCancel",
+        "mdChange",
+        "mdClose",
+        "mdInput",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit.",
+        "Uses Material TimePicker; dialog native layout replaces docked web variants."
+      ]
+    },
+    "md-toolbar": {
+      "properties": [
+        "density"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        "",
+        "leading",
+        "trailing"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    },
+    "md-tooltip": {
+      "properties": [
+        "disabled",
+        "open",
+        "subhead",
+        "text"
+      ],
+      "events": [
+        "mdClose",
+        "mdOpen"
+      ],
+      "methods": [],
+      "slots": [
+        "",
+        "actions"
+      ],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
+        "Native visible tooltip surface toggles on tap; platform hover/delay/anchor positioning is not ported."
+      ]
+    },
+    "md-transfer-list": {
+      "properties": [
+        "disabled",
+        "emptyText",
+        "items",
+        "moveAllLeftLabel",
+        "moveAllRightLabel",
+        "moveLeftLabel",
+        "moveRightLabel",
+        "searchable",
+        "showSelectAll",
+        "singleStepOnly",
+        "sourceSearchPlaceholder",
+        "sourceTitle",
+        "targetSearchPlaceholder",
+        "targetTitle",
+        "value"
+      ],
+      "events": [
+        "mdChange",
+        "mdMove"
+      ],
+      "methods": [],
+      "slots": [],
+      "notes": [
+        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+      ]
+    }
+  }
+}

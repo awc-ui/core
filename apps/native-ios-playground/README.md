@@ -62,7 +62,7 @@ frames, and the browser Events panel displays callbacks from the actual AWC
 adapter. Changing initial properties or the theme restarts the native session.
 
 `AWCLivePreview --stdio` uses bounded JSON lines to configure one native view and
-accept click, text, key and frame commands, plus separate pointer down/up/cancel
+accept click, text, key and frame commands, plus separate button/icon-button pointer down/up/cancel
 commands for `md-button` (including move/leave for hover). By default each response
 contains a PNG frame, dimensions, a request ID, and native events since the last
 response. `{ "command": "stream", "enabled": true }` starts a 60 Hz native frame
@@ -141,3 +141,5 @@ These are native **macOS SwiftUI** renders, not iOS simulator screenshots. No GU
 ## Scope and verification
 
 The package and generated wrappers were compiled and linked with the macOS SwiftUI SDK. The iOS project was structurally validated; an iOS SDK was unavailable in the development environment. See `packages/native-ios/NativeSupport.json` for property, event, method and slot support, including platform differences. The Properties panel exposes the source contract, which includes properties not yet handled by the native adapter.
+
+Focused icon-button live-host verification after building: `node apps/native-ios-playground/scripts/test-live-icon-button.mjs`. It creates its own native sessions and checks captured layout, appearance inheritance, authored empty slots, held-pointer release, keyboard events and disabled guards.

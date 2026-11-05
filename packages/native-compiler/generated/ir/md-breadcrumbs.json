@@ -137,6 +137,10 @@
     {
       "name": "overflow-button",
       "description": "The button inside the overflow item."
+    },
+    {
+      "name": "separator",
+      "description": "Every separator glyph slot."
     }
   ],
   "cssProperties": [
@@ -218,6 +222,21 @@
           {
             "kind": "text",
             "value": ""
+          },
+          {
+            "kind": "element",
+            "tag": "slot",
+            "attributes": [
+              {
+                "name": "name",
+                "value": "MdBreadcrumbs.TAIL_SLOT"
+              }
+            ],
+            "children": []
+          },
+          {
+            "kind": "text",
+            "value": ""
           }
         ]
       },
@@ -229,22 +248,34 @@
   },
   "diagnostics": [
     {
+      "code": "DOM_OBSERVER",
+      "severity": "warning",
+      "message": "DOM mutation observation has no direct native counterpart.",
+      "line": 104
+    },
+    {
       "code": "DOM_QUERY",
       "severity": "warning",
-      "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 102
+      "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
+      "line": 116
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 102
+      "line": 116
+    },
+    {
+      "code": "ANIMATION_FRAME",
+      "severity": "warning",
+      "message": "Animation timing requires a native lifecycle adapter.",
+      "line": 262
     },
     {
       "code": "CANCELABLE_EVENT",
       "severity": "warning",
       "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
-      "line": 26
+      "line": 30
     }
   ],
   "source": {
@@ -252,7 +283,7 @@
     "styleUrl": "md-breadcrumbs.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "6302768835f1eee1de8058ecb23b02f8c42d1dfc5d22d72fb60302f1a9346d49"
+    "sha256": "ab5f31343fba6103b253855f593889961ca21cd8444c4c842e602c52647c70e5"
   },
   "styles": [
     {
@@ -272,21 +303,6 @@
         {
           "property": "--_text-color",
           "value": "var(--md-breadcrumbs-text-color, var(--md-sys-color-on-surface-variant, #49454F))",
-          "important": false
-        },
-        {
-          "property": "--_stagger",
-          "value": "var(--md-breadcrumbs-stagger, 40ms)",
-          "important": false
-        },
-        {
-          "property": "--_in-duration",
-          "value": "var(--md-sys-motion-spring-spatial-default-duration, 500ms)",
-          "important": false
-        },
-        {
-          "property": "--_in-easing",
-          "value": "var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00))",
           "important": false
         },
         {
@@ -363,229 +379,6 @@
         {
           "property": "gap",
           "value": "0 var(--_gap)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "from",
-      "context": "@keyframes md-breadcrumb-enter",
-      "declarations": [
-        {
-          "property": "opacity",
-          "value": "0",
-          "important": false
-        },
-        {
-          "property": "transform",
-          "value": "translateX(-8px)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "to",
-      "context": "@keyframes md-breadcrumb-enter",
-      "declarations": [
-        {
-          "property": "opacity",
-          "value": "1",
-          "important": false
-        },
-        {
-          "property": "transform",
-          "value": "translateX(0)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item)",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation",
-          "value": "md-breadcrumb-enter var(--_in-duration) var(--_in-easing) both",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item:nth-of-type(1))",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-delay",
-          "value": "calc(var(--_stagger) * 0)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item:nth-of-type(2))",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-delay",
-          "value": "calc(var(--_stagger) * 1)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item:nth-of-type(3))",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-delay",
-          "value": "calc(var(--_stagger) * 2)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item:nth-of-type(4))",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-delay",
-          "value": "calc(var(--_stagger) * 3)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item:nth-of-type(5))",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-delay",
-          "value": "calc(var(--_stagger) * 4)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item:nth-of-type(6))",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-delay",
-          "value": "calc(var(--_stagger) * 5)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item:nth-of-type(7))",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-delay",
-          "value": "calc(var(--_stagger) * 6)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item:nth-of-type(8))",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-delay",
-          "value": "calc(var(--_stagger) * 7)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item:nth-of-type(9))",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-delay",
-          "value": "calc(var(--_stagger) * 8)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item:nth-of-type(10))",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-delay",
-          "value": "calc(var(--_stagger) * 9)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item:nth-of-type(11))",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-delay",
-          "value": "calc(var(--_stagger) * 10)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "::slotted(md-breadcrumb-item:nth-of-type(12))",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-delay",
-          "value": "calc(var(--_stagger) * 11)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": ":host([dir=\"rtl\"])",
-      "context": null,
-      "declarations": []
-    },
-    {
-      "selector": ":host([dir=\"rtl\"]) ::slotted(md-breadcrumb-item),\n:host-context([dir=\"rtl\"]) ::slotted(md-breadcrumb-item)",
-      "context": null,
-      "declarations": [
-        {
-          "property": "animation-name",
-          "value": "md-breadcrumb-enter-rtl",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "from",
-      "context": "@keyframes md-breadcrumb-enter-rtl",
-      "declarations": [
-        {
-          "property": "opacity",
-          "value": "0",
-          "important": false
-        },
-        {
-          "property": "transform",
-          "value": "translateX(8px)",
-          "important": false
-        }
-      ]
-    },
-    {
-      "selector": "to",
-      "context": "@keyframes md-breadcrumb-enter-rtl",
-      "declarations": [
-        {
-          "property": "opacity",
-          "value": "1",
-          "important": false
-        },
-        {
-          "property": "transform",
-          "value": "translateX(0)",
           "important": false
         }
       ]
@@ -773,17 +566,6 @@
       ]
     },
     {
-      "selector": "::slotted(md-breadcrumb-item)",
-      "context": "@media (prefers-reduced-motion: reduce)",
-      "declarations": [
-        {
-          "property": "animation",
-          "value": "none",
-          "important": true
-        }
-      ]
-    },
-    {
       "selector": ".md-breadcrumbs__overflow-btn",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
@@ -902,36 +684,51 @@
         "separator",
         "maxItems",
         "itemsBeforeCollapse",
-        "itemsAfterCollapse"
+        "itemsAfterCollapse",
+        "density"
       ],
       "events": [
         "mdExpand"
       ],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "expand",
         "collapse"
       ],
-      "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
-    },
-    "android": {
-      "status": "adapter-implemented",
-      "properties": [],
-      "events": [],
-      "methods": [],
       "slots": [
         ""
       ],
-      "unsupportedProperties": [
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native renderer (SwiftUI / Compose): the wrapping list, separators, the collapse window with the overflow toggle, the current-page promotion and the staggered entrance computed from the authored md-breadcrumb-item children, as the source.",
+        "expand() / collapse() through AWCBreadcrumbsController emit mdExpand { expanded, itemCount } (cancelable like the source event; the state does not depend on it). The toggle moves focus to the first revealed link.",
+        "The twelve hooks through .awcBreadcrumbsAppearance(…) / AWCBreadcrumbsAppearanceScope; density follows the md3 ladder including the rung-only spacing tokens.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Mac Chrome 153 oracles (paint, interaction states and motion); the trail is a labelled navigation container."
+      ],
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": ".awcBreadcrumbsAppearance(AWCBreadcrumbsAppearance)",
+        "fields": [
+          "gap",
+          "separatorColor",
+          "textColor",
+          "stagger",
+          "linkColor",
+          "currentColor",
+          "currentBackground",
+          "disabledColor",
+          "hoverColor",
+          "stateLayerColor",
+          "itemGap",
+          "itemPadding"
+        ]
+      }
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
         "label",
         "expandLabel",
         "separator",
@@ -940,19 +737,44 @@
         "itemsAfterCollapse",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
         "mdExpand"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "expand",
         "collapse"
       ],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Composition row. Automatic collapse/maxItems and generated separators are not yet implemented."
+        "Dedicated native renderer (SwiftUI / Compose): the wrapping list, separators, the collapse window with the overflow toggle, the current-page promotion and the staggered entrance computed from the authored md-breadcrumb-item children, as the source.",
+        "expand() / collapse() through AWCBreadcrumbsController emit mdExpand { expanded, itemCount } (cancelable like the source event; the state does not depend on it). The toggle moves focus to the first revealed link.",
+        "The twelve hooks through .awcBreadcrumbsAppearance(…) / AWCBreadcrumbsAppearanceScope; density follows the md3 ladder including the rung-only spacing tokens.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Mac Chrome 153 oracles (paint, interaction states and motion); the trail is a labelled navigation container."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCBreadcrumbsAppearanceScope(AWCBreadcrumbsAppearance)",
+        "fields": [
+          "gap",
+          "separatorColor",
+          "textColor",
+          "stagger",
+          "linkColor",
+          "currentColor",
+          "currentBackground",
+          "disabledColor",
+          "hoverColor",
+          "stateLayerColor",
+          "itemGap",
+          "itemPadding"
+        ]
+      }
     }
   }
 }

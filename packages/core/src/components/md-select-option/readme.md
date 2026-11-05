@@ -110,7 +110,15 @@ root; style it through the parent's `option` / `option-selected` /
   If an autocomplete's option set has to shrink at runtime, drive it from the
   `options` property instead of from markup children.
 - The label the parent renders is `label`, or the element's trimmed text
-  content when `label` is empty.
+  content when `label` is empty. Editing that text at runtime is picked up
+  like a prop change.
+- The global `hidden` attribute takes an option out of the list, like
+  `<option hidden>` in a native select: it is not rendered, cannot be reached
+  or chosen, and is left out of `md-multi-select`'s "Select all". Toggling
+  `hidden` at runtime is picked up. Its label still names an `md-select`
+  trigger while it is the current value, so
+  `<md-select-option value="" hidden selected>Choose one</md-select-option>`
+  works as a placeholder row.
 - `icon-color` is applied inline to the projected row's glyph, and is **dropped
   on the virtualized (WASM) path** — very large lists fall back to the parent's
   `--md-select-option-icon-color` / `--md-multi-select-option-icon-color` /

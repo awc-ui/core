@@ -224,7 +224,7 @@ export class MdTabs {
     }
 
     if (targetIndex !== null && targetIndex !== currentIndex) {
-      this.tabs[targetIndex].focus();
+      this.tabs[targetIndex].focus({ preventScroll: true });
       this.activateTab(targetIndex);
     }
   }
@@ -389,7 +389,11 @@ export class MdTabs {
   /** Property writes reflect to the attribute ASYNC — read the prop first
    *  so a just-disabled tab is never left holding the tab stop. */
   private isDisabledTab(tab: HTMLElement): boolean {
-    return (tab as HTMLElement & { disabled?: boolean }).disabled === true || tab.hasAttribute('disabled');
+    // A child's watcher fires before its reflected attribute is updated.
+    // Prefer the reactive property so reenabling a tab immediately restores
+    // the group's Tab stop; the attribute is for not-yet-upgraded children.
+    const disabled = (tab as HTMLElement & { disabled?: boolean }).disabled;
+    return typeof disabled === 'boolean' ? disabled : tab.hasAttribute('disabled');
   }
 
   /** Clamp into range, preferring an enabled tab (falls back to nearest). */
@@ -519,12 +523,30 @@ export class MdTabs {
   }
 
   private scrollTabIntoView(index: number) {
-    const tab = this.tabs[index];
-    if (!tab || !this.containerEl) return;
-    tab.scrollIntoView?.({
+    const tab = this.tabs[index], container = this.containerEl;
+    if (!tab || !container || container.clientWidth <= 0 || container.scrollWidth <= container.clientWidth) return;
+    const box = container.getBoundingClientRect(), target = tab.getBoundingClientRect();
+    if (box.width <= 0 || target.width <= 0) return;
+    // Rects are painted pixels, whereas scrollBy accepts CSS pixels. Include
+    // the border offset so a scaled strip measures its actual inner viewport.
+    const scale = box.width / (container.offsetWidth || container.clientWidth);
+    if (!Number.isFinite(scale) || scale <= 0) return;
+    const left = box.left + container.clientLeft * scale;
+    const right = left + container.clientWidth * scale;
+    const before = target.left - left, after = target.right - right;
+    const epsilon = 0.5 * scale;
+    if (before >= -epsilon && after <= epsilon) return;
+    // An oversized tab spanning both edges is already as visible as possible.
+    // Otherwise move only as far as the nearest edge, including oversized tabs
+    // entirely to one side. Physical deltas work in both LTR and RTL strips.
+    if (before < 0 && after > 0) return;
+    const distance = Math.abs(before) < Math.abs(after) ? before : after;
+    if (Math.abs(distance) <= epsilon) return;
+    // Element.scrollIntoView also moves scrollable ancestors and the document.
+    // Selection owns only this strip's horizontal scroll position.
+    container.scrollBy({
+      left: distance / scale,
       behavior: this.prefersReducedMotion() ? 'auto' : 'smooth',
-      block: 'nearest',
-      inline: 'nearest',
     });
   }
 

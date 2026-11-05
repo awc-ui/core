@@ -1,4 +1,6 @@
 import { Config } from '@stencil/core';
+import path from 'node:path';
+import { coreStylesOutputTarget } from '../../scripts/core-styles.cjs';
 
 /**
  * CSR-only custom-elements build -> dist/components-csr.
@@ -33,7 +35,11 @@ export const config: Config = {
   sourceMap: true,
   minifyJs: true,
   minifyCss: true,
+  invisiblePrehydration: false,
   outputTargets: [
+    // A custom-elements-only build has no normalized global CSS target.
+    // Keep the package's public CSS export available when this runs alone.
+    coreStylesOutputTarget({ additionalFiles: [path.join(__dirname, 'dist/md3/md3.css')] }),
     {
       type: 'dist-custom-elements',
       dir: 'dist/components-csr',

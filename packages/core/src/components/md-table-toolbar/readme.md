@@ -88,10 +88,13 @@ and `supporting-text` (markup replacements for the matching props),
 - `num-selected` is otherwise **controlled** — you keep it in sync from the
   table's `mdSelectionChange` event, whose `detail.count` is the number you
   want. Or set `auto-bind` and skip the wiring.
-- `auto-bind` resolves the table **once, on load**, as
-  `closest('md-table-container')?.querySelector('md-table')`. Both elements
-  must already be inside the same `md-table-container`; a table swapped in
-  later is not picked up.
+- `auto-bind` resolves the table as
+  `closest('md-table-container')?.querySelector('md-table')` on load, on every
+  re-connection (a moved toolbar) and when `auto-bind` turns on, and seeds
+  `num-selected` from the table's current selection, so a toolbar inserted
+  after rows were selected shows the right count. Both elements must be inside
+  the same `md-table-container`; a table swapped in later is picked up only on
+  the next re-connection. Removing the toolbar unbinds it.
 - **The `headline` slot only renders while the `headline` prop is non-empty**,
   and the same holds for `supporting-text`. To slot arbitrary markup, either
   set the prop to any non-empty string (the slot replaces the text) or leave

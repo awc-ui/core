@@ -10,10 +10,13 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.zIndex
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -37,110 +40,128 @@ fun AWCComponent(
     onEvent: (String, AWCValue) -> Unit = { _, _ -> },
     content: (@Composable (String) -> Unit)? = null,
 ) {
-    val source = awcProperties(tag, properties)
+    val tableCheckbox = if(tag=="md-checkbox") LocalNativeTableCheckbox.current else null
+    val source = awcProperties(tag, properties).let { if(tableCheckbox != null) it + tableCheckbox.props else it }
     val formControl = rememberAutomaticFormControl(tag, source, onEvent)
     val p = formControl?.properties ?: source
-    val controlEvent = formControl?.emit ?: onEvent
+    if(tag in setOf("md-loading-indicator","md-skeleton") && p.bool("hidden")) return
+    var loadingFocused by remember(tag) { mutableStateOf(false) }
+    val suppliedModifier=if(tag=="md-loading-indicator") Modifier.onFocusChanged { loadingFocused=it.isFocused }.then(modifier) else modifier
+    val inheritedDensity = resolveAWCDensity(p["density"], LocalAWCNativeDensity.current)
+    val tableCell = if(tag=="md-table-cell") remember { NativeTableCellData() }.also { it.update(p) } else null
+    val controlEvent: EventSink = (formControl?.emit ?: onEvent).let { base -> if(tableCheckbox != null) { n, d -> base(n, d); if(n == "mdChange") tableCheckbox.onChange(awcMap(d)["checked"] == true) } else base }
     val spacing = (12 + p.int("density") * 2).coerceAtLeast(4).dp
-    Box(modifier) {
+    val menu=LocalNativeFabMenu.current
+    val menuInspection=LocalFabMenuInspection.current
+    val menuChild=if(tag=="md-fab-menu-item" && menu!=null) remember(menu) { menu.nextChildID() } else null
+    val inspection = if(menuChild!=null && menuInspection!=null)
+        menuInspection.copy(id="${menuInspection.id}.item-$menuChild",entered=true,parentId=menuInspection.id)
+        else LocalAWCInspection.current?.takeUnless { it.entered }?.copy(entered = true)
+    val nativeAnchor=rememberNativeAnchor(tag,p)
+    // Button supplies its actual visual root and parts; other adapters still expose
+    // their measured component root without inventing uninstrumented style values.
+    val groupChild=if(tag in setOf("md-button","md-icon-button") && LocalSelection.current?.tag=="md-button-group") remember(tag) { ButtonGroupChild(Any(),tag) } else null
+    val segmentChild=if(tag=="md-segmented-button") remember { SegmentedChild(Any()) } else null
+    // A floating md-accordion stacks among its siblings with the source z-index (fixed panels default to 1000).
+    val accordionFloating=if(tag=="md-accordion") remember { NativeAccordionFloatingHolder() } else null
+    val accordionChild=if(tag=="md-accordion-item") remember { NativeAccordionChild(NativeAccordionItemState(java.util.UUID.randomUUID().toString(),
+        p.bool("expanded"),p.bool("disabled"),p.int("headingLevel",3),p.str("regionRole","region"),p.bool("collapsible",true))) } else null
+    // A trail's crumb reports its holder as layout id: the trail computes the source model from the authored order.
+    val breadcrumbChild=if(tag=="md-breadcrumb-item" && LocalBreadcrumbsTrail.current!=null) remember { BreadcrumbChild() } else null
+    // A tablist's tab / a panel region's panel reports its holder as layout id (the parent computes selection and layout).
+    val tabChild=if(tag=="md-tab" && LocalTabsStrip.current!=null) remember { TabChild() } else null
+    val navigationChild=if(tag=="md-navigation-tab" && LocalNavigationBarRow.current!=null) remember { NavigationChild() } else null
+    val panelChild=if(tag=="md-tab-panel" && LocalTabPanels.current) remember { PanelChild() } else null
+    // A toolbar's direct child reports its holder as layout id (the toolbar lays out its sections, roves its activators and tints its icon buttons).
+    val toolbarChild=if(LocalToolbarRow.current!=null) remember { ToolbarChild() } else null
+    val toolbarSlot=LocalToolbarSlot.current
+    if(toolbarChild!=null) SideEffect { toolbarChild.tag=tag; toolbarChild.props=p; toolbarChild.slot=toolbarSlot }
+    // An md-step of a stepper emits its header control and panel as the stepper's own layout children (authored order = keyboard order).
+    val stepChild=if(tag=="md-step" && LocalStepperContext.current!=null) remember { StepChild() } else null
+    if(stepChild!=null) { NativeStepParts(p, onEvent, content, stepChild); return }
+    val menuSlot=rememberNativeMenuSlot(tag,p)
+    val measuredModifier = (if (tag in setOf("md-button","md-icon-button","md-button-group","md-fab","md-divider","md-fab-menu","md-fab-menu-item","md-badge","md-status-dot","md-segmented-button","md-segmented-button-set","md-split-button","md-loading-indicator","md-meter","md-progress-indicator","md-skeleton","md-snackbar","md-tooltip","md-menu","md-menu-item","md-sub-menu-item","md-menu-item-group") || accordionChild!=null) suppliedModifier else suppliedModifier.inspectAWCNode(inspection, "", tag, allowZeroSize = accordionFloating?.zIndex != null))
+        .nativeAnchorBounds(nativeAnchor)
+        .nativeMenuAnchorAuto(p.str("id"),p.str("aria-label").ifEmpty { p.str("label") })
+        .then(if(tag == "md-badge" && (LocalAWCIconButtonSlot.current || LocalAWCBadgeHost.current))
+            Modifier.layoutId(NativeBadgePlacement.from(p, LocalAWCBadgeAppearance.current.normalized()))
+            else if(tag == "md-status-dot" && LocalAWCStatusDotHost.current)
+                Modifier.layoutId(NativeStatusDotMetrics.from(p, LocalAWCStatusDotAppearance.current,
+                    inheritedDensity, androidx.compose.ui.platform.LocalDensity.current.density.toDouble()))
+            else if(tag == "md-avatar" && LocalAWCIconButtonSlot.current) Modifier.layoutId("awc-icon-avatar") else if(tableCell != null) Modifier.layoutId(tableCell) else Modifier)
+    Box(measuredModifier.awcCardContentMarker(tag,p.bool("hidden")).nativeMenuSlot(menuSlot).then(if(toolbarChild!=null) Modifier.layoutId(toolbarChild) else if(navigationChild!=null) Modifier.layoutId(navigationChild) else if(tabChild!=null) Modifier.layoutId(tabChild) else if(panelChild!=null) Modifier.layoutId(panelChild) else if(breadcrumbChild!=null) Modifier.layoutId(breadcrumbChild) else if(groupChild!=null) Modifier.layoutId(groupChild) else if(segmentChild!=null) Modifier.layoutId(segmentChild) else if(accordionChild!=null) Modifier.layoutId(accordionChild).then(AccordionChildMarkerElement(accordionChild)) else Modifier)
+        .then(accordionFloating?.zIndex?.let { Modifier.zIndex(it) } ?: if(tag=="md-table-head") Modifier.zIndex(2f) else if(tag=="md-table-foot") Modifier.zIndex(1f) else Modifier),propagateMinConstraints=groupChild!=null || segmentChild!=null || accordionChild!=null || tag=="md-segmented-button-set") {
+      CompositionLocalProvider(LocalToolbarRow provides null,LocalAWCInspection provides inspection,LocalButtonGroupChild provides groupChild,
+          LocalNativeAnchor provides nativeAnchor,LocalSegmentedChild provides segmentChild,
+          LocalAWCNativeDensity provides inheritedDensity,LocalNativeMenuSlot provides menuSlot,LocalAWCDensityRungs provides awcDensityRungs(p["density"])) {
         when (tag) {
-            "md-button" -> NativeButton(p, onEvent, content)
-            "md-icon-button", "md-fab", "md-fab-menu-item", "md-split-button", "md-segmented-button" -> Action(tag, p, onEvent, content)
-            "md-checkbox", "md-radio", "md-switch", "md-slider", "md-rating", "md-text-field", "md-number-field", "md-otp-field", "md-search", "md-select", "md-multi-select", "md-autocomplete", "md-select-option" -> InputComponent(tag, p, controlEvent, content, formControl?.form)
-            "md-date-picker", "md-time-picker", "md-color-picker" -> PickerComponent(tag, p, controlEvent)
-            "md-dialog", "md-bottom-sheet", "md-side-sheet", "md-menu", "md-fab-menu", "md-tooltip", "md-snackbar" -> OverlayComponent(tag, p, onEvent, content)
-            "md-bar-chart", "md-line-chart", "md-area-chart", "md-pie-chart", "md-sparkline" -> ChartComponent(tag, p, onEvent)
+            "md-button" -> AWCToolbarMember(toolbarChild) { NativeButton(toolbarChild?.roved(p) ?: p, onEvent, content) }
+            "md-icon-button" -> AWCToolbarMember(toolbarChild) { NativeIconButton(toolbarChild?.roved(p) ?: p, onEvent, content) }
+            "md-fab" -> AWCToolbarMember(toolbarChild) { NativeFab(p, onEvent, content) }
+            "md-fab-menu" -> NativeFabMenu(p,onEvent,content)
+            "md-fab-menu-item" -> NativeFabMenuItem(p,onEvent,content)
+            "md-snackbar" -> NativeSnackbar(p,onEvent,content)
+            "md-tooltip" -> NativeTooltip(p,onEvent,content)
+            "md-segmented-button" -> NativeSegmentedButton(p,onEvent,content)
+            "md-segmented-button-set" -> NativeSegmentedSet(p,onEvent,content)
+            "md-split-button" -> NativeSplitButton(p, onEvent, content)
+            "md-switch" -> NativeSwitch(p, onEvent, controlEvent, content)
+            "md-checkbox" -> NativeCheckbox(p, onEvent, controlEvent, content)
+            "md-radio" -> NativeRadio(p, onEvent, controlEvent, content)
+            "md-text-field" -> NativeTextField(p, onEvent, controlEvent, content, formControl?.field, formControl?.form)
+            "md-number-field" -> NativeNumberField(p, onEvent, controlEvent, content, formControl?.field, formControl?.form)
+            "md-otp-field" -> NativeOTPField(p, onEvent, controlEvent, content, formControl?.field, formControl?.form)
+            // Dedicated renderers (NativeSliderView.kt / NativeRatingView.kt): Web geometry, motion, events, per-thumb inputs.
+            // Host-authored properties outside a form (the component's own writes live in its model until the host changes them).
+            "md-slider" -> NativeSliderView(if (formControl?.form != null) p else source, controlEvent)
+            "md-rating" -> NativeRatingView(if (formControl?.form != null) p else source, controlEvent)
+            "md-select" -> NativeSelect(p, onEvent, controlEvent, content, formControl?.field, formControl?.form)
+            "md-select-option" -> if(LocalAWCSelectOptions.current!=null) NativeSelectOption(p, content) else InputComponent(tag, p, controlEvent, content, formControl?.form)
+            "md-multi-select" -> NativeMultiSelect(p, onEvent, controlEvent, content, formControl?.field, formControl?.form)
+            "md-text-field", "md-number-field", "md-otp-field", "md-search", "md-autocomplete" -> InputComponent(tag, p, controlEvent, content, formControl?.form)
+            "md-color-picker" -> NativeColorPicker(p, controlEvent, content)
+            "md-time-picker" -> NativeTimePicker(p, controlEvent)
+            "md-date-picker" -> PickerComponent(tag, p, controlEvent)
+            "md-dialog" -> NativeDialog(p, onEvent, content)
+            "md-bottom-sheet" -> NativeBottomSheet(p, onEvent, content)
+            "md-side-sheet" -> NativeSideSheet(p, onEvent, content)
+            "md-menu" -> NativeMenu(p, onEvent, content)
+            // Dedicated renderer (NativeChartView.kt): the ported engine's scene, hover layer, tooltips, legend, zoom, keyboard, motion.
+            "md-bar-chart", "md-line-chart", "md-area-chart", "md-pie-chart", "md-sparkline" -> NativeChartView(tag, p, onEvent, content)
             "md-transfer-list" -> TransferList(p, onEvent)
-            "md-organization-chart" -> OrganizationChart(p, onEvent)
-            "md-table", "md-table-container", "md-table-head", "md-table-body", "md-table-foot", "md-table-row", "md-table-cell", "md-table-sort-label", "md-table-expand-toggle", "md-table-pagination", "md-table-toolbar" -> TableComponent(tag, p, onEvent, content)
-            "md-accordion", "md-accordion-item" -> Accordion(tag, p, onEvent, content)
-            "md-navigation-bar", "md-navigation-rail", "md-tabs", "md-navigation-tab", "md-navigation-rail-tab", "md-tab", "md-tab-panels", "md-tab-panel", "md-stepper", "md-step", "md-breadcrumbs", "md-breadcrumb-item" -> NavigationComponent(tag, p, onEvent, content)
-            "md-list" -> SelectionContainer(tag, p, onEvent, content)
-            "md-menu-item-group" -> Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (p.label().isNotBlank()) Text(p.label(), style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(spacing).semantics { heading() })
-                content?.invoke("")
-            }
-            "md-list-item", "md-menu-item", "md-sub-menu-item" -> {
-                var localSelected by awcState(p["selected"]) { p.bool("selected") }
-                val parent = LocalSelection.current?.takeIf { it.tag == "md-list" && it.props.str("selectionMode") != "none" }
-                val identity = remember { Any() }
-                val index = parent?.register(identity, p.str("headline"), localSelected) ?: 0
-                val selected = parent?.states?.get(identity) ?: localSelected
-                DisposableEffect(parent, identity) { onDispose { parent?.remove(identity) } }
-                LaunchedEffect(p["selected"]) { if(parent != null) parent.states[identity] = p.bool("selected") }
-                var expanded by awcState(p["expanded"]) { p.bool("expanded") }
-                Column {
-                    ListItem(
-                        headlineContent = { if (p.str("headline").isNotEmpty()) Text(p.str("headline")) else content?.invoke("") },
-                        supportingContent = if (p.str("supportingText").isNotEmpty()) ({ Text(p.str("supportingText")) }) else null,
-                        overlineContent = if (p.str("overline").isNotEmpty()) ({ Text(p.str("overline")) }) else null,
-                        leadingContent = { if (p.str("leadingIcon").isNotBlank()) Glyph(p.str("leadingIcon")); content?.invoke("leading") },
-                        trailingContent = {
-                            if (p.bool("expandable") || tag == "md-sub-menu-item") IconButton(onClick = { expanded = !expanded; onEvent("mdExpand", mapOf("expanded" to expanded)) }, enabled = p.enabled()) { Glyph(if (expanded) "expand_less" else "expand_more") }
-                            else if (p.str("trailingSupportingText", p.str("trailingText")).isNotBlank()) Text(p.str("trailingSupportingText", p.str("trailingText")))
-                            else if (p.str("type") in listOf("checkbox", "radio")) Checkbox(selected, null)
-                            content?.invoke("trailing")
-                        },
-                        colors = ListItemDefaults.colors(containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent),
-                        modifier = Modifier.clickable(enabled = p.enabled()) {
-                            localSelected = parent?.toggle(identity) ?: !localSelected
-                            onEvent("mdClick", null)
-                            if (tag == "md-list-item") { onEvent("mdItemClick", mapOf("index" to index, "selected" to localSelected)); onEvent("mdItemSelect", mapOf("index" to index, "selected" to localSelected)) }
-                        }.semantics { this.selected = selected }
-                    )
-                    if (expanded) content?.invoke(if(tag == "md-list-item") "expanded-content" else "submenu")
-                    if (p.bool("divider")) HorizontalDivider()
-                }
-            }
-            "md-button-group", "md-segmented-button-set" -> SelectionContainer(tag, p, onEvent, content)
-            "md-card" -> {
-                val shape = RoundedCornerShape(16.dp)
-                val body: @Composable ColumnScope.() -> Unit = { content?.invoke("") }
-                val m = if (p.bool("fullWidth")) Modifier.fillMaxWidth() else Modifier
-                if (p.bool("interactive")) Card(onClick = { onEvent("mdClick", null) }, enabled = p.enabled(), shape = shape, modifier = m, content = body)
-                else when(p.str("variant")) {
-                    "outlined" -> OutlinedCard(modifier = m, shape = shape, content = body)
-                    "filled" -> Card(modifier = m, shape = shape, content = body)
-                    else -> ElevatedCard(modifier = m, shape = shape, content = body)
-                }
-            }
-            "md-chip" -> {
-                var selected by awcState(p["selected"]) { p.bool("selected") }
-                var removed by remember { mutableStateOf(false) }
-                if (!removed) InputChip(selected = selected, onClick = {
-                    if (p.bool("selectable") || p.str("variant") == "filter") { selected = !selected; onEvent("mdSelect", mapOf("selected" to selected)) }
-                    onEvent("mdClick", null)
-                }, enabled = p.enabled(), label = { if (p.label().isNotBlank()) Text(p.label()) else content?.invoke("") },
-                    leadingIcon = if (p.str("icon").isNotBlank()) ({ Glyph(p.str("icon")) }) else null,
-                    trailingIcon = if (p.bool("removable")) ({ IconButton(onClick = { removed = true; onEvent("mdRemove", null) }, modifier = Modifier.size(24.dp), enabled = p.enabled()) { Glyph("close") } }) else null)
-            }
-            "md-avatar" -> Avatar(p, onEvent, content)
-            "md-badge" -> Badge { if (p.str("variant") != "dot") Text(if (p.num("value") > p.num("max", 99f)) "${p.int("max", 99)}+" else p.str("value")) }
-            "md-divider" -> if (p.bool("vertical")) VerticalDivider(Modifier.height(48.dp)) else HorizontalDivider(Modifier.padding(start = if (p.bool("inset") || p.bool("insetStart")) 16.dp else 0.dp, end = if (p.bool("inset") || p.bool("insetEnd")) 16.dp else 0.dp))
-            "md-progress-indicator", "md-loading-indicator", "md-meter" -> {
-                val min = p.num("min")
-                val max = p.num("max", if (tag == "md-meter") 100f else 1f).coerceAtLeast(min + 0.001f)
-                val value = ((p.num("value") - min) / (max - min)).coerceIn(0f, 1f)
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (p.bool("showLabel", true) && p.label().isNotEmpty()) Text(p.label())
-                    if (p.str("variant") == "circular" || tag == "md-loading-indicator") {
-                        if (p.bool("indeterminate") || tag == "md-loading-indicator") CircularProgressIndicator(Modifier.size(40.dp)) else CircularProgressIndicator(progress = { value }, modifier = Modifier.size(40.dp))
-                    } else {
-                        if (p.bool("indeterminate")) LinearProgressIndicator(Modifier.fillMaxWidth()) else LinearProgressIndicator(progress = { value }, modifier = Modifier.fillMaxWidth())
-                    }
-                    if (p.bool("showValue")) Text(p.str("valueText", "${p.num("value")}"))
-                }
-                LaunchedEffect(value) { if (tag == "md-progress-indicator" && value >= 1f) onEvent("mdComplete", null) }
-            }
-            "md-skeleton" -> Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.semantics { if (p.bool("announce")) contentDescription = p.str("ariaLabelProp", "Loading") }) {
-                repeat(p.int("lines", 1).coerceIn(1, 30)) { Box(Modifier.fillMaxWidth(if (it % 2 == 0) 1f else .75f).height(p.num("height", 24f).coerceIn(8f, 200f).dp).clip(if (p.str("variant") == "circular") CircleShape else RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) }
-            }
-            "md-status-dot" -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                val color = when(p.str("state")) { "success", "online" -> Color(0xff388e3c); "error", "danger", "busy" -> MaterialTheme.colorScheme.error; "warning", "away" -> Color(0xffffa000); else -> MaterialTheme.colorScheme.primary }
-                Box(Modifier.size(12.dp).clip(if (p.str("shape") == "square") RoundedCornerShape(2.dp) else CircleShape).background(color).semantics { contentDescription = p.label(p.str("state")) })
-                if (p.bool("inline")) Text(p.label())
-            }
-            "md-toolbar", "md-app-bar" -> Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(16.dp)) {
+            "md-organization-chart" -> NativeOrgChart(p, onEvent, content)
+            "md-table", "md-table-container", "md-table-head", "md-table-body", "md-table-foot", "md-table-row", "md-table-cell", "md-table-sort-label", "md-table-expand-toggle", "md-table-pagination", "md-table-toolbar" -> NativeTableFamily(tag, p, onEvent, content, tableCell)
+            "md-accordion" -> NativeAccordionGroup(p, onEvent, content, accordionFloating!!)
+            "md-accordion-item" -> NativeAccordionItem(p, onEvent, content, accordionChild!!, inspection)
+            "md-breadcrumbs" -> NativeBreadcrumbs(p, onEvent, content)
+            "md-navigation-bar" -> NativeNavigationBar(p, onEvent, content)
+            "md-navigation-tab" -> NativeNavigationTab(p, onEvent, content, navigationChild, properties.keys)
+            "md-tabs" -> NativeTabs(p, onEvent, content)
+            "md-tab" -> NativeTab(p, onEvent, content, tabChild)
+            "md-tab-panels" -> NativeTabPanels(p, onEvent, content)
+            "md-tab-panel" -> NativeTabPanel(p, onEvent, content, panelChild)
+            "md-breadcrumb-item" -> NativeBreadcrumbItem(p, onEvent, content, breadcrumbChild)
+            // Dedicated renderers (NativeStepper.kt): Web geometry, motion, navigation rules and announcements.
+            "md-stepper" -> NativeStepper(p, onEvent, content)
+            "md-step" -> NativeStepStandalone(p, onEvent, content)
+            "md-navigation-bar", "md-navigation-rail", "md-tabs", "md-navigation-tab", "md-navigation-rail-tab", "md-tab", "md-tab-panels", "md-tab-panel", "md-breadcrumbs", "md-breadcrumb-item" -> NavigationComponent(tag, p, onEvent, content)
+            "md-list" -> NativeList(p, onEvent, content)
+            "md-menu-item-group" -> NativeMenuGroup(p, content)
+            "md-list-item" -> NativeListItem(p, onEvent, content)
+            "md-menu-item", "md-sub-menu-item" -> NativeMenuRowHost(tag, p, onEvent, content)
+            "md-button-group" -> SelectionContainer(tag, p, onEvent, content)
+            "md-card" -> NativeCard(p, onEvent) { content?.invoke("") }
+            "md-chip" -> NativeChip(p, onEvent, content)
+            "md-avatar" -> NativeAvatar(p, onEvent, content)
+            "md-badge" -> NativeBadge(p, content)
+            "md-divider" -> NativeDivider(p)
+            "md-loading-indicator" -> NativeLoadingIndicator(p,loadingFocused)
+            "md-meter" -> NativeMeter(p)
+            "md-progress-indicator" -> NativeProgressIndicator(p,onEvent)
+            "md-skeleton" -> NativeSkeleton(p)
+            "md-status-dot" -> NativeStatusDot(p)
+            "md-toolbar" -> NativeToolbar(p, onEvent, content)
+            "md-app-bar" -> Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(16.dp)) {
                 Row(Modifier.fillMaxWidth().padding(spacing), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     content?.invoke("leading")
                     if (p.str("leadingIcon").isNotBlank()) IconButton(onClick = { onEvent("mdLeadingClick", null) }) { Glyph(p.str("leadingIcon"), p.str("leadingIconLabel")) }
@@ -152,9 +173,10 @@ fun AWCComponent(
                     content?.invoke("trailing")
                 }
             }
-            "md-ripple" -> Box(Modifier.clip(RoundedCornerShape(16.dp)).clickable(enabled = p.enabled()) {}) { content?.invoke("") }
+            "md-ripple" -> NativeRippleNode(p)
             else -> error("No native Android adapter for $tag")
         }
+      }
     }
 }
 
@@ -239,17 +261,3 @@ fun AWCComponent(
     }
 }
 
-@Composable private fun Accordion(tag: String, p: Props, emit: EventSink, slot: Slot?) {
-    if(tag == "md-accordion") { SelectionContainer(tag, p, emit, slot); return }
-    var localExpanded by awcState(p["expanded"]) { p.bool("expanded") }
-    val parent = LocalSelection.current?.takeIf { it.tag == "md-accordion" }
-    val identity = remember { Any() }
-    val index = parent?.register(identity, p.str("headline"), localExpanded) ?: 0
-    val expanded = parent?.states?.get(identity) ?: localExpanded
-    DisposableEffect(parent, identity) { onDispose { parent?.remove(identity) } }
-    LaunchedEffect(p["expanded"]) { if(parent != null) parent.states[identity] = p.bool("expanded") || index in parent.props.str("defaultExpanded").split(",").mapNotNull { it.trim().toIntOrNull() } }
-    OutlinedCard {
-        ListItem(headlineContent = { Text(p.str("headline")) }, supportingContent = { if(p.str("supportingText").isNotBlank()) Text(p.str("supportingText")) }, leadingContent = { if(p.str("icon").isNotBlank()) Glyph(p.str("icon")) }, trailingContent = { Glyph(if(expanded) "expand_less" else "expand_more") }, modifier = Modifier.fillMaxWidth().clickable(enabled = p.enabled() && p.bool("collapsible", true)) { localExpanded = parent?.toggle(identity) ?: !localExpanded; emit("mdItemToggle", mapOf("expanded" to localExpanded, "index" to index)) }.semantics { stateDescription = if(expanded) "Expanded" else "Collapsed"; heading() })
-        if(expanded) Box(Modifier.padding(16.dp)) { slot?.invoke("") }
-    }
-}

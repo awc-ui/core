@@ -1,0 +1,771 @@
+{
+ "tag": "md-organization-chart",
+ "case": "horizontal",
+ "html": "<md-organization-chart data-ax-node=\"n0\" id=\"example-md-organization-chart\"></md-organization-chart>",
+ "props": {
+  "n0": {
+   "collapseLabel": "Collapse",
+   "collapsible": true,
+   "density": 0,
+   "expandLabel": "Expand",
+   "label": "Product team",
+   "nodes": [
+    {
+     "children": [
+      {
+       "id": "design",
+       "name": "Sam Lee",
+       "title": "Design"
+      },
+      {
+       "children": [
+        {
+         "id": "dev",
+         "name": "Casey Diaz",
+         "title": "Developer"
+        }
+       ],
+       "id": "eng",
+       "name": "Robin Chen",
+       "title": "Engineering"
+      },
+      {
+       "id": "ops",
+       "name": "Finley Ross",
+       "selectable": false,
+       "title": "Operations"
+      }
+     ],
+     "id": "lead",
+     "name": "Alex Morgan",
+     "title": "Product lead"
+    }
+   ],
+   "orientation": "horizontal",
+   "selectedIds": [
+    "design"
+   ],
+   "selectionMode": "single"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   760,
+   294
+  ],
+  "children": [
+   {
+    "role": "generic",
+    "name": "",
+    "ignored": false,
+    "frame": [
+     16,
+     16,
+     728,
+     262
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "tree",
+        "name": "Product team",
+        "ignored": false,
+        "multiselectable": false,
+        "orientation": "vertical",
+        "required": false,
+        "frame": [
+         67,
+         24,
+         612,
+         246
+        ],
+        "children": [
+         {
+          "role": "treeitem",
+          "name": "Alex Morgan Product lead",
+          "ignored": false,
+          "focusable": true,
+          "level": 1,
+          "expanded": true,
+          "selected": false,
+          "frame": [
+           67,
+           24,
+           612,
+           246
+          ],
+          "children": [
+           {
+            "role": "generic",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             67,
+             116,
+             176,
+             62
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true,
+                "children": [
+                 {
+                  "role": "StaticText",
+                  "name": "Alex Morgan",
+                  "ignored": false,
+                  "frame": [
+                   134,
+                   130,
+                   85,
+                   17
+                  ],
+                  "children": [
+                   {
+                    "role": "InlineTextBox",
+                    "name": "Alex Morgan",
+                    "ignored": false
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true,
+                "children": [
+                 {
+                  "role": "StaticText",
+                  "name": "Product lead",
+                  "ignored": false,
+                  "frame": [
+                   134,
+                   151,
+                   67.390625,
+                   14
+                  ],
+                  "children": [
+                   {
+                    "role": "InlineTextBox",
+                    "name": "Product lead",
+                    "ignored": false
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "role": "generic",
+              "name": "",
+              "ignored": false,
+              "frame": [
+               230,
+               135,
+               24,
+               24
+              ],
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true,
+                "children": [
+                 {
+                  "role": "none",
+                  "name": "",
+                  "ignored": true,
+                  "children": [
+                   {
+                    "role": "none",
+                    "name": "",
+                    "ignored": true,
+                    "children": [
+                     {
+                      "role": "none",
+                      "name": "",
+                      "ignored": true
+                     }
+                    ]
+                   },
+                   {
+                    "role": "none",
+                    "name": "",
+                    "ignored": true
+                   },
+                   {
+                    "role": "none",
+                    "name": "",
+                    "ignored": true,
+                    "children": [
+                     {
+                      "role": "none",
+                      "name": "",
+                      "ignored": true,
+                      "children": [
+                       {
+                        "role": "none",
+                        "name": "",
+                        "ignored": true
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "group",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             243,
+             30,
+             436,
+             234
+            ],
+            "children": [
+             {
+              "role": "treeitem",
+              "name": "Sam Lee Design",
+              "ignored": false,
+              "focusable": true,
+              "level": 2,
+              "selected": true,
+              "frame": [
+               271,
+               30,
+               204,
+               74
+              ],
+              "children": [
+               {
+                "role": "generic",
+                "name": "",
+                "ignored": false,
+                "frame": [
+                 299,
+                 36,
+                 176,
+                 62
+                ],
+                "children": [
+                 {
+                  "role": "none",
+                  "name": "",
+                  "ignored": true
+                 },
+                 {
+                  "role": "none",
+                  "name": "",
+                  "ignored": true
+                 },
+                 {
+                  "role": "none",
+                  "name": "",
+                  "ignored": true,
+                  "children": [
+                   {
+                    "role": "none",
+                    "name": "",
+                    "ignored": true,
+                    "children": [
+                     {
+                      "role": "StaticText",
+                      "name": "Sam Lee",
+                      "ignored": false,
+                      "frame": [
+                       366,
+                       50,
+                       57.59375,
+                       16
+                      ],
+                      "children": [
+                       {
+                        "role": "InlineTextBox",
+                        "name": "Sam Lee",
+                        "ignored": false
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "role": "none",
+                    "name": "",
+                    "ignored": true,
+                    "children": [
+                     {
+                      "role": "StaticText",
+                      "name": "Design",
+                      "ignored": false,
+                      "frame": [
+                       366,
+                       71,
+                       37.359375,
+                       14
+                      ],
+                      "children": [
+                       {
+                        "role": "InlineTextBox",
+                        "name": "Design",
+                        "ignored": false
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "role": "treeitem",
+              "name": "Robin Chen Engineering",
+              "ignored": false,
+              "focusable": true,
+              "level": 2,
+              "expanded": true,
+              "selected": false,
+              "frame": [
+               271,
+               104,
+               408,
+               86
+              ],
+              "children": [
+               {
+                "role": "generic",
+                "name": "",
+                "ignored": false,
+                "frame": [
+                 299,
+                 116,
+                 176,
+                 62
+                ],
+                "children": [
+                 {
+                  "role": "none",
+                  "name": "",
+                  "ignored": true
+                 },
+                 {
+                  "role": "none",
+                  "name": "",
+                  "ignored": true
+                 },
+                 {
+                  "role": "none",
+                  "name": "",
+                  "ignored": true,
+                  "children": [
+                   {
+                    "role": "none",
+                    "name": "",
+                    "ignored": true,
+                    "children": [
+                     {
+                      "role": "StaticText",
+                      "name": "Robin Chen",
+                      "ignored": false,
+                      "frame": [
+                       366,
+                       130,
+                       78.546875,
+                       16
+                      ],
+                      "children": [
+                       {
+                        "role": "InlineTextBox",
+                        "name": "Robin Chen",
+                        "ignored": false
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "role": "none",
+                    "name": "",
+                    "ignored": true,
+                    "children": [
+                     {
+                      "role": "StaticText",
+                      "name": "Engineering",
+                      "ignored": false,
+                      "frame": [
+                       366,
+                       151,
+                       64.0625,
+                       14
+                      ],
+                      "children": [
+                       {
+                        "role": "InlineTextBox",
+                        "name": "Engineering",
+                        "ignored": false
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "role": "generic",
+                  "name": "",
+                  "ignored": false,
+                  "frame": [
+                   462,
+                   135,
+                   24,
+                   24
+                  ],
+                  "children": [
+                   {
+                    "role": "none",
+                    "name": "",
+                    "ignored": true,
+                    "children": [
+                     {
+                      "role": "none",
+                      "name": "",
+                      "ignored": true,
+                      "children": [
+                       {
+                        "role": "none",
+                        "name": "",
+                        "ignored": true,
+                        "children": [
+                         {
+                          "role": "none",
+                          "name": "",
+                          "ignored": true
+                         }
+                        ]
+                       },
+                       {
+                        "role": "none",
+                        "name": "",
+                        "ignored": true
+                       },
+                       {
+                        "role": "none",
+                        "name": "",
+                        "ignored": true,
+                        "children": [
+                         {
+                          "role": "none",
+                          "name": "",
+                          "ignored": true,
+                          "children": [
+                           {
+                            "role": "none",
+                            "name": "",
+                            "ignored": true
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "role": "none",
+                    "name": "",
+                    "ignored": true
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "role": "group",
+                "name": "",
+                "ignored": false,
+                "frame": [
+                 475,
+                 110,
+                 204,
+                 74
+                ],
+                "children": [
+                 {
+                  "role": "treeitem",
+                  "name": "Casey Diaz Developer",
+                  "ignored": false,
+                  "focusable": true,
+                  "level": 3,
+                  "selected": false,
+                  "frame": [
+                   503,
+                   110,
+                   176,
+                   74
+                  ],
+                  "children": [
+                   {
+                    "role": "generic",
+                    "name": "",
+                    "ignored": false,
+                    "frame": [
+                     503,
+                     116,
+                     176,
+                     62
+                    ],
+                    "children": [
+                     {
+                      "role": "none",
+                      "name": "",
+                      "ignored": true
+                     },
+                     {
+                      "role": "none",
+                      "name": "",
+                      "ignored": true
+                     },
+                     {
+                      "role": "none",
+                      "name": "",
+                      "ignored": true,
+                      "children": [
+                       {
+                        "role": "none",
+                        "name": "",
+                        "ignored": true,
+                        "children": [
+                         {
+                          "role": "StaticText",
+                          "name": "Casey Diaz",
+                          "ignored": false,
+                          "frame": [
+                           570,
+                           130,
+                           74,
+                           17
+                          ],
+                          "children": [
+                           {
+                            "role": "InlineTextBox",
+                            "name": "Casey Diaz",
+                            "ignored": false
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       {
+                        "role": "none",
+                        "name": "",
+                        "ignored": true,
+                        "children": [
+                         {
+                          "role": "StaticText",
+                          "name": "Developer",
+                          "ignored": false,
+                          "frame": [
+                           570,
+                           151,
+                           54.703125,
+                           14
+                          ],
+                          "children": [
+                           {
+                            "role": "InlineTextBox",
+                            "name": "Developer",
+                            "ignored": false
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "role": "treeitem",
+              "name": "Finley Ross Operations",
+              "ignored": false,
+              "focusable": true,
+              "level": 2,
+              "frame": [
+               271,
+               190,
+               204,
+               74
+              ],
+              "children": [
+               {
+                "role": "generic",
+                "name": "",
+                "ignored": false,
+                "frame": [
+                 299,
+                 196,
+                 176,
+                 62
+                ],
+                "children": [
+                 {
+                  "role": "none",
+                  "name": "",
+                  "ignored": true
+                 },
+                 {
+                  "role": "none",
+                  "name": "",
+                  "ignored": true,
+                  "children": [
+                   {
+                    "role": "none",
+                    "name": "",
+                    "ignored": true,
+                    "children": [
+                     {
+                      "role": "StaticText",
+                      "name": "Finley Ross",
+                      "ignored": false,
+                      "frame": [
+                       366,
+                       210,
+                       79,
+                       17
+                      ],
+                      "children": [
+                       {
+                        "role": "InlineTextBox",
+                        "name": "Finley Ross",
+                        "ignored": false
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "role": "none",
+                    "name": "",
+                    "ignored": true,
+                    "children": [
+                     {
+                      "role": "StaticText",
+                      "name": "Operations",
+                      "ignored": false,
+                      "frame": [
+                       366,
+                       231,
+                       58.703125,
+                       14
+                      ],
+                      "children": [
+                       {
+                        "role": "InlineTextBox",
+                        "name": "Operations",
+                        "ignored": false
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "li",
+   "role": "treeitem",
+   "name": "Alex Morgan Product lead",
+   "frame": [
+    67,
+    24,
+    612,
+    246
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true,
+    "level": 1,
+    "expanded": true,
+    "selected": false
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

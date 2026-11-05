@@ -1,6 +1,8 @@
+import { exerciseTimeEnvironment } from '../../../../packages/core/src/components/md-time-picker/test-utils/environment.browser';
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { expect, waitFor } from "storybook/test";
 import { html } from "lit";
+import { exerciseTimeEditing } from '../../../../packages/core/src/components/md-time-picker/test-utils/editing.browser';
 import { drivingCoverage, exerciseProps } from "../testing/coverage-mode";
 import { t } from "../i18n";
 
@@ -122,6 +124,11 @@ const meta: Meta = {
 
 export default meta;
 type Story = StoryObj;
+
+export const EditingAndOvernightBounds: Story = {
+  render: () => html`<md-time-picker label="Meeting time"></md-time-picker>`,
+  play: async ({ canvasElement }) => exerciseTimeEditing(canvasElement.querySelector('md-time-picker') as HTMLElement),
+};
 
 const symbolsLink = html`
   <link
@@ -1336,4 +1343,24 @@ export const ModeToggleAndDismiss: Story = {
       await new Promise((r) => setTimeout(r, 300));
     });
   },
+};
+
+export const ModalFocusOwnership: Story = {
+  render: () => html`<form><button id="outside" type="button">Open picker</button><fieldset><md-time-picker label="Meeting" value="09:30"></md-time-picker></fieldset></form>`,
+  play: async ({ canvasElement }) => exerciseTimeEnvironment(canvasElement.querySelector('md-time-picker')!, 'focus'),
+};
+
+export const FormConstraintTransitions: Story = {
+  render: () => html`<form><button id="outside" type="button">Open picker</button><fieldset><md-time-picker label="Meeting" value="09:30"></md-time-picker></fieldset></form>`,
+  play: async ({ canvasElement }) => exerciseTimeEnvironment(canvasElement.querySelector('md-time-picker')!, 'constraints'),
+};
+
+export const DialEditingTransitions: Story = {
+  render: () => html`<form><button id="outside" type="button">Open picker</button><fieldset><md-time-picker label="Meeting" value="09:30"></md-time-picker></fieldset></form>`,
+  play: async ({ canvasElement }) => exerciseTimeEnvironment(canvasElement.querySelector('md-time-picker')!, 'dial'),
+};
+
+export const AuthoredInitialState: Story = {
+  render: () => html`<form><button id="outside" type="button">Open picker</button><fieldset><md-time-picker label="Meeting" value="09:30"></md-time-picker></fieldset></form>`,
+  play: async ({ canvasElement }) => exerciseTimeEnvironment(canvasElement.querySelector('md-time-picker')!, 'initialization'),
 };

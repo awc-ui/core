@@ -318,7 +318,7 @@
     "styleUrl": "md-table-cell.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "d00799003e619ef472c7362518baed600c2dbc4f706287e29e0e0a008f23560d"
+    "sha256": "2961337dc32d64b59e9674aa3fc930dfe222b38317a7c18be7730ecfb76f50e4"
   },
   "styles": [
     {
@@ -683,6 +683,22 @@
       ]
     },
     {
+      "selector": ":host",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition-duration",
+          "value": "0.01ms",
+          "important": true
+        },
+        {
+          "property": "transition-delay",
+          "value": "0s",
+          "important": true
+        }
+      ]
+    },
+    {
       "selector": ".md-table-cell__pin-glyph",
       "context": null,
       "declarations": [
@@ -865,45 +881,6 @@
         "numeric",
         "padding",
         "head",
-        "ellipsis",
-        "variant"
-      ],
-      "events": [],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
-        "scope",
-        "sticky",
-        "colSpan",
-        "rowSpan",
-        "noPinIndicator",
-        "pinIcon",
-        "density"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [],
-      "notes": [
-        "Native equal-flex columns; colSpan/rowSpan and sticky pinning are not supported."
-      ],
-      "verification": "not-device-verified"
-    },
-    "android": {
-      "status": "adapter-implemented",
-      "properties": [
-        "align",
-        "head",
-        "numeric",
-        "padding"
-      ],
-      "events": [],
-      "methods": [],
-      "slots": [
-        ""
-      ],
-      "unsupportedProperties": [
         "scope",
         "sticky",
         "colSpan",
@@ -914,13 +891,86 @@
         "pinIcon",
         "density"
       ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Alignment, numeric, padding variants, head / scope, sticky pinning with the pin indicator, colSpan, ellipsis, meta variant, density.",
+        "rowSpan is reflected for assistive technology only and does not span rows, as in the source (decision log). Hooks through AWCTableCellAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": ".awcTableCellAppearance(AWCTableCellAppearance)",
+        "fields": [
+          "color",
+          "background",
+          "paddingInline",
+          "paddingBlock",
+          "minHeight",
+          "stickyBackground",
+          "stickyTransition",
+          "pinDisplay",
+          "pinColor",
+          "pinSize"
+        ]
+      }
+    },
+    "android": {
+      "status": "adapter-implemented",
+      "properties": [
+        "align",
+        "numeric",
+        "padding",
+        "head",
+        "scope",
+        "sticky",
+        "colSpan",
+        "rowSpan",
+        "ellipsis",
+        "variant",
+        "noPinIndicator",
+        "pinIcon",
+        "density"
+      ],
+      "events": [],
+      "methods": [],
+      "slots": [
+        ""
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Alignment, numeric, padding variants, head / scope, sticky pinning with the pin indicator, colSpan, ellipsis, meta variant, density.",
+        "rowSpan is reflected for assistive technology only and does not span rows, as in the source (decision log). Hooks through AWCTableCellAppearance.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [],
+      "appearance": {
+        "api": "AWCTableCellAppearanceScope(AWCTableCellAppearance)",
+        "fields": [
+          "color",
+          "background",
+          "paddingInline",
+          "paddingBlock",
+          "minHeight",
+          "stickyBackground",
+          "stickyTransition",
+          "pinDisplay",
+          "pinColor",
+          "pinSize"
+        ]
+      }
     }
   }
 }

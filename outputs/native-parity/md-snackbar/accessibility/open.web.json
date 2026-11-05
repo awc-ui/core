@@ -1,0 +1,241 @@
+{
+ "tag": "md-snackbar",
+ "case": "open",
+ "html": "<md-snackbar data-ax-node=\"n0\" id=\"example-md-snackbar\"></md-snackbar>",
+ "props": {
+  "n0": {
+   "action": "Undo",
+   "autoHide": false,
+   "autoHideDuration": 4000,
+   "closeable": true,
+   "density": 0,
+   "dismissLabel": "Dismiss",
+   "message": "Project saved",
+   "open": true,
+   "politeness": "polite",
+   "position": "bottom",
+   "stacked": false
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "status",
+    "name": "",
+    "ignored": false,
+    "live": "polite",
+    "atomic": true,
+    "relevant": "additions text",
+    "frame": [
+     0,
+     -18,
+     640,
+     900
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "StaticText",
+          "name": "Project saved",
+          "ignored": false,
+          "frame": [
+           192,
+           826,
+           88.078125,
+           16
+          ],
+          "children": [
+           {
+            "role": "InlineTextBox",
+            "name": "Project saved",
+            "ignored": false
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "button",
+          "name": "Undo",
+          "ignored": false,
+          "invalid": "false",
+          "focusable": true,
+          "frame": [
+           346.125,
+           814,
+           65.875,
+           40
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Undo",
+                "ignored": false,
+                "frame": [
+                 362.125,
+                 826,
+                 33.875,
+                 16
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Undo",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "button",
+          "name": "Dismiss",
+          "ignored": false,
+          "focusable": true,
+          "frame": [
+           412,
+           814,
+           40,
+           40
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-button",
+   "role": "button",
+   "name": "Undo",
+   "frame": [
+    346.125,
+    814,
+    65.875,
+    40
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "dom": "md-icon-button",
+   "role": "button",
+   "name": "Dismiss",
+   "frame": [
+    412,
+    814,
+    40,
+    40
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}
